@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ===== LIQUID GLASS DESIGN SYSTEM — 3DZAAP. ===== */
+        /* ===== LIQUID GLASS DESIGN SYSTEM — 3DZAAP ===== */
         :root {
             --white:   #FFFFFF;
             --black:   #0D1117;
@@ -1421,7 +1421,7 @@
                     <div class="glass-card">
                         <div class="section">
                             <h3 class="section-title">📊 Dados do Material / Impressão</h3>
-                            <div class="form-group">
+                            <div class="form-group" id="calcFieldFilamentPrice">
                                 <label>Preço do filamento (€/kg)</label>
                                 <input type="number" id="filamentPrice" value="25" step="0.01" data-testid="filament-price">
                             </div>
@@ -1435,7 +1435,7 @@
                             </div>
                         </div>
 
-                        <div class="section">
+                        <div class="section" id="calcSectionAmort">
                             <h3 class="section-title">⚙️ Amortização e Operação</h3>
                             <div class="form-group">
                                 <label>Preço da impressora (€)</label>
@@ -1455,7 +1455,7 @@
                             </div>
                         </div>
 
-                        <div class="section">
+                        <div class="section" id="calcSectionMargin">
                             <h3 class="section-title">📈 Perdas / Indiretos / Margem</h3>
                             <div class="form-group">
                                 <label>Taxa de falhas (%)</label>
@@ -1473,38 +1473,38 @@
 
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="calculate()" data-testid="btn-calculate">📐 Calcular</button>
-                            <button class="btn btn-secondary" onclick="resetCalculator()" data-testid="btn-reset">🔄 Reset</button>
+                            <button class="btn btn-secondary" onclick="resetCalculator()" data-testid="btn-reset" id="calcBtnReset">🔄 Reset</button>
                         </div>
                     </div>
 
                     <div class="glass-card results-card">
                         <h3 class="section-title">📋 Resultados</h3>
                         <div class="results">
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultFilament">
                                 <span class="result-label">Custo do filamento</span>
                                 <span class="result-value" id="rFilament" data-testid="result-filament">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultAmortization">
                                 <span class="result-label">Custo amortização</span>
                                 <span class="result-value" id="rAmortization" data-testid="result-amortization">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultElectricity">
                                 <span class="result-label">Custo eletricidade</span>
                                 <span class="result-value" id="rElectricity" data-testid="result-electricity">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultBase">
                                 <span class="result-label">Custo base</span>
                                 <span class="result-value" id="rBase" data-testid="result-base">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultFailure">
                                 <span class="result-label">+ Falhas</span>
                                 <span class="result-value" id="rFailure" data-testid="result-failure">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultIndirect">
                                 <span class="result-label">+ Indiretos</span>
                                 <span class="result-value" id="rIndirect" data-testid="result-indirect">€0.00</span>
                             </div>
-                            <div class="result-item">
+                            <div class="result-item" id="calcResultMargin">
                                 <span class="result-label">+ Margem</span>
                                 <span class="result-value" id="rMargin" data-testid="result-margin">€0.00</span>
                             </div>
@@ -1513,7 +1513,7 @@
                                 <span class="result-value highlight" id="rFinal" data-testid="result-final">€0.00</span>
                             </div>
                         </div>
-                        <div class="btn-group">
+                        <div class="btn-group" id="calcExportBtns">
                             <button class="btn btn-secondary btn-sm" onclick="exportCalcCSV()" data-testid="btn-export-calc">📄 Exportar CSV</button>
                             <button class="btn btn-secondary btn-sm" onclick="copyResults()" data-testid="btn-copy-results">📋 Copiar</button>
                         </div>
@@ -2195,6 +2195,9 @@
             document.getElementById('homeCardFilaments').style.display = isAdmin ? '' : 'none';
             document.getElementById('homeCardFinancial').style.display  = isAdmin ? '' : 'none';
 
+            // Aplicar modo representante na calculadora
+            applyCalcRole(isAdmin);
+
             // Mostrar app
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = '';
@@ -2371,6 +2374,30 @@
         });
 
         // ==================== TAB NAVIGATION ====================
+        // ==================== CALCULADORA — MODO REPRESENTANTE ====================
+        function applyCalcRole(isAdmin) {
+            const hide = ids => ids.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = isAdmin ? '' : 'none'; });
+
+            // Secções e campos apenas para admin
+            hide(['calcFieldFilamentPrice', 'calcSectionAmort', 'calcSectionMargin',
+                  'calcResultFilament', 'calcResultAmortization', 'calcResultElectricity',
+                  'calcResultBase', 'calcResultFailure', 'calcResultIndirect', 'calcResultMargin',
+                  'calcExportBtns', 'calcBtnReset']);
+
+            if (!isAdmin) {
+                // Forçar valores fixos para representante
+                document.getElementById('filamentPrice').value = '20';
+                document.getElementById('profitMargin').value  = '300';
+                // Defaults razoáveis para campos ocultos
+                document.getElementById('printerPrice').value     = '600';
+                document.getElementById('printerLife').value      = '5000';
+                document.getElementById('powerConsumption').value = '200';
+                document.getElementById('electricityPrice').value = '0.22';
+                document.getElementById('failureRate').value      = '5';
+                document.getElementById('indirectCosts').value    = '10';
+            }
+        }
+
         // Tabs com permissões restritas
         const ADMIN_ONLY_TABS = ['filaments', 'financial', 'backoffice'];
 
@@ -2987,6 +3014,7 @@
                     orderNumber: formatOrderNumber(orderNum),
                     orderNumeric: orderNum,
                     _createdBy: currentUser?.id || '',
+                    _createdByName: currentProfile?.name || currentProfile?.email || '',
                     ...base
                 });
             }
@@ -3061,7 +3089,7 @@
                                 <span class="order-number">${o.orderNumber || '#' + o.id.slice(-6)}</span>
                                 <div>
                                     <div class="order-client">${o.clientName}</div>
-                                    <div class="order-date">Criado em: ${formatDate(o.createdAt)}</div>
+                                    <div class="order-date">Criado em: ${formatDate(o.createdAt)}${o._createdByName ? ` · <span style="color:var(--blue);font-weight:600;">👤 ${o._createdByName}</span>` : ''}</div>
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 12px;">
