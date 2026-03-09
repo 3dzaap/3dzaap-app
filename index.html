@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ===== LIQUID GLASS DESIGN SYSTEM — 3DZAAP ===== */
         :root {
@@ -1252,10 +1253,107 @@
             .stats-grid { grid-template-columns: 1fr; }
             .report-summary { grid-template-columns: 1fr; }
         }
+
+        /* ===== AUTH ===== */
+        #authScreen {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background: #dce8f8;
+        }
+        #authScreen::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 10% 10%, rgba(59,143,212,0.28) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 90% 20%, rgba(245,148,58,0.18) 0%, transparent 55%),
+                linear-gradient(135deg, #d6e8f8 0%, #e8f4ff 40%, #f0f4ff 70%, #fdf0e8 100%);
+        }
+        .auth-card {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.82);
+            backdrop-filter: blur(28px) saturate(1.8);
+            -webkit-backdrop-filter: blur(28px) saturate(1.8);
+            border: 1.5px solid rgba(255,255,255,0.9);
+            border-radius: 32px;
+            padding: 40px 36px;
+            width: 100%; max-width: 420px;
+            box-shadow: 0 32px 80px rgba(30,60,120,0.22);
+            animation: modalIn 0.4s cubic-bezier(0.22,1,0.36,1);
+        }
+        .auth-logo { text-align: center; margin-bottom: 28px; }
+        .auth-logo img { height: 52px; }
+        .auth-logo p { font-size: .82rem; color: var(--text-secondary); margin-top: 6px; }
+        .auth-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 22px; text-align: center; }
+        .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .auth-field label { font-size: .82rem; font-weight: 600; color: var(--text-secondary); }
+        .auth-field input {
+            padding: 11px 14px; border-radius: 12px;
+            border: 1.5px solid rgba(59,143,212,0.25);
+            background: rgba(255,255,255,0.7);
+            font-family: var(--font-main); font-size: .95rem;
+            outline: none; transition: border-color .2s;
+        }
+        .auth-field input:focus { border-color: var(--blue); }
+        .auth-error { color: var(--danger); font-size: .8rem; text-align: center; min-height: 18px; margin-bottom: 4px; }
+        .auth-btn {
+            width: 100%; padding: 13px; border-radius: 14px;
+            background: var(--blue); color: #fff;
+            font-family: var(--font-main); font-size: 1rem; font-weight: 700;
+            border: none; cursor: pointer; margin-top: 6px;
+            transition: opacity .2s, transform .1s;
+        }
+        .auth-btn:hover { opacity: .9; }
+        .auth-btn:active { transform: scale(.98); }
+        .auth-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* User badge no header */
+        .user-badge {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 50px; padding: 6px 14px 6px 8px;
+            font-size: .82rem; cursor: default;
+        }
+        .user-badge-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--blue); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .85rem; flex-shrink: 0;
+        }
+        .user-badge-info { display: flex; flex-direction: column; line-height: 1.3; }
+        .user-badge-name { font-weight: 600; color: var(--text-primary); }
+        .user-badge-role { font-size: .7rem; color: var(--text-secondary); }
+        .btn-logout {
+            padding: 6px 12px; border-radius: 8px; border: none;
+            background: rgba(239,68,68,0.1); color: var(--danger);
+            font-size: .78rem; font-weight: 600; cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <!-- ===== ECRÃ DE LOGIN ===== -->
+    <div id="authScreen">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP">
+                <p>Printing Manager — Acesso Restrito</p>
+            </div>
+            <div class="auth-title">Entrar na conta</div>
+            <div class="auth-field">
+                <label>Email</label>
+                <input type="email" id="authEmail" placeholder="email@exemplo.com" onkeydown="if(event.key==='Enter')authLogin()">
+            </div>
+            <div class="auth-field">
+                <label>Password</label>
+                <input type="password" id="authPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')authLogin()">
+            </div>
+            <div class="auth-error" id="authError"></div>
+            <button class="auth-btn" id="authBtn" onclick="authLogin()">Entrar</button>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="display:none">
         <header>
             <div class="logo-section">
                 <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP Logo" class="logo-img">
@@ -1266,11 +1364,21 @@
             <nav class="tab-nav">
                 <button class="active" data-tab="home" data-testid="tab-home">🏠 Início</button>
                 <button data-tab="calculator" data-testid="tab-calculator">📐 Calculadora</button>
-                <button data-tab="filaments" data-testid="tab-filaments">🎨 Filamentos</button>
+                <button data-tab="filaments" data-testid="tab-filaments" id="navFilaments">🎨 Filamentos</button>
                 <button data-tab="orders" data-testid="tab-orders">📦 Pedidos</button>
-                <button data-tab="financial" data-testid="tab-financial">💰 Financeiro</button>
-                <button data-tab="backoffice" data-testid="tab-backoffice">🗄️ BackOffice</button>
+                <button data-tab="financial" data-testid="tab-financial" id="navFinancial">💰 Financeiro</button>
+                <button data-tab="backoffice" data-testid="tab-backoffice" id="navBackoffice">🗄️ BackOffice</button>
             </nav>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <div class="user-badge" id="userBadge">
+                    <div class="user-badge-avatar" id="userAvatar">?</div>
+                    <div class="user-badge-info">
+                        <span class="user-badge-name" id="userName">—</span>
+                        <span class="user-badge-role" id="userRole">—</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="authLogout()">Sair</button>
+            </div>
         </header>
 
         <main class="main-content">
@@ -2022,84 +2130,154 @@
 
 
     <script>
-        // ==================== STORAGE ENGINE (IndexedDB - transparent, works everywhere) ====================
-        const DB_NAME = '3dzaap_db';
-        const DB_VERSION = 1;
-        let db = null;
+        // ==================== SUPABASE CONFIG ====================
+        const SUPA_URL = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
+        const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';
+        const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onupgradeneeded = e => {
-                    const database = e.target.result;
-                    if (!database.objectStoreNames.contains('store')) {
-                        database.createObjectStore('store');
-                    }
-                };
-                req.onsuccess = e => { db = e.target.result; resolve(db); };
-                req.onerror = () => reject(req.error);
-            });
+        // ==================== AUTH ====================
+        let currentUser = null;   // objecto Supabase user
+        let currentProfile = null; // { id, email, name, role }
+
+        async function authLogin() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const errEl = document.getElementById('authError');
+            const btn = document.getElementById('authBtn');
+            errEl.textContent = '';
+            if (!email || !password) { errEl.textContent = 'Preenche email e password.'; return; }
+            btn.disabled = true; btn.textContent = 'A entrar…';
+            const { data, error } = await supa.auth.signInWithPassword({ email, password });
+            if (error) {
+                errEl.textContent = 'Email ou password incorrectos.';
+                btn.disabled = false; btn.textContent = 'Entrar';
+                return;
+            }
+            await bootApp(data.user);
         }
 
-        function dbGet(key) {
-            return new Promise((resolve) => {
-                if (!db) { resolve(null); return; }
-                const tx = db.transaction('store', 'readonly');
-                const req = tx.objectStore('store').get(key);
-                req.onsuccess = () => resolve(req.result ?? null);
-                req.onerror = () => resolve(null);
-            });
+        async function authLogout() {
+            await supa.auth.signOut();
+            currentUser = null; currentProfile = null;
+            filaments = []; orders = []; lastOrderNumber = 0;
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('authEmail').value = '';
+            document.getElementById('authPassword').value = '';
+            document.getElementById('authBtn').disabled = false;
+            document.getElementById('authBtn').textContent = 'Entrar';
+            document.getElementById('authError').textContent = '';
         }
 
-        function dbSet(key, value) {
-            return new Promise((resolve) => {
-                if (!db) { resolve(); return; }
-                const tx = db.transaction('store', 'readwrite');
-                tx.objectStore('store').put(value, key);
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => resolve();
-            });
+        async function bootApp(user) {
+            currentUser = user;
+            // Carregar perfil
+            const { data: profile } = await supa.from('profiles').select('*').eq('id', user.id).single();
+            currentProfile = profile || { id: user.id, email: user.email, name: user.email.split('@')[0], role: 'representante' };
+
+            // Actualizar badge
+            const name = currentProfile.name || currentProfile.email;
+            const role = currentProfile.role === 'admin' ? 'Administrador' : 'Representante';
+            document.getElementById('userName').textContent = name;
+            document.getElementById('userRole').textContent = role;
+            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+
+            // Controlo de acesso por perfil
+            const isAdmin = currentProfile.role === 'admin';
+            document.getElementById('navFilaments').style.display = isAdmin ? '' : 'none';
+            document.getElementById('navFinancial').style.display = isAdmin ? '' : 'none';
+            document.getElementById('navBackoffice').style.display = isAdmin ? '' : 'none';
+
+            // Mostrar app
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appContainer').style.display = '';
+
+            // Carregar dados
+            await loadData();
+            initTabs();
+            populateColorSelect();
+            populateFilters();
+            renderFilaments();
+            renderOrders();
+            updateFinancial();
+            calculate();
+            const now = new Date();
+            document.getElementById('monthSelector').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            updateFinancial();
+            initBackOffice();
         }
 
-        // ==================== DATA ====================
+        // ==================== STORAGE ENGINE (Supabase) ====================
         let filaments = [];
         let orders = [];
         let lastOrderNumber = 0;
 
         async function loadData() {
             try {
-                await openDB();
-                filaments = (await dbGet('filaments')) || [];
-                orders = (await dbGet('orders')) || [];
-                lastOrderNumber = (await dbGet('lastOrderNumber')) || 0;
-            } catch(e) {
-                // Fallback to localStorage if IndexedDB fails
-                try {
-                    filaments = JSON.parse(localStorage.getItem('filaments')) || [];
-                    orders = JSON.parse(localStorage.getItem('orders')) || [];
-                    lastOrderNumber = parseInt(localStorage.getItem('lastOrderNumber')) || 0;
-                } catch(e2) {
-                    filaments = []; orders = []; lastOrderNumber = 0;
+                // Filamentos — admin vê todos, representante não usa filamentos
+                const { data: fils } = await supa.from('filaments').select('*').order('created_at', { ascending: true });
+                filaments = (fils || []).map(r => r.data);
+
+                // Pedidos — admin vê todos, representante só os seus
+                let query = supa.from('orders').select('*').order('created_at', { ascending: false });
+                if (currentProfile.role !== 'admin') {
+                    query = query.eq('created_by', currentUser.id);
                 }
+                const { data: ords } = await query;
+                orders = (ords || []).map(r => ({ ...r.data, _rowId: r.id }));
+
+                // Último número de pedido
+                const { data: meta } = await supa.from('meta').select('value').eq('key', 'lastOrderNumber').single();
+                lastOrderNumber = meta ? parseInt(meta.value) : 0;
+            } catch(e) {
+                console.error('Erro ao carregar dados:', e);
+                filaments = []; orders = []; lastOrderNumber = 0;
             }
         }
 
         async function saveFilaments() {
-            try { await dbSet('filaments', filaments); } catch(e) {
-                try { localStorage.setItem('filaments', JSON.stringify(filaments)); } catch(e2) {}
-            }
+            try {
+                // Apaga tudo e reinsere (simples para um único utilizador admin)
+                await supa.from('filaments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                if (filaments.length) {
+                    await supa.from('filaments').insert(filaments.map(f => ({ data: f })));
+                }
+            } catch(e) { console.error('Erro ao guardar filamentos:', e); }
         }
 
         async function saveOrders() {
-            try { await dbSet('orders', orders); } catch(e) {
-                try { localStorage.setItem('orders', JSON.stringify(orders)); } catch(e2) {}
-            }
+            try {
+                // Upsert por _rowId se existir, insert se novo
+                for (const o of orders) {
+                    const payload = { data: o, created_by: o._createdBy || currentUser.id };
+                    if (o._rowId) {
+                        await supa.from('orders').update(payload).eq('id', o._rowId);
+                    } else {
+                        const { data } = await supa.from('orders').insert({ ...payload }).select().single();
+                        if (data) o._rowId = data.id;
+                    }
+                }
+            } catch(e) { console.error('Erro ao guardar pedidos:', e); }
         }
 
         async function saveLastOrderNumber() {
-            try { await dbSet('lastOrderNumber', lastOrderNumber); } catch(e) {
-                try { localStorage.setItem('lastOrderNumber', lastOrderNumber.toString()); } catch(e2) {}
-            }
+            try {
+                await supa.from('meta').upsert({ key: 'lastOrderNumber', value: String(lastOrderNumber) });
+            } catch(e) { console.error('Erro ao guardar lastOrderNumber:', e); }
+        }
+
+        // Manter compatibilidade com dbGet/dbSet usados no backoffice
+        async function dbGet(key) {
+            try {
+                const { data } = await supa.from('meta').select('value').eq('key', key).single();
+                if (!data) return null;
+                try { return JSON.parse(data.value); } catch { return data.value; }
+            } catch { return null; }
+        }
+        async function dbSet(key, value) {
+            try {
+                await supa.from('meta').upsert({ key, value: JSON.stringify(value) });
+            } catch(e) { console.error('dbSet error:', e); }
         }
 
         // ==================== COLOR CATALOG ====================
@@ -2171,20 +2349,18 @@
 
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            await loadData();
-            initTabs();
-            populateColorSelect();
-            populateFilters();
-            renderFilaments();
-            renderOrders();
-            updateFinancial();
-            calculate();
-
-            // Set default month
-            const now = new Date();
-            document.getElementById('monthSelector').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            updateFinancial();
-            initBackOffice();
+            // Verificar se já existe sessão activa
+            const { data: { session } } = await supa.auth.getSession();
+            if (session) {
+                await bootApp(session.user);
+            }
+            // Listener para mudanças de sessão
+            supa.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_OUT') {
+                    document.getElementById('appContainer').style.display = 'none';
+                    document.getElementById('authScreen').style.display = 'flex';
+                }
+            });
         });
 
         // ==================== TAB NAVIGATION ====================
@@ -2795,6 +2971,7 @@
                     id: Date.now().toString(),
                     orderNumber: formatOrderNumber(orderNum),
                     orderNumeric: orderNum,
+                    _createdBy: currentUser?.id || '',
                     ...base
                 });
             }
