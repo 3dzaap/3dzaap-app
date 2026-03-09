@@ -1350,6 +1350,7 @@
             </div>
             <div class="auth-error" id="authError"></div>
             <button class="auth-btn" id="authBtn" onclick="authLogin()">Entrar</button>
+            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.0</p>
         </div>
     </div>
 
@@ -1395,7 +1396,7 @@
                             <div class="home-card-label">Calculadora</div>
                             <div class="home-card-sub">Calcule custos e preços de impressão</div>
                         </div>
-                        <div class="home-card" onclick="goToTab('filaments')">
+                        <div class="home-card" id="homeCardFilaments" onclick="goToTab('filaments')">
                             <div class="home-card-icon orange">🎨</div>
                             <div class="home-card-label">Filamentos</div>
                             <div class="home-card-sub">Gira o seu stock de filamentos</div>
@@ -1405,7 +1406,7 @@
                             <div class="home-card-label">Pedidos</div>
                             <div class="home-card-sub">Acompanhe e gira os seus pedidos</div>
                         </div>
-                        <div class="home-card" onclick="goToTab('financial')">
+                        <div class="home-card" id="homeCardFinancial" onclick="goToTab('financial')">
                             <div class="home-card-icon purple">💰</div>
                             <div class="home-card-label">Financeiro</div>
                             <div class="home-card-sub">Analise receitas e pagamentos</div>
@@ -2184,9 +2185,15 @@
 
             // Controlo de acesso por perfil
             const isAdmin = currentProfile.role === 'admin';
-            document.getElementById('navFilaments').style.display = isAdmin ? '' : 'none';
-            document.getElementById('navFinancial').style.display = isAdmin ? '' : 'none';
-            document.getElementById('navBackoffice').style.display = isAdmin ? '' : 'none';
+
+            // Ocultar tabs restritas no menu
+            document.getElementById('navFilaments').style.display  = isAdmin ? '' : 'none';
+            document.getElementById('navFinancial').style.display   = isAdmin ? '' : 'none';
+            document.getElementById('navBackoffice').style.display  = isAdmin ? '' : 'none';
+
+            // Ocultar cards restritos na página inicial
+            document.getElementById('homeCardFilaments').style.display = isAdmin ? '' : 'none';
+            document.getElementById('homeCardFinancial').style.display  = isAdmin ? '' : 'none';
 
             // Mostrar app
             document.getElementById('authScreen').style.display = 'none';
@@ -2364,7 +2371,15 @@
         });
 
         // ==================== TAB NAVIGATION ====================
+        // Tabs com permissões restritas
+        const ADMIN_ONLY_TABS = ['filaments', 'financial', 'backoffice'];
+
         function goToTab(tabId) {
+            // Bloquear acesso a tabs restritas para representantes
+            if (ADMIN_ONLY_TABS.includes(tabId) && currentProfile?.role !== 'admin') {
+                showToast('⛔ Acesso restrito — apenas administradores.');
+                return;
+            }
             const tabButtons = document.querySelectorAll('.tab-nav button');
             tabButtons.forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
