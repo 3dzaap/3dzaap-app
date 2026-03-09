@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#dce8f8">
     <title>3DZAAP - Print Manager</title>
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,6 +50,10 @@
         }
 
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+        button, input, select, textarea { touch-action: manipulation; }
+        input, select, textarea { font-size: 16px !important; } /* evita zoom automático no iOS */
 
         /* ===== ANIMATED BACKGROUND ===== */
         body {
@@ -1235,23 +1243,160 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(59,143,212,0.7); }
 
         /* ===== RESPONSIVE ===== */
+        /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
         @media (max-width: 1024px) {
             .calc-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .order-detail-grid { grid-template-columns: 1fr; }
+            .order-detail-grid { grid-template-columns: 1fr 1fr; }
+            .bo-cards { grid-template-columns: 1fr 1fr; }
         }
 
+        /* ===== RESPONSIVE — MOBILE GRANDE (≤768px) ===== */
         @media (max-width: 768px) {
-            header { flex-direction: column; gap: 16px; padding: 16px; }
-            .tab-nav { flex-wrap: wrap; justify-content: center; }
-            .toolbar { flex-direction: column; align-items: stretch; }
-            .toolbar-left, .toolbar-right { justify-content: center; }
+            /* App container */
+            .app-container { padding: 12px 10px; }
+
+            /* Header — empilha logo + nav + badge */
+            header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 14px 16px;
+                border-radius: var(--radius-lg);
+                margin-bottom: 16px;
+            }
+            .logo-img { height: 38px; }
+            .logo-text h1 { font-size: 1.3rem; }
+            .logo-text span { font-size: .62rem; }
+
+            /* Tab nav — scroll horizontal em vez de wrap */
+            .tab-nav {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+                scrollbar-width: none;
+                padding: 4px;
+                gap: 3px;
+            }
+            .tab-nav::-webkit-scrollbar { display: none; }
+            .tab-nav button {
+                padding: 8px 14px;
+                font-size: .78rem;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            /* User badge — compacto */
+            .user-badge { padding: 5px 10px 5px 6px; gap: 7px; }
+            .user-badge-avatar { width: 26px; height: 26px; font-size: .75rem; }
+            .user-badge-name { font-size: .8rem; }
+            .user-badge-role { display: none; }
+            .btn-logout { padding: 5px 10px; font-size: .72rem; }
+
+            /* Glass cards */
+            .glass-card { padding: 16px 14px; border-radius: var(--radius-lg); }
+
+            /* Toolbar — empilha */
+            .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+            .toolbar-left { flex-wrap: wrap; gap: 6px; }
+            .toolbar-right { justify-content: flex-end; gap: 8px; }
+            .toolbar-left input, .toolbar-left select { font-size: .82rem; }
+
+            /* Formulários */
             .form-row, .form-row.three-cols { grid-template-columns: 1fr; }
+
+            /* Stats */
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 14px 12px; }
+            .stat-value { font-size: 1.5rem; }
+
+            /* Orders */
+            .order-card { padding: 14px 12px; }
+            .order-main-info { gap: 10px; }
+            .order-number { padding: 5px 10px; font-size: .78rem; }
+            .order-client { font-size: .88rem; }
+            .order-actions {
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: flex-start;
+            }
+            .order-actions .btn { font-size: .75rem; padding: 6px 10px; }
+            .order-detail-grid { grid-template-columns: 1fr; }
+
+            /* Modais */
+            .modal-content {
+                padding: 20px 16px;
+                border-radius: var(--radius-lg);
+                max-height: 95vh;
+            }
+            .modal-large { max-width: 100%; }
+
+            /* Calculadora */
+            .results-card { margin-top: 0; }
+            .result-value.highlight { font-size: 1.1rem; }
+
+            /* Backoffice */
+            .bo-cards { grid-template-columns: 1fr; }
+            .bo-card { padding: 16px; }
+            .bo-btn-row { flex-direction: column; gap: 8px; }
+            .bo-btn-row .btn { width: 100%; text-align: center; }
+
+            /* Financeiro */
+            .financial-controls { flex-direction: column; gap: 12px; align-items: stretch; }
+            .financial-controls .toolbar-right { justify-content: flex-start; flex-wrap: wrap; }
+            .report-summary { grid-template-columns: repeat(2, 1fr); }
+
+            /* Home cards */
+            .home-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .home-card { padding: 18px 12px; }
+            .home-card-icon { width: 48px; height: 48px; font-size: 1.4rem; }
+            .home-card-label { font-size: .88rem; }
+            .home-card-sub { font-size: .72rem; }
+
+            /* Auth */
+            .auth-card { padding: 28px 20px; border-radius: var(--radius-lg); }
         }
 
+        /* ===== RESPONSIVE — MOBILE PEQUENO (≤480px) ===== */
         @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
+            .app-container { padding: 8px 8px; }
+
+            /* Header ainda mais compacto */
+            .logo-img { height: 32px; }
+            .logo-text h1 { font-size: 1.1rem; }
+
+            /* Stats coluna única */
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-value { font-size: 1.3rem; }
+            .stat-label { font-size: .68rem; }
+
+            /* Home cards coluna única em ecrãs muito pequenos */
+            .home-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+            /* Report */
             .report-summary { grid-template-columns: 1fr; }
+
+            /* Pedidos — header empilha */
+            .order-header { flex-direction: column; gap: 8px; }
+            .order-main-info { width: 100%; }
+            .order-header > div:last-child { width: 100%; justify-content: space-between; }
+            .order-badges { flex-wrap: wrap; gap: 4px; }
+            .badge { font-size: .68rem; padding: 3px 8px; }
+
+            /* Tabela de itens — compacta */
+            .order-items-table { font-size: .78rem; }
+            .order-items-table th, .order-items-table td { padding: 6px 8px; }
+
+            /* Botões em coluna */
+            .btn-group { flex-direction: column; }
+            .btn-group .btn { width: 100%; text-align: center; }
+
+            /* Modal itens */
+            .modal-item-row { flex-direction: column; gap: 6px; }
+
+            /* Auth */
+            .auth-card { padding: 24px 16px; margin: 12px; }
+            .auth-title { font-size: 1.1rem; }
         }
 
         /* ===== AUTH ===== */
@@ -1350,7 +1495,7 @@
             </div>
             <div class="auth-error" id="authError"></div>
             <button class="auth-btn" id="authBtn" onclick="authLogin()">Entrar</button>
-            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.0</p>
+            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.1</p>
         </div>
     </div>
 
