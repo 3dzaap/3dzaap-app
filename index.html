@@ -8,7 +8,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#dce8f8">
     <title>3DZAAP - Print Manager</title>
-    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="icon" href="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -695,6 +696,8 @@
         .badge-status.aprovado  { background: rgba(5,150,105,0.1);    color: #059669; border-color: rgba(5,150,105,0.3); }
         .badge-status.printing  { background: rgba(239,68,68,0.1);    color: #DC2626; border-color: rgba(239,68,68,0.3); }
         .badge-status.done      { background: rgba(34,197,94,0.12);   color: var(--success); border-color: rgba(34,197,94,0.3); }
+        .badge-status.entregue  { background: rgba(99,102,241,0.12);  color: #6366F1; border-color: rgba(99,102,241,0.3); }
+        .badge-sinal            { background: rgba(245,158,11,0.15);  color: #B45309; border-color: rgba(245,158,11,0.4); font-weight:700; }
 
         .badge-paid    { background: rgba(34,197,94,0.12);  color: var(--success); border-color: rgba(34,197,94,0.3); }
         .badge-pending { background: rgba(245,148,58,0.12); color: var(--orange);  border-color: rgba(245,148,58,0.3); }
@@ -1495,7 +1498,7 @@
             </div>
             <div class="auth-error" id="authError"></div>
             <button class="auth-btn" id="authBtn" onclick="authLogin()">Entrar</button>
-            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.1</p>
+            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.2</p>
         </div>
     </div>
 
@@ -1773,9 +1776,11 @@
                                 <option value="aprovado">Projeto Aprovado</option>
                                 <option value="printing">Printing</option>
                                 <option value="done">Done</option>
+                                <option value="entregue">Entregue</option>
                             </select>
                             <select id="filterPaymentStatus" onchange="renderOrders()" data-testid="filter-payment-status">
                                 <option value="">Todos os Pagamentos</option>
+                                <option value="na">—</option>
                                 <option value="pendente">Aguardando Pagamento</option>
                                 <option value="pago">Pago</option>
                             </select>
@@ -2228,13 +2233,15 @@
                                 <option value="aprovado">Projeto Aprovado</option>
                                 <option value="printing">Printing</option>
                                 <option value="done">Done</option>
+                                <option value="entregue">Entregue</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Pagamento</label>
                             <select id="oPaymentStatus" data-testid="order-payment-status">
                                 <option value="" disabled>Selecione...</option>
-                                <option value="pendente" selected>Aguardando Pagamento</option>
+                                <option value="na" selected>—</option>
+                                <option value="pendente">Aguardando Pagamento</option>
                                 <option value="pago">Pago</option>
                             </select>
                         </div>
@@ -3048,7 +3055,7 @@
                 document.getElementById('oClientEmail').value = '';
                 document.getElementById('oClientPhone').value = '';
                 document.getElementById('oStatus').value = 'orcamento';
-                document.getElementById('oPaymentStatus').value = 'pendente';
+                document.getElementById('oPaymentStatus').value = 'na';
                 document.getElementById('oCreatedAt').value = new Date().toISOString().split('T')[0];
                 document.getElementById('oDueDate').value = '';
                 document.getElementById('oNotes').value = '';
@@ -3224,10 +3231,54 @@
                 const statusLabels = {
                     'orcamento': 'Orçamento', 'modelagem': 'Modelagem',
                     'validacao': 'Validação', 'aprovado': 'Aprovado',
-                    'printing': 'Printing', 'done': 'Done'
+                    'printing': 'Printing', 'done': 'Done', 'entregue': 'Entregue'
                 };
 
-                ordersList.innerHTML = filtered.map(o => `
+                // Calcular flag de sinal (30%) — qty total > 3
+                const getTotalQty = o => {
+                    if (o.items && o.items.length > 0) return o.items.reduce((s,i) => s + (parseInt(i.quantity)||0), 0);
+                    return parseInt(o.quantity) || 0;
+                };
+
+                const isAdmin = currentProfile?.role === 'admin';
+
+                ordersList.innerHTML = filtered.map(o => {
+                    const totalQty = getTotalQty(o);
+                    const needsSinal = totalQty > 3;
+                    const sinalValue = needsSinal ? (o.total * 0.3).toFixed(2) : null;
+                    const isAprovadoOrLater = ['aprovado','printing','done','entregue'].includes(o.status);
+
+                    // Badge de pagamento
+                    let payBadge = '';
+                    if (o.paymentStatus === 'pago') {
+                        payBadge = `<span class="badge badge-paid">✓ Pago</span>`;
+                    } else if (o.paymentStatus === 'na' || !o.paymentStatus) {
+                        payBadge = `<span class="badge" style="background:rgba(148,163,184,0.12);color:var(--text-secondary);border-color:rgba(148,163,184,0.3);">— N/A</span>`;
+                    } else {
+                        payBadge = `<span class="badge badge-pending">⏳ Aguardando</span>`;
+                    }
+
+                    // Botões conforme perfil
+                    let actionBtns = '';
+                    if (isAdmin) {
+                        actionBtns = `
+                            <button class="btn btn-secondary btn-sm" onclick="changeOrderStatus('${o.id}')">🔄 Alterar Status</button>
+                            ${o.paymentStatus !== 'na' ? `<button class="btn btn-secondary btn-sm" onclick="togglePayment('${o.id}')" style="color:${o.paymentStatus==='pago'?'var(--orange-primary)':'var(--success)'};">
+                                ${o.paymentStatus==='pago'?'⏳ Marcar Aguardando':'✓ Marcar Pago'}
+                            </button>` : ''}
+                            <button class="btn btn-secondary btn-sm" onclick="openOrderModal('${o.id}')">✏️ Editar</button>
+                            <button class="btn btn-secondary btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue);">🧾 Recibo</button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteOrder('${o.id}')" style="color:var(--danger);">🗑️ Excluir</button>
+                        `;
+                    } else {
+                        // Representante: só ver recibo e apagar (se não aprovado+)
+                        actionBtns = `
+                            <button class="btn btn-secondary btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue);">🧾 Ver Recibo</button>
+                            ${!isAprovadoOrLater ? `<button class="btn btn-secondary btn-sm" onclick="deleteOrder('${o.id}')" style="color:var(--danger);">🗑️ Excluir</button>` : `<span style="font-size:.75rem;color:var(--text-secondary);padding:6px 8px;">🔒 Em produção</span>`}
+                        `;
+                    }
+
+                    return `
                     <div class="order-card" id="order-card-${o.id}">
                         <div class="order-header">
                             <div class="order-main-info">
@@ -3237,12 +3288,11 @@
                                     <div class="order-date">Criado em: ${formatDate(o.createdAt)}${o._createdByName ? ` · <span style="color:var(--blue);font-weight:600;">👤 ${o._createdByName}</span>` : ''}</div>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="display:flex;align-items:center;gap:12px;">
                                 <div class="order-badges">
                                     <span class="badge badge-status ${o.status}">${statusLabels[o.status] || o.status}</span>
-                                    <span class="badge ${o.paymentStatus === 'pago' ? 'badge-paid' : 'badge-pending'}">
-                                        ${o.paymentStatus === 'pago' ? '✓ Pago' : '⏳ Aguardando'}
-                                    </span>
+                                    ${payBadge}
+                                    ${needsSinal ? `<span class="badge badge-sinal">⚡ Sinal 30% — €${sinalValue}</span>` : ''}
                                 </div>
                                 <button class="order-expand-btn" id="expand-btn-${o.id}" onclick="toggleOrderDetails('${o.id}')">▼</button>
                             </div>
@@ -3270,6 +3320,10 @@
                                     <div class="order-detail-label">Prazo de Entrega</div>
                                     <div class="order-detail-value">${o.dueDate ? formatDate(o.dueDate) : '-'}</div>
                                 </div>
+                                ${needsSinal ? `<div class="order-detail-item" style="grid-column:1/-1;background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 14px;">
+                                    <div class="order-detail-label" style="color:#B45309;">⚡ Sinal necessário (quantidade > 3 unidades)</div>
+                                    <div class="order-detail-value" style="color:#B45309;font-size:1rem;">€${sinalValue} <span style="font-weight:400;font-size:.82rem;">(30% do total €${o.total.toFixed(2)})</span></div>
+                                </div>` : ''}
                                 ${o.notes ? `<div class="order-detail-item" style="grid-column:1/-1">
                                     <div class="order-detail-label">Observações</div>
                                     <div class="order-detail-value">${o.notes}</div>
@@ -3304,18 +3358,10 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="order-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="changeOrderStatus('${o.id}')">🔄 Alterar Status</button>
-                                <button class="btn btn-secondary btn-sm" onclick="togglePayment('${o.id}')" style="color: ${o.paymentStatus === 'pago' ? 'var(--orange-primary)' : 'var(--success)'};">
-                                    ${o.paymentStatus === 'pago' ? '⏳ Marcar Aguardando' : '✓ Marcar Pago'}
-                                </button>
-                                <button class="btn btn-secondary btn-sm" onclick="openOrderModal('${o.id}')">✏️ Editar</button>
-                                <button class="btn btn-secondary btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue);">🧾 Recibo</button>
-                                <button class="btn btn-secondary btn-sm" onclick="deleteOrder('${o.id}')" style="color: var(--danger);">🗑️ Excluir</button>
-                            </div>
+                            <div class="order-actions">${actionBtns}</div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
             updateOrderStats();
         }
@@ -3337,14 +3383,18 @@
         }
 
         async function changeOrderStatus(id) {
-            const statuses = ['orcamento', 'modelagem', 'validacao', 'aprovado', 'printing', 'done'];
-            const labels = ['Orçamento', 'Modelagem', 'Validação', 'Aprovado', 'Printing', 'Done'];
+            const statuses = ['orcamento', 'modelagem', 'validacao', 'aprovado', 'printing', 'done', 'entregue'];
+            const labels = ['Orçamento', 'Modelagem', 'Validação', 'Aprovado', 'Printing', 'Done', 'Entregue'];
             const order = orders.find(o => o.id === id);
             if (!order) return;
             const currentIndex = statuses.indexOf(order.status);
             const nextIndex = (currentIndex + 1) % statuses.length;
             if (confirm(`Alterar status para "${labels[nextIndex]}"?`)) {
                 order.status = statuses[nextIndex];
+                // Ao sair de orçamento, activar pagamento pendente
+                if (order.status !== 'orcamento' && order.paymentStatus === 'na') {
+                    order.paymentStatus = 'pendente';
+                }
                 await saveOrders();
                 renderOrders();
                 updateFinancial();
