@@ -1498,7 +1498,7 @@
             </div>
             <div class="auth-error" id="authError"></div>
             <button class="auth-btn" id="authBtn" onclick="authLogin()">Entrar</button>
-            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.3</p>
+            <p style="text-align:center;font-size:.72rem;color:var(--text-muted);margin-top:20px;">v1.0.4</p>
         </div>
     </div>
 
@@ -1571,7 +1571,7 @@
                             <h3 class="section-title">📊 Dados do Material / Impressão</h3>
                             <div class="form-group" id="calcFieldFilamentPrice">
                                 <label>Preço do filamento (€/kg)</label>
-                                <input type="number" id="filamentPrice" value="25" step="0.01" data-testid="filament-price">
+                                <input type="number" id="filamentPrice" value="20" step="0.01" data-testid="filament-price">
                             </div>
                             <div class="form-group">
                                 <label>Peso da peça (g)</label>
@@ -1615,7 +1615,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Margem de lucro (%)</label>
-                                <input type="number" id="profitMargin" value="30" step="1" data-testid="profit-margin">
+                                <input type="number" id="profitMargin" value="300" step="1" data-testid="profit-margin">
                             </div>
                         </div>
 
@@ -1965,21 +1965,6 @@
                             <div class="bo-section">
                                 <div class="bo-section-title">🤖 Backup Automático Diário</div>
                                 <div class="bo-cards">
-                                    <div class="bo-card" style="grid-column:1/-1;">
-                                        <div class="bo-card-header">
-                                            <span class="bo-card-icon">🕛</span>
-                                            <div>
-                                                <div class="bo-card-title">Agendamento Automático</div>
-                                                <div class="bo-card-desc">Backup CSV completo gerado todos os dias à meia-noite e descarregado automaticamente</div>
-                                            </div>
-                                        </div>
-                                        <div id="boNextBackup" class="bo-next-backup">⏱️ A calcular...</div>
-                                        <div class="bo-btn-row" style="margin-top:14px;">
-                                            <button class="btn btn-secondary" onclick="boRunManualBackup()">▶️ Fazer Backup Agora</button>
-                                        </div>
-                                        <div class="bo-section-title" style="margin-top:18px;">Histórico (últimos 7 backups)</div>
-                                        <div id="boBackupList" class="bo-backup-list"></div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -2539,11 +2524,12 @@
                   'calcResultBase', 'calcResultFailure', 'calcResultIndirect', 'calcResultMargin',
                   'calcExportBtns', 'calcBtnReset']);
 
+            // Valores fixos para TODOS os perfis
+            document.getElementById('filamentPrice').value = '20';
+            document.getElementById('profitMargin').value  = '300';
+
             if (!isAdmin) {
-                // Forçar valores fixos para representante
-                document.getElementById('filamentPrice').value = '20';
-                document.getElementById('profitMargin').value  = '300';
-                // Defaults razoáveis para campos ocultos
+                // Defaults razoáveis para campos ocultos do representante
                 document.getElementById('printerPrice').value     = '600';
                 document.getElementById('printerLife').value      = '5000';
                 document.getElementById('powerConsumption').value = '200';
@@ -4366,67 +4352,11 @@ Custo base: ${document.getElementById('rBase').textContent}
             boCloseModal();
         }
 
-        // ─── BACKUP AUTOMÁTICO ────────────────────────────────────────────────
-
-        function boRunManualBackup() { boAutoBackup(true); }
-
-        function boAutoBackup(manual = false) {
-            try {
-                boExportCSV('all'); // descarrega o backup completo CSV
-                const label = manual ? 'Manual' : 'Automático';
-                dbGet('bo_backups').then(backups => {
-                    backups = backups || [];
-                    backups.unshift({ ts: new Date().toISOString(), label, filCount: filaments.length, ordCount: orders.length });
-                    if (backups.length > 7) backups.length = 7;
-                    dbSet('bo_backups', backups);
-                    boRenderBackupList();
-                });
-                boLog(`Backup ${label}: ${filaments.length} fil. + ${orders.length} ped. → CSV`, 'ok');
-            } catch (e) {
-                boLog(`Erro no backup: ${e.message}`, 'err');
-            }
-        }
-
-        async function boRenderBackupList() {
-            const list = document.getElementById('boBackupList');
-            if (!list) return;
-            const backups = (await dbGet('bo_backups')) || [];
-            if (!backups.length) {
-                list.innerHTML = '<div class="bo-backup-empty">Nenhum backup efectuado ainda</div>';
-                return;
-            }
-            list.innerHTML = backups.map(b => `
-                <div class="bo-backup-item">
-                    <div>
-                        <div class="lbl">${b.label} — ${new Date(b.ts).toLocaleString('pt-PT')}</div>
-                        <div class="sub">${b.filCount} filamentos · ${b.ordCount} pedidos · CSV</div>
-                    </div>
-                </div>`).join('');
-        }
-
-        function boScheduleMidnight() {
-            const now = new Date();
-            const next = new Date(now);
-            next.setDate(now.getDate() + 1);
-            next.setHours(0, 0, 0, 0);
-            const update = () => {
-                const diff = next - new Date();
-                const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-                const el = document.getElementById('boNextBackup');
-                if (el) el.textContent = `⏱️ Próximo backup automático: ${next.toLocaleDateString('pt-PT')} 00:00 (em ${h}h ${m}m)`;
-            };
-            update();
-            setInterval(update, 60000);
-            setTimeout(() => { boAutoBackup(false); boScheduleMidnight(); }, next - new Date());
-        }
-
         async function initBackOffice() {
-            boRenderBackupList();
-            boScheduleMidnight();
+            // Backup automático removido — dados guardados na Supabase
         }
 
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"9d6a5dc45e1fcc1e","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.9.1","token":"7f7b0fd8732c4326aae4b9d58d5c514a"}' crossorigin="anonymous"></script>
 </body>
 </html>
-
