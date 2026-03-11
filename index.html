@@ -5977,37 +5977,21 @@
       <main class="app-main" id="app-main">
 
         <!-- Supabase Config Notice -->
-        <div class="config-notice" id="config-notice">
-          ⚠️ <div>
-            Para activar o backend, configure as suas credenciais Supabase na função <code>initSupabase()</code> no código.
-            Enquanto isso, a app funciona em modo <strong>demo local</strong>.
-          </div>
-        </div>
+</div>
 
         <!-- ── DASHBOARD ── -->
         
         <!-- Supabase Config Notice -->
-        <div class="config-notice" id="config-notice">
-          ⚠️ <div>
-            Para activar o backend, configure as suas credenciais Supabase na função <code>initSupabase()</code>.
-            Enquanto isso, a app funciona em modo <strong>demo local</strong>.
-          </div>
-        </div>
+</div>
 
         <!-- ── DASHBOARD ── -->
-
-        <div class="config-notice" id="config-notice">
-          ⚠️ <div>Modo <strong>demo local</strong> activo. Configure Supabase para activar o backend.</div>
-        </div>
+</div>
 
         <!-- DASHBOARD -->
 
-        <div class="config-notice" id="config-notice">⚠️ Modo demo activo.</div>
+<div class="config-notice" id="config-notice" style="display:none">⚠️ Modo demo activo.</div>
 
-
-        <div class="config-notice" id="config-notice">⚠️ Modo demo activo. Configure Supabase para activar o backend.</div>
-
-<div id="page-dashboard" class="page active">
+        <div id="page-dashboard" class="page active">
           <div class="welcome-banner">
             <h2 id="welcome-msg">Bem-vindo de volta! 👋</h2>
             <p id="welcome-sub">Aqui está o resumo do seu negócio hoje.</p>
@@ -7746,6 +7730,8 @@ function waitForSupabase(cb, n) {
     setTimeout(() => waitForSupabase(cb, n + 1), 100);
   } else {
     console.warn('SDK não carregou — modo demo activo.');
+    const n = document.getElementById('config-notice');
+    if (n) n.style.display = '';
     cb();
   }
 }
