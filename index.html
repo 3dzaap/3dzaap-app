@@ -1237,7 +1237,7 @@
 
   <!-- Powered by footer -->
   <div class="powered-by">
-    Powered by <a href="https://3dzaap.pt" target="_blank">3DZAAP</a> · Print Manager Platform
+    Powered by <a href="https://3dzaap.com" target="_blank">3DZAAP</a> · Print Manager Platform
   </div>
 
 </div><!-- /app -->
@@ -1333,52 +1333,105 @@
 // SUPABASE CONFIGURATION
 // ⚠️  Substitua pelas suas credenciais Supabase
 // ================================================================
-const SUPABASE_URL = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';
-const SUPER_ADMIN_EMAIL = '3dzaap@gmail.com'; // ← O seu email de admin
+const SUPABASE_URL       = 'https://qrgtqnmphwlujhsbldzl.supabase.co';       // ex: https://xxxx.supabase.co
+const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';  // chave anon/public
+const SUPER_ADMIN_EMAIL  = '3dzaap@gmail.com';          // o seu email de admin
 
-let supabase = null;
+let supabase    = null;
 let currentUser = null;
 let currentTenant = null;
-let isAdmin = false;
-
-// Demo mode flag
-let demoMode = false;
+let isAdmin     = false;
+let demoMode    = true;
 
 function initSupabase() {
   try {
-    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       demoMode = false;
       document.getElementById('config-notice').style.display = 'none';
+      console.log('✅ Supabase ligado');
+    } else {
+      console.warn('⚠️ Modo demo activo — configure SUPABASE_URL e SUPABASE_KEY');
     }
-  } catch(e) { console.warn('Supabase não configurado, modo demo activo'); }
+  } catch(e) {
+    console.error('Erro ao iniciar Supabase:', e);
+  }
 }
 
 // ================================================================
 // DEMO DATA
 // ================================================================
 let demoTenants = [
-  { id:'t1', company:'FilaShop 3D', email:'loja@filashop.pt', plan:'pro', status:'active', created:'2025-01-15' },
-  { id:'t2', company:'MakerHub',   email:'info@makerhub.pt', plan:'starter', status:'trial', created:'2025-02-20' },
-  { id:'t3', company:'PrintLab BR',email:'contato@printlab.com.br', plan:'business', status:'active', created:'2025-03-01' },
+  { id:'t1', company:'FilaShop 3D',  email:'loja@filashop.pt',        plan:'pro',      status:'active', created:'2025-01-15' },
+  { id:'t2', company:'MakerHub',     email:'info@makerhub.pt',         plan:'starter',  status:'trial',  created:'2025-02-20' },
+  { id:'t3', company:'PrintLab BR',  email:'contato@printlab.com.br',  plan:'business', status:'active', created:'2025-03-01' },
 ];
-let demoFilaments = [];
-let demoOrders    = [];
-let demoClients   = [];
-let selectedPlan  = 'starter';
+let demoFilaments    = [];
+let demoOrders       = [];
+let demoClients      = [];
+let selectedPlan     = 'starter';
 let currentBrandColor = '#3B8FD4';
 
 // ================================================================
-// INIT
+// CARREGAR DADOS DO TENANT (Supabase real)
 // ================================================================
-document.addEventListener('DOMContentLoaded', () => {
+async function loadTenantData() {
+  if (!supabase || !currentUser) return;
+  try {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('*, plans(*)')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (error) throw error;
+
+    currentTenant = data;
+    // Normaliza para o formato que loadApp() espera
+    currentUser.company  = data.company;
+    currentUser.plan     = data.plan_id;
+    currentUser.isAdmin  = data.is_admin;
+    currentUser.tenantId = data.id;
+
+    // Actualiza last_login_at
+    await supabase
+      .from('tenants')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', data.id);
+
+  } catch(err) {
+    console.error('Erro ao carregar tenant:', err);
+    showAuthMsg('Erro ao carregar dados da conta. Tente novamente.', 'error');
+    throw err;
+  }
+}
+
+// ================================================================
+// INIT — ao carregar a página
+// ================================================================
+document.addEventListener('DOMContentLoaded', async () => {
   initSupabase();
-  // Check for existing session
-  const savedUser = localStorage.getItem('3dzaap_demo_user');
-  if (savedUser) {
-    currentUser = JSON.parse(savedUser);
-    loadApp();
+
+  if (demoMode) {
+    // Modo demo: restaura sessão do localStorage
+    const savedUser = localStorage.getItem('3dzaap_demo_user');
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+      loadApp();
+    }
+    return;
+  }
+
+  // Modo real: verifica sessão Supabase activa
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      await loadTenantData();
+      loadApp();
+    }
+  } catch(e) {
+    console.error('Erro ao restaurar sessão:', e);
   }
 });
 
@@ -1453,13 +1506,22 @@ async function doLogin() {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
+    if (!data?.user) throw new Error('Utilizador não encontrado.');
     currentUser = data.user;
     await loadTenantData();
     loadApp();
   } catch(err) {
-    showAuthMsg(err.message || 'Erro ao autenticar.');
+    const msg = err.message || 'Erro ao autenticar.';
+    if (msg.includes('Email not confirmed')) {
+      showAuthMsg('📧 Confirme o seu email antes de entrar.', 'info');
+    } else if (msg.includes('Invalid login')) {
+      showAuthMsg('Email ou password incorretos.', 'error');
+    } else {
+      showAuthMsg(msg, 'error');
+    }
+  } finally {
+    setSpinner('login-spinner', false);
   }
-  setSpinner('login-spinner', false);
 }
 
 async function doRegister() {
@@ -1497,9 +1559,15 @@ async function doRegister() {
     if (error) throw error;
     showAuthMsg('✅ Verifique o seu email para confirmar a conta!', 'success');
   } catch(err) {
-    showAuthMsg(err.message || 'Erro ao criar conta.');
+    const msg = err.message || 'Erro ao criar conta.';
+    if (msg.includes('already registered')) {
+      showAuthMsg('Este email já tem conta. Faça login.', 'error');
+    } else {
+      showAuthMsg(msg, 'error');
+    }
+  } finally {
+    setSpinner('reg-spinner', false);
   }
-  setSpinner('reg-spinner', false);
 }
 
 async function doForgot() {
