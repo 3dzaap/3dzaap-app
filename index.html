@@ -9895,9 +9895,34 @@ async function initBackOffice() {
     boRenderBackupList();
     boScheduleMidnight();
 }
-
-
-
+// ================================================================
+// TENANT DATA
+// ================================================================
+async function loadTenantData() {
+  if (!_sb || !currentUser) return;
+  try {
+    const { data, error } = await _sb
+      .from('tenants')
+      .select('*, plans(*)')
+      .eq('user_id', currentUser.id)
+      .single();
+    if (error) throw error;
+    currentTenant          = data;
+    currentUser.company    = data.company;
+    currentUser.plan       = data.plan_id;
+    currentUser.isAdmin    = data.is_admin;
+    currentUser.tenantId   = data.id;
+    currentUser.brandColor = data.brand_color;
+    currentUser.logoUrl    = data.logo_url;
+    _sb.from('tenants')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', data.id)
+      .then(() => {}).catch(() => {});
+  } catch(err) {
+    console.error('loadTenantData falhou:', err);
+    throw err;
+  }
+}
 
 // ================================================================
 // APP LOAD
