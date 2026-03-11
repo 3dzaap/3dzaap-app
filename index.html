@@ -10,6 +10,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSP: permite ligações ao Supabase e CDNs necessários -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com;
+    font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net;
+    img-src 'self' data: blob: https://*.supabase.co;
+  ">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
   <style>
     /* ===== DESIGN SYSTEM — 3DZAAP ===== */
@@ -1439,7 +1448,17 @@ let demoMode    = true;
 function initSupabase() {
   try {
     if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
-      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce'
+        },
+        global: {
+          fetch: (...args) => fetch(...args)
+        }
+      });
       demoMode = false;
       document.getElementById('config-notice').style.display = 'none';
       console.log('✅ Supabase ligado');
@@ -1625,25 +1644,24 @@ async function doLogin() {
 
   // Real Supabase auth
   try {
-    console.log('A autenticar...', email);
+    console.log('A tentar login em:', SUPABASE_URL);
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    if (!data?.user) throw new Error('Utilizador nao encontrado.');
-    console.log('Auth OK, user_id:', data.user.id);
+    if (!data?.user) throw new Error('Utilizador não encontrado.');
     currentUser = data.user;
     await loadTenantData();
     loadApp();
   } catch(err) {
-    const msg = err.message || 'Erro desconhecido.';
-    console.error('Erro login:', msg, err);
-    if (msg.includes('Email not confirmed')) {
-      showAuthMsg('Confirme o seu email antes de entrar.', 'info');
+    console.error('Erro login:', err);
+    const msg = err.message || String(err);
+    if (msg.includes('Load failed') || msg.includes('fetch') || msg.includes('network')) {
+      showAuthMsg('Erro de rede. Verifique a sua ligação à internet.', 'error');
+    } else if (msg.includes('Email not confirmed')) {
+      showAuthMsg('📧 Confirme o seu email antes de entrar.', 'info');
     } else if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
       showAuthMsg('Email ou password incorretos.', 'error');
-    } else if (msg.includes('Failed to fetch') || msg.includes('Load failed') || msg.includes('NetworkError')) {
-      showAuthMsg('Erro de rede — verifique a ligacao a internet.', 'error');
     } else {
-      showAuthMsg('Erro: ' + msg, 'error');
+      showAuthMsg(msg, 'error');
     }
   } finally {
     setSpinner('login-spinner', false);
