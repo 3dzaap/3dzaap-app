@@ -5783,6 +5783,7 @@
         }
     
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 
@@ -7692,7 +7693,7 @@ const ADMIN_EMAIL   = '3dzaap@gmail.com';
 
 // Variável interna — NÃO usar o nome "supabase" (conflito com SDK global)
 let _sb          = null;
-let _demoMode    = false;
+let _demoMode    = true;
 let currentUser  = null;
 let currentTenant= null;
 let isAdmin      = false;
@@ -7713,78 +7714,48 @@ let demoTenants   = [
 // INIT SUPABASE
 // ================================================================
 function initSupabase() {
+  if (typeof window.supabase === 'undefined') return false;
   try {
-    if (typeof window.supabase === 'undefined') {
-      console.warn('SDK Supabase não carregou ainda.');
-      return;
-    }
     _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
         autoRefreshToken: true,
         persistSession:   true,
-        detectSessionInUrl: true,
-        redirectTo: window.location.href.split('?')[0]
+        detectSessionInUrl: true
       }
     });
     _demoMode = false;
     const el = document.getElementById('config-notice');
     if (el) el.style.display = 'none';
     console.log('Supabase ligado.');
+    return true;
   } catch(e) {
-    console.error('Erro ao iniciar Supabase:', e);
+    console.error('Erro initSupabase:', e);
+    return false;
   }
 }
 
-// Aguarda o SDK carregar (CDN pode demorar)
 function waitForSupabase(cb, n) {
   n = n || 0;
-  if (typeof window.supabase !== 'undefined') { cb(); }
-  else if (n < 60) { setTimeout(() => waitForSupabase(cb, n + 1), 100); }
-  else { console.warn('SDK não carregou — modo demo.'); cb(); }
-}
-
-// ================================================================
-// CARREGAR DADOS DO TENANT
-// ================================================================
-async function loadTenantData() {
-  if (!_sb || !currentUser) return;
-  try {
-    const { data, error } = await _sb
-      .from('tenants')
-      .select('*, plans(*)')
-      .eq('user_id', currentUser.id)
-      .single();
-
-    if (error) throw error;
-
-    currentTenant            = data;
-    currentUser.company      = data.company;
-    currentUser.plan         = data.plan_id;
-    currentUser.isAdmin      = data.is_admin;
-    currentUser.tenantId     = data.id;
-    currentUser.brandColor   = data.brand_color;
-    currentUser.logoUrl      = data.logo_url;
-
-    // Actualiza last_login_at (silencioso)
-    _sb.from('tenants')
-      .update({ last_login_at: new Date().toISOString() })
-      .eq('id', data.id)
-      .then(() => {}).catch(() => {});
-
-  } catch(err) {
-    console.error('loadTenantData falhou:', err);
-    throw err;
+  // SDK already available (loaded synchronously or already cached)
+  if (typeof window.supabase !== 'undefined') {
+    cb();
+    return;
+  }
+  // Wait up to 10 seconds (100 attempts × 100ms)
+  if (n < 100) {
+    setTimeout(() => waitForSupabase(cb, n + 1), 100);
+  } else {
+    console.warn('SDK não carregou — modo demo activo.');
+    cb();
   }
 }
 
-// ================================================================
-// ARRANQUE DA PÁGINA
-// ================================================================
 document.addEventListener('DOMContentLoaded', function() {
   waitForSupabase(async function() {
-    initSupabase();
+    const sdkOk = initSupabase();
 
-    if (_demoMode) {
+    if (!sdkOk || _demoMode) {
+      // Demo mode: restore saved session
       const saved = localStorage.getItem('3dzaap_demo_user');
       if (saved) {
         try { currentUser = JSON.parse(saved); loadApp(); } catch(e) {}
@@ -7792,7 +7763,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Modo real: restaurar sessão existente
+    // Real mode: restore existing Supabase session
     try {
       const { data: { session } } = await _sb.auth.getSession();
       if (session && session.user) {
@@ -7867,6 +7838,11 @@ async function doLogin() {
     return;
   }
 
+  if (!_sb) {
+    showAuthMsg('SDK não carregou. Recarregue a página.', 'error');
+    setSpinner('login-spinner', false);
+    return;
+  }
   try {
     const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
