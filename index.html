@@ -124,7 +124,7 @@
       border: 1.5px solid var(--glass-border);
       border-radius: var(--radius-xl);
       box-shadow: var(--glass-shadow-lg);
-      padding: 40px 36px 36px;
+      padding: 0 36px 36px;
       animation: boxEnter .5s cubic-bezier(0.22,1,0.36,1);
     }
     @keyframes boxEnter {
@@ -138,9 +138,8 @@
       flex-direction: column;
       align-items: center;
       gap: 0;
-      padding: 32px 0 24px;
-      margin: -40px -36px 28px;
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 36px 36px 24px;
+      margin: 0 -36px 28px;
       background: linear-gradient(160deg, rgba(59,143,212,0.13) 0%, rgba(255,255,255,0.0) 60%);
       border-bottom: 1px solid rgba(59,143,212,0.12);
       position: relative;
@@ -728,8 +727,8 @@
       .sidebar { display: none; }
       .app-main { padding: 16px 16px 80px; }
       .form-row { grid-template-columns: 1fr; }
-      .auth-box { padding: 28px 20px 24px; overflow: hidden; }
-    .auth-header-inner { margin: -28px -20px 24px; }
+      .auth-box { padding: 0 20px 24px; overflow: hidden; }
+    .auth-header-inner { margin: 0 -20px 24px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
       .page-title { font-size: 1.25rem; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .app-header { padding: 12px 16px; }
@@ -1428,7 +1427,7 @@
 // ⚠️  Substitua pelas suas credenciais Supabase
 // ================================================================
 const SUPABASE_URL       = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
-const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA'; // ← cole aqui a anon key do Supabase
+const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';
 const SUPER_ADMIN_EMAIL  = '3dzaap@gmail.com';
 
 let sbClient    = null;
@@ -1478,24 +1477,34 @@ async function loadTenantData() {
       .eq('user_id', currentUser.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // PGRST116 = nenhuma linha encontrada (tenant ainda não existe)
+      if (error.code === 'PGRST116') {
+        showAuthMsg('Conta sem tenant associado. Execute o INSERT no Supabase SQL Editor.', 'error');
+        console.error('Tenant nao encontrado para user_id:', currentUser.id);
+      } else {
+        console.error('Erro Supabase:', error.code, error.message, error.details);
+        showAuthMsg('Erro: ' + (error.message || error.code), 'error');
+      }
+      throw error;
+    }
 
     currentTenant = data;
-    // Normaliza para o formato que loadApp() espera
     currentUser.company  = data.company;
     currentUser.plan     = data.plan_id;
     currentUser.isAdmin  = data.is_admin;
     currentUser.tenantId = data.id;
 
-    // Actualiza last_login_at
-    await sbClient
+    // Actualiza last_login_at (silencioso — não bloqueia o login)
+    sbClient
       .from('tenants')
       .update({ last_login_at: new Date().toISOString() })
-      .eq('id', data.id);
+      .eq('id', data.id)
+      .then(() => {})
+      .catch(() => {});
 
   } catch(err) {
-    console.error('Erro ao carregar tenant:', err);
-    showAuthMsg('Erro ao carregar dados da conta. Tente novamente.', 'error');
+    console.error('loadTenantData falhou:', err);
     throw err;
   }
 }
@@ -1616,20 +1625,25 @@ async function doLogin() {
 
   // Real Supabase auth
   try {
+    console.log('A autenticar...', email);
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    if (!data?.user) throw new Error('Utilizador não encontrado.');
+    if (!data?.user) throw new Error('Utilizador nao encontrado.');
+    console.log('Auth OK, user_id:', data.user.id);
     currentUser = data.user;
     await loadTenantData();
     loadApp();
   } catch(err) {
-    const msg = err.message || 'Erro ao autenticar.';
+    const msg = err.message || 'Erro desconhecido.';
+    console.error('Erro login:', msg, err);
     if (msg.includes('Email not confirmed')) {
-      showAuthMsg('📧 Confirme o seu email antes de entrar.', 'info');
-    } else if (msg.includes('Invalid login')) {
+      showAuthMsg('Confirme o seu email antes de entrar.', 'info');
+    } else if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
       showAuthMsg('Email ou password incorretos.', 'error');
+    } else if (msg.includes('Failed to fetch') || msg.includes('Load failed') || msg.includes('NetworkError')) {
+      showAuthMsg('Erro de rede — verifique a ligacao a internet.', 'error');
     } else {
-      showAuthMsg(msg, 'error');
+      showAuthMsg('Erro: ' + msg, 'error');
     }
   } finally {
     setSpinner('login-spinner', false);
