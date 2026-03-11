@@ -9927,6 +9927,25 @@ async function loadTenantData() {
 // ================================================================
 // APP LOAD
 // ================================================================
+
+// ================================================================
+// DASHBOARD STATS
+// ================================================================
+function updateDashStats() {
+  const totalFilaments = typeof filaments !== 'undefined' ? filaments.length : 0;
+  const totalOrders    = typeof orders    !== 'undefined' ? orders.length    : 0;
+  const revenue = typeof orders !== 'undefined'
+    ? orders.filter(o => o.paymentStatus === 'pago')
+            .reduce((s, o) => s + (parseFloat(o.total) || 0), 0)
+    : 0;
+
+  const el = id => document.getElementById(id);
+  if (el('dash-filaments')) el('dash-filaments').textContent = totalFilaments;
+  if (el('dash-orders'))    el('dash-orders').textContent    = totalOrders;
+  if (el('dash-revenue'))   el('dash-revenue').textContent   = '€' + revenue.toFixed(2);
+  if (el('dash-clients'))   el('dash-clients').textContent   = typeof demoClients !== 'undefined' ? demoClients.length : 0;
+}
+
 function loadApp() {
   (async () => {
     try { await loadData(); } catch(e) { console.warn("loadData:", e); }
