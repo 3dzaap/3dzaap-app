@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK — carregado com defer para evitar erros CORS em file:// -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
 
   <style>
     /* ===== DESIGN SYSTEM — 3DZAAP ===== */
@@ -63,7 +63,7 @@
     /* ── Animated Background ── */
     body::before {
       content: '';
-      position: fixed; inset: 0; z-index: 0;
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
         radial-gradient(ellipse 80% 60% at 10% 10%,  rgba(59,143,212,0.28) 0%, transparent 60%),
         radial-gradient(ellipse 60% 50% at 90% 20%,  rgba(245,148,58,0.18) 0%, transparent 55%),
@@ -111,12 +111,14 @@
        AUTH SCREEN
     ============================== */
     #screen-auth {
+      position: relative; z-index: 1;
       align-items: center;
       justify-content: center;
       padding: 24px 16px 80px;
     }
 
     .auth-box {
+      position: relative; z-index: 2;
       width: 100%; max-width: 440px;
       background: var(--glass-bg-strong);
       backdrop-filter: var(--glass-blur);
@@ -695,6 +697,18 @@
       font-family: var(--font-mono); font-size: 0.8rem;
     }
   </style>
+
+  <!-- Aviso de protocolo incorreto -->
+  <script>
+    if (location.protocol === 'file:') {
+      document.addEventListener('DOMContentLoaded', function() {
+        var div = document.createElement('div');
+        div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ef4444;color:#fff;padding:12px 20px;font-family:monospace;font-size:14px;text-align:center;';
+        div.innerHTML = '⚠️ Abrir como file:// não funciona. Execute: <strong>python3 -m http.server 8080</strong> na pasta do ficheiro, depois aceda a <strong>http://localhost:8080/3DZAAP-auth.html</strong>';
+        document.body.prepend(div);
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -1237,7 +1251,7 @@
 
   <!-- Powered by footer -->
   <div class="powered-by">
-    Powered by <a href="https://3dzaap.com" target="_blank">3DZAAP</a> · Print Manager Platform
+    Powered by <a href="https://3dzaap.pt" target="_blank">3DZAAP</a> · Print Manager Platform
   </div>
 
 </div><!-- /app -->
@@ -1333,9 +1347,9 @@
 // SUPABASE CONFIGURATION
 // ⚠️  Substitua pelas suas credenciais Supabase
 // ================================================================
-const SUPABASE_URL       = 'https://qrgtqnmphwlujhsbldzl.supabase.co';       // ex: https://xxxx.supabase.co
-const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';  // chave anon/public
-const SUPER_ADMIN_EMAIL  = '3dzaap@gmail.com';          // o seu email de admin
+const SUPABASE_URL       = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
+const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA'; // ← cole aqui a anon key do Supabase
+const SUPER_ADMIN_EMAIL  = '3dzaap@gmail.com';
 
 let supabase    = null;
 let currentUser = null;
@@ -1409,30 +1423,48 @@ async function loadTenantData() {
 // ================================================================
 // INIT — ao carregar a página
 // ================================================================
-document.addEventListener('DOMContentLoaded', async () => {
-  initSupabase();
-
-  if (demoMode) {
-    // Modo demo: restaura sessão do localStorage
-    const savedUser = localStorage.getItem('3dzaap_demo_user');
-    if (savedUser) {
-      currentUser = JSON.parse(savedUser);
-      loadApp();
-    }
-    return;
+// Aguarda o SDK Supabase estar disponível (pode demorar se carregado de CDN)
+function waitForSupabase(cb, attempts) {
+  attempts = attempts || 0;
+  if (typeof window.supabase !== 'undefined') {
+    cb();
+  } else if (attempts < 50) {
+    setTimeout(function() { waitForSupabase(cb, attempts + 1); }, 100);
+  } else {
+    console.warn('Supabase SDK não disponível — modo demo activo.');
+    cb(); // continua em modo demo
   }
+}
 
-  // Modo real: verifica sessão Supabase activa
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      currentUser = session.user;
-      await loadTenantData();
-      loadApp();
+document.addEventListener('DOMContentLoaded', function() {
+  waitForSupabase(async function() {
+    initSupabase();
+
+    if (demoMode) {
+      const savedUser = localStorage.getItem('3dzaap_demo_user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          loadApp();
+        } catch(e) {
+          localStorage.removeItem('3dzaap_demo_user');
+        }
+      }
+      return;
     }
-  } catch(e) {
-    console.error('Erro ao restaurar sessão:', e);
-  }
+
+    // Modo real: verifica sessão Supabase activa
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user) {
+        currentUser = session.user;
+        await loadTenantData();
+        loadApp();
+      }
+    } catch(e) {
+      console.error('Erro ao restaurar sessao:', e);
+    }
+  });
 });
 
 // ================================================================
