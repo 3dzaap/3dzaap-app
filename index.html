@@ -6,19 +6,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#dce8f8">
-  <title>3DZAAP — Acesso</title>
+  <title>3DZAAP — Print Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- CSP: permite ligações ao Supabase e CDNs necessários -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com;
-    font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.jsdelivr.net;
-    img-src 'self' data: blob: https://*.supabase.co;
-  ">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
   <style>
     /* ===== DESIGN SYSTEM — 3DZAAP ===== */
@@ -795,7 +786,7 @@
       background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px;
       font-family: var(--font-mono); font-size: 0.8rem;
     }
-    </style>
+      </style>
 </head>
 <body>
 <div id="app">
@@ -1430,97 +1421,93 @@
 ============================================================ -->
 
 <script>
+// ================================================================
+// CONFIGURAÇÃO SUPABASE
+// ================================================================
+const SUPABASE_URL  = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';
+const ADMIN_EMAIL   = '3dzaap@gmail.com';
+
+// Variável interna — NÃO usar o nome "supabase" (conflito com SDK global)
+let _sb          = null;
+let _demoMode    = true;
+let currentUser  = null;
+let currentTenant= null;
+let isAdmin      = false;
+let selectedPlan = 'trial';
+let currentBrandColor = '#3B8FD4';
+
+// Demo data
+let demoFilaments = [];
+let demoOrders    = [];
+let demoClients   = [];
+let demoTenants   = [
+  { id:'t1', company:'FilaShop 3D',  email:'loja@filashop.pt',       plan:'pro',      status:'active', created:'2025-01-15' },
+  { id:'t2', company:'MakerHub',     email:'info@makerhub.pt',        plan:'starter',  status:'trial',  created:'2025-02-20' },
+  { id:'t3', company:'PrintLab BR',  email:'contato@printlab.com.br', plan:'business', status:'active', created:'2025-03-01' },
+];
 
 // ================================================================
-// SUPABASE CONFIGURATION
-// ⚠️  Substitua pelas suas credenciais Supabase
+// INIT SUPABASE
 // ================================================================
-const SUPABASE_URL       = 'https://qrgtqnmphwlujhsbldzl.supabase.co';
-const SUPABASE_KEY       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyZ3Rxbm1waHdsdWpoc2JsZHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTk5MzQsImV4cCI6MjA4ODQ5NTkzNH0.8bsoD8iS_3Z_XUO7fMrquxez3VqF4o1bNNxziARIUHA';
-const SUPER_ADMIN_EMAIL  = '3dzaap@gmail.com';
-
-let sbClient    = null;
-let currentUser = null;
-let currentTenant = null;
-let isAdmin     = false;
-let demoMode    = false;
-
 function initSupabase() {
   try {
-    if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
-      sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true,
-          flowType: 'pkce'
-        },
-        global: {
-          fetch: (...args) => fetch(...args)
-        }
-      });
-      demoMode = false;
-      document.getElementById('config-notice').style.display = 'none';
-      console.log('✅ Supabase ligado');
-    } else {
-      console.warn('⚠️ Modo demo activo — configure SUPABASE_URL e SUPABASE_KEY');
+    if (typeof window.supabase === 'undefined') {
+      console.warn('SDK Supabase não carregou ainda.');
+      return;
     }
+    _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession:   true,
+        detectSessionInUrl: true,
+        redirectTo: window.location.href.split('?')[0]
+      }
+    });
+    _demoMode = false;
+    const el = document.getElementById('config-notice');
+    if (el) el.style.display = 'none';
+    console.log('Supabase ligado.');
   } catch(e) {
     console.error('Erro ao iniciar Supabase:', e);
   }
 }
 
-// ================================================================
-// DEMO DATA
-// ================================================================
-let demoTenants = [
-  { id:'t1', company:'FilaShop 3D',  email:'loja@filashop.pt',        plan:'pro',      status:'active', created:'2025-01-15' },
-  { id:'t2', company:'MakerHub',     email:'info@makerhub.pt',         plan:'starter',  status:'trial',  created:'2025-02-20' },
-  { id:'t3', company:'PrintLab BR',  email:'contato@printlab.com.br',  plan:'business', status:'active', created:'2025-03-01' },
-];
-let demoFilaments    = [];
-let demoOrders       = [];
-let demoClients      = [];
-let selectedPlan     = 'starter';
-let currentBrandColor = '#3B8FD4';
+// Aguarda o SDK carregar (CDN pode demorar)
+function waitForSupabase(cb, n) {
+  n = n || 0;
+  if (typeof window.supabase !== 'undefined') { cb(); }
+  else if (n < 60) { setTimeout(() => waitForSupabase(cb, n + 1), 100); }
+  else { console.warn('SDK não carregou — modo demo.'); cb(); }
+}
 
 // ================================================================
-// CARREGAR DADOS DO TENANT (Supabase real)
+// CARREGAR DADOS DO TENANT
 // ================================================================
 async function loadTenantData() {
-  if (!sbClient || !currentUser) return;
+  if (!_sb || !currentUser) return;
   try {
-    const { data, error } = await sbClient
+    const { data, error } = await _sb
       .from('tenants')
       .select('*, plans(*)')
       .eq('user_id', currentUser.id)
       .single();
 
-    if (error) {
-      // PGRST116 = nenhuma linha encontrada (tenant ainda não existe)
-      if (error.code === 'PGRST116') {
-        showAuthMsg('Conta sem tenant associado. Execute o INSERT no Supabase SQL Editor.', 'error');
-        console.error('Tenant nao encontrado para user_id:', currentUser.id);
-      } else {
-        console.error('Erro Supabase:', error.code, error.message, error.details);
-        showAuthMsg('Erro: ' + (error.message || error.code), 'error');
-      }
-      throw error;
-    }
+    if (error) throw error;
 
-    currentTenant = data;
-    currentUser.company  = data.company;
-    currentUser.plan     = data.plan_id;
-    currentUser.isAdmin  = data.is_admin;
-    currentUser.tenantId = data.id;
+    currentTenant            = data;
+    currentUser.company      = data.company;
+    currentUser.plan         = data.plan_id;
+    currentUser.isAdmin      = data.is_admin;
+    currentUser.tenantId     = data.id;
+    currentUser.brandColor   = data.brand_color;
+    currentUser.logoUrl      = data.logo_url;
 
-    // Actualiza last_login_at (silencioso — não bloqueia o login)
-    sbClient
-      .from('tenants')
+    // Actualiza last_login_at (silencioso)
+    _sb.from('tenants')
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', data.id)
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {}).catch(() => {});
 
   } catch(err) {
     console.error('loadTenantData falhou:', err);
@@ -1529,85 +1516,64 @@ async function loadTenantData() {
 }
 
 // ================================================================
-// INIT — ao carregar a página
+// ARRANQUE DA PÁGINA
 // ================================================================
-// Aguarda o SDK Supabase estar disponível (pode demorar se carregado de CDN)
-function waitForSupabase(cb, attempts) {
-  attempts = attempts || 0;
-  if (typeof window.supabase !== 'undefined') {
-    cb();
-  } else if (attempts < 50) {
-    setTimeout(function() { waitForSupabase(cb, attempts + 1); }, 100);
-  } else {
-    console.warn('Supabase SDK não disponível — modo demo activo.');
-    cb(); // continua em modo demo
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   waitForSupabase(async function() {
     initSupabase();
 
-    if (demoMode) {
-      const savedUser = localStorage.getItem('3dzaap_demo_user');
-      if (savedUser) {
-        try {
-          currentUser = JSON.parse(savedUser);
-          loadApp();
-        } catch(e) {
-          localStorage.removeItem('3dzaap_demo_user');
-        }
+    if (_demoMode) {
+      const saved = localStorage.getItem('3dzaap_demo_user');
+      if (saved) {
+        try { currentUser = JSON.parse(saved); loadApp(); } catch(e) {}
       }
       return;
     }
 
-    // Modo real: verifica sessão Supabase activa
+    // Modo real: restaurar sessão existente
     try {
-      const { data: { session } } = await sbClient.auth.getSession();
+      const { data: { session } } = await _sb.auth.getSession();
       if (session && session.user) {
         currentUser = session.user;
         await loadTenantData();
         loadApp();
       }
     } catch(e) {
-      console.error('Erro ao restaurar sessao:', e);
+      console.error('Erro ao restaurar sessão:', e);
     }
   });
 });
 
 // ================================================================
-// AUTH UI HELPERS
+// AUTH UI
 // ================================================================
 function switchAuthTab(tab) {
-  // Tab buttons
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  if (tab === 'login')    document.querySelectorAll('.auth-tab')[0].classList.add('active');
-  if (tab === 'register') document.querySelectorAll('.auth-tab')[1].classList.add('active');
-
-  // Panels
   document.querySelectorAll('.auth-form-panel').forEach(p => p.classList.remove('active'));
-  const map = { login:'panel-login', register:'panel-register', forgot:'panel-forgot' };
-  document.getElementById(map[tab]).classList.add('active');
-
+  const tabs = { login: 0, register: 1 };
+  const panels = { login: 'panel-login', register: 'panel-register', forgot: 'panel-forgot' };
+  if (tabs[tab] !== undefined)
+    document.querySelectorAll('.auth-tab')[tabs[tab]].classList.add('active');
+  const panel = document.getElementById(panels[tab]);
+  if (panel) panel.classList.add('active');
   clearAuthMsg();
 }
 
-function showAuthMsg(msg, type='error') {
+function showAuthMsg(msg, type) {
+  type = type || 'error';
   const el = document.getElementById('auth-msg');
   el.textContent = msg;
-  el.className = `auth-msg ${type} show`;
+  el.className = 'auth-msg ' + type + ' show';
 }
 function clearAuthMsg() {
   const el = document.getElementById('auth-msg');
   el.className = 'auth-msg';
 }
-
 function togglePwd(inputId, btn) {
   const inp = document.getElementById(inputId);
   if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
   else { inp.type = 'password'; btn.textContent = '👁'; }
 }
-
 function selectPlan(el, plan) {
   document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
@@ -1615,26 +1581,23 @@ function selectPlan(el, plan) {
 }
 
 // ================================================================
-// AUTH ACTIONS
+// LOGIN
 // ================================================================
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
-
   if (!email || !pass) return showAuthMsg('Preencha email e password.');
 
   setSpinner('login-spinner', true);
 
-  if (demoMode) {
-    // Demo login — accept any credentials
-    await sleep(800);
-    const isAdminLogin = email === SUPER_ADMIN_EMAIL;
+  if (_demoMode) {
+    await sleep(700);
+    const adminLogin = email === ADMIN_EMAIL;
     currentUser = {
-      id: 'demo-' + Date.now(),
-      email,
-      company: isAdminLogin ? '3DZAAP' : 'Empresa Demo',
-      plan: isAdminLogin ? 'admin' : 'pro',
-      isAdmin: isAdminLogin
+      id: 'demo-' + Date.now(), email,
+      company: adminLogin ? '3DZAAP' : 'Empresa Demo',
+      plan: adminLogin ? 'business' : 'pro',
+      isAdmin: adminLogin
     };
     localStorage.setItem('3dzaap_demo_user', JSON.stringify(currentUser));
     setSpinner('login-spinner', false);
@@ -1642,107 +1605,103 @@ async function doLogin() {
     return;
   }
 
-  // Real Supabase auth
   try {
-    console.log('A tentar login em:', SUPABASE_URL);
-    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    if (!data?.user) throw new Error('Utilizador não encontrado.');
     currentUser = data.user;
     await loadTenantData();
     loadApp();
   } catch(err) {
-    console.error('Erro login:', err);
     const msg = err.message || String(err);
-    if (msg.includes('Load failed') || msg.includes('fetch') || msg.includes('network')) {
-      showAuthMsg('Erro de rede. Verifique a sua ligação à internet.', 'error');
+    console.error('Erro login:', err);
+    if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
+      showAuthMsg('Email ou password incorretos.');
     } else if (msg.includes('Email not confirmed')) {
-      showAuthMsg('📧 Confirme o seu email antes de entrar.', 'info');
-    } else if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
-      showAuthMsg('Email ou password incorretos.', 'error');
+      showAuthMsg('Confirme o seu email antes de entrar.', 'info');
+    } else if (msg.includes('permission denied')) {
+      showAuthMsg('Erro de permissão. Contacte o suporte.', 'error');
+    } else if (msg.includes('Load failed') || msg.includes('fetch')) {
+      showAuthMsg('Erro de rede. Verifique a sua ligação.', 'error');
     } else {
-      showAuthMsg(msg, 'error');
+      showAuthMsg(msg);
     }
   } finally {
     setSpinner('login-spinner', false);
   }
 }
 
+// ================================================================
+// REGISTO
+// ================================================================
 async function doRegister() {
   const company = document.getElementById('reg-company').value.trim();
   const email   = document.getElementById('reg-email').value.trim();
   const pass    = document.getElementById('reg-pass').value;
-
   if (!company) return showAuthMsg('Introduza o nome da empresa.');
   if (!email)   return showAuthMsg('Introduza o email.');
-  if (pass.length < 8) return showAuthMsg('A password deve ter mínimo 8 caracteres.');
+  if (pass.length < 8) return showAuthMsg('Password com mínimo 8 caracteres.');
 
   setSpinner('reg-spinner', true);
 
-  if (demoMode) {
-    await sleep(900);
-    currentUser = {
-      id: 'demo-' + Date.now(),
-      email, company,
-      plan: selectedPlan,
-      isAdmin: false
-    };
+  if (_demoMode) {
+    await sleep(700);
+    currentUser = { id: 'demo-' + Date.now(), email, company, plan: selectedPlan, isAdmin: false };
     localStorage.setItem('3dzaap_demo_user', JSON.stringify(currentUser));
     setSpinner('reg-spinner', false);
-    showToast(`✅ Conta criada! Bem-vindo ao 3DZAAP, ${company}!`);
+    showToast('Conta criada! Bem-vindo ao 3DZAAP.');
     loadApp();
     return;
   }
 
-  // Real Supabase
   try {
-    const { data, error } = await sbClient.auth.signUp({
+    const { error } = await _sb.auth.signUp({
       email, password: pass,
-      options: { data: { company, plan: selectedPlan } }
+      options: { data: { company, plan: selectedPlan, country: 'PT' } }
     });
     if (error) throw error;
-    showAuthMsg('✅ Verifique o seu email para confirmar a conta!', 'success');
+    showAuthMsg('Verifique o seu email para confirmar a conta!', 'success');
   } catch(err) {
-    const msg = err.message || 'Erro ao criar conta.';
-    if (msg.includes('already registered')) {
-      showAuthMsg('Este email já tem conta. Faça login.', 'error');
+    const msg = err.message || String(err);
+    if (msg.includes('already registered') || msg.includes('already exists')) {
+      showAuthMsg('Este email já tem conta. Faça login.');
     } else {
-      showAuthMsg(msg, 'error');
+      showAuthMsg(msg);
     }
   } finally {
     setSpinner('reg-spinner', false);
   }
 }
 
+// ================================================================
+// RECUPERAR PASSWORD
+// ================================================================
 async function doForgot() {
   const email = document.getElementById('forgot-email').value.trim();
   if (!email) return showAuthMsg('Introduza o seu email.');
-
-  if (demoMode) {
-    showAuthMsg('📧 Em modo demo: nenhum email enviado.', 'info');
-    return;
-  }
-
+  if (_demoMode) { showAuthMsg('Modo demo: nenhum email enviado.', 'info'); return; }
   try {
-    const { error } = await sbClient.auth.resetPasswordForEmail(email);
+    const { error } = await _sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href.split('?')[0]
+    });
     if (error) throw error;
-    showAuthMsg('✅ Instruções enviadas para o seu email!', 'success');
-  } catch(err) {
-    showAuthMsg(err.message || 'Erro ao enviar email.');
-  }
+    showAuthMsg('Instruções enviadas para o seu email!', 'success');
+  } catch(err) { showAuthMsg(err.message || 'Erro.'); }
 }
 
+// ================================================================
+// LOGOUT
+// ================================================================
 async function doLogout() {
-  if (!demoMode && sbClient) await sbClient.auth.signOut();
+  if (!_demoMode && _sb) await _sb.auth.signOut();
   localStorage.removeItem('3dzaap_demo_user');
-  currentUser = null;
+  currentUser = null; currentTenant = null; isAdmin = false;
   showScreen('screen-auth');
-  showToast('👋 Sessão terminada.');
+  showToast('Sessao terminada.');
   closeDropdown();
 }
 
 async function updatePassword() {
-  showToast(demoMode ? '🔒 Em modo demo.' : '🔒 Funcionalidade activa com Supabase configurado.');
+  showToast(_demoMode ? 'Modo demo.' : 'Funcionalidade disponivel com Supabase.');
 }
 
 // ================================================================
