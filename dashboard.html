@@ -553,7 +553,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="user-avatar" id="userAvatarSidebar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userNameSidebar">João Demo</div>
-          <div class="user-email" id="userEmailSidebar">joao@printlab.pt</div>
+          <div class="user-email" id="userEmailSidebar"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="deb4b1bfb19eaeacb7b0aab2bfbcf0aeaa">[email&#160;protected]</a></div>
         </div>
         <div class="user-menu-btn">⋯</div>
       </div>
@@ -737,7 +737,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── STATE ──────────────────────────────
 const PLAN_FEATURES = {
   trial:    { calculator:true, filaments:true, orders:true, financial:true, backoffice:true },
@@ -1098,10 +1098,9 @@ function navigate(page) {
   // For now, real modules go to 3DZAAP.html with tab param
   const tabMap = { calculator:'calculator', filaments:'filaments', orders:'orders', financial:'financial', backoffice:'backoffice' };
   if (tabMap[page]) {
-    // In production this would be app/[module] Next.js route
-    // For now, pass tab state via localStorage and redirect
-    localStorage.setItem('3dzaap_tab', tabMap[page]);
-    window.location.href = '3DZAAP.html#' + tabMap[page];
+    // Route to standalone module pages
+    const pageMap = { calculator:'calculator.html', filaments:'filaments.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
+    window.location.href = pageMap[page] || '3DZAAP.html#' + tabMap[page];
     return false;
   }
 
@@ -1155,12 +1154,4 @@ function escHtml(str) {
 
 let toastTimer;
 function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-}
-</script>
-</body>
-</html>
+  c

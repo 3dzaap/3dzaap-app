@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Calculadora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#3B8FD4;--blue-d:#2a6fb0;--blue-dd:#1a4f80;--blue-lt:#72B8F0;--blue-g:rgba(59,143,212,0.10);
+  --orange:#F5943A;--orange-d:#d4762a;--orange-lt:#FFB870;--orange-g:rgba(245,148,58,0.12);
+  --black:#0D1117;--dark:#1a2332;--muted:#4A5568;--subtle:#94A3B8;
+  --border:rgba(255,255,255,0.28);--bdark:rgba(0,0,0,0.08);
+  --glass:rgba(255,255,255,0.60);--glass-s:rgba(255,255,255,0.85);--glass-xs:rgba(255,255,255,0.40);
+  --blur:blur(22px) saturate(1.8);--blur-sm:blur(12px) saturate(1.5);
+  --sh:0 8px 32px rgba(30,60,120,0.12),0 2px 8px rgba(30,60,120,0.06);
+  --sh-lg:0 24px 64px rgba(30,60,120,0.18),0 4px 16px rgba(30,60,120,0.10);
+  --r:10px;--rm:16px;--rl:24px;--rx:32px;
+  --f:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --success:#22c55e;--danger:#ef4444;--warning:#f59e0b;
+  --sidebar-w:260px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidden;line-height:1.6}
+
+/* ── BG ─────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 15%,rgba(245,148,58,.14) 0%,transparent 50%),
+    radial-gradient(ellipse 70% 60% at 50% 100%,rgba(59,143,212,.18) 0%,transparent 55%),
+    linear-gradient(145deg,#cde0f5 0%,#ddeeff 40%,#eef4ff 65%,#fdf0e8 100%)}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.o1{width:660px;height:660px;background:radial-gradient(circle,rgba(59,143,212,.14) 0%,transparent 70%);top:-200px;right:-160px;animation:o1f 22s ease-in-out infinite}
+.o2{width:480px;height:480px;background:radial-gradient(circle,rgba(245,148,58,.11) 0%,transparent 70%);bottom:-120px;left:-120px;animation:o2f 28s ease-in-out infinite}
+@keyframes o1f{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-50px,70px) scale(1.08)}70%{transform:translate(30px,-30px) scale(.96)}}
+@keyframes o2f{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-60px)}}
+
+/* ── LAYOUT ─────────────────────────── */
+.layout{position:relative;z-index:1;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:rgba(255,255,255,0.68);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-right:1.5px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:100;
+  transition:transform .3s var(--ease);
+}
+.sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo img{height:36px;width:auto;object-fit:contain}
+.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
+.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px;cursor:pointer;transition:background .2s}
+.company-pill:hover{background:rgba(59,143,212,.15)}
+.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-section{margin-bottom:6px}
+.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:background .18s,color .18s;text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500;position:relative}
+.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
+.nav-item.active{background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08));color:var(--blue);font-weight:700;border:1px solid rgba(59,143,212,.25)}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
+.sidebar-footer{padding:14px 16px;border-top:1.5px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s}
+.user-row:hover{background:rgba(59,143,212,.07)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── MAIN ───────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR ─────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,0.72);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);
+  border-bottom:1.5px solid var(--border);
+  padding:0 28px;height:60px;
+  display:flex;align-items:center;gap:16px;
+}
+.topbar-breadcrumb{display:flex;align-items:center;gap:8px;flex:1}
+.topbar-breadcrumb a{font-size:.82rem;color:var(--muted);text-decoration:none;transition:color .18s}
+.topbar-breadcrumb a:hover{color:var(--blue)}
+.topbar-breadcrumb span{font-size:.82rem;color:var(--subtle)}
+.topbar-breadcrumb strong{font-size:.9rem;font-weight:800;color:var(--dark)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--r);background:rgba(255,255,255,.6);border:1.5px solid var(--border);font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;text-decoration:none;font-family:var(--f)}
+.topbar-btn:hover{background:rgba(59,143,212,.1);border-color:rgba(59,143,212,.3);color:var(--blue)}
+.topbar-btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue-d));border-color:transparent;color:#fff}
+.topbar-btn.primary:hover{background:linear-gradient(135deg,var(--blue-d),var(--blue-dd));color:#fff}
+.topbar-btn.success-flash{background:linear-gradient(135deg,var(--success),#16a34a);border-color:transparent;color:#fff}
+
+/* ── PAGE ───────────────────────────── */
+.page{padding:28px 28px 48px}
+
+.page-header{margin-bottom:28px;animation:fadeUp .5s var(--ease) both}
+.page-header h1{font-size:1.45rem;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.page-header p{font-size:.88rem;color:var(--muted)}
+
+/* ── SETTINGS BANNER ────────────────── */
+.settings-banner{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 18px;margin-bottom:24px;
+  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
+  border:1.5px solid rgba(59,143,212,.25);border-radius:var(--rm);
+  backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);
+  animation:fadeUp .5s var(--ease) .1s both;
+  cursor:pointer;transition:background .2s,border-color .2s;
+}
+.settings-banner:hover{background:linear-gradient(135deg,rgba(59,143,212,.15),rgba(59,143,212,.06));border-color:rgba(59,143,212,.4)}
+.settings-banner-icon{font-size:1.3rem;flex-shrink:0}
+.settings-banner-text{flex:1;min-width:0}
+.settings-banner-title{font-size:.84rem;font-weight:700;color:var(--dark)}
+.settings-banner-sub{font-size:.74rem;color:var(--muted)}
+.settings-banner-cta{font-size:.78rem;font-weight:700;color:var(--blue);white-space:nowrap}
+
+/* ── CALC LAYOUT ────────────────────── */
+.calc-layout{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:20px;
+  align-items:start;
+}
+
+/* ── GLASS CARD ─────────────────────── */
+.glass-card{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);
+  box-shadow:var(--sh);
+  overflow:hidden;
+  animation:fadeUp .5s var(--ease) .15s both;
+}
+.glass-card.results-col{animation-delay:.22s}
+
+/* ── CARD HEADER ────────────────────── */
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1.5px solid var(--border);
+  background:rgba(255,255,255,.25);
+}
+.card-header-title{font-size:.95rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
+.card-header-badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(59,143,212,.1);color:var(--blue);border:1px solid rgba(59,143,212,.22)}
+
+/* ── FORM SECTIONS ──────────────────── */
+.form-sections{padding:6px 0}
+.form-section{padding:18px 22px;border-bottom:1.5px solid rgba(255,255,255,.55)}
+.form-section:last-child{border-bottom:none}
+.section-title{
+  font-size:.78rem;font-weight:800;color:var(--muted);
+  letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:14px;display:flex;align-items:center;gap:7px;
+}
+.section-title-icon{
+  width:24px;height:24px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+}
+.si-blue{background:rgba(59,143,212,.15);border:1px solid rgba(59,143,212,.25)}
+.si-orange{background:rgba(245,148,58,.14);border:1px solid rgba(245,148,58,.25)}
+.si-purple{background:rgba(168,85,247,.13);border:1px solid rgba(168,85,247,.22)}
+
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.76rem;font-weight:600;color:var(--muted)}
+.field-wrap{position:relative}
+.field-unit{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:.70rem;font-weight:700;
+  color:var(--subtle);pointer-events:none;
+}
+.field input{
+  width:100%;padding:9px 44px 9px 12px;
+  background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.8);
+  border-radius:var(--r);font-size:.88rem;font-weight:600;
+  color:var(--dark);font-family:var(--mono);
+  transition:border-color .18s,box-shadow .18s,background .18s;
+  outline:none;
+}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12);background:rgba(255,255,255,.95)}
+.field input:hover:not(:focus){border-color:rgba(59,143,212,.35)}
+
+/* Slider */
+.field-with-slider{display:flex;flex-direction:column;gap:6px}
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type=range]{
+  flex:1;-webkit-appearance:none;height:4px;
+  background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer;
+}
+.slider-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);
+  cursor:pointer;transition:transform .15s;
+}
+.slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-val{font-family:var(--mono);font-size:.76rem;font-weight:700;color:var(--blue);min-width:42px;text-align:right}
+
+/* ── ACTION BAR ─────────────────────── */
+.action-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 22px;
+  border-top:1.5px solid var(--border);
+  background:rgba(255,255,255,.2);
+}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 20px;border-radius:var(--rm);border:none;
+  font-size:.86rem;font-weight:700;font-family:var(--f);cursor:pointer;
+  transition:all .18s var(--ease);
+}
+.btn-calc{
+  flex:1;justify-content:center;
+  background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;
+  box-shadow:0 4px 16px rgba(59,143,212,.3);
+}
+.btn-calc:hover{background:linear-gradient(135deg,var(--blue-d),var(--blue-dd));transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,143,212,.35)}
+.btn-calc:active{transform:translateY(0)}
+.btn-calc.calculating{animation:pulse-btn .6s ease-in-out}
+@keyframes pulse-btn{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+.btn-reset{background:rgba(255,255,255,.7);border:1.5px solid var(--border);color:var(--muted)}
+.btn-reset:hover{background:rgba(255,255,255,.95);color:var(--dark)}
+
+/* ── RESULTS PANEL ──────────────────── */
+.results-panel{padding:20px 22px}
+
+.price-hero{
+  text-align:center;padding:22px 16px 18px;
+  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
+  border:1.5px solid rgba(59,143,212,.22);border-radius:var(--rm);
+  margin-bottom:20px;position:relative;overflow:hidden;
+}
+.price-hero::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,143,212,.15) 0%,transparent 70%);
+}
+.price-hero-label{font-size:.72rem;font-weight:800;color:var(--blue);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.price-hero-value{
+  font-family:var(--mono);font-size:2.4rem;font-weight:800;
+  color:var(--dark);line-height:1;margin-bottom:4px;
+  transition:all .3s var(--ease);
+}
+.price-hero-value.updated{animation:priceFlash .4s var(--ease)}
+@keyframes priceFlash{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.04);color:var(--blue)}
+  100%{transform:scale(1);color:var(--dark)}
+}
+.price-hero-sub{font-size:.74rem;color:var(--muted)}
+
+.breakdown-list{display:flex;flex-direction:column;gap:0;margin-bottom:18px}
+.breakdown-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:var(--r);
+  transition:background .15s;
+}
+.breakdown-item:hover{background:rgba(59,143,212,.05)}
+.breakdown-item.divider{border-top:1.5px solid rgba(255,255,255,.6);margin-top:4px;padding-top:12px}
+.breakdown-item.total-row{
+  background:linear-gradient(135deg,rgba(59,143,212,.1),rgba(59,143,212,.04));
+  border:1.5px solid rgba(59,143,212,.2);border-radius:var(--rm);
+  margin-top:8px;padding:12px 14px;
+}
+.breakdown-left{display:flex;align-items:center;gap:9px}
+.breakdown-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.breakdown-dot.blue{background:var(--blue)}
+.breakdown-dot.green{background:var(--success)}
+.breakdown-dot.orange{background:var(--orange)}
+.breakdown-dot.purple{background:#a855f7}
+.breakdown-label{font-size:.82rem;color:var(--muted);font-weight:500}
+.breakdown-value{
+  font-family:var(--mono);font-size:.84rem;font-weight:700;color:var(--dark);
+  transition:color .2s;
+}
+.breakdown-value.zero{color:var(--subtle)}
+.breakdown-value.positive{color:var(--success)}
+.total-row .breakdown-label{font-weight:800;color:var(--dark);font-size:.88rem}
+.total-row .breakdown-value{font-size:1.0rem;color:var(--blue)}
+
+/* Percentage bars */
+.cost-bar{
+  height:3px;background:rgba(59,143,212,.12);border-radius:2px;
+  margin-top:3px;overflow:hidden;
+}
+.cost-bar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .5s var(--ease)}
+
+/* ── RESULTS ACTIONS ────────────────── */
+.results-actions{display:flex;gap:9px;margin-bottom:18px}
+.btn-action{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 12px;border-radius:var(--r);border:1.5px solid var(--border);
+  background:rgba(255,255,255,.6);font-size:.78rem;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f);
+}
+.btn-action:hover{background:rgba(255,255,255,.9);color:var(--dark);border-color:rgba(59,143,212,.3)}
+.btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
+
+/* ── HISTORY ────────────────────────── */
+.history-section{
+  border-top:1.5px solid var(--border);
+  padding-top:18px;margin-top:4px;
+}
+.history-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.history-title{font-size:.78rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.history-clear{font-size:.72rem;font-weight:600;color:var(--subtle);cursor:pointer;transition:color .18s}
+.history-clear:hover{color:var(--danger)}
+.history-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.history-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:var(--r);
+  background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6);
+  cursor:pointer;transition:background .15s,border-color .15s;
+}
+.history-item:hover{background:rgba(59,143,212,.07);border-color:rgba(59,143,212,.25)}
+.history-meta{flex:1;min-width:0}
+.history-time{font-size:.70rem;color:var(--subtle)}
+.history-desc{font-size:.76rem;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-price{font-family:var(--mono);font-size:.82rem;font-weight:800;color:var(--blue);white-space:nowrap}
+
+/* ── SETTINGS PANEL ─────────────────── */
+.settings-panel{
+  position:fixed;top:0;right:0;height:100vh;width:380px;
+  background:rgba(255,255,255,.92);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border-left:1.5px solid var(--border);box-shadow:-8px 0 32px rgba(30,60,120,.12);
+  z-index:150;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .35s var(--ease);
+}
+.settings-panel.open{transform:none}
+.settings-panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 22px;border-bottom:1.5px solid var(--border);
+}
+.settings-panel-title{font-size:1rem;font-weight:800;color:var(--dark)}
+.settings-panel-close{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:rgba(0,0,0,.06);cursor:pointer;font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:background .18s,color .18s;
+}
+.settings-panel-close:hover{background:rgba(239,68,68,.1);color:var(--danger)}
+.settings-panel-body{flex:1;overflow-y:auto;padding:20px 22px}
+.settings-group{margin-bottom:24px}
+.settings-group-title{font-size:.74rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.7)}
+.settings-field{margin-bottom:12px}
+.settings-field label{font-size:.78rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+.settings-field input{
+  width:100%;padding:9px 12px;
+  background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.85);
+  border-radius:var(--r);font-size:.88rem;font-weight:600;
+  color:var(--dark);font-family:var(--mono);outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.settings-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12)}
+.settings-panel-footer{padding:16px 22px;border-top:1.5px solid var(--border);display:flex;gap:10px}
+.btn-save-settings{
+  flex:1;padding:11px;border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;
+  font-size:.88rem;font-weight:800;font-family:var(--f);cursor:pointer;
+  transition:opacity .18s,transform .18s;
+}
+.btn-save-settings:hover{opacity:.9;transform:translateY(-1px)}
+.btn-cancel-settings{
+  padding:11px 18px;border-radius:var(--rm);
+  background:rgba(255,255,255,.6);border:1.5px solid var(--border);
+  font-size:.86rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);
+  transition:background .18s;
+}
+.btn-cancel-settings:hover{background:rgba(255,255,255,.95)}
+
+/* ── OVERLAY ────────────────────────── */
+.overlay{
+  position:fixed;inset:0;z-index:140;
+  background:rgba(13,17,23,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:none;
+}
+.overlay.open{display:block}
+
+/* ── MOBILE TOGGLE ──────────────────── */
+.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);backdrop-filter:blur(2px)}
+
+/* ── TOAST ──────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:300;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
+.toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
+
+/* ── ANIMATIONS ─────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── RESPONSIVE ─────────────────────── */
+@media(max-width:1100px){.calc-layout{grid-template-columns:1fr}}
+@media(max-width:680px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .sidebar-overlay.open{display:block}
+  .main{margin-left:0}
+  .mob-toggle{display:flex}
+  .page{padding:16px 16px 40px}
+  .topbar{padding:0 16px 0 56px}
+  .fields-grid{grid-template-columns:1fr}
+  .settings-panel{width:100%;max-width:400px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+<div class="overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ─────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">Print Manager</div>
+    </div>
+    <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatar">PL</div>
+        <span class="company-name" id="companyName">PrintLab Studio</span>
+        <span class="company-plan" id="planBadge">Trial</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item active" href="#"><span class="nav-icon">📐</span> Calculadora</a>
+        <a class="nav-item" href="#"><span class="nav-icon">🎨</span> Filamentos</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Gestão</div>
+        <a class="nav-item" href="#"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" href="#"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="#"><span class="nav-icon">🗄️</span> BackOffice</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Conta</div>
+        <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#"><span class="nav-icon">💳</span> Assinatura</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar" id="userAvatar">JD</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">João Demo</div>
+          <div class="user-email" id="userEmail">joao@printlab.pt</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ─────────────────────────── -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html">Dashboard</a>
+        <span>›</span>
+        <strong>📐 Calculadora</strong>
+      </div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" onclick="openSettings()">⚙️ Defaults da empresa</button>
+        <button class="topbar-btn" onclick="exportCalcCSV()">📄 Exportar CSV</button>
+        <button class="topbar-btn primary" id="copyBtn" onclick="copyResults()">📋 Copiar</button>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <div class="page-header">
+        <h1>📐 Calculadora de Impressão</h1>
+        <p>Calcula o custo real e preço de venda das tuas peças — lógica 100% homologada</p>
+      </div>
+
+      <!-- Settings banner -->
+      <div class="settings-banner" onclick="openSettings()">
+        <div class="settings-banner-icon">⚙️</div>
+        <div class="settings-banner-text">
+          <div class="settings-banner-title">Defaults carregados da empresa</div>
+          <div class="settings-banner-sub" id="settingsBannerSub">Filamento: €25/kg · Impressora: €600 · Margem: 30%</div>
+        </div>
+        <div class="settings-banner-cta">Editar defaults →</div>
+      </div>
+
+      <div class="calc-layout">
+
+        <!-- ── INPUTS PANEL ─────────────── -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="card-header-title">⚙️ Parâmetros de cálculo</div>
+            <span class="card-header-badge">Cálculo ao vivo</span>
+          </div>
+
+          <div class="form-sections">
+
+            <!-- Material -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon si-blue">📊</div>
+                Material &amp; Impressão
+              </div>
+              <div class="fields-grid">
+                <div class="field">
+                  <label>Preço do filamento</label>
+                  <div class="field-wrap">
+                    <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
+                    <span class="field-unit">€/kg</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Peso da peça</label>
+                  <div class="field-wrap">
+                    <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">g</span>
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Tempo de impressão</label>
+                  <div class="field-with-slider">
+                    <div class="field-wrap">
+                      <input type="number" id="printTime" value="3" step="0.1" min="0" oninput="syncSlider('printTime','printTimeSlider',0,48);liveCalc()">
+                      <span class="field-unit">h</span>
+                    </div>
+                    <div class="slider-row">
+                      <input type="range" id="printTimeSlider" min="0" max="48" step="0.5" value="3" oninput="syncInput('printTimeSlider','printTime');liveCalc()">
+                      <span class="slider-val" id="printTimeVal">3h</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Amortização -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon si-orange">⚙️</div>
+                Amortização &amp; Energia
+              </div>
+              <div class="fields-grid">
+                <div class="field">
+                  <label>Preço da impressora</label>
+                  <div class="field-wrap">
+                    <input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">€</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Vida útil</label>
+                  <div class="field-wrap">
+                    <input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()">
+                    <span class="field-unit">h</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Consumo elétrico</label>
+                  <div class="field-wrap">
+                    <input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()">
+                    <span class="field-unit">W</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Preço eletricidade</label>
+                  <div class="field-wrap">
+                    <input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()">
+                    <span class="field-unit">€/kWh</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Margens -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon si-purple">📈</div>
+                Perdas &amp; Margem
+              </div>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label>Taxa de falhas de impressão</label>
+                  <div class="field-with-slider">
+                    <div class="field-wrap">
+                      <input type="number" id="failureRate" value="5" step="1" min="0" max="100" oninput="syncSlider('failureRate','failureSlider',0,50);liveCalc()">
+                      <span class="field-unit">%</span>
+                    </div>
+                    <div class="slider-row">
+                      <input type="range" id="failureSlider" min="0" max="50" step="1" value="5" oninput="syncInput('failureSlider','failureRate');liveCalc()">
+                      <span class="slider-val" id="failureVal">5%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Custos indiretos</label>
+                  <div class="field-with-slider">
+                    <div class="field-wrap">
+                      <input type="number" id="indirectCosts" value="10" step="1" min="0" max="100" oninput="syncSlider('indirectCosts','indirectSlider',0,50);liveCalc()">
+                      <span class="field-unit">%</span>
+                    </div>
+                    <div class="slider-row">
+                      <input type="range" id="indirectSlider" min="0" max="50" step="1" value="10" oninput="syncInput('indirectSlider','indirectCosts');liveCalc()">
+                      <span class="slider-val" id="indirectVal">10%</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Margem de lucro</label>
+                  <div class="field-with-slider">
+                    <div class="field-wrap">
+                      <input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncSlider('profitMargin','marginSlider',0,100);liveCalc()">
+                      <span class="field-unit">%</span>
+                    </div>
+                    <div class="slider-row">
+                      <input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncInput('marginSlider','profitMargin');liveCalc()">
+                      <span class="slider-val" id="marginVal">30%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /form-sections -->
+
+          <div class="action-bar">
+            <button class="btn btn-calc" id="calcBtn" onclick="calculate()">📐 Calcular agora</button>
+            <button class="btn btn-reset" onclick="resetCalculator()">🔄 Reset</button>
+          </div>
+        </div><!-- /glass-card inputs -->
+
+        <!-- ── RESULTS PANEL ─────────────── -->
+        <div class="glass-card results-col">
+          <div class="card-header">
+            <div class="card-header-title">📋 Resultados</div>
+            <span class="card-header-badge" id="liveIndicator">⚡ Ao vivo</span>
+          </div>
+
+          <div class="results-panel">
+
+            <!-- Price Hero -->
+            <div class="price-hero">
+              <div class="price-hero-label">💰 Preço de venda sugerido</div>
+              <div class="price-hero-value" id="rFinal">€ 0,00</div>
+              <div class="price-hero-sub" id="rFinalSub">Introduz os parâmetros e calcula</div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="breakdown-list">
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot blue"></div>
+                  <span class="breakdown-label">Custo do filamento</span>
+                </div>
+                <span class="breakdown-value zero" id="rFilament">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
+
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot blue"></div>
+                  <span class="breakdown-label">Amortização impressora</span>
+                </div>
+                <span class="breakdown-value zero" id="rAmortization">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barAmortization" style="width:0%"></div></div>
+
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot blue"></div>
+                  <span class="breakdown-label">Custo eletricidade</span>
+                </div>
+                <span class="breakdown-value zero" id="rElectricity">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barElectricity" style="width:0%"></div></div>
+
+              <div class="breakdown-item divider">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot green"></div>
+                  <span class="breakdown-label" style="font-weight:700">Custo base</span>
+                </div>
+                <span class="breakdown-value" id="rBase" style="font-weight:800">€ 0,00</span>
+              </div>
+
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot orange"></div>
+                  <span class="breakdown-label">+ Falhas (<span id="rFailurePct">5</span>%)</span>
+                </div>
+                <span class="breakdown-value zero" id="rFailure">€ 0,00</span>
+              </div>
+
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot orange"></div>
+                  <span class="breakdown-label">+ Indiretos (<span id="rIndirectPct">10</span>%)</span>
+                </div>
+                <span class="breakdown-value zero" id="rIndirect">€ 0,00</span>
+              </div>
+
+              <div class="breakdown-item">
+                <div class="breakdown-left">
+                  <div class="breakdown-dot purple"></div>
+                  <span class="breakdown-label">+ Margem (<span id="rMarginPct">30</span>%)</span>
+                </div>
+                <span class="breakdown-value zero" id="rMargin">€ 0,00</span>
+              </div>
+
+              <div class="breakdown-item total-row">
+                <div class="breakdown-left">
+                  <span class="breakdown-label">💰 Preço Final</span>
+                </div>
+                <span class="breakdown-value" id="rFinalRow">€ 0,00</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="results-actions">
+              <button class="btn-action" onclick="exportCalcCSV()">📄 CSV</button>
+              <button class="btn-action" id="copyBtnPanel" onclick="copyResults()">📋 Copiar</button>
+              <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
+            </div>
+
+            <!-- History -->
+            <div class="history-section">
+              <div class="history-header">
+                <div class="history-title">🕐 Histórico desta sessão</div>
+                <div class="history-clear" onclick="clearHistory()">Limpar</div>
+              </div>
+              <div class="history-list" id="historyList">
+                <div style="font-size:.76rem;color:var(--subtle);text-align:center;padding:12px 0">Sem cálculos guardados ainda</div>
+              </div>
+            </div>
+
+          </div>
+        </div><!-- /results panel -->
+
+      </div><!-- /calc-layout -->
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── SETTINGS PANEL ──────────────── -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-panel-header">
+    <div class="settings-panel-title">⚙️ Defaults da Empresa</div>
+    <button class="settings-panel-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="settings-panel-body">
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Estes valores são carregados automaticamente como ponto de partida em cada cálculo. Podem ser alterados em cada sessão sem afectar os defaults.</p>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Material</div>
+      <div class="settings-field">
+        <label>Preço do filamento (€/kg)</label>
+        <input type="number" id="cfgFilament" value="25" step="0.5" min="1">
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Impressora</div>
+      <div class="settings-field">
+        <label>Preço da impressora (€)</label>
+        <input type="number" id="cfgPrinter" value="600" step="50" min="50">
+      </div>
+      <div class="settings-field">
+        <label>Vida útil (horas)</label>
+        <input type="number" id="cfgLife" value="5000" step="100" min="100">
+      </div>
+      <div class="settings-field">
+        <label>Consumo elétrico (W)</label>
+        <input type="number" id="cfgPower" value="200" step="10" min="0">
+      </div>
+      <div class="settings-field">
+        <label>Preço eletricidade (€/kWh)</label>
+        <input type="number" id="cfgElec" value="0.22" step="0.01" min="0.01">
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Margens</div>
+      <div class="settings-field">
+        <label>Margem de lucro (%)</label>
+        <input type="number" id="cfgMargin" value="30" step="1" min="0" max="200">
+      </div>
+      <div class="settings-field">
+        <label>Taxa de falhas (%)</label>
+        <input type="number" id="cfgFailure" value="5" step="1" min="0" max="50">
+      </div>
+      <div class="settings-field">
+        <label>Custos indiretos (%)</label>
+        <input type="number" id="cfgIndirect" value="10" step="1" min="0" max="100">
+      </div>
+    </div>
+  </div>
+  <div class="settings-panel-footer">
+    <button class="btn-save-settings" onclick="saveSettings()">💾 Guardar defaults</button>
+    <button class="btn-cancel-settings" onclick="closeSettings()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+//  DEFAULTS — homologated values
+// ══════════════════════════════════════
+const HARDCODED_DEFAULTS = {
+  filamentPrice:25, partWeight:50, printTime:3,
+  printerPrice:600, printerLife:5000, powerConsumption:200,
+  electricityPrice:0.22, failureRate:5, indirectCosts:10, profitMargin:30,
+};
+
+let defaults = { ...HARDCODED_DEFAULTS };
+let calcHistory = [];
+
+// ── INIT ───────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadUserData();
+  loadCompanyDefaults();
+  applyDefaultsToForm();
+  liveCalc();
+  updateSettingsBanner();
+  applyFeatureGating();
+});
+
+// ── LOAD USER / COMPANY DATA ───────────
+function loadUserData() {
+  try {
+    const saved = localStorage.getItem('3dzaap_user');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+    if (data.email) {
+      document.getElementById('userEmail').textContent = data.email;
+      const name = data.name || data.email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      document.getElementById('userName').textContent = name;
+      document.getElementById('userAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    }
+    if (data.companyName) {
+      document.getElementById('companyName').textContent = data.companyName;
+      document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    }
+    if (data.plan) {
+      const labels = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+      document.getElementById('planBadge').textContent = labels[data.plan] || 'Trial';
+    }
+    if (data.config) {
+      // Merge onboarding config into defaults
+      const c = data.config;
+      if (c.filamentPrice) defaults.filamentPrice = c.filamentPrice;
+      if (c.printerPrice)  defaults.printerPrice  = c.printerPrice;
+      if (c.printerLife)   defaults.printerLife   = c.printerLife;
+      if (c.electricityPrice) defaults.electricityPrice = c.electricityPrice;
+      if (c.profitMargin)  defaults.profitMargin  = c.profitMargin;
+      if (c.failureRate)   defaults.failureRate   = c.failureRate;
+    }
+  } catch(e) {}
+}
+
+function loadCompanyDefaults() {
+  try {
+    const saved = localStorage.getItem('3dzaap_calc_defaults');
+    if (saved) {
+      const d = JSON.parse(saved);
+      defaults = { ...HARDCODED_DEFAULTS, ...d };
+    }
+  } catch(e) {}
+}
+
+function applyDefaultsToForm() {
+  setValue('filamentPrice', defaults.filamentPrice);
+  setValue('partWeight',    defaults.partWeight);
+  setValue('printTime',     defaults.printTime);
+  setValue('printerPrice',  defaults.printerPrice);
+  setValue('printerLife',   defaults.printerLife);
+  setValue('powerConsumption', defaults.powerConsumption);
+  setValue('electricityPrice', defaults.electricityPrice);
+  setValue('failureRate',   defaults.failureRate);
+  setValue('indirectCosts', defaults.indirectCosts);
+  setValue('profitMargin',  defaults.profitMargin);
+
+  // Sync sliders
+  setSlider('printTimeSlider', defaults.printTime, 0, 48);
+  setSlider('failureSlider',   defaults.failureRate, 0, 50);
+  setSlider('indirectSlider',  defaults.indirectCosts, 0, 50);
+  setSlider('marginSlider',    defaults.profitMargin, 0, 100);
+
+  updateSliderLabels();
+
+  // Settings panel
+  setValue('cfgFilament', defaults.filamentPrice);
+  setValue('cfgPrinter',  defaults.printerPrice);
+  setValue('cfgLife',     defaults.printerLife);
+  setValue('cfgPower',    defaults.powerConsumption);
+  setValue('cfgElec',     defaults.electricityPrice);
+  setValue('cfgMargin',   defaults.profitMargin);
+  setValue('cfgFailure',  defaults.failureRate);
+  setValue('cfgIndirect', defaults.indirectCosts);
+}
+
+function setValue(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function setSlider(id, val, min, max) {
+  const el = document.getElementById(id);
+  if (el) el.value = Math.min(max, Math.max(min, val));
+}
+
+// ── FEATURE GATING ─────────────────────
+function applyFeatureGating() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
+    const plan = saved.plan || 'trial';
+    const hasOrders = ['trial','pro','business'].includes(plan);
+    const hasFinancial = ['trial','business'].includes(plan);
+    if (!hasOrders) document.getElementById('ordersLock').style.display = '';
+    if (!hasFinancial) document.getElementById('financialLock').style.display = '';
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  CORE CALCULATION — homologated logic
+// ══════════════════════════════════════
+function getInputs() {
+  return {
+    filamentPrice:   parseFloat(v('filamentPrice'))   || 0,
+    partWeight:      parseFloat(v('partWeight'))       || 0,
+    printTime:       parseFloat(v('printTime'))        || 0,
+    printerPrice:    parseFloat(v('printerPrice'))     || 0,
+    printerLife:     parseFloat(v('printerLife'))      || 1,
+    powerConsumption:parseFloat(v('powerConsumption')) || 0,
+    electricityPrice:parseFloat(v('electricityPrice')) || 0,
+    failureRate:     parseFloat(v('failureRate'))      || 0,
+    indirectCosts:   parseFloat(v('indirectCosts'))    || 0,
+    profitMargin:    parseFloat(v('profitMargin'))     || 0,
+  };
+}
+
+function computeResults(i) {
+  const filamentCost    = (i.filamentPrice / 1000) * i.partWeight;
+  const amortizationCost= (i.printerPrice / i.printerLife) * i.printTime;
+  const electricityCost = (i.powerConsumption / 1000) * i.printTime * i.electricityPrice;
+  const baseCost        = filamentCost + amortizationCost + electricityCost;
+  const failureCost     = baseCost * (i.failureRate / 100);
+  const indirectCost    = baseCost * (i.indirectCosts / 100);
+  const marginCost      = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const finalPrice      = baseCost + failureCost + indirectCost + marginCost;
+  return { filamentCost, amortizationCost, electricityCost, baseCost, failureCost, indirectCost, marginCost, finalPrice };
+}
+
+function calculate() {
+  const btn = document.getElementById('calcBtn');
+  btn.classList.add('calculating');
+  setTimeout(() => btn.classList.remove('calculating'), 400);
+  liveCalc();
+  showToast('✅ Cálculo actualizado!', 'ok');
+}
+
+let liveTimer;
+function liveCalc() {
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(_renderResults, 40);
+  updateSliderLabels();
+  updatePercentLabels();
+}
+
+function _renderResults() {
+  const i = getInputs();
+  const r = computeResults(i);
+
+  // Hero price
+  const heroEl = document.getElementById('rFinal');
+  const prevVal = heroEl.textContent;
+  heroEl.textContent = fmtEur(r.finalPrice);
+  if (prevVal !== heroEl.textContent) {
+    heroEl.classList.remove('updated');
+    void heroEl.offsetWidth;
+    heroEl.classList.add('updated');
+  }
+  document.getElementById('rFinalRow').textContent = fmtEur(r.finalPrice);
+
+  const sub = r.finalPrice > 0
+    ? `Custo base ${fmtEur(r.baseCost)} · Margem ${fmtEur(r.marginCost)}`
+    : 'Introduz os parâmetros e calcula';
+  document.getElementById('rFinalSub').textContent = sub;
+
+  // Breakdown values
+  setResult('rFilament',    r.filamentCost);
+  setResult('rAmortization',r.amortizationCost);
+  setResult('rElectricity', r.electricityCost);
+  setResult('rBase',        r.baseCost,  true);
+  setResult('rFailure',     r.failureCost);
+  setResult('rIndirect',    r.indirectCost);
+  setResult('rMargin',      r.marginCost);
+
+  // Progress bars (relative to final price)
+  const total = r.finalPrice || 1;
+  setBar('barFilament',    r.filamentCost    / total * 100);
+  setBar('barAmortization',r.amortizationCost/ total * 100);
+  setBar('barElectricity', r.electricityCost / total * 100);
+}
+
+function setResult(id, val, bold) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = fmtEur(val);
+  el.className = 'breakdown-value' + (val === 0 ? ' zero' : '') + (bold ? '' : '');
+}
+function setBar(id, pct) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + '%';
+}
+
+// ── RESET (homologated defaults) ───────
+function resetCalculator() {
+  applyDefaultsToForm();
+  liveCalc();
+  showToast('🔄 Valores reset para os defaults da empresa', '');
+}
+
+// ── SLIDERS ────────────────────────────
+function syncInput(sliderId, inputId) {
+  const val = document.getElementById(sliderId).value;
+  document.getElementById(inputId).value = val;
+  updateSliderLabels();
+}
+function syncSlider(inputId, sliderId, min, max) {
+  const val = parseFloat(document.getElementById(inputId).value) || 0;
+  document.getElementById(sliderId).value = Math.min(max, Math.max(min, val));
+  updateSliderLabels();
+}
+function updateSliderLabels() {
+  const pt = parseFloat(v('printTime')) || 0;
+  const fr = parseFloat(v('failureRate')) || 0;
+  const ic = parseFloat(v('indirectCosts')) || 0;
+  const pm = parseFloat(v('profitMargin')) || 0;
+  setText('printTimeVal', pt + 'h');
+  setText('failureVal',   fr + '%');
+  setText('indirectVal',  ic + '%');
+  setText('marginVal',    pm + '%');
+}
+function updatePercentLabels() {
+  setText('rFailurePct',  v('failureRate'));
+  setText('rIndirectPct', v('indirectCosts'));
+  setText('rMarginPct',   v('profitMargin'));
+}
+
+// ── EXPORT CSV ─────────────────────────
+function exportCalcCSV() {
+  const i = getInputs();
+  const r = computeResults(i);
+  const rows = [
+    ['Parâmetro','Valor'],
+    ['Preço do filamento (€/kg)', i.filamentPrice],
+    ['Peso da peça (g)', i.partWeight],
+    ['Tempo de impressão (horas)', i.printTime],
+    ['Preço da impressora (€)', i.printerPrice],
+    ['Vida útil (horas)', i.printerLife],
+    ['Consumo elétrico (W)', i.powerConsumption],
+    ['Preço eletricidade (€/kWh)', i.electricityPrice],
+    ['Taxa de falhas (%)', i.failureRate],
+    ['Custos indiretos (%)', i.indirectCosts],
+    ['Margem de lucro (%)', i.profitMargin],
+    ['---','---'],
+    ['Custo do filamento', r.filamentCost.toFixed(2)],
+    ['Custo amortização', r.amortizationCost.toFixed(2)],
+    ['Custo eletricidade', r.electricityCost.toFixed(2)],
+    ['Custo base', r.baseCost.toFixed(2)],
+    ['+ Falhas', r.failureCost.toFixed(2)],
+    ['+ Indiretos', r.indirectCost.toFixed(2)],
+    ['+ Margem', r.marginCost.toFixed(2)],
+    ['💰 Preço Final', r.finalPrice.toFixed(2)],
+  ];
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
+  downloadCSV(csv, `calculo_impressao_${ts}.csv`);
+  showToast('📄 CSV exportado!', 'ok');
+}
+
+// ── COPY ───────────────────────────────
+function copyResults() {
+  const i = getInputs();
+  const r = computeResults(i);
+  const txt = `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}
+================================================
+Custo do filamento:  €${r.filamentCost.toFixed(2)}
+Custo amortização:   €${r.amortizationCost.toFixed(2)}
+Custo eletricidade:  €${r.electricityCost.toFixed(2)}
+Custo base:          €${r.baseCost.toFixed(2)}
++ Falhas (${i.failureRate}%):      €${r.failureCost.toFixed(2)}
++ Indiretos (${i.indirectCosts}%): €${r.indirectCost.toFixed(2)}
++ Margem (${i.profitMargin}%):     €${r.marginCost.toFixed(2)}
+------------------------------------------------
+💰 PREÇO FINAL:       €${r.finalPrice.toFixed(2)}`.trim();
+
+  const flash = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 1800);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(txt)
+      .then(() => { showToast('📋 Resultados copiados!','ok'); flash('copyBtnPanel'); })
+      .catch(() => fallbackCopy(txt));
+  } else {
+    fallbackCopy(txt);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); showToast('📋 Resultados copiados!','ok'); }
+  catch(e) { showToast('Não foi possível copiar','err'); }
+  document.body.removeChild(ta);
+}
+
+// ── HISTORY ────────────────────────────
+function saveToHistory() {
+  const i = getInputs();
+  const r = computeResults(i);
+  if (r.finalPrice === 0) { showToast('Sem valores para guardar','err'); return; }
+
+  const entry = {
+    time: new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),
+    desc: `${i.partWeight}g · ${i.printTime}h · ${i.profitMargin}%`,
+    price: r.finalPrice,
+    inputs: {...i}, results: {...r},
+  };
+  calcHistory.unshift(entry);
+  if (calcHistory.length > 10) calcHistory.pop();
+  renderHistory();
+  showToast('💾 Guardado no histórico!','ok');
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!calcHistory.length) {
+    el.innerHTML = '<div style="font-size:.76rem;color:var(--subtle);text-align:center;padding:12px 0">Sem cálculos guardados ainda</div>';
+    return;
+  }
+  el.innerHTML = calcHistory.map((e,idx) => `
+    <div class="history-item" onclick="restoreHistory(${idx})">
+      <div class="history-meta">
+        <div class="history-time">${e.time}</div>
+        <div class="history-desc">${e.desc}</div>
+      </div>
+      <div class="history-price">${fmtEur(e.price)}</div>
+    </div>`).join('');
+}
+
+function restoreHistory(idx) {
+  const e = calcHistory[idx];
+  if (!e) return;
+  const i = e.inputs;
+  setValue('filamentPrice',    i.filamentPrice);
+  setValue('partWeight',       i.partWeight);
+  setValue('printTime',        i.printTime);
+  setValue('printerPrice',     i.printerPrice);
+  setValue('printerLife',      i.printerLife);
+  setValue('powerConsumption', i.powerConsumption);
+  setValue('electricityPrice', i.electricityPrice);
+  setValue('failureRate',      i.failureRate);
+  setValue('indirectCosts',    i.indirectCosts);
+  setValue('profitMargin',     i.profitMargin);
+  setSlider('printTimeSlider', i.printTime, 0, 48);
+  setSlider('failureSlider',   i.failureRate, 0, 50);
+  setSlider('indirectSlider',  i.indirectCosts, 0, 50);
+  setSlider('marginSlider',    i.profitMargin, 0, 100);
+  updateSliderLabels();
+  liveCalc();
+  showToast('🕐 Cálculo restaurado do histórico','ok');
+}
+
+function clearHistory() {
+  calcHistory = [];
+  renderHistory();
+}
+
+// ── SETTINGS PANEL ─────────────────────
+function openSettings() {
+  document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('settingsOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSettings() {
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function saveSettings() {
+  defaults = {
+    filamentPrice:    parseFloat(v('cfgFilament'))  || HARDCODED_DEFAULTS.filamentPrice,
+    partWeight:       defaults.partWeight,
+    printTime:        defaults.printTime,
+    printerPrice:     parseFloat(v('cfgPrinter'))   || HARDCODED_DEFAULTS.printerPrice,
+    printerLife:      parseFloat(v('cfgLife'))       || HARDCODED_DEFAULTS.printerLife,
+    powerConsumption: parseFloat(v('cfgPower'))      || HARDCODED_DEFAULTS.powerConsumption,
+    electricityPrice: parseFloat(v('cfgElec'))       || HARDCODED_DEFAULTS.electricityPrice,
+    failureRate:      parseFloat(v('cfgFailure'))    || HARDCODED_DEFAULTS.failureRate,
+    indirectCosts:    parseFloat(v('cfgIndirect'))   || HARDCODED_DEFAULTS.indirectCosts,
+    profitMargin:     parseFloat(v('cfgMargin'))     || HARDCODED_DEFAULTS.profitMargin,
+  };
+  localStorage.setItem('3dzaap_calc_defaults', JSON.stringify(defaults));
+
+  // Also update user data config
+  try {
+    const user = JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
+    user.config = { ...user.config, ...defaults };
+    localStorage.setItem('3dzaap_user', JSON.stringify(user));
+  } catch(e) {}
+
+  applyDefaultsToForm();
+  liveCalc();
+  updateSettingsBanner();
+  closeSettings();
+  showToast('✅ Defaults guardados com sucesso!','ok');
+}
+function updateSettingsBanner() {
+  document.getElementById('settingsBannerSub').textContent =
+    `Filamento: €${defaults.filamentPrice}/kg · Impressora: €${defaults.printerPrice} · Margem: ${defaults.profitMargin}%`;
+}
+
+// ── SIDEBAR MOBILE ──────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+
+// ── HELPERS ────────────────────────────
+function v(id) { return (document.getElementById(id)||{}).value || ''; }
+function setText(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
+function fmtEur(val) {
+  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function downloadCSV(csv, filename) {
+  const blob = new Blob(['\uFEFF' + csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
