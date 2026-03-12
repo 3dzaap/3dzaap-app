@@ -682,7 +682,13 @@ function doLogin() {
   fakeLoad(document.getElementById('loginBtn'), () => {
     formData.email = email;
     formData.isNewUser = false;
-    showOnboarding(); // In production: check if user has company → dashboard or onboarding
+    // Se já existir dados da empresa guardados, vai directo ao dashboard
+    const existing = localStorage.getItem('3dzaap_user');
+    if (existing) {
+      window.location.href = 'dashboard.html';
+    } else {
+      showOnboarding();
+    }
   });
 }
 

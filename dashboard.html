@@ -117,10 +117,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .nav-lock.plan-badge{background:rgba(245,148,58,.12);color:var(--orange);border-color:rgba(245,148,58,.3)}
 
 .sidebar-footer{
-  padding:14px 16px;
+  padding:10px 12px;
   border-top:1.5px solid var(--border);
+  position:relative;
 }
-.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
 .user-row:hover{background:rgba(59,143,212,.07)}
 .user-avatar{
   width:32px;height:32px;border-radius:50%;
@@ -131,8 +132,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .user-info{flex:1;min-width:0}
 .user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-menu-btn{font-size:.85rem;color:var(--subtle);padding:4px;border-radius:6px;cursor:pointer;transition:color .18s,background .18s}
-.user-menu-btn:hover{background:rgba(59,143,212,.1);color:var(--blue)}
+.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
+.user-chevron.up{transform:rotate(180deg)}
 
 /* ── MAIN ───────────────────────────── */
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
@@ -396,15 +397,14 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 /* ── USER DROPDOWN ──────────────────── */
 .user-dropdown{
-  position:fixed;bottom:70px;left:16px;width:228px;
+  position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;
   background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   border:1.5px solid var(--border);border-radius:var(--rm);
-  box-shadow:var(--sh-lg);z-index:110;
-  display:none;
-  animation:dropUp .2s var(--ease);
+  box-shadow:var(--sh-lg);z-index:200;overflow:hidden;
+  opacity:0;transform:translateY(6px);pointer-events:none;
+  transition:opacity .22s var(--ease),transform .22s var(--ease);
 }
-.user-dropdown.open{display:block}
-@keyframes dropUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
 .dd-item{
   display:flex;align-items:center;gap:10px;padding:10px 14px;
   cursor:pointer;transition:background .15s;font-size:.84rem;font-weight:500;color:var(--muted);
@@ -549,26 +549,25 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-row" onclick="toggleUserMenu()">
+      <!-- Dropdown (abre para cima) -->
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" onclick="navigate('settings');closeUserMenu()">⚙️ Configurações da conta</a>
+        <a class="dd-item" onclick="navigate('billing');closeUserMenu()">💳 Gerir assinatura</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
         <div class="user-avatar" id="userAvatarSidebar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userNameSidebar">João Demo</div>
-          <div class="user-email" id="userEmailSidebar"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="deb4b1bfb19eaeacb7b0aab2bfbcf0aeaa">[email&#160;protected]</a></div>
+          <div class="user-email" id="userEmailSidebar">utilizador@empresa.pt</div>
         </div>
-        <div class="user-menu-btn">⋯</div>
+        <span class="user-chevron" id="userChevron">▲</span>
       </div>
     </div>
   </aside>
-
-  <!-- User dropdown -->
-  <div class="user-dropdown" id="userDropdown">
-    <a class="dd-item" onclick="navigate('settings');closeUserMenu()">⚙️ Configurações da conta</a>
-    <a class="dd-item" onclick="navigate('billing');closeUserMenu()">💳 Gerir assinatura</a>
-    <div class="dd-divider"></div>
-    <a class="dd-item" href="index.html">🌐 Ver landing page</a>
-    <div class="dd-divider"></div>
-    <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
-  </div>
 
   <!-- ── MAIN CONTENT ─────────────────── -->
   <div class="main">
@@ -577,8 +576,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-actions">
-        <a class="topbar-btn" onclick="navigate('3DZAAP')" href="#">
-          <span>⚡</span> Abrir App
+        <a class="topbar-btn" href="3DZAAP.html" target="_blank">
+          <span>⚡</span> App Original
         </a>
         <div class="topbar-notif" onclick="showToast('Sem notificações por agora','')">
           🔔
@@ -1082,10 +1081,6 @@ function navigate(page) {
     return false;
   }
 
-  if (page === '3DZAAP') {
-    window.location.href = '3DZAAP.html';
-    return false;
-  }
   if (page === 'billing') {
     showToast('Módulo de Billing — a integrar com Stripe','');
     return false;
@@ -1100,7 +1095,7 @@ function navigate(page) {
   if (tabMap[page]) {
     // Route to standalone module pages
     const pageMap = { calculator:'calculator.html', filaments:'filaments.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
-    window.location.href = pageMap[page] || '3DZAAP.html#' + tabMap[page];
+    window.location.href = pageMap[page] || '#';
     return false;
   }
 
@@ -1126,14 +1121,18 @@ function closeSidebar() {
 
 // ── USER MENU ──────────────────────────
 function toggleUserMenu() {
-  document.getElementById('userDropdown').classList.toggle('open');
+  const dd = document.getElementById('userDropdown');
+  const ch = document.getElementById('userChevron');
+  const open = dd.classList.toggle('open');
+  ch.classList.toggle('up', open);
 }
 function closeUserMenu() {
   document.getElementById('userDropdown').classList.remove('open');
+  const ch = document.getElementById('userChevron');
+  if (ch) ch.classList.remove('up');
 }
 document.addEventListener('click', e => {
-  const dd = document.getElementById('userDropdown');
-  if (dd.classList.contains('open') && !dd.contains(e.target) && !e.target.closest('.user-row') && !e.target.closest('.company-pill')) {
+  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown') && !e.target.closest('.company-pill')) {
     closeUserMenu();
   }
 });
