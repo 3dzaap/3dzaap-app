@@ -74,8 +74,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .btn-g:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
 
 /* Fade-up */
-.fu{opacity:0;transform:translateY(26px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
-.fu.vis{opacity:1;transform:translateY(0)}
+.fu{opacity:1;transform:none}
+.fu.anim{opacity:0;transform:translateY(26px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.fu.anim.vis{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.10s}.d2{transition-delay:.20s}.d3{transition-delay:.30s}.d4{transition-delay:.40s}.d5{transition-delay:.50s}
 
 /* ── NAVBAR ─────────────────────────── */
@@ -378,7 +379,6 @@ footer{position:relative;z-index:1;padding:40px 0 26px;border-top:1px solid rgba
   .psep{display:none}
 }
 @media(prefers-reduced-motion:reduce){
-  .fu{opacity:1!important;transform:none!important;transition:none!important}
   .bg,.o1,.o2,.flt,.eyebrow .dot{animation:none!important}
 }
 </style>
@@ -769,15 +769,16 @@ function tfaq(btn){
   if(!op)it.classList.add("op");
 }
 
-// Fade-up com fallback robusto
-const fuEls = document.querySelectorAll(".fu");
-if("IntersectionObserver" in window){
-  const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vis");obs.unobserve(e.target)}}),{threshold:0.05,rootMargin:"0px 0px 0px 0px"});
+const fuEls=document.querySelectorAll(".fu");
+const pref=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+if(!pref&&"IntersectionObserver" in window){
+  fuEls.forEach(el=>el.classList.add("anim"));
+  const obs=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add("vis");obs.unobserve(e.target)}
+  }),{threshold:0.05,rootMargin:"0px 0px 0px 0px"});
   fuEls.forEach(el=>obs.observe(el));
-  // Fallback: após 300ms, revelar tudo que ainda não foi revelado (fix para iframes/webviews)
-  setTimeout(()=>fuEls.forEach(el=>el.classList.add("vis")),300);
-}else{
-  fuEls.forEach(el=>el.classList.add("vis"));
+  // fallback: garante visibilidade ao fim de 800ms
+  setTimeout(()=>fuEls.forEach(el=>el.classList.add("vis")),800);
 }
 
 document.querySelectorAll("a[href^='#']").forEach(a=>{
