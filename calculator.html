@@ -13,10 +13,11 @@
   --orange:#F5943A;--orange-d:#d4762a;--orange-lt:#FFB870;--orange-g:rgba(245,148,58,0.12);
   --black:#0D1117;--dark:#1a2332;--muted:#4A5568;--subtle:#94A3B8;
   --border:rgba(255,255,255,0.28);--bdark:rgba(0,0,0,0.08);
-  --glass:rgba(255,255,255,0.60);--glass-s:rgba(255,255,255,0.85);--glass-xs:rgba(255,255,255,0.40);
-  --blur:blur(22px) saturate(1.8);--blur-sm:blur(12px) saturate(1.5);
+  --glass:rgba(255,255,255,0.60);--glass-s:rgba(255,255,255,0.92);
+  --blur:blur(22px) saturate(1.8);--blur-sm:blur(14px) saturate(1.6);
   --sh:0 8px 32px rgba(30,60,120,0.12),0 2px 8px rgba(30,60,120,0.06);
   --sh-lg:0 24px 64px rgba(30,60,120,0.18),0 4px 16px rgba(30,60,120,0.10);
+  --sh-float:0 32px 80px rgba(30,60,120,0.24),0 8px 24px rgba(30,60,120,0.14);
   --r:10px;--rm:16px;--rl:24px;--rx:32px;
   --f:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
   --ease:cubic-bezier(0.22,1,0.36,1);
@@ -57,8 +58,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .sidebar-logo img{height:36px;width:auto;object-fit:contain}
 .sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
-.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px;cursor:pointer;transition:background .2s}
-.company-pill:hover{background:rgba(59,143,212,.15)}
+.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
 .company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
 .company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
@@ -71,13 +71,32 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
 .nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
 .nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
-.sidebar-footer{padding:14px 16px;border-top:1.5px solid var(--border)}
-.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s}
+
+/* ── SIDEBAR FOOTER + USER MENU ─────── */
+.sidebar-footer{padding:10px 12px;border-top:1.5px solid var(--border);position:relative}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
 .user-row:hover{background:rgba(59,143,212,.07)}
 .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
 .user-info{flex:1;min-width:0}
 .user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
+.user-chevron.up{transform:rotate(180deg)}
+
+.user-dropdown{
+  position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;
+  background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);
+  z-index:200;overflow:hidden;
+  opacity:0;transform:translateY(6px);pointer-events:none;
+  transition:opacity .22s var(--ease),transform .22s var(--ease);
+}
+.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s}
+.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
+.dd-item.danger{color:var(--danger)}
+.dd-item.danger:hover{background:rgba(239,68,68,.08)}
+.dd-divider{height:1px;background:var(--border);margin:3px 0}
 
 /* ── MAIN ───────────────────────────── */
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
@@ -96,44 +115,27 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .topbar-breadcrumb span{font-size:.82rem;color:var(--subtle)}
 .topbar-breadcrumb strong{font-size:.9rem;font-weight:800;color:var(--dark)}
 .topbar-actions{display:flex;align-items:center;gap:10px}
-.topbar-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--r);background:rgba(255,255,255,.6);border:1.5px solid var(--border);font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;text-decoration:none;font-family:var(--f)}
+.topbar-btn{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:var(--r);background:rgba(255,255,255,.6);border:1.5px solid var(--border);font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f)}
 .topbar-btn:hover{background:rgba(59,143,212,.1);border-color:rgba(59,143,212,.3);color:var(--blue)}
+.topbar-btn.active-param{background:linear-gradient(135deg,rgba(59,143,212,.14),rgba(59,143,212,.06));border-color:rgba(59,143,212,.45);color:var(--blue);font-weight:700}
 .topbar-btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue-d));border-color:transparent;color:#fff}
-.topbar-btn.primary:hover{background:linear-gradient(135deg,var(--blue-d),var(--blue-dd));color:#fff}
-.topbar-btn.success-flash{background:linear-gradient(135deg,var(--success),#16a34a);border-color:transparent;color:#fff}
+.topbar-btn.primary:hover{opacity:.9}
 
 /* ── PAGE ───────────────────────────── */
 .page{padding:28px 28px 48px}
-
-.page-header{margin-bottom:28px;animation:fadeUp .5s var(--ease) both}
+.page-header{margin-bottom:24px;animation:fadeUp .5s var(--ease) both}
 .page-header h1{font-size:1.45rem;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:10px}
 .page-header p{font-size:.88rem;color:var(--muted)}
 
-
 /* ── CALC LAYOUT ────────────────────── */
-.calc-layout{
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:20px;
-  align-items:start;
-}
+.calc-layout{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
 
 /* ── GLASS CARD ─────────────────────── */
-.glass-card{
-  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
-  border:1.5px solid var(--border);border-radius:var(--rl);
-  box-shadow:var(--sh);
-  overflow:hidden;
-  animation:fadeUp .5s var(--ease) .15s both;
-}
+.glass-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;animation:fadeUp .5s var(--ease) .15s both}
 .glass-card.results-col{animation-delay:.22s}
 
 /* ── CARD HEADER ────────────────────── */
-.card-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 22px;border-bottom:1.5px solid var(--border);
-  background:rgba(255,255,255,.25);
-}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1.5px solid var(--border);background:rgba(255,255,255,.25)}
 .card-header-title{font-size:.95rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
 .card-header-badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(59,143,212,.1);color:var(--blue);border:1px solid rgba(59,143,212,.22)}
 
@@ -141,257 +143,194 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .form-sections{padding:6px 0}
 .form-section{padding:18px 22px;border-bottom:1.5px solid rgba(255,255,255,.55)}
 .form-section:last-child{border-bottom:none}
-.section-title{
-  font-size:.78rem;font-weight:800;color:var(--muted);
-  letter-spacing:.06em;text-transform:uppercase;
-  margin-bottom:14px;display:flex;align-items:center;gap:7px;
-}
-.section-title-icon{
-  width:24px;height:24px;border-radius:7px;
-  display:flex;align-items:center;justify-content:center;font-size:.85rem;
-}
+.section-title{font-size:.78rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.section-title-icon{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
 .si-blue{background:rgba(59,143,212,.15);border:1px solid rgba(59,143,212,.25)}
 .si-orange{background:rgba(245,148,58,.14);border:1px solid rgba(245,148,58,.25)}
 .si-purple{background:rgba(168,85,247,.13);border:1px solid rgba(168,85,247,.22)}
-
 .fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .field{display:flex;flex-direction:column;gap:5px}
 .field.full{grid-column:1/-1}
 .field label{font-size:.76rem;font-weight:600;color:var(--muted)}
+.field-hint{font-size:.70rem;color:var(--subtle);font-weight:400}
 .field-wrap{position:relative}
-.field-unit{
-  position:absolute;right:11px;top:50%;transform:translateY(-50%);
-  font-family:var(--mono);font-size:.70rem;font-weight:700;
-  color:var(--subtle);pointer-events:none;
-}
-.field input{
+.field-unit{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.70rem;font-weight:700;color:var(--subtle);pointer-events:none}
+.field input[type=number],.field input[type=text]{
   width:100%;padding:9px 44px 9px 12px;
   background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.8);
-  border-radius:var(--r);font-size:.88rem;font-weight:600;
-  color:var(--dark);font-family:var(--mono);
-  transition:border-color .18s,box-shadow .18s,background .18s;
-  outline:none;
+  border-radius:var(--r);font-size:.88rem;font-weight:600;color:var(--dark);
+  font-family:var(--mono);transition:border-color .18s,box-shadow .18s,background .18s;outline:none;
 }
+.field input[type=text]{padding-right:12px;font-family:var(--f);font-weight:500}
 .field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12);background:rgba(255,255,255,.95)}
 .field input:hover:not(:focus){border-color:rgba(59,143,212,.35)}
-
-/* Slider */
 .field-with-slider{display:flex;flex-direction:column;gap:6px}
 .slider-row{display:flex;align-items:center;gap:10px}
-.slider-row input[type=range]{
-  flex:1;-webkit-appearance:none;height:4px;
-  background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer;
-}
-.slider-row input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);
-  cursor:pointer;transition:transform .15s;
-}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);cursor:pointer;transition:transform .15s}
 .slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .slider-val{font-family:var(--mono);font-size:.76rem;font-weight:700;color:var(--blue);min-width:42px;text-align:right}
 
 /* ── ACTION BAR ─────────────────────── */
-.action-bar{
-  display:flex;align-items:center;gap:10px;
-  padding:16px 22px;
-  border-top:1.5px solid var(--border);
-  background:rgba(255,255,255,.2);
-}
-.btn{
-  display:inline-flex;align-items:center;gap:7px;
-  padding:10px 20px;border-radius:var(--rm);border:none;
-  font-size:.86rem;font-weight:700;font-family:var(--f);cursor:pointer;
-  transition:all .18s var(--ease);
-}
-.btn-calc{
-  flex:1;justify-content:center;
-  background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;
-  box-shadow:0 4px 16px rgba(59,143,212,.3);
-}
+.action-bar{display:flex;align-items:center;gap:10px;padding:16px 22px;border-top:1.5px solid var(--border);background:rgba(255,255,255,.2)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--rm);border:none;font-size:.86rem;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .18s var(--ease)}
+.btn-calc{flex:1;justify-content:center;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 4px 16px rgba(59,143,212,.3)}
 .btn-calc:hover{background:linear-gradient(135deg,var(--blue-d),var(--blue-dd));transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,143,212,.35)}
-.btn-calc:active{transform:translateY(0)}
 .btn-calc.calculating{animation:pulse-btn .6s ease-in-out}
 @keyframes pulse-btn{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
 .btn-reset{background:rgba(255,255,255,.7);border:1.5px solid var(--border);color:var(--muted)}
 .btn-reset:hover{background:rgba(255,255,255,.95);color:var(--dark)}
 
-/* ── RESULTS PANEL ──────────────────── */
+/* ── RESULTS ────────────────────────── */
 .results-panel{padding:20px 22px}
-
-.price-hero{
-  text-align:center;padding:22px 16px 18px;
-  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
-  border:1.5px solid rgba(59,143,212,.22);border-radius:var(--rm);
-  margin-bottom:20px;position:relative;overflow:hidden;
-}
-.price-hero::before{
-  content:'';position:absolute;top:-30px;right:-30px;
-  width:100px;height:100px;border-radius:50%;
-  background:radial-gradient(circle,rgba(59,143,212,.15) 0%,transparent 70%);
-}
+.price-hero{text-align:center;padding:22px 16px 18px;background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));border:1.5px solid rgba(59,143,212,.22);border-radius:var(--rm);margin-bottom:20px;position:relative;overflow:hidden}
+.price-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(59,143,212,.15) 0%,transparent 70%)}
 .price-hero-label{font-size:.72rem;font-weight:800;color:var(--blue);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
-.price-hero-value{
-  font-family:var(--mono);font-size:2.4rem;font-weight:800;
-  color:var(--dark);line-height:1;margin-bottom:4px;
-  transition:all .3s var(--ease);
-}
+.price-hero-value{font-family:var(--mono);font-size:2.4rem;font-weight:800;color:var(--dark);line-height:1;margin-bottom:4px;transition:all .3s var(--ease)}
 .price-hero-value.updated{animation:priceFlash .4s var(--ease)}
-@keyframes priceFlash{
-  0%{transform:scale(1)}
-  40%{transform:scale(1.04);color:var(--blue)}
-  100%{transform:scale(1);color:var(--dark)}
-}
+@keyframes priceFlash{0%{transform:scale(1)}40%{transform:scale(1.04);color:var(--blue)}100%{transform:scale(1);color:var(--dark)}}
 .price-hero-sub{font-size:.74rem;color:var(--muted)}
-
 .breakdown-list{display:flex;flex-direction:column;gap:0;margin-bottom:18px}
-.breakdown-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 12px;border-radius:var(--r);
-  transition:background .15s;
-}
+.breakdown-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:var(--r);transition:background .15s}
 .breakdown-item:hover{background:rgba(59,143,212,.05)}
 .breakdown-item.divider{border-top:1.5px solid rgba(255,255,255,.6);margin-top:4px;padding-top:12px}
-.breakdown-item.total-row{
-  background:linear-gradient(135deg,rgba(59,143,212,.1),rgba(59,143,212,.04));
-  border:1.5px solid rgba(59,143,212,.2);border-radius:var(--rm);
-  margin-top:8px;padding:12px 14px;
-}
+.breakdown-item.total-row{background:linear-gradient(135deg,rgba(59,143,212,.1),rgba(59,143,212,.04));border:1.5px solid rgba(59,143,212,.2);border-radius:var(--rm);margin-top:8px;padding:12px 14px}
 .breakdown-left{display:flex;align-items:center;gap:9px}
 .breakdown-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.breakdown-dot.blue{background:var(--blue)}
-.breakdown-dot.green{background:var(--success)}
-.breakdown-dot.orange{background:var(--orange)}
-.breakdown-dot.purple{background:#a855f7}
+.breakdown-dot.blue{background:var(--blue)}.breakdown-dot.green{background:var(--success)}.breakdown-dot.orange{background:var(--orange)}.breakdown-dot.purple{background:#a855f7}
 .breakdown-label{font-size:.82rem;color:var(--muted);font-weight:500}
-.breakdown-value{
-  font-family:var(--mono);font-size:.84rem;font-weight:700;color:var(--dark);
-  transition:color .2s;
-}
+.breakdown-value{font-family:var(--mono);font-size:.84rem;font-weight:700;color:var(--dark);transition:color .2s}
 .breakdown-value.zero{color:var(--subtle)}
-.breakdown-value.positive{color:var(--success)}
 .total-row .breakdown-label{font-weight:800;color:var(--dark);font-size:.88rem}
 .total-row .breakdown-value{font-size:1.0rem;color:var(--blue)}
-
-/* Percentage bars */
-.cost-bar{
-  height:3px;background:rgba(59,143,212,.12);border-radius:2px;
-  margin-top:3px;overflow:hidden;
-}
+.cost-bar{height:3px;background:rgba(59,143,212,.12);border-radius:2px;margin-top:3px;overflow:hidden}
 .cost-bar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .5s var(--ease)}
-
-/* ── RESULTS ACTIONS ────────────────── */
-.results-actions{display:flex;gap:9px;margin-bottom:18px}
-.btn-action{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:9px 12px;border-radius:var(--r);border:1.5px solid var(--border);
-  background:rgba(255,255,255,.6);font-size:.78rem;font-weight:700;
-  color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f);
-}
+.results-actions{display:flex;gap:9px;margin-bottom:4px}
+.btn-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f)}
 .btn-action:hover{background:rgba(255,255,255,.9);color:var(--dark);border-color:rgba(59,143,212,.3)}
 .btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
 
-
-/* ── SETTINGS PANEL ─────────────────── */
-.settings-panel{
-  position:fixed;top:0;right:0;height:100vh;width:380px;
-  background:rgba(255,255,255,.92);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
-  border-left:1.5px solid var(--border);box-shadow:-8px 0 32px rgba(30,60,120,.12);
-  z-index:150;display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform .35s var(--ease);
+/* ═══════════════════════════════════════════════
+   PAINEL AVANÇADO FLUTUANTE
+   Flutua sobre o layout — não desloca nada
+   ═══════════════════════════════════════════════ */
+.adv-backdrop{
+  position:fixed;inset:0;z-index:160;
+  background:rgba(13,17,23,0.15);
+  backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);
+  opacity:0;pointer-events:none;
+  transition:opacity .28s ease;
 }
-.settings-panel.open{transform:none}
-.settings-panel-header{
+.adv-backdrop.open{opacity:1;pointer-events:auto}
+
+.adv-panel{
+  position:fixed;
+  top:72px;           /* logo abaixo da topbar */
+  right:28px;
+  width:370px;
+  max-height:calc(100vh - 96px);
+  overflow-y:auto;
+  z-index:161;
+
+  background:var(--glass-s);
+  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid rgba(255,255,255,.55);
+  border-radius:var(--rl);
+  box-shadow:var(--sh-float);
+
+  /* estado inicial: invisível e ligeiramente acima */
+  opacity:0;
+  transform:translateY(-14px) scale(0.98);
+  pointer-events:none;
+  transition:
+    opacity .32s var(--ease),
+    transform .32s var(--ease);
+}
+.adv-panel.open{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  pointer-events:auto;
+}
+
+.adv-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:20px 22px;border-bottom:1.5px solid var(--border);
+  padding:16px 20px;border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:1;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:var(--blur-sm);
+  border-radius:var(--rl) var(--rl) 0 0;
 }
-.settings-panel-title{font-size:1rem;font-weight:800;color:var(--dark)}
-.settings-panel-close{
-  width:30px;height:30px;border-radius:50%;border:none;
-  background:rgba(0,0,0,.06);cursor:pointer;font-size:.85rem;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);transition:background .18s,color .18s;
-}
-.settings-panel-close:hover{background:rgba(239,68,68,.1);color:var(--danger)}
-.settings-panel-body{flex:1;overflow-y:auto;padding:20px 22px}
-.settings-group{margin-bottom:24px}
-.settings-group-title{font-size:.74rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.7)}
-.settings-field{margin-bottom:12px}
-.settings-field label{font-size:.78rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
-.settings-field input{
-  width:100%;padding:9px 12px;
+.adv-title{font-size:.93rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:8px}
+.adv-close{width:28px;height:28px;border-radius:50%;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background .18s,color .18s}
+.adv-close:hover{background:rgba(239,68,68,.12);color:var(--danger)}
+.adv-body{padding:16px 20px 8px}
+.adv-desc{font-size:.79rem;color:var(--muted);margin-bottom:16px;line-height:1.55}
+.adv-section{margin-bottom:18px}
+.adv-section-title{font-size:.71rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.7)}
+.adv-section-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adv-field{display:flex;flex-direction:column;gap:4px}
+.adv-field.full{grid-column:1/-1}
+.adv-field label{font-size:.74rem;font-weight:600;color:var(--muted)}
+.adv-wrap{position:relative}
+.adv-unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--subtle);pointer-events:none}
+.adv-field input[type=number]{
+  width:100%;padding:8px 38px 8px 10px;
   background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.85);
-  border-radius:var(--r);font-size:.88rem;font-weight:600;
-  color:var(--dark);font-family:var(--mono);outline:none;
-  transition:border-color .18s,box-shadow .18s;
+  border-radius:var(--r);font-size:.85rem;font-weight:600;color:var(--dark);
+  font-family:var(--mono);outline:none;transition:border-color .18s,box-shadow .18s;
 }
-.settings-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12)}
-.settings-panel-footer{padding:16px 22px;border-top:1.5px solid var(--border);display:flex;gap:10px}
-.btn-save-settings{
-  flex:1;padding:11px;border-radius:var(--rm);border:none;
-  background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;
-  font-size:.88rem;font-weight:800;font-family:var(--f);cursor:pointer;
-  transition:opacity .18s,transform .18s;
-}
-.btn-save-settings:hover{opacity:.9;transform:translateY(-1px)}
-.btn-cancel-settings{
-  padding:11px 18px;border-radius:var(--rm);
-  background:rgba(255,255,255,.6);border:1.5px solid var(--border);
-  font-size:.86rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);
-  transition:background .18s;
-}
-.btn-cancel-settings:hover{background:rgba(255,255,255,.95)}
-
-/* ── OVERLAY ────────────────────────── */
-.overlay{
-  position:fixed;inset:0;z-index:140;
-  background:rgba(13,17,23,.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  display:none;
-}
-.overlay.open{display:block}
-
-/* ── MOBILE TOGGLE ──────────────────── */
-.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
-.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);backdrop-filter:blur(2px)}
-
-/* ── TOAST ──────────────────────────── */
-.toast{position:fixed;bottom:28px;right:28px;z-index:300;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
-.toast.show{opacity:1;transform:none}
-.toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
-.toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
+.adv-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12)}
+.adv-field input:hover:not(:focus){border-color:rgba(59,143,212,.3)}
+.adv-slider-wrap{margin-top:5px;display:flex;align-items:center;gap:8px}
+.adv-slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.18);border-radius:2px;outline:none;cursor:pointer}
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 5px rgba(59,143,212,.3);cursor:pointer;transition:transform .15s}
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+.adv-slider-val{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);min-width:36px;text-align:right}
+.adv-footer{padding:14px 20px 16px;border-top:1.5px solid var(--border);display:flex;gap:9px;background:rgba(255,255,255,.45);border-radius:0 0 var(--rl) var(--rl);position:sticky;bottom:0;backdrop-filter:var(--blur-sm)}
+.btn-adv-save{flex:1;padding:10px;border-radius:var(--rm);border:none;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;font-size:.85rem;font-weight:800;font-family:var(--f);cursor:pointer;transition:opacity .18s,transform .18s;box-shadow:0 3px 12px rgba(59,143,212,.28)}
+.btn-adv-save:hover{opacity:.9;transform:translateY(-1px)}
+.btn-adv-cancel{padding:10px 16px;border-radius:var(--rm);background:rgba(255,255,255,.6);border:1.5px solid var(--border);font-size:.83rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);transition:background .18s}
+.btn-adv-cancel:hover{background:rgba(255,255,255,.95)}
 
 /* ── HISTORY TABLE ──────────────────── */
 .history-search-wrap{position:relative;display:flex;align-items:center}
-.history-search-icon{position:absolute;left:10px;font-size:.82rem;pointer-events:none}
-.history-search{
-  padding:6px 12px 6px 30px;border-radius:var(--r);
-  background:rgba(255,255,255,.7);border:1.5px solid var(--border);
-  font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;
-  width:220px;transition:border-color .18s,width .25s var(--ease);
-}
+.history-search-icon{position:absolute;left:10px;font-size:.80rem;pointer-events:none;color:var(--subtle)}
+.history-search{padding:6px 12px 6px 30px;border-radius:var(--r);background:rgba(255,255,255,.7);border:1.5px solid var(--border);font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;width:220px;transition:border-color .18s,width .25s var(--ease)}
 .history-search:focus{border-color:rgba(59,143,212,.4);width:260px}
 .history-count{font-size:.74rem;color:var(--subtle);font-weight:600;white-space:nowrap}
 .history-clear-btn{font-size:.75rem;font-weight:600;color:var(--subtle);cursor:pointer;padding:4px 10px;border-radius:var(--r);transition:color .18s,background .18s}
 .history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
 .history-table-wrap{overflow-x:auto}
-.history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.5}
-.history-empty-icon{font-size:2rem;opacity:.4}
-.history-table{width:100%;border-collapse:collapse;min-width:600px}
+.history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.6}
+.history-empty-icon{font-size:2rem;opacity:.35}
+.history-table{width:100%;border-collapse:collapse;min-width:580px}
 .history-table thead tr{background:rgba(255,255,255,.3);border-bottom:1.5px solid var(--border)}
 .history-table th{padding:11px 16px;font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
 .history-table tbody tr{border-bottom:1px solid rgba(255,255,255,.55);transition:background .15s;cursor:pointer}
 .history-table tbody tr:last-child{border-bottom:none}
 .history-table tbody tr:hover{background:rgba(59,143,212,.05)}
 .history-table td{padding:11px 16px;font-size:.83rem;color:var(--dark);vertical-align:middle}
-.history-table .td-name{font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.history-table .td-name .no-name{color:var(--subtle);font-weight:400;font-style:italic}
-.history-table .td-mono{font-family:var(--mono);font-weight:600}
-.history-table .td-price{font-family:var(--mono);font-weight:800;color:var(--blue)}
-.history-table .td-time{font-size:.74rem;color:var(--subtle)}
-.history-table .td-actions{text-align:right;white-space:nowrap}
-.history-table .btn-restore{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:var(--r);border:1.5px solid rgba(59,143,212,.3);background:rgba(59,143,212,.07);color:var(--blue);cursor:pointer;transition:all .18s;font-family:var(--f)}
-.history-table .btn-restore:hover{background:rgba(59,143,212,.15);border-color:var(--blue)}
-.history-table .btn-del{font-size:.76rem;padding:4px 8px;border-radius:var(--r);border:none;background:transparent;color:var(--subtle);cursor:pointer;transition:color .18s,background .18s;margin-left:4px}
-.history-table .btn-del:hover{color:var(--danger);background:rgba(239,68,68,.08)}
+.td-name{font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-name .no-name{color:var(--subtle);font-weight:400;font-style:italic}
+.td-mono{font-family:var(--mono);font-weight:600}
+.td-price{font-family:var(--mono);font-weight:800;color:var(--blue)}
+.td-time{font-size:.74rem;color:var(--subtle);font-family:var(--mono)}
+.td-actions{text-align:right;white-space:nowrap}
+.btn-restore{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:var(--r);border:1.5px solid rgba(59,143,212,.3);background:rgba(59,143,212,.07);color:var(--blue);cursor:pointer;transition:all .18s;font-family:var(--f)}
+.btn-restore:hover{background:rgba(59,143,212,.15);border-color:var(--blue)}
+.btn-del{font-size:.76rem;padding:4px 8px;border-radius:var(--r);border:none;background:transparent;color:var(--subtle);cursor:pointer;transition:color .18s,background .18s;margin-left:4px}
+.btn-del:hover{color:var(--danger);background:rgba(239,68,68,.08)}
+
+/* ── MOBILE ─────────────────────────── */
+.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);backdrop-filter:blur(2px)}
+
+/* ── TOAST ──────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:400;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
+.toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 
 /* ── ANIMATIONS ─────────────────────── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -407,7 +346,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   .page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}
   .fields-grid{grid-template-columns:1fr}
-  .settings-panel{width:100%;max-width:400px}
+  .adv-panel{right:12px;left:12px;width:auto;top:68px}
 }
 </style>
 </head>
@@ -419,7 +358,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
-<div class="overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+
+<!-- Backdrop semi-transparente do painel avançado -->
+<div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
 <div class="layout">
 
@@ -445,8 +386,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" id="navOrders" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" id="navFinancial" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
       <div class="nav-section">
@@ -455,13 +396,23 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','')"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
+
     <div class="sidebar-footer">
-      <div class="user-row">
+      <!-- Dropdown menu (abre para cima) -->
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu()">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu()">💳 Gerir assinatura</a>
+        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
         <div class="user-avatar" id="userAvatar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userName">João Demo</div>
-          <div class="user-email" id="userEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660c0907092616140f08120a0704481612">[email&#160;protected]</a></div>
+          <div class="user-email" id="userEmail">joao@demo.pt</div>
         </div>
+        <span class="user-chevron" id="userChevron">▲</span>
       </div>
     </div>
   </aside>
@@ -476,7 +427,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <strong>📐 Calculadora</strong>
       </div>
       <div class="topbar-actions">
-        <button class="topbar-btn" onclick="openSettings()">⚙️ Parâmetros Padrão</button>
+        <button class="topbar-btn" id="advBtn" onclick="toggleAdvPanel()">⚙️ Parâmetros Avançados</button>
         <button class="topbar-btn" onclick="exportCalcCSV()">📄 Exportar CSV</button>
         <button class="topbar-btn primary" onclick="copyResults()">📋 Copiar</button>
       </div>
@@ -491,28 +442,27 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <div class="calc-layout">
 
-        <!-- ── INPUTS PANEL ─────────────── -->
+        <!-- ── INPUTS ───────────────────── -->
         <div class="glass-card">
           <div class="card-header">
             <div class="card-header-title">⚙️ Parâmetros de cálculo</div>
-            <span class="card-header-badge">Cálculo ao vivo</span>
+            <span class="card-header-badge">⚡ Ao vivo</span>
           </div>
-
           <div class="form-sections">
 
             <!-- Nome -->
             <div class="form-section">
               <div class="fields-grid">
                 <div class="field full">
-                  <label>Nome da impressão <span style="font-size:.70rem;color:var(--subtle);font-weight:400">(opcional — para identificar no histórico)</span></label>
+                  <label>Nome da impressão <span class="field-hint">(opcional — identifica no histórico)</span></label>
                   <div class="field-wrap">
-                    <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…" style="padding-right:12px;font-family:var(--f);font-weight:500" oninput="liveCalc()">
+                    <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…">
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Material -->
+            <!-- Material & Impressão -->
             <div class="form-section">
               <div class="section-title">
                 <div class="section-title-icon si-blue">📊</div>
@@ -549,203 +499,78 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               </div>
             </div>
 
-            <!-- Amortização -->
-            <div class="form-section">
-              <div class="section-title">
-                <div class="section-title-icon si-orange">⚙️</div>
-                Amortização &amp; Energia
-              </div>
-              <div class="fields-grid">
-                <div class="field">
-                  <label>Preço da impressora</label>
-                  <div class="field-wrap">
-                    <input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()">
-                    <span class="field-unit">€</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label>Vida útil</label>
-                  <div class="field-wrap">
-                    <input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()">
-                    <span class="field-unit">h</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label>Consumo elétrico</label>
-                  <div class="field-wrap">
-                    <input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()">
-                    <span class="field-unit">W</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label>Preço eletricidade</label>
-                  <div class="field-wrap">
-                    <input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit">€/kWh</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Margens -->
-            <div class="form-section">
-              <div class="section-title">
-                <div class="section-title-icon si-purple">📈</div>
-                Perdas &amp; Margem
-              </div>
-              <div class="fields-grid">
-                <div class="field full">
-                  <label>Taxa de falhas de impressão</label>
-                  <div class="field-with-slider">
-                    <div class="field-wrap">
-                      <input type="number" id="failureRate" value="5" step="1" min="0" max="100" oninput="syncSlider('failureRate','failureSlider',0,50);liveCalc()">
-                      <span class="field-unit">%</span>
-                    </div>
-                    <div class="slider-row">
-                      <input type="range" id="failureSlider" min="0" max="50" step="1" value="5" oninput="syncInput('failureSlider','failureRate');liveCalc()">
-                      <span class="slider-val" id="failureVal">5%</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="field full">
-                  <label>Custos indiretos</label>
-                  <div class="field-with-slider">
-                    <div class="field-wrap">
-                      <input type="number" id="indirectCosts" value="10" step="1" min="0" max="100" oninput="syncSlider('indirectCosts','indirectSlider',0,50);liveCalc()">
-                      <span class="field-unit">%</span>
-                    </div>
-                    <div class="slider-row">
-                      <input type="range" id="indirectSlider" min="0" max="50" step="1" value="10" oninput="syncInput('indirectSlider','indirectCosts');liveCalc()">
-                      <span class="slider-val" id="indirectVal">10%</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="field full">
-                  <label>Margem de lucro</label>
-                  <div class="field-with-slider">
-                    <div class="field-wrap">
-                      <input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncSlider('profitMargin','marginSlider',0,100);liveCalc()">
-                      <span class="field-unit">%</span>
-                    </div>
-                    <div class="slider-row">
-                      <input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncInput('marginSlider','profitMargin');liveCalc()">
-                      <span class="slider-val" id="marginVal">30%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div><!-- /form-sections -->
 
           <div class="action-bar">
             <button class="btn btn-calc" id="calcBtn" onclick="calculate()">📐 Calcular agora</button>
             <button class="btn btn-reset" onclick="resetCalculator()">🔄 Reset</button>
           </div>
-        </div><!-- /glass-card inputs -->
+        </div><!-- /inputs card -->
 
-        <!-- ── RESULTS PANEL ─────────────── -->
+        <!-- ── RESULTADOS ─────────────── -->
         <div class="glass-card results-col">
           <div class="card-header">
             <div class="card-header-title">📋 Resultados</div>
             <span class="card-header-badge" id="liveIndicator">⚡ Ao vivo</span>
           </div>
-
           <div class="results-panel">
-
-            <!-- Price Hero -->
             <div class="price-hero">
               <div class="price-hero-label">💰 Preço de venda sugerido</div>
-              <div class="price-hero-value" id="rFinal">€ 0,00</div>
+              <div class="price-hero-value" id="rFinal">€&nbsp;0,00</div>
               <div class="price-hero-sub" id="rFinalSub">Introduz os parâmetros e calcula</div>
             </div>
-
-            <!-- Breakdown -->
             <div class="breakdown-list">
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot blue"></div>
-                  <span class="breakdown-label">Custo do filamento</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo do filamento</span></div>
                 <span class="breakdown-value zero" id="rFilament">€ 0,00</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
-
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot blue"></div>
-                  <span class="breakdown-label">Amortização impressora</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Amortização impressora</span></div>
                 <span class="breakdown-value zero" id="rAmortization">€ 0,00</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barAmortization" style="width:0%"></div></div>
-
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot blue"></div>
-                  <span class="breakdown-label">Custo eletricidade</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo eletricidade</span></div>
                 <span class="breakdown-value zero" id="rElectricity">€ 0,00</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barElectricity" style="width:0%"></div></div>
-
               <div class="breakdown-item divider">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot green"></div>
-                  <span class="breakdown-label" style="font-weight:700">Custo base</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot green"></div><span class="breakdown-label" style="font-weight:700">Custo base</span></div>
                 <span class="breakdown-value" id="rBase" style="font-weight:800">€ 0,00</span>
               </div>
-
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot orange"></div>
-                  <span class="breakdown-label">+ Falhas (<span id="rFailurePct">5</span>%)</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Falhas (<span id="rFailurePct">5</span>%)</span></div>
                 <span class="breakdown-value zero" id="rFailure">€ 0,00</span>
               </div>
-
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot orange"></div>
-                  <span class="breakdown-label">+ Indiretos (<span id="rIndirectPct">10</span>%)</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Indiretos (<span id="rIndirectPct">10</span>%)</span></div>
                 <span class="breakdown-value zero" id="rIndirect">€ 0,00</span>
               </div>
-
               <div class="breakdown-item">
-                <div class="breakdown-left">
-                  <div class="breakdown-dot purple"></div>
-                  <span class="breakdown-label">+ Margem (<span id="rMarginPct">30</span>%)</span>
-                </div>
+                <div class="breakdown-left"><div class="breakdown-dot purple"></div><span class="breakdown-label">+ Margem (<span id="rMarginPct">30</span>%)</span></div>
                 <span class="breakdown-value zero" id="rMargin">€ 0,00</span>
               </div>
-
               <div class="breakdown-item total-row">
-                <div class="breakdown-left">
-                  <span class="breakdown-label">💰 Preço Final</span>
-                </div>
+                <div class="breakdown-left"><span class="breakdown-label">💰 Preço Final</span></div>
                 <span class="breakdown-value" id="rFinalRow">€ 0,00</span>
               </div>
             </div>
-
-            <!-- Actions -->
             <div class="results-actions">
               <button class="btn-action" onclick="exportCalcCSV()">📄 CSV</button>
               <button class="btn-action" id="copyBtnPanel" onclick="copyResults()">📋 Copiar</button>
               <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
             </div>
-
           </div>
-        </div><!-- /results panel -->
+        </div><!-- /results card -->
 
       </div><!-- /calc-layout -->
 
       <!-- ── HISTÓRICO ──────────────────── -->
-      <div class="glass-card history-card" style="margin-top:20px;animation:fadeUp .5s var(--ease) .3s both">
+      <div class="glass-card" style="margin-top:20px;animation:fadeUp .5s var(--ease) .3s both">
         <div class="card-header">
           <div class="card-header-title">🕐 Histórico de Cálculos</div>
-          <div style="display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <div class="history-search-wrap">
               <span class="history-search-icon">🔍</span>
               <input type="text" id="historySearch" class="history-search" placeholder="Pesquisar por nome, peso, preço…" oninput="renderHistory()">
@@ -754,22 +579,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="history-clear-btn" onclick="clearHistory()">Limpar tudo</div>
           </div>
         </div>
-        <div class="history-table-wrap" id="historyTableWrap">
+        <div class="history-table-wrap">
           <div class="history-empty" id="historyEmpty">
             <div class="history-empty-icon">🕐</div>
-            <div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após um cálculo para o registar aqui.</div>
+            <div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após calcular para o registar aqui.</div>
           </div>
           <table class="history-table" id="historyTable" style="display:none">
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>Peso</th>
-                <th>Tempo</th>
-                <th>Margem</th>
-                <th>Custo Base</th>
-                <th>Preço Final</th>
-                <th>Hora</th>
-                <th></th>
+                <th>Nome</th><th>Peso</th><th>Tempo</th><th>Margem</th>
+                <th>Custo Base</th><th>Preço Final</th><th>Hora</th><th></th>
               </tr>
             </thead>
             <tbody id="historyTbody"></tbody>
@@ -781,80 +600,132 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   </div><!-- /main -->
 </div><!-- /layout -->
 
-<!-- ── SETTINGS PANEL ──────────────── -->
-<div class="settings-panel" id="settingsPanel">
-  <div class="settings-panel-header">
-    <div class="settings-panel-title">⚙️ Parâmetros Padrão</div>
-    <button class="settings-panel-close" onclick="closeSettings()">✕</button>
+<!-- ═══════════════════════════════════════════
+     PAINEL AVANÇADO FLUTUANTE
+     Amortização + Energia + Perdas + Margem
+     Aparece sobre o layout sem o deslocar
+     ═══════════════════════════════════════════ -->
+<div class="adv-panel" id="advPanel">
+  <div class="adv-header">
+    <div class="adv-title">⚙️ Parâmetros Avançados</div>
+    <button class="adv-close" onclick="closeAdvPanel()" title="Fechar">✕</button>
   </div>
-  <div class="settings-panel-body">
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Valores base carregados automaticamente em cada novo cálculo. Podem ser ajustados a qualquer momento sem afectar os parâmetros em uso.</p>
 
-    <div class="settings-group">
-      <div class="settings-group-title">Material</div>
-      <div class="settings-field">
-        <label>Preço do filamento (€/kg)</label>
-        <input type="number" id="cfgFilament" value="25" step="0.5" min="1">
+  <div class="adv-body">
+    <p class="adv-desc">
+      Amortização, energia e margens de risco. As alterações reflectem-se imediatamente no cálculo.
+      Usa <strong>Guardar como padrão</strong> para definir os valores por defeito.
+    </p>
+
+    <!-- Amortização & Energia -->
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-orange">⚙️</div>
+        Amortização &amp; Energia
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label>Preço da impressora</label>
+          <div class="adv-wrap">
+            <input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()">
+            <span class="adv-unit">€</span>
+          </div>
+        </div>
+        <div class="adv-field">
+          <label>Vida útil</label>
+          <div class="adv-wrap">
+            <input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()">
+            <span class="adv-unit">h</span>
+          </div>
+        </div>
+        <div class="adv-field">
+          <label>Consumo elétrico</label>
+          <div class="adv-wrap">
+            <input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()">
+            <span class="adv-unit">W</span>
+          </div>
+        </div>
+        <div class="adv-field">
+          <label>Preço eletricidade</label>
+          <div class="adv-wrap">
+            <input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()">
+            <span class="adv-unit">€/kWh</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="settings-group">
-      <div class="settings-group-title">Impressora</div>
-      <div class="settings-field">
-        <label>Preço da impressora (€)</label>
-        <input type="number" id="cfgPrinter" value="600" step="50" min="50">
+    <!-- Perdas & Margem -->
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-purple">📈</div>
+        Perdas &amp; Margem
       </div>
-      <div class="settings-field">
-        <label>Vida útil (horas)</label>
-        <input type="number" id="cfgLife" value="5000" step="100" min="100">
-      </div>
-      <div class="settings-field">
-        <label>Consumo elétrico (W)</label>
-        <input type="number" id="cfgPower" value="200" step="10" min="0">
-      </div>
-      <div class="settings-field">
-        <label>Preço eletricidade (€/kWh)</label>
-        <input type="number" id="cfgElec" value="0.22" step="0.01" min="0.01">
+      <div class="adv-grid">
+        <div class="adv-field full">
+          <label>Taxa de falhas de impressão</label>
+          <div class="adv-wrap">
+            <input type="number" id="failureRate" value="5" step="1" min="0" max="100"
+              oninput="syncAdvSlider('failureRate','failureSlider',0,50);liveCalc()">
+            <span class="adv-unit">%</span>
+          </div>
+          <div class="adv-slider-wrap">
+            <input type="range" id="failureSlider" min="0" max="50" step="1" value="5"
+              oninput="syncAdvInput('failureSlider','failureRate');liveCalc()">
+            <span class="adv-slider-val" id="failureVal">5%</span>
+          </div>
+        </div>
+        <div class="adv-field full">
+          <label>Custos indiretos</label>
+          <div class="adv-wrap">
+            <input type="number" id="indirectCosts" value="10" step="1" min="0" max="100"
+              oninput="syncAdvSlider('indirectCosts','indirectSlider',0,50);liveCalc()">
+            <span class="adv-unit">%</span>
+          </div>
+          <div class="adv-slider-wrap">
+            <input type="range" id="indirectSlider" min="0" max="50" step="1" value="10"
+              oninput="syncAdvInput('indirectSlider','indirectCosts');liveCalc()">
+            <span class="adv-slider-val" id="indirectVal">10%</span>
+          </div>
+        </div>
+        <div class="adv-field full">
+          <label>Margem de lucro</label>
+          <div class="adv-wrap">
+            <input type="number" id="profitMargin" value="30" step="1" min="0" max="300"
+              oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()">
+            <span class="adv-unit">%</span>
+          </div>
+          <div class="adv-slider-wrap">
+            <input type="range" id="marginSlider" min="0" max="100" step="1" value="30"
+              oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()">
+            <span class="adv-slider-val" id="marginVal">30%</span>
+          </div>
+        </div>
       </div>
     </div>
+  </div><!-- /adv-body -->
 
-    <div class="settings-group">
-      <div class="settings-group-title">Margens</div>
-      <div class="settings-field">
-        <label>Margem de lucro (%)</label>
-        <input type="number" id="cfgMargin" value="30" step="1" min="0" max="200">
-      </div>
-      <div class="settings-field">
-        <label>Taxa de falhas (%)</label>
-        <input type="number" id="cfgFailure" value="5" step="1" min="0" max="50">
-      </div>
-      <div class="settings-field">
-        <label>Custos indiretos (%)</label>
-        <input type="number" id="cfgIndirect" value="10" step="1" min="0" max="100">
-      </div>
-    </div>
-  </div>
-  <div class="settings-panel-footer">
-    <button class="btn-save-settings" onclick="saveSettings()">💾 Guardar defaults</button>
-    <button class="btn-cancel-settings" onclick="closeSettings()">Cancelar</button>
+  <div class="adv-footer">
+    <button class="btn-adv-save" onclick="saveAsDefaults()">💾 Guardar como padrão</button>
+    <button class="btn-adv-cancel" onclick="closeAdvPanel()">Fechar</button>
   </div>
 </div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════
-//  DEFAULTS — homologated values
+//  DEFAULTS — homologated
 // ══════════════════════════════════════
 const HARDCODED_DEFAULTS = {
   filamentPrice:25, partWeight:50, printTime:3,
   printerPrice:600, printerLife:5000, powerConsumption:200,
   electricityPrice:0.22, failureRate:5, indirectCosts:10, profitMargin:30,
 };
-
 let defaults = { ...HARDCODED_DEFAULTS };
 let calcHistory = [];
+let advOpen = false;
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -862,19 +733,17 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCompanyDefaults();
   applyDefaultsToForm();
   liveCalc();
-  updateSettingsBanner();
   applyFeatureGating();
+  renderHistory();
 });
 
-// ── LOAD USER / COMPANY DATA ───────────
+// ── USER DATA ──────────────────────────
 function loadUserData() {
   try {
-    const saved = localStorage.getItem('3dzaap_user');
-    if (!saved) return;
-    const data = JSON.parse(saved);
+    const data = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
     if (data.email) {
       document.getElementById('userEmail').textContent = data.email;
-      const name = data.name || data.email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      const name = data.name || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
       document.getElementById('userName').textContent = name;
       document.getElementById('userAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     }
@@ -883,81 +752,49 @@ function loadUserData() {
       document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     }
     if (data.plan) {
-      const labels = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent = labels[data.plan] || 'Trial';
+      const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+      document.getElementById('planBadge').textContent = L[data.plan] || 'Trial';
     }
     if (data.config) {
-      // Merge onboarding config into defaults
       const c = data.config;
-      if (c.filamentPrice) defaults.filamentPrice = c.filamentPrice;
-      if (c.printerPrice)  defaults.printerPrice  = c.printerPrice;
-      if (c.printerLife)   defaults.printerLife   = c.printerLife;
-      if (c.electricityPrice) defaults.electricityPrice = c.electricityPrice;
-      if (c.profitMargin)  defaults.profitMargin  = c.profitMargin;
-      if (c.failureRate)   defaults.failureRate   = c.failureRate;
+      ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k => {
+        if (c[k] !== undefined) defaults[k] = c[k];
+      });
     }
   } catch(e) {}
 }
 
 function loadCompanyDefaults() {
   try {
-    const saved = localStorage.getItem('3dzaap_calc_defaults');
-    if (saved) {
-      const d = JSON.parse(saved);
-      defaults = { ...HARDCODED_DEFAULTS, ...d };
-    }
+    const s = localStorage.getItem('3dzaap_calc_defaults');
+    if (s) defaults = { ...HARDCODED_DEFAULTS, ...JSON.parse(s) };
   } catch(e) {}
 }
 
 function applyDefaultsToForm() {
-  setValue('filamentPrice', defaults.filamentPrice);
-  setValue('partWeight',    defaults.partWeight);
-  setValue('printTime',     defaults.printTime);
-  setValue('printerPrice',  defaults.printerPrice);
-  setValue('printerLife',   defaults.printerLife);
-  setValue('powerConsumption', defaults.powerConsumption);
-  setValue('electricityPrice', defaults.electricityPrice);
-  setValue('failureRate',   defaults.failureRate);
-  setValue('indirectCosts', defaults.indirectCosts);
-  setValue('profitMargin',  defaults.profitMargin);
-
-  // Sync sliders
-  setSlider('printTimeSlider', defaults.printTime, 0, 48);
-  setSlider('failureSlider',   defaults.failureRate, 0, 50);
-  setSlider('indirectSlider',  defaults.indirectCosts, 0, 50);
-  setSlider('marginSlider',    defaults.profitMargin, 0, 100);
-
+  setV('filamentPrice',    defaults.filamentPrice);
+  setV('partWeight',       defaults.partWeight);
+  setV('printTime',        defaults.printTime);
+  setV('printerPrice',     defaults.printerPrice);
+  setV('printerLife',      defaults.printerLife);
+  setV('powerConsumption', defaults.powerConsumption);
+  setV('electricityPrice', defaults.electricityPrice);
+  setV('failureRate',      defaults.failureRate);
+  setV('indirectCosts',    defaults.indirectCosts);
+  setV('profitMargin',     defaults.profitMargin);
+  setSl('printTimeSlider', defaults.printTime, 0, 48);
+  setSl('failureSlider',   defaults.failureRate, 0, 50);
+  setSl('indirectSlider',  defaults.indirectCosts, 0, 50);
+  setSl('marginSlider',    defaults.profitMargin, 0, 100);
   updateSliderLabels();
-
-  // Settings panel
-  setValue('cfgFilament', defaults.filamentPrice);
-  setValue('cfgPrinter',  defaults.printerPrice);
-  setValue('cfgLife',     defaults.printerLife);
-  setValue('cfgPower',    defaults.powerConsumption);
-  setValue('cfgElec',     defaults.electricityPrice);
-  setValue('cfgMargin',   defaults.profitMargin);
-  setValue('cfgFailure',  defaults.failureRate);
-  setValue('cfgIndirect', defaults.indirectCosts);
-}
-
-function setValue(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.value = val;
-}
-function setSlider(id, val, min, max) {
-  const el = document.getElementById(id);
-  if (el) el.value = Math.min(max, Math.max(min, val));
 }
 
 // ── FEATURE GATING ─────────────────────
 function applyFeatureGating() {
   try {
-    const saved = JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
-    const plan = saved.plan || 'trial';
-    const hasOrders = ['trial','pro','business'].includes(plan);
-    const hasFinancial = ['trial','business'].includes(plan);
-    if (!hasOrders) document.getElementById('ordersLock').style.display = '';
-    if (!hasFinancial) document.getElementById('financialLock').style.display = '';
+    const plan = (JSON.parse(localStorage.getItem('3dzaap_user')||'{}')).plan || 'trial';
+    if (!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display='';
+    if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display='';
   } catch(e) {}
 }
 
@@ -966,28 +803,28 @@ function applyFeatureGating() {
 // ══════════════════════════════════════
 function getInputs() {
   return {
-    filamentPrice:   parseFloat(v('filamentPrice'))   || 0,
-    partWeight:      parseFloat(v('partWeight'))       || 0,
-    printTime:       parseFloat(v('printTime'))        || 0,
-    printerPrice:    parseFloat(v('printerPrice'))     || 0,
-    printerLife:     parseFloat(v('printerLife'))      || 1,
-    powerConsumption:parseFloat(v('powerConsumption')) || 0,
-    electricityPrice:parseFloat(v('electricityPrice')) || 0,
-    failureRate:     parseFloat(v('failureRate'))      || 0,
-    indirectCosts:   parseFloat(v('indirectCosts'))    || 0,
-    profitMargin:    parseFloat(v('profitMargin'))     || 0,
+    filamentPrice:   pf('filamentPrice'),
+    partWeight:      pf('partWeight'),
+    printTime:       pf('printTime'),
+    printerPrice:    pf('printerPrice'),
+    printerLife:     pf('printerLife') || 1,
+    powerConsumption:pf('powerConsumption'),
+    electricityPrice:pf('electricityPrice'),
+    failureRate:     pf('failureRate'),
+    indirectCosts:   pf('indirectCosts'),
+    profitMargin:    pf('profitMargin'),
   };
 }
 
 function computeResults(i) {
-  const filamentCost    = (i.filamentPrice / 1000) * i.partWeight;
-  const amortizationCost= (i.printerPrice / i.printerLife) * i.printTime;
-  const electricityCost = (i.powerConsumption / 1000) * i.printTime * i.electricityPrice;
-  const baseCost        = filamentCost + amortizationCost + electricityCost;
-  const failureCost     = baseCost * (i.failureRate / 100);
-  const indirectCost    = baseCost * (i.indirectCosts / 100);
-  const marginCost      = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
-  const finalPrice      = baseCost + failureCost + indirectCost + marginCost;
+  const filamentCost     = (i.filamentPrice / 1000) * i.partWeight;
+  const amortizationCost = (i.printerPrice / i.printerLife) * i.printTime;
+  const electricityCost  = (i.powerConsumption / 1000) * i.printTime * i.electricityPrice;
+  const baseCost         = filamentCost + amortizationCost + electricityCost;
+  const failureCost      = baseCost * (i.failureRate / 100);
+  const indirectCost     = baseCost * (i.indirectCosts / 100);
+  const marginCost       = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const finalPrice       = baseCost + failureCost + indirectCost + marginCost;
   return { filamentCost, amortizationCost, electricityCost, baseCost, failureCost, indirectCost, marginCost, finalPrice };
 }
 
@@ -999,227 +836,163 @@ function calculate() {
   showToast('✅ Cálculo actualizado!', 'ok');
 }
 
-let liveTimer;
+let _lt;
 function liveCalc() {
-  clearTimeout(liveTimer);
-  liveTimer = setTimeout(_renderResults, 40);
+  clearTimeout(_lt);
+  _lt = setTimeout(_render, 40);
   updateSliderLabels();
-  updatePercentLabels();
+  updatePctLabels();
 }
 
-function _renderResults() {
+function _render() {
   const i = getInputs();
   const r = computeResults(i);
 
-  // Hero price
   const heroEl = document.getElementById('rFinal');
-  const prevVal = heroEl.textContent;
-  heroEl.textContent = fmtEur(r.finalPrice);
-  if (prevVal !== heroEl.textContent) {
-    heroEl.classList.remove('updated');
-    void heroEl.offsetWidth;
-    heroEl.classList.add('updated');
+  const nv = fmtEur(r.finalPrice);
+  if (heroEl.textContent !== nv) {
+    heroEl.textContent = nv;
+    heroEl.classList.remove('updated'); void heroEl.offsetWidth; heroEl.classList.add('updated');
   }
-  document.getElementById('rFinalRow').textContent = fmtEur(r.finalPrice);
-
-  const sub = r.finalPrice > 0
+  document.getElementById('rFinalRow').textContent = nv;
+  document.getElementById('rFinalSub').textContent = r.finalPrice > 0
     ? `Custo base ${fmtEur(r.baseCost)} · Margem ${fmtEur(r.marginCost)}`
     : 'Introduz os parâmetros e calcula';
-  document.getElementById('rFinalSub').textContent = sub;
 
-  // Breakdown values
-  setResult('rFilament',    r.filamentCost);
-  setResult('rAmortization',r.amortizationCost);
-  setResult('rElectricity', r.electricityCost);
-  setResult('rBase',        r.baseCost,  true);
-  setResult('rFailure',     r.failureCost);
-  setResult('rIndirect',    r.indirectCost);
-  setResult('rMargin',      r.marginCost);
+  setRes('rFilament',     r.filamentCost);
+  setRes('rAmortization', r.amortizationCost);
+  setRes('rElectricity',  r.electricityCost);
+  setRes('rBase',         r.baseCost, true);
+  setRes('rFailure',      r.failureCost);
+  setRes('rIndirect',     r.indirectCost);
+  setRes('rMargin',       r.marginCost);
 
-  // Progress bars (relative to final price)
-  const total = r.finalPrice || 1;
-  setBar('barFilament',    r.filamentCost    / total * 100);
-  setBar('barAmortization',r.amortizationCost/ total * 100);
-  setBar('barElectricity', r.electricityCost / total * 100);
+  const tot = r.finalPrice || 1;
+  setBar('barFilament',     r.filamentCost     / tot * 100);
+  setBar('barAmortization', r.amortizationCost / tot * 100);
+  setBar('barElectricity',  r.electricityCost  / tot * 100);
 }
 
-function setResult(id, val, bold) {
+function setRes(id, val, bold) {
   const el = document.getElementById(id);
   if (!el) return;
   el.textContent = fmtEur(val);
-  el.className = 'breakdown-value' + (val === 0 ? ' zero' : '') + (bold ? '' : '');
+  el.className = 'breakdown-value' + (val===0?' zero':'');
+  if (bold) el.style.fontWeight = '800';
 }
 function setBar(id, pct) {
   const el = document.getElementById(id);
-  if (el) el.style.width = Math.min(100, Math.max(0, pct)).toFixed(1) + '%';
+  if (el) el.style.width = Math.min(100,Math.max(0,pct)).toFixed(1)+'%';
 }
 
-// ── RESET (homologated defaults) ───────
 function resetCalculator() {
   applyDefaultsToForm();
   liveCalc();
-  showToast('🔄 Valores reset para os defaults da empresa', '');
+  showToast('🔄 Reset para os valores padrão', '');
 }
 
 // ── SLIDERS ────────────────────────────
-function syncInput(sliderId, inputId) {
-  const val = document.getElementById(sliderId).value;
-  document.getElementById(inputId).value = val;
-  updateSliderLabels();
-}
 function syncSlider(inputId, sliderId, min, max) {
-  const val = parseFloat(document.getElementById(inputId).value) || 0;
-  document.getElementById(sliderId).value = Math.min(max, Math.max(min, val));
+  setSl(sliderId, pf(inputId), min, max);
   updateSliderLabels();
 }
+function syncInput(sliderId, inputId) {
+  setV(inputId, document.getElementById(sliderId).value);
+  updateSliderLabels();
+}
+function syncAdvSlider(inputId, sliderId, min, max) { syncSlider(inputId, sliderId, min, max); }
+function syncAdvInput(sliderId, inputId) { syncInput(sliderId, inputId); }
+
 function updateSliderLabels() {
-  const pt = parseFloat(v('printTime')) || 0;
-  const fr = parseFloat(v('failureRate')) || 0;
-  const ic = parseFloat(v('indirectCosts')) || 0;
-  const pm = parseFloat(v('profitMargin')) || 0;
-  setText('printTimeVal', pt + 'h');
-  setText('failureVal',   fr + '%');
-  setText('indirectVal',  ic + '%');
-  setText('marginVal',    pm + '%');
+  setT('printTimeVal', pf('printTime') + 'h');
+  setT('failureVal',   pf('failureRate') + '%');
+  setT('indirectVal',  pf('indirectCosts') + '%');
+  setT('marginVal',    pf('profitMargin') + '%');
 }
-function updatePercentLabels() {
-  setText('rFailurePct',  v('failureRate'));
-  setText('rIndirectPct', v('indirectCosts'));
-  setText('rMarginPct',   v('profitMargin'));
+function updatePctLabels() {
+  setT('rFailurePct',  String(pf('failureRate')));
+  setT('rIndirectPct', String(pf('indirectCosts')));
+  setT('rMarginPct',   String(pf('profitMargin')));
 }
 
-// ── EXPORT CSV ─────────────────────────
-function exportCalcCSV() {
+// ── ADVANCED PANEL ─────────────────────
+function toggleAdvPanel() { advOpen ? closeAdvPanel() : openAdvPanel(); }
+
+function openAdvPanel() {
+  advOpen = true;
+  document.getElementById('advPanel').classList.add('open');
+  document.getElementById('advBackdrop').classList.add('open');
+  document.getElementById('advBtn').classList.add('active-param');
+}
+function closeAdvPanel() {
+  advOpen = false;
+  document.getElementById('advPanel').classList.remove('open');
+  document.getElementById('advBackdrop').classList.remove('open');
+  document.getElementById('advBtn').classList.remove('active-param');
+}
+
+function saveAsDefaults() {
   const i = getInputs();
-  const r = computeResults(i);
-  const rows = [
-    ['Parâmetro','Valor'],
-    ['Preço do filamento (€/kg)', i.filamentPrice],
-    ['Peso da peça (g)', i.partWeight],
-    ['Tempo de impressão (horas)', i.printTime],
-    ['Preço da impressora (€)', i.printerPrice],
-    ['Vida útil (horas)', i.printerLife],
-    ['Consumo elétrico (W)', i.powerConsumption],
-    ['Preço eletricidade (€/kWh)', i.electricityPrice],
-    ['Taxa de falhas (%)', i.failureRate],
-    ['Custos indiretos (%)', i.indirectCosts],
-    ['Margem de lucro (%)', i.profitMargin],
-    ['---','---'],
-    ['Custo do filamento', r.filamentCost.toFixed(2)],
-    ['Custo amortização', r.amortizationCost.toFixed(2)],
-    ['Custo eletricidade', r.electricityCost.toFixed(2)],
-    ['Custo base', r.baseCost.toFixed(2)],
-    ['+ Falhas', r.failureCost.toFixed(2)],
-    ['+ Indiretos', r.indirectCost.toFixed(2)],
-    ['+ Margem', r.marginCost.toFixed(2)],
-    ['💰 Preço Final', r.finalPrice.toFixed(2)],
-  ];
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
-  downloadCSV(csv, `calculo_impressao_${ts}.csv`);
-  showToast('📄 CSV exportado!', 'ok');
-}
-
-// ── COPY ───────────────────────────────
-function copyResults() {
-  const i = getInputs();
-  const r = computeResults(i);
-  const txt = `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}
-================================================
-Custo do filamento:  €${r.filamentCost.toFixed(2)}
-Custo amortização:   €${r.amortizationCost.toFixed(2)}
-Custo eletricidade:  €${r.electricityCost.toFixed(2)}
-Custo base:          €${r.baseCost.toFixed(2)}
-+ Falhas (${i.failureRate}%):      €${r.failureCost.toFixed(2)}
-+ Indiretos (${i.indirectCosts}%): €${r.indirectCost.toFixed(2)}
-+ Margem (${i.profitMargin}%):     €${r.marginCost.toFixed(2)}
-------------------------------------------------
-💰 PREÇO FINAL:       €${r.finalPrice.toFixed(2)}`.trim();
-
-  const flash = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.add('copied');
-    setTimeout(() => el.classList.remove('copied'), 1800);
-  };
-
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(txt)
-      .then(() => { showToast('📋 Resultados copiados!','ok'); flash('copyBtnPanel'); })
-      .catch(() => fallbackCopy(txt));
-  } else {
-    fallbackCopy(txt);
-  }
-}
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select();
-  try { document.execCommand('copy'); showToast('📋 Resultados copiados!','ok'); }
-  catch(e) { showToast('Não foi possível copiar','err'); }
-  document.body.removeChild(ta);
+  defaults = { ...defaults, ...i };
+  try {
+    localStorage.setItem('3dzaap_calc_defaults', JSON.stringify(defaults));
+    const user = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
+    user.config = { ...user.config, ...defaults };
+    localStorage.setItem('3dzaap_user', JSON.stringify(user));
+  } catch(e) {}
+  closeAdvPanel();
+  showToast('✅ Parâmetros padrão guardados!', 'ok');
 }
 
 // ── HISTORY ────────────────────────────
 function saveToHistory() {
   const i = getInputs();
   const r = computeResults(i);
-  if (r.finalPrice === 0) { showToast('Sem valores para guardar','err'); return; }
-
+  if (r.finalPrice === 0) { showToast('Sem valores para guardar', 'err'); return; }
   const name = (document.getElementById('printName').value || '').trim();
-  const entry = {
-    id: Date.now(),
-    name,
+  calcHistory.unshift({
+    id: Date.now(), name,
     time: new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),
-    inputs: {...i},
-    results: {...r},
-  };
-  calcHistory.unshift(entry);
+    inputs:{...i}, results:{...r}
+  });
   if (calcHistory.length > 50) calcHistory.pop();
   renderHistory();
-  showToast('💾 Guardado no histórico!','ok');
+  showToast('💾 Guardado no histórico!', 'ok');
 }
 
 function renderHistory() {
   const query = (document.getElementById('historySearch')?.value || '').toLowerCase().trim();
-  const filtered = calcHistory.filter(e => {
-    if (!query) return true;
-    return (
-      (e.name || '').toLowerCase().includes(query) ||
-      String(e.inputs.partWeight).includes(query) ||
-      String(e.inputs.profitMargin).includes(query) ||
-      fmtEur(e.results.finalPrice).includes(query) ||
-      e.time.includes(query)
-    );
-  });
+  const filtered = calcHistory.filter(e =>
+    !query ||
+    (e.name||'').toLowerCase().includes(query) ||
+    String(e.inputs.partWeight).includes(query) ||
+    fmtEur(e.results.finalPrice).replace(/\s/g,'').toLowerCase().includes(query.replace(/\s/g,'')) ||
+    e.time.includes(query)
+  );
 
-  const countEl = document.getElementById('historyCount');
-  if (countEl) countEl.textContent = `${filtered.length} registo${filtered.length!==1?'s':''}`;
+  const cEl = document.getElementById('historyCount');
+  if (cEl) cEl.textContent = `${filtered.length} registo${filtered.length!==1?'s':''}`;
 
   const emptyEl = document.getElementById('historyEmpty');
   const tableEl = document.getElementById('historyTable');
   const tbody   = document.getElementById('historyTbody');
 
   if (!filtered.length) {
-    if (emptyEl) emptyEl.style.display = 'flex';
-    if (tableEl) tableEl.style.display = 'none';
-    if (emptyEl && calcHistory.length > 0) {
-      emptyEl.innerHTML = '<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"' + escHtml(query) + '"</strong></div>';
-    } else if (emptyEl) {
-      emptyEl.innerHTML = '<div class="history-empty-icon">🕐</div><div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após um cálculo para o registar aqui.</div>';
+    if (emptyEl) {
+      emptyEl.style.display = 'flex';
+      emptyEl.innerHTML = calcHistory.length
+        ? `<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"${escH(query)}"</strong></div>`
+        : `<div class="history-empty-icon">🕐</div><div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após calcular para o registar aqui.</div>`;
     }
+    if (tableEl) tableEl.style.display = 'none';
     return;
   }
-
   if (emptyEl) emptyEl.style.display = 'none';
   if (tableEl) tableEl.style.display = '';
 
   tbody.innerHTML = filtered.map(e => `
     <tr onclick="restoreHistory(${e.id})">
-      <td class="td-name">${e.name ? escHtml(e.name) : '<span class="no-name">Sem nome</span>'}</td>
+      <td class="td-name">${e.name ? escH(e.name) : '<span class="no-name">Sem nome</span>'}</td>
       <td class="td-mono">${e.inputs.partWeight}g</td>
       <td class="td-mono">${e.inputs.printTime}h</td>
       <td class="td-mono">${e.inputs.profitMargin}%</td>
@@ -1237,80 +1010,104 @@ function restoreHistory(id) {
   const e = calcHistory.find(h => h.id === id);
   if (!e) return;
   const i = e.inputs;
-  setValue('printName',      e.name || '');
-  setValue('filamentPrice',  i.filamentPrice);
-  setValue('partWeight',     i.partWeight);
-  setValue('printTime',      i.printTime);
-  setValue('printerPrice',   i.printerPrice);
-  setValue('printerLife',    i.printerLife);
-  setValue('powerConsumption', i.powerConsumption);
-  setValue('electricityPrice', i.electricityPrice);
-  setValue('failureRate',    i.failureRate);
-  setValue('indirectCosts',  i.indirectCosts);
-  setValue('profitMargin',   i.profitMargin);
-  setSlider('printTimeSlider', i.printTime, 0, 48);
-  setSlider('failureSlider',   i.failureRate, 0, 50);
-  setSlider('indirectSlider',  i.indirectCosts, 0, 50);
-  setSlider('marginSlider',    i.profitMargin, 0, 100);
-  updateSliderLabels();
-  liveCalc();
+  setV('printName', e.name||'');
+  setV('filamentPrice', i.filamentPrice); setV('partWeight', i.partWeight);
+  setV('printTime', i.printTime); setV('printerPrice', i.printerPrice);
+  setV('printerLife', i.printerLife); setV('powerConsumption', i.powerConsumption);
+  setV('electricityPrice', i.electricityPrice); setV('failureRate', i.failureRate);
+  setV('indirectCosts', i.indirectCosts); setV('profitMargin', i.profitMargin);
+  setSl('printTimeSlider', i.printTime, 0, 48);
+  setSl('failureSlider',   i.failureRate, 0, 50);
+  setSl('indirectSlider',  i.indirectCosts, 0, 50);
+  setSl('marginSlider',    i.profitMargin, 0, 100);
+  updateSliderLabels(); liveCalc();
   window.scrollTo({top:0,behavior:'smooth'});
-  showToast('↩ Cálculo restaurado do histórico','ok');
+  showToast('↩ Cálculo restaurado', 'ok');
 }
 
-function deleteHistory(id) {
-  calcHistory = calcHistory.filter(h => h.id !== id);
-  renderHistory();
-}
-
+function deleteHistory(id) { calcHistory = calcHistory.filter(h => h.id !== id); renderHistory(); }
 function clearHistory() {
   if (!calcHistory.length) return;
-  calcHistory = [];
-  renderHistory();
-  showToast('🗑️ Histórico limpo','');
+  calcHistory = []; renderHistory();
+  showToast('🗑️ Histórico limpo', '');
 }
 
-// ── SETTINGS PANEL ─────────────────────
-function openSettings() {
-  document.getElementById('settingsPanel').classList.add('open');
-  document.getElementById('settingsOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+// ── EXPORT / COPY ──────────────────────
+function exportCalcCSV() {
+  const i = getInputs(); const r = computeResults(i);
+  const name = document.getElementById('printName').value.trim();
+  const rows = [
+    ['Campo','Valor'],
+    ['Nome', name||'—'],
+    ['Preço filamento (€/kg)', i.filamentPrice], ['Peso peça (g)', i.partWeight],
+    ['Tempo impressão (h)', i.printTime], ['Preço impressora (€)', i.printerPrice],
+    ['Vida útil (h)', i.printerLife], ['Consumo elétrico (W)', i.powerConsumption],
+    ['Preço eletricidade (€/kWh)', i.electricityPrice], ['Taxa falhas (%)', i.failureRate],
+    ['Custos indiretos (%)', i.indirectCosts], ['Margem lucro (%)', i.profitMargin],
+    ['---','---'],
+    ['Custo filamento', r.filamentCost.toFixed(4)], ['Custo amortização', r.amortizationCost.toFixed(4)],
+    ['Custo eletricidade', r.electricityCost.toFixed(4)], ['Custo base', r.baseCost.toFixed(4)],
+    ['+ Falhas', r.failureCost.toFixed(4)], ['+ Indiretos', r.indirectCost.toFixed(4)],
+    ['+ Margem', r.marginCost.toFixed(4)], ['💰 PREÇO FINAL', r.finalPrice.toFixed(4)],
+  ];
+  const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
+  dlCSV(rows.map(r=>r.join(';')).join('\n'), `calculo_${ts}.csv`);
+  showToast('📄 CSV exportado!', 'ok');
 }
-function closeSettings() {
-  document.getElementById('settingsPanel').classList.remove('open');
-  document.getElementById('settingsOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function saveSettings() {
-  defaults = {
-    filamentPrice:    parseFloat(v('cfgFilament'))  || HARDCODED_DEFAULTS.filamentPrice,
-    partWeight:       defaults.partWeight,
-    printTime:        defaults.printTime,
-    printerPrice:     parseFloat(v('cfgPrinter'))   || HARDCODED_DEFAULTS.printerPrice,
-    printerLife:      parseFloat(v('cfgLife'))       || HARDCODED_DEFAULTS.printerLife,
-    powerConsumption: parseFloat(v('cfgPower'))      || HARDCODED_DEFAULTS.powerConsumption,
-    electricityPrice: parseFloat(v('cfgElec'))       || HARDCODED_DEFAULTS.electricityPrice,
-    failureRate:      parseFloat(v('cfgFailure'))    || HARDCODED_DEFAULTS.failureRate,
-    indirectCosts:    parseFloat(v('cfgIndirect'))   || HARDCODED_DEFAULTS.indirectCosts,
-    profitMargin:     parseFloat(v('cfgMargin'))     || HARDCODED_DEFAULTS.profitMargin,
+
+function copyResults() {
+  const i = getInputs(); const r = computeResults(i);
+  const name = document.getElementById('printName').value.trim();
+  const txt = [
+    name ? name : null,
+    `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}`,
+    '='.repeat(46),
+    `Custo filamento:    €${r.filamentCost.toFixed(2)}`,
+    `Custo amortização:  €${r.amortizationCost.toFixed(2)}`,
+    `Custo eletricidade: €${r.electricityCost.toFixed(2)}`,
+    `Custo base:         €${r.baseCost.toFixed(2)}`,
+    `+ Falhas (${i.failureRate}%):    €${r.failureCost.toFixed(2)}`,
+    `+ Indiretos (${i.indirectCosts}%): €${r.indirectCost.toFixed(2)}`,
+    `+ Margem (${i.profitMargin}%):   €${r.marginCost.toFixed(2)}`,
+    '-'.repeat(46),
+    `💰 PREÇO FINAL:      €${r.finalPrice.toFixed(2)}`,
+  ].filter(Boolean).join('\n');
+
+  const flash = () => {
+    const el = document.getElementById('copyBtnPanel');
+    if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
   };
-  localStorage.setItem('3dzaap_calc_defaults', JSON.stringify(defaults));
-
-  // Also update user data config
-  try {
-    const user = JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
-    user.config = { ...user.config, ...defaults };
-    localStorage.setItem('3dzaap_user', JSON.stringify(user));
-  } catch(e) {}
-
-  applyDefaultsToForm();
-  liveCalc();
-  updateSettingsBanner();
-  closeSettings();
-  showToast('✅ Defaults guardados com sucesso!','ok');
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(txt).then(()=>{showToast('📋 Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
+  } else { fbCopy(txt); }
 }
-function updateSettingsBanner() {
-  // Banner removido — parâmetros padrão agora apenas no painel lateral
+function fbCopy(t) {
+  const ta = Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{document.execCommand('copy');showToast('📋 Copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  document.body.removeChild(ta);
+}
+
+// ── USER MENU ──────────────────────────
+function toggleUserMenu() {
+  const dd = document.getElementById('userDropdown');
+  const ch = document.getElementById('userChevron');
+  const open = dd.classList.toggle('open');
+  ch.classList.toggle('up', open);
+}
+function closeUserMenu() {
+  document.getElementById('userDropdown').classList.remove('open');
+  document.getElementById('userChevron').classList.remove('up');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
+});
+
+function doLogout() {
+  closeUserMenu();
+  localStorage.removeItem('3dzaap_user');
+  showToast('Sessão terminada. Até logo! 👋', 'ok');
+  setTimeout(() => window.location.href = 'auth-onboarding.html', 1300);
 }
 
 // ── SIDEBAR MOBILE ──────────────────────
@@ -1320,20 +1117,23 @@ function toggleSidebar() {
 }
 
 // ── HELPERS ────────────────────────────
-function v(id) { return (document.getElementById(id)||{}).value || ''; }
-function setText(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
-function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtEur(val) {
-  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+function pf(id){ return parseFloat((document.getElementById(id)||{}).value)||0; }
+function setV(id,v){ const el=document.getElementById(id); if(el) el.value=v; }
+function setSl(id,v,mn,mx){ const el=document.getElementById(id); if(el) el.value=Math.min(mx,Math.max(mn,v)); }
+function setT(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtEur(v){ return '€\u00A0'+parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function dlCSV(csv,fn){
+  const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-function downloadCSV(csv, filename) {
-  const blob = new Blob(['\uFEFF' + csv],{type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.style.display = 'none';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+let _tt;
+function showToast(msg, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3000);
 }
-let toastTimer;
-function showToast(msg, type='') {
-  c
+</script>
+</body>
+</html>
