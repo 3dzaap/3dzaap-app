@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Entrar / Criar Conta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#3B8FD4; --blue-d:#2a6fb0; --blue-dd:#1a4f80; --blue-lt:#72B8F0; --blue-g:rgba(59,143,212,0.10);
+  --orange:#F5943A; --orange-d:#d4762a; --orange-lt:#FFB870; --orange-g:rgba(245,148,58,0.12);
+  --black:#0D1117; --dark:#1a2332; --muted:#4A5568; --subtle:#94A3B8;
+  --border:rgba(255,255,255,0.28); --bdark:rgba(0,0,0,0.08);
+  --glass:rgba(255,255,255,0.62); --glass-s:rgba(255,255,255,0.82);
+  --blur:blur(22px) saturate(1.8); --blur-sm:blur(12px) saturate(1.5);
+  --sh:0 8px 32px rgba(30,60,120,0.12),0 2px 8px rgba(30,60,120,0.06);
+  --sh-lg:0 24px 64px rgba(30,60,120,0.18),0 4px 16px rgba(30,60,120,0.10);
+  --r:10px; --rm:16px; --rl:24px; --rx:32px;
+  --f:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --success:#22c55e; --danger:#ef4444;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidden;line-height:1.6;min-height:100vh}
+
+/* ── BG ────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.28) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 15%,rgba(245,148,58,.18) 0%,transparent 50%),
+    radial-gradient(ellipse 70% 60% at 50% 100%,rgba(59,143,212,.20) 0%,transparent 55%),
+    linear-gradient(145deg,#cde0f5 0%,#ddeeff 40%,#eef4ff 65%,#fdf0e8 100%);
+  animation:bgS 18s ease-in-out infinite alternate}
+@keyframes bgS{0%,100%{opacity:1}50%{opacity:.9}}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.o1{width:660px;height:660px;background:radial-gradient(circle,rgba(59,143,212,.16) 0%,transparent 70%);top:-220px;right:-180px;animation:o1f 22s ease-in-out infinite}
+.o2{width:480px;height:480px;background:radial-gradient(circle,rgba(245,148,58,.13) 0%,transparent 70%);bottom:-130px;left:-130px;animation:o2f 28s ease-in-out infinite}
+@keyframes o1f{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-60px,80px) scale(1.1)}70%{transform:translate(40px,-40px) scale(.95)}}
+@keyframes o2f{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,-70px)}}
+
+/* ── LAYOUT ────────────────────────── */
+.page{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+
+/* ── CARD ──────────────────────────── */
+.card{
+  background:var(--glass);
+  backdrop-filter:var(--blur);
+  -webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);
+  border-radius:var(--rx);
+  box-shadow:var(--sh-lg);
+  width:100%;max-width:460px;
+  padding:40px 40px 36px;
+  animation:cardIn .55s var(--ease) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+
+/* ── LOGO ──────────────────────────── */
+.logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px;text-decoration:none}
+.logo-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);box-shadow:var(--sh)}
+.logo-txt{}
+.logo-name{font-size:1.35rem;font-weight:900;line-height:1;letter-spacing:-0.5px}
+.b3d{color:var(--blue)}
+.bzp{color:var(--orange)}
+.logo-sub{font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-top:2px}
+
+/* ── TABS ──────────────────────────── */
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.4);border:1.5px solid var(--border);border-radius:var(--rm);padding:4px;margin-bottom:28px}
+.tab{flex:1;padding:9px;border-radius:11px;font-size:.88rem;font-weight:700;text-align:center;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .25s var(--ease)}
+.tab.active{background:var(--glass-s, rgba(255,255,255,0.85));color:var(--blue);box-shadow:var(--sh);font-weight:800}
+
+/* ── FORM ──────────────────────────── */
+.form-title{font-size:1.22rem;font-weight:800;margin-bottom:4px;color:var(--black)}
+.form-sub{font-size:.85rem;color:var(--muted);margin-bottom:24px}
+.form-sub span{color:var(--blue);font-weight:600;cursor:pointer}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.82rem;font-weight:700;color:var(--dark);margin-bottom:6px;letter-spacing:.3px}
+.field-wrap{position:relative}
+.field-wrap .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;opacity:.55;pointer-events:none}
+.inp{
+  width:100%;padding:12px 14px 12px 42px;
+  border-radius:var(--rm);
+  border:1.5px solid var(--bdark);
+  background:rgba(255,255,255,0.7);
+  font-family:var(--f);font-size:.93rem;color:var(--black);
+  transition:all .2s var(--ease);
+  outline:none;
+}
+.inp:focus{border-color:var(--blue);background:rgba(255,255,255,0.92);box-shadow:0 0 0 3px rgba(59,143,212,0.15)}
+.inp.error{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,0.12)}
+.inp.ok{border-color:var(--success)}
+.inp::placeholder{color:var(--subtle)}
+.inp-no-ico{padding-left:14px}
+
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:1rem;opacity:.7;transition:opacity .2s}
+.eye-btn:hover{opacity:1}
+
+.field-hint{font-size:.75rem;color:var(--muted);margin-top:5px}
+.field-error{font-size:.75rem;color:var(--danger);margin-top:5px;display:none}
+.field.has-error .field-error{display:block}
+.field.has-error .field-hint{display:none}
+
+.slug-preview{font-family:var(--mono);font-size:.75rem;color:var(--blue);margin-top:5px;opacity:.8}
+
+/* Password strength */
+.pw-bar{height:3px;border-radius:2px;background:rgba(0,0,0,0.08);margin-top:8px;overflow:hidden}
+.pw-fill{height:100%;border-radius:2px;width:0;transition:width .3s,background .3s}
+
+/* Row */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--subtle);font-size:.8rem;font-weight:600}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdark)}
+
+/* Google btn */
+.btn-google{
+  width:100%;padding:11px;border-radius:var(--rm);border:1.5px solid var(--bdark);
+  background:rgba(255,255,255,0.75);backdrop-filter:var(--blur-sm);
+  font-family:var(--f);font-size:.9rem;font-weight:700;color:var(--dark);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all .25s var(--ease);
+}
+.btn-google:hover{background:rgba(255,255,255,0.95);box-shadow:var(--sh);transform:translateY(-1px)}
+.btn-google svg{width:18px;height:18px;flex-shrink:0}
+
+/* Primary btn */
+.btn-primary{
+  width:100%;padding:13px;border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--blue),var(--blue-d));
+  color:#fff;font-family:var(--f);font-size:.95rem;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 6px 22px rgba(59,143,212,.38),inset 0 1px 0 rgba(255,255,255,.18);
+  transition:all .3s var(--ease);margin-top:20px;position:relative;overflow:hidden;
+}
+.btn-primary::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.12);opacity:0;transition:opacity .2s}
+.btn-primary:hover::before{opacity:1}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,143,212,.48)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-primary .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+.btn-primary.loading .btn-label{display:none}
+.btn-primary.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Terms */
+.terms{font-size:.75rem;color:var(--muted);text-align:center;margin-top:14px}
+.terms a{color:var(--blue);text-decoration:none;font-weight:600}
+.terms a:hover{text-decoration:underline}
+
+/* Forgot */
+.forgot{font-size:.78rem;color:var(--blue);font-weight:600;cursor:pointer;display:block;text-align:right;margin-top:4px;text-decoration:none}
+.forgot:hover{text-decoration:underline}
+
+/* ── ONBOARDING STEPS ──────────────── */
+.steps-header{text-align:center;margin-bottom:28px}
+.steps-title{font-size:1.22rem;font-weight:800;margin-bottom:4px}
+.steps-sub{font-size:.85rem;color:var(--muted)}
+
+.steps-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;border:2px solid var(--border);background:rgba(255,255,255,.5);color:var(--muted);transition:all .3s var(--ease);flex-shrink:0}
+.step-dot.active{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;border-color:var(--blue);box-shadow:0 4px 14px rgba(59,143,212,.4)}
+.step-dot.done{background:var(--success);color:#fff;border-color:var(--success)}
+.step-line{flex:1;height:2px;background:var(--bdark);max-width:60px;transition:background .3s}
+.step-line.done{background:var(--success)}
+
+.step-panel{display:none;animation:panelIn .35s var(--ease) both}
+.step-panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* Plan cards (mini) */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.plan-card{
+  border:2px solid var(--bdark);border-radius:var(--rm);padding:14px 14px 12px;
+  background:rgba(255,255,255,.45);cursor:pointer;transition:all .25s var(--ease);
+  position:relative;
+}
+.plan-card:hover{border-color:var(--blue);background:rgba(255,255,255,.7);transform:translateY(-2px);box-shadow:var(--sh)}
+.plan-card.selected{border-color:var(--blue);background:rgba(59,143,212,.08);box-shadow:0 0 0 3px rgba(59,143,212,.15)}
+.plan-card.recommended{border-color:var(--orange)}
+.plan-card.recommended.selected{background:rgba(245,148,58,.08);box-shadow:0 0 0 3px rgba(245,148,58,.15)}
+.plan-badge{position:absolute;top:-1px;right:12px;background:linear-gradient(135deg,var(--orange),var(--orange-d));color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:0 0 6px 6px}
+.plan-name{font-size:.9rem;font-weight:800;margin-bottom:2px}
+.plan-price{font-family:var(--mono);font-size:1.05rem;font-weight:700;color:var(--blue);margin-bottom:6px}
+.plan-price.free{color:var(--success)}
+.plan-price small{font-size:.65rem;color:var(--muted);font-family:var(--f);font-weight:500}
+.plan-feat{font-size:.72rem;color:var(--muted);line-height:1.5}
+.plan-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--bdark);position:absolute;top:12px;right:12px;background:transparent;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.plan-card.selected .plan-check{border-color:var(--blue);background:var(--blue)}
+.plan-card.recommended.selected .plan-check{border-color:var(--orange);background:var(--orange)}
+.plan-check::after{content:'✓';font-size:.65rem;color:#fff;display:none;font-weight:800}
+.plan-card.selected .plan-check::after{display:block}
+
+/* Trial badge */
+.trial-info{background:rgba(34,197,94,.1);border:1.5px solid rgba(34,197,94,.25);border-radius:var(--rm);padding:10px 14px;font-size:.8rem;color:#15803d;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+/* Success screen */
+.success-screen{text-align:center;padding:8px 0}
+.success-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(34,197,94,.08));border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;animation:popIn .5s var(--ease) both}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.success-screen h2{font-size:1.3rem;font-weight:800;margin-bottom:6px}
+.success-screen p{font-size:.88rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.company-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(59,143,212,.1);border:1.5px solid rgba(59,143,212,.2);border-radius:20px;padding:4px 14px;font-size:.85rem;font-weight:700;color:var(--blue);margin-bottom:20px}
+
+/* Reset screen */
+.reset-sent{text-align:center;display:none}
+.reset-sent .icon{font-size:2.5rem;margin-bottom:12px}
+.reset-sent h3{font-size:1.1rem;font-weight:800;margin-bottom:6px}
+.reset-sent p{font-size:.85rem;color:var(--muted)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--dark);color:#fff;
+  padding:12px 18px;border-radius:var(--rm);font-size:.85rem;font-weight:600;
+  box-shadow:0 12px 40px rgba(0,0,0,.25);
+  transform:translateY(80px);opacity:0;
+  transition:all .35s var(--ease);pointer-events:none;max-width:320px;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{transform:none;opacity:1}
+.toast.ok{background:var(--success)}
+.toast.err{background:var(--danger)}
+
+/* Responsive */
+@media(max-width:500px){
+  .card{padding:28px 22px 24px;border-radius:var(--rl)}
+  .plan-grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<div class="page">
+  <div class="card" id="mainCard">
+
+    <!-- Logo -->
+    <a href="index.html" class="logo">
+      <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;font-weight:900;box-shadow:0 4px 16px rgba(59,143,212,.4)">3</div>
+      <div class="logo-txt">
+        <div class="logo-name"><span class="b3d">3DZ</span><span class="bzp">AAP</span></div>
+        <div class="logo-sub">Print Manager</div>
+      </div>
+    </a>
+
+    <!-- ═══════════════ LOGIN / SIGNUP PANEL ═══════════════ -->
+    <div id="authPanel">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Entrar</button>
+        <button class="tab" onclick="switchTab('signup')">Criar Conta</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="form-title">Bem-vindo de volta 👋</div>
+        <div class="form-sub">Sem conta? <span onclick="switchTab('signup')">Regista-te grátis</span></div>
+
+        <!-- Google -->
+        <button class="btn-google" onclick="googleAuth()">
+          <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+          Continuar com Google
+        </button>
+
+        <div class="divider">ou</div>
+
+        <div class="field" id="f-email-l">
+          <label>Email</label>
+          <div class="field-wrap">
+            <span class="ico">✉️</span>
+            <input type="email" class="inp" id="loginEmail" placeholder="tu@empresa.com" autocomplete="email">
+          </div>
+          <div class="field-error" id="err-email-l">Email inválido</div>
+        </div>
+
+        <div class="field" id="f-pass-l">
+          <label>Password</label>
+          <div class="field-wrap">
+            <span class="ico">🔒</span>
+            <input type="password" class="inp" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+            <button class="eye-btn" onclick="toggleEye('loginPass',this)" type="button">👁️</button>
+          </div>
+          <a href="#" class="forgot" onclick="showReset(event)">Esqueceu a password?</a>
+          <div class="field-error" id="err-pass-l">Password incorrecta</div>
+        </div>
+
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+          <span class="btn-label">Entrar na conta</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="resetForm" style="display:none">
+        <div class="form-title">Recuperar password 🔑</div>
+        <div class="form-sub">Envia-mos um link para o teu email. <span onclick="cancelReset()">Voltar ao login</span></div>
+
+        <div id="resetInputArea">
+          <div class="field">
+            <label>Email da conta</label>
+            <div class="field-wrap">
+              <span class="ico">✉️</span>
+              <input type="email" class="inp" id="resetEmail" placeholder="tu@empresa.com">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="doReset()">
+            <span class="btn-label">Enviar link de recuperação</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+
+        <div class="reset-sent" id="resetSent">
+          <div class="icon">📬</div>
+          <h3>Email enviado!</h3>
+          <p>Verifica a tua caixa de entrada e segue as instruções para criar uma nova password.</p>
+          <button class="btn-primary" style="margin-top:20px" onclick="cancelReset()">
+            <span class="btn-label">Voltar ao login</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signupForm" style="display:none">
+        <div class="form-title">Começa grátis hoje 🚀</div>
+        <div class="form-sub">14 dias de trial completo. Sem cartão. <span onclick="switchTab('login')">Já tens conta?</span></div>
+
+        <button class="btn-google" onclick="googleAuth()">
+          <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+          Registar com Google
+        </button>
+
+        <div class="divider">ou com email</div>
+
+        <div class="row">
+          <div class="field" id="f-fname">
+            <label>Primeiro nome</label>
+            <div class="field-wrap">
+              <span class="ico">👤</span>
+              <input type="text" class="inp" id="signupFname" placeholder="João" autocomplete="given-name">
+            </div>
+            <div class="field-error">Campo obrigatório</div>
+          </div>
+          <div class="field" id="f-lname">
+            <label>Apelido</label>
+            <div class="field-wrap">
+              <span class="ico">👤</span>
+              <input type="text" class="inp" id="signupLname" placeholder="Silva" autocomplete="family-name">
+            </div>
+            <div class="field-error">Campo obrigatório</div>
+          </div>
+        </div>
+
+        <div class="field" id="f-email-s">
+          <label>Email profissional</label>
+          <div class="field-wrap">
+            <span class="ico">✉️</span>
+            <input type="email" class="inp" id="signupEmail" placeholder="tu@empresa.com" autocomplete="email">
+          </div>
+          <div class="field-error" id="err-email-s">Email inválido</div>
+        </div>
+
+        <div class="field" id="f-pass-s">
+          <label>Password</label>
+          <div class="field-wrap">
+            <span class="ico">🔒</span>
+            <input type="password" class="inp" id="signupPass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="checkPasswordStrength(this.value)">
+            <button class="eye-btn" onclick="toggleEye('signupPass',this)" type="button">👁️</button>
+          </div>
+          <div class="pw-bar"><div class="pw-fill" id="pwFill"></div></div>
+          <div class="field-hint" id="pwHint">Use letras, números e símbolos</div>
+          <div class="field-error">Mínimo 8 caracteres</div>
+        </div>
+
+        <button class="btn-primary" id="signupBtn" onclick="doSignup()">
+          <span class="btn-label">Criar conta grátis</span>
+          <div class="spinner"></div>
+        </button>
+
+        <div class="terms">
+          Ao criares conta, aceitas os nossos <a href="#">Termos</a> e <a href="#">Política de Privacidade</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ONBOARDING PANEL ═══════════════ -->
+    <div id="onboardingPanel" style="display:none">
+
+      <!-- Step progress -->
+      <div class="steps-bar">
+        <div class="step-dot active" id="dot1">1</div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-dot" id="dot2">2</div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-dot" id="dot3">3</div>
+      </div>
+
+      <!-- STEP 1: Empresa -->
+      <div class="step-panel active" id="step1">
+        <div class="steps-header">
+          <div class="steps-title">🏭 A tua empresa</div>
+          <div class="steps-sub">Estes dados aparecem nos recibos e documentos</div>
+        </div>
+
+        <div class="field" id="f-cname">
+          <label>Nome da empresa</label>
+          <div class="field-wrap">
+            <span class="ico">🏢</span>
+            <input type="text" class="inp" id="companyName" placeholder="Ex: PrintLab Studio" oninput="generateSlug(this.value)" autocomplete="organization">
+          </div>
+          <div class="slug-preview" id="slugPreview"></div>
+          <div class="field-error">Nome obrigatório (mín. 2 caracteres)</div>
+        </div>
+
+        <div class="field" id="f-slug">
+          <label>URL da empresa <span style="color:var(--subtle);font-weight:500">(editável)</span></label>
+          <div class="field-wrap">
+            <span class="ico" style="font-size:.75rem;font-family:var(--mono);color:var(--muted);left:12px;white-space:nowrap">app/</span>
+            <input type="text" class="inp" id="companySlug" placeholder="printlab-studio" oninput="validateSlugInput(this.value)" style="padding-left:52px;font-family:var(--mono);font-size:.88rem">
+          </div>
+          <div class="field-hint">Apenas letras minúsculas, números e hífens</div>
+          <div class="field-error" id="err-slug">Slug inválido ou já em uso</div>
+        </div>
+
+        <div class="field">
+          <label>País <span style="color:var(--subtle);font-weight:500">(moeda e pagamentos)</span></label>
+          <div class="field-wrap">
+            <span class="ico">🌍</span>
+            <select class="inp" id="companyCountry" style="appearance:none;cursor:pointer">
+              <option value="pt">🇵🇹 Portugal</option>
+              <option value="br">🇧🇷 Brasil</option>
+              <option value="es">🇪🇸 Espanha</option>
+              <option value="fr">🇫🇷 França</option>
+              <option value="de">🇩🇪 Alemanha</option>
+              <option value="other">🌍 Outro (EUR)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="goStep(2)">
+          <span class="btn-label">Continuar →</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <!-- STEP 2: Plano -->
+      <div class="step-panel" id="step2">
+        <div class="steps-header">
+          <div class="steps-title">✨ Escolhe o teu plano</div>
+          <div class="steps-sub">Todos os planos incluem 14 dias de trial grátis</div>
+        </div>
+
+        <div class="trial-info">
+          🎁 <span>14 dias grátis em qualquer plano — sem cartão necessário</span>
+        </div>
+
+        <div class="plan-grid">
+
+          <div class="plan-card" id="plan-trial" onclick="selectPlan('trial')">
+            <div class="plan-check"></div>
+            <div class="plan-name">Trial</div>
+            <div class="plan-price free">Grátis <small>14 dias</small></div>
+            <div class="plan-feat">Todos os módulos<br>1 utilizador<br>Sem cartão</div>
+          </div>
+
+          <div class="plan-card selected" id="plan-starter" onclick="selectPlan('starter')">
+            <div class="plan-check"></div>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">€9,90 <small>/mês</small></div>
+            <div class="plan-feat">Calculadora<br>Filamentos<br>1 utilizador</div>
+          </div>
+
+          <div class="plan-card recommended" id="plan-pro" onclick="selectPlan('pro')">
+            <div class="plan-badge">Popular</div>
+            <div class="plan-check"></div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">€19,90 <small>/mês</small></div>
+            <div class="plan-feat">+ Pedidos<br>Pipeline completo<br>Recibos PDF</div>
+          </div>
+
+          <div class="plan-card" id="plan-business" onclick="selectPlan('business')">
+            <div class="plan-check"></div>
+            <div class="plan-name">Business</div>
+            <div class="plan-price">€39,90 <small>/mês</small></div>
+            <div class="plan-feat">+ Financeiro<br>Marca própria<br>Multi-user</div>
+          </div>
+
+        </div>
+
+        <button class="btn-primary" onclick="goStep(3)" style="margin-top:16px">
+          <span class="btn-label">Confirmar plano →</span>
+          <div class="spinner"></div>
+        </button>
+        <div style="text-align:center;margin-top:10px">
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="goStep(1)">← Voltar</span>
+        </div>
+      </div>
+
+      <!-- STEP 3: Configurações iniciais -->
+      <div class="step-panel" id="step3">
+        <div class="steps-header">
+          <div class="steps-title">⚙️ Configuração rápida</div>
+          <div class="steps-sub">Defaults da calculadora (editável depois)</div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Preço filamento (€/kg)</label>
+            <div class="field-wrap">
+              <span class="ico">🧵</span>
+              <input type="number" class="inp" id="cfgFilament" value="25" min="1" step="0.5">
+            </div>
+          </div>
+          <div class="field">
+            <label>Preço impressora (€)</label>
+            <div class="field-wrap">
+              <span class="ico">🖨️</span>
+              <input type="number" class="inp" id="cfgPrinter" value="600" min="50" step="50">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Vida útil (horas)</label>
+            <div class="field-wrap">
+              <span class="ico">⏱️</span>
+              <input type="number" class="inp" id="cfgLife" value="5000" min="100" step="100">
+            </div>
+          </div>
+          <div class="field">
+            <label>Eletricidade (€/kWh)</label>
+            <div class="field-wrap">
+              <span class="ico">⚡</span>
+              <input type="number" class="inp" id="cfgElec" value="0.22" min="0.01" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Margem de lucro (%)</label>
+            <div class="field-wrap">
+              <span class="ico">📈</span>
+              <input type="number" class="inp" id="cfgMargin" value="30" min="0" max="200" step="1">
+            </div>
+          </div>
+          <div class="field">
+            <label>Taxa de falhas (%)</label>
+            <div class="field-wrap">
+              <span class="ico">⚠️</span>
+              <input type="number" class="inp" id="cfgFailure" value="5" min="0" max="50" step="1">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="finishBtn" onclick="finishOnboarding()">
+          <span class="btn-label">🚀 Entrar no dashboard</span>
+          <div class="spinner"></div>
+        </button>
+        <div style="text-align:center;margin-top:10px">
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="goStep(2)">← Voltar</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ SUCCESS PANEL ═══════════════ -->
+    <div id="successPanel" style="display:none">
+      <div class="success-screen">
+        <div class="success-icon">🎉</div>
+        <h2>Tudo pronto!</h2>
+        <div class="company-pill" id="successCompanyPill">🏭 PrintLab Studio</div>
+        <p>A tua conta foi criada com sucesso.<br>O teu trial de 14 dias começa agora.</p>
+        <button class="btn-primary" onclick="goToDashboard()">
+          <span class="btn-label">Ir para o dashboard →</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="terms" style="margin-top:16px">
+          Irás ser redirecionado para <strong>3DZAAP.html</strong>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /page -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ────────────────────────────
+let currentTab = 'login';
+let currentStep = 1;
+let selectedPlan = 'starter';
+let formData = {};
+
+// ── TABS ─────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='signup'));
+  });
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('resetForm').style.display = 'none';
+}
+
+// ── EYE TOGGLE ───────────────────────
+function toggleEye(id, btn) {
+  const inp = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  btn.textContent = isText ? '👁️' : '🙈';
+}
+
+// ── PASSWORD STRENGTH ─────────────────
+function checkPasswordStrength(val) {
+  const fill = document.getElementById('pwFill');
+  const hint = document.getElementById('pwHint');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const pct = (score / 4) * 100;
+  const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+  const hints = ['Muito fraca','Fraca','Boa','Forte 💪'];
+  fill.style.width = pct + '%';
+  fill.style.background = colors[score-1] || '#ef4444';
+  if (val.length === 0) { fill.style.width = '0'; hint.textContent = 'Use letras, números e símbolos'; return; }
+  hint.textContent = hints[score-1] || 'Muito fraca';
+}
+
+// ── FORGOT / RESET ───────────────────
+function showReset(e) {
+  e.preventDefault();
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'block';
+  document.querySelector('.tabs').style.display = 'none';
+}
+function cancelReset() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('resetForm').style.display = 'none';
+  document.querySelector('.tabs').style.display = 'flex';
+  document.getElementById('resetSent').style.display = 'none';
+  document.getElementById('resetInputArea').style.display = 'block';
+}
+function doReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!isEmail(email)) { showToast('Insere um email válido','err'); return; }
+  fakeLoad(event.currentTarget, () => {
+    document.getElementById('resetInputArea').style.display = 'none';
+    document.getElementById('resetSent').style.display = 'block';
+  });
+}
+
+// ── VALIDATION ───────────────────────
+function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function setFieldError(id, show) {
+  const f = document.getElementById(id);
+  if (f) f.classList.toggle('has-error', show);
+}
+
+// ── LOGIN ────────────────────────────
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  let ok = true;
+  if (!isEmail(email)) { setFieldError('f-email-l', true); ok = false; } else { setFieldError('f-email-l', false); }
+  if (pass.length < 1) { setFieldError('f-pass-l', true); ok = false; } else { setFieldError('f-pass-l', false); }
+  if (!ok) return;
+  fakeLoad(document.getElementById('loginBtn'), () => {
+    formData.email = email;
+    formData.isNewUser = false;
+    showOnboarding(); // In production: check if user has company → dashboard or onboarding
+  });
+}
+
+// ── SIGNUP ───────────────────────────
+function doSignup() {
+  const fname = document.getElementById('signupFname').value.trim();
+  const lname = document.getElementById('signupLname').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass  = document.getElementById('signupPass').value;
+  let ok = true;
+  if (!fname) { setFieldError('f-fname', true); ok = false; } else { setFieldError('f-fname', false); }
+  if (!lname) { setFieldError('f-lname', true); ok = false; } else { setFieldError('f-lname', false); }
+  if (!isEmail(email)) { setFieldError('f-email-s', true); ok = false; } else { setFieldError('f-email-s', false); }
+  if (pass.length < 8) { setFieldError('f-pass-s', true); ok = false; } else { setFieldError('f-pass-s', false); }
+  if (!ok) return;
+  fakeLoad(document.getElementById('signupBtn'), () => {
+    formData = { fname, lname, email, pass, isNewUser: true };
+    showOnboarding();
+  });
+}
+
+// ── GOOGLE ───────────────────────────
+function googleAuth() {
+  showToast('Em integração com Supabase Auth 🔗');
+  // In production: supabase.auth.signInWithOAuth({ provider: 'google' })
+}
+
+// ── ONBOARDING ───────────────────────
+function showOnboarding() {
+  document.getElementById('authPanel').style.display = 'none';
+  document.getElementById('onboardingPanel').style.display = 'block';
+  setStep(1);
+}
+
+function goStep(n) {
+  if (n === 2) {
+    const name = document.getElementById('companyName').value.trim();
+    const slug = document.getElementById('companySlug').value.trim();
+    if (name.length < 2) { setFieldError('f-cname', true); showToast('Nome da empresa obrigatório','err'); return; }
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) { setFieldError('f-slug', true); showToast('Slug inválido','err'); return; }
+    setFieldError('f-cname', false); setFieldError('f-slug', false);
+    formData.companyName = name; formData.slug = slug;
+  }
+  if (n === 3) { formData.plan = selectedPlan; }
+  setStep(n);
+}
+
+function setStep(n) {
+  currentStep = n;
+  // Panels
+  for (let i=1;i<=3;i++) {
+    const p = document.getElementById('step'+i);
+    p.classList.toggle('active', i===n);
+  }
+  // Dots
+  for (let i=1;i<=3;i++) {
+    const d = document.getElementById('dot'+i);
+    d.classList.remove('active','done');
+    if (i < n) d.classList.add('done'), d.textContent = '✓';
+    else if (i === n) d.classList.add('active'), d.textContent = i;
+    else d.textContent = i;
+  }
+  // Lines
+  for (let i=1;i<=2;i++) {
+    document.getElementById('line'+i).classList.toggle('done', i < n);
+  }
+}
+
+// ── PLAN SELECT ──────────────────────
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('plan-'+plan).classList.add('selected');
+}
+
+// ── SLUG ─────────────────────────────
+function generateSlug(val) {
+  const slug = val.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s-]/g,'')
+    .trim().replace(/\s+/g,'-')
+    .replace(/-+/g,'-').substring(0,40);
+  document.getElementById('companySlug').value = slug;
+  document.getElementById('slugPreview').textContent = slug ? 'app.3dzaap.com/' + slug : '';
+}
+function validateSlugInput(val) {
+  const clean = val.toLowerCase().replace(/[^a-z0-9-]/g,'');
+  if (val !== clean) document.getElementById('companySlug').value = clean;
+  document.getElementById('slugPreview').textContent = clean ? 'app.3dzaap.com/' + clean : '';
+}
+
+// ── FINISH ───────────────────────────
+function finishOnboarding() {
+  const config = {
+    filamentPrice: +document.getElementById('cfgFilament').value || 25,
+    printerPrice: +document.getElementById('cfgPrinter').value || 600,
+    printerLife: +document.getElementById('cfgLife').value || 5000,
+    electricityPrice: +document.getElementById('cfgElec').value || 0.22,
+    profitMargin: +document.getElementById('cfgMargin').value || 30,
+    failureRate: +document.getElementById('cfgFailure').value || 5,
+  };
+  formData.config = config;
+
+  fakeLoad(document.getElementById('finishBtn'), () => {
+    document.getElementById('onboardingPanel').style.display = 'none';
+    document.getElementById('successPanel').style.display = 'block';
+    document.getElementById('successCompanyPill').textContent = '🏭 ' + (formData.companyName || 'Empresa');
+    // Save to localStorage for demo handoff
+    localStorage.setItem('3dzaap_user', JSON.stringify(formData));
+    showToast('Conta criada com sucesso! 🎉','ok');
+  });
+}
+
+// ── GO TO DASHBOARD ──────────────────
+function goToDashboard() {
+  fakeLoad(event.currentTarget, () => {
+    window.location.href = '3DZAAP.html';
+  });
+}
+
+// ── HELPERS ──────────────────────────
+function fakeLoad(btn, cb, delay=1200) {
+  if (!btn) { cb(); return; }
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    cb();
+  }, delay);
+}
+
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── KEYBOARD ─────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (currentTab === 'login' && document.getElementById('loginForm').style.display !== 'none') doLogin();
+    if (currentTab === 'signup') doSignup();
+  }
+});
+
+// ── DEMO: pre-fill for easy testing ──
+// Uncomment to test onboarding directly:
+// setTimeout(() => { formData.email='demo@test.com'; showOnboarding(); }, 100);
+</script>
+</body>
+</html>
