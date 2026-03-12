@@ -109,22 +109,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .page-header h1{font-size:1.45rem;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:10px}
 .page-header p{font-size:.88rem;color:var(--muted)}
 
-/* ── SETTINGS BANNER ────────────────── */
-.settings-banner{
-  display:flex;align-items:center;gap:14px;
-  padding:12px 18px;margin-bottom:24px;
-  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
-  border:1.5px solid rgba(59,143,212,.25);border-radius:var(--rm);
-  backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);
-  animation:fadeUp .5s var(--ease) .1s both;
-  cursor:pointer;transition:background .2s,border-color .2s;
-}
-.settings-banner:hover{background:linear-gradient(135deg,rgba(59,143,212,.15),rgba(59,143,212,.06));border-color:rgba(59,143,212,.4)}
-.settings-banner-icon{font-size:1.3rem;flex-shrink:0}
-.settings-banner-text{flex:1;min-width:0}
-.settings-banner-title{font-size:.84rem;font-weight:700;color:var(--dark)}
-.settings-banner-sub{font-size:.74rem;color:var(--muted)}
-.settings-banner-cta{font-size:.78rem;font-weight:700;color:var(--blue);white-space:nowrap}
 
 /* ── CALC LAYOUT ────────────────────── */
 .calc-layout{
@@ -306,30 +290,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .btn-action:hover{background:rgba(255,255,255,.9);color:var(--dark);border-color:rgba(59,143,212,.3)}
 .btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
 
-/* ── HISTORY ────────────────────────── */
-.history-section{
-  border-top:1.5px solid var(--border);
-  padding-top:18px;margin-top:4px;
-}
-.history-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;
-}
-.history-title{font-size:.78rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-.history-clear{font-size:.72rem;font-weight:600;color:var(--subtle);cursor:pointer;transition:color .18s}
-.history-clear:hover{color:var(--danger)}
-.history-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
-.history-item{
-  display:flex;align-items:center;gap:10px;
-  padding:8px 10px;border-radius:var(--r);
-  background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6);
-  cursor:pointer;transition:background .15s,border-color .15s;
-}
-.history-item:hover{background:rgba(59,143,212,.07);border-color:rgba(59,143,212,.25)}
-.history-meta{flex:1;min-width:0}
-.history-time{font-size:.70rem;color:var(--subtle)}
-.history-desc{font-size:.76rem;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.history-price{font-family:var(--mono);font-size:.82rem;font-weight:800;color:var(--blue);white-space:nowrap}
 
 /* ── SETTINGS PANEL ─────────────────── */
 .settings-panel{
@@ -399,6 +359,40 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
 .toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 
+/* ── HISTORY TABLE ──────────────────── */
+.history-search-wrap{position:relative;display:flex;align-items:center}
+.history-search-icon{position:absolute;left:10px;font-size:.82rem;pointer-events:none}
+.history-search{
+  padding:6px 12px 6px 30px;border-radius:var(--r);
+  background:rgba(255,255,255,.7);border:1.5px solid var(--border);
+  font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;
+  width:220px;transition:border-color .18s,width .25s var(--ease);
+}
+.history-search:focus{border-color:rgba(59,143,212,.4);width:260px}
+.history-count{font-size:.74rem;color:var(--subtle);font-weight:600;white-space:nowrap}
+.history-clear-btn{font-size:.75rem;font-weight:600;color:var(--subtle);cursor:pointer;padding:4px 10px;border-radius:var(--r);transition:color .18s,background .18s}
+.history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
+.history-table-wrap{overflow-x:auto}
+.history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.5}
+.history-empty-icon{font-size:2rem;opacity:.4}
+.history-table{width:100%;border-collapse:collapse;min-width:600px}
+.history-table thead tr{background:rgba(255,255,255,.3);border-bottom:1.5px solid var(--border)}
+.history-table th{padding:11px 16px;font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
+.history-table tbody tr{border-bottom:1px solid rgba(255,255,255,.55);transition:background .15s;cursor:pointer}
+.history-table tbody tr:last-child{border-bottom:none}
+.history-table tbody tr:hover{background:rgba(59,143,212,.05)}
+.history-table td{padding:11px 16px;font-size:.83rem;color:var(--dark);vertical-align:middle}
+.history-table .td-name{font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-table .td-name .no-name{color:var(--subtle);font-weight:400;font-style:italic}
+.history-table .td-mono{font-family:var(--mono);font-weight:600}
+.history-table .td-price{font-family:var(--mono);font-weight:800;color:var(--blue)}
+.history-table .td-time{font-size:.74rem;color:var(--subtle)}
+.history-table .td-actions{text-align:right;white-space:nowrap}
+.history-table .btn-restore{font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:var(--r);border:1.5px solid rgba(59,143,212,.3);background:rgba(59,143,212,.07);color:var(--blue);cursor:pointer;transition:all .18s;font-family:var(--f)}
+.history-table .btn-restore:hover{background:rgba(59,143,212,.15);border-color:var(--blue)}
+.history-table .btn-del{font-size:.76rem;padding:4px 8px;border-radius:var(--r);border:none;background:transparent;color:var(--subtle);cursor:pointer;transition:color .18s,background .18s;margin-left:4px}
+.history-table .btn-del:hover{color:var(--danger);background:rgba(239,68,68,.08)}
+
 /* ── ANIMATIONS ─────────────────────── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
@@ -446,19 +440,19 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="nav-section">
         <div class="nav-section-label">Principal</div>
         <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item active" href="#"><span class="nav-icon">📐</span> Calculadora</a>
-        <a class="nav-item" href="#"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item active" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="#"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="#"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="#"><span class="nav-icon">🗄️</span> BackOffice</a>
+        <a class="nav-item" id="navOrders" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" id="navFinancial" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#"><span class="nav-icon">💳</span> Assinatura</a>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','')"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','')"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -466,7 +460,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="user-avatar" id="userAvatar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userName">João Demo</div>
-          <div class="user-email" id="userEmail">joao@printlab.pt</div>
+          <div class="user-email" id="userEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660c0907092616140f08120a0704481612">[email&#160;protected]</a></div>
         </div>
       </div>
     </div>
@@ -482,9 +476,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <strong>📐 Calculadora</strong>
       </div>
       <div class="topbar-actions">
-        <button class="topbar-btn" onclick="openSettings()">⚙️ Defaults da empresa</button>
+        <button class="topbar-btn" onclick="openSettings()">⚙️ Parâmetros Padrão</button>
         <button class="topbar-btn" onclick="exportCalcCSV()">📄 Exportar CSV</button>
-        <button class="topbar-btn primary" id="copyBtn" onclick="copyResults()">📋 Copiar</button>
+        <button class="topbar-btn primary" onclick="copyResults()">📋 Copiar</button>
       </div>
     </header>
 
@@ -493,16 +487,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="page-header">
         <h1>📐 Calculadora de Impressão</h1>
         <p>Calcula o custo real e preço de venda das tuas peças — lógica 100% homologada</p>
-      </div>
-
-      <!-- Settings banner -->
-      <div class="settings-banner" onclick="openSettings()">
-        <div class="settings-banner-icon">⚙️</div>
-        <div class="settings-banner-text">
-          <div class="settings-banner-title">Defaults carregados da empresa</div>
-          <div class="settings-banner-sub" id="settingsBannerSub">Filamento: €25/kg · Impressora: €600 · Margem: 30%</div>
-        </div>
-        <div class="settings-banner-cta">Editar defaults →</div>
       </div>
 
       <div class="calc-layout">
@@ -515,6 +499,18 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           </div>
 
           <div class="form-sections">
+
+            <!-- Nome -->
+            <div class="form-section">
+              <div class="fields-grid">
+                <div class="field full">
+                  <label>Nome da impressão <span style="font-size:.70rem;color:var(--subtle);font-weight:400">(opcional — para identificar no histórico)</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…" style="padding-right:12px;font-family:var(--f);font-weight:500" oninput="liveCalc()">
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- Material -->
             <div class="form-section">
@@ -740,21 +736,47 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
             </div>
 
-            <!-- History -->
-            <div class="history-section">
-              <div class="history-header">
-                <div class="history-title">🕐 Histórico desta sessão</div>
-                <div class="history-clear" onclick="clearHistory()">Limpar</div>
-              </div>
-              <div class="history-list" id="historyList">
-                <div style="font-size:.76rem;color:var(--subtle);text-align:center;padding:12px 0">Sem cálculos guardados ainda</div>
-              </div>
-            </div>
-
           </div>
         </div><!-- /results panel -->
 
       </div><!-- /calc-layout -->
+
+      <!-- ── HISTÓRICO ──────────────────── -->
+      <div class="glass-card history-card" style="margin-top:20px;animation:fadeUp .5s var(--ease) .3s both">
+        <div class="card-header">
+          <div class="card-header-title">🕐 Histórico de Cálculos</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="history-search-wrap">
+              <span class="history-search-icon">🔍</span>
+              <input type="text" id="historySearch" class="history-search" placeholder="Pesquisar por nome, peso, preço…" oninput="renderHistory()">
+            </div>
+            <span class="history-count" id="historyCount">0 registos</span>
+            <div class="history-clear-btn" onclick="clearHistory()">Limpar tudo</div>
+          </div>
+        </div>
+        <div class="history-table-wrap" id="historyTableWrap">
+          <div class="history-empty" id="historyEmpty">
+            <div class="history-empty-icon">🕐</div>
+            <div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após um cálculo para o registar aqui.</div>
+          </div>
+          <table class="history-table" id="historyTable" style="display:none">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Peso</th>
+                <th>Tempo</th>
+                <th>Margem</th>
+                <th>Custo Base</th>
+                <th>Preço Final</th>
+                <th>Hora</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /page -->
   </div><!-- /main -->
 </div><!-- /layout -->
@@ -762,11 +784,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <!-- ── SETTINGS PANEL ──────────────── -->
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-panel-header">
-    <div class="settings-panel-title">⚙️ Defaults da Empresa</div>
+    <div class="settings-panel-title">⚙️ Parâmetros Padrão</div>
     <button class="settings-panel-close" onclick="closeSettings()">✕</button>
   </div>
   <div class="settings-panel-body">
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Estes valores são carregados automaticamente como ponto de partida em cada cálculo. Podem ser alterados em cada sessão sem afectar os defaults.</p>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5">Valores base carregados automaticamente em cada novo cálculo. Podem ser ajustados a qualquer momento sem afectar os parâmetros em uso.</p>
 
     <div class="settings-group">
       <div class="settings-group-title">Material</div>
@@ -821,7 +843,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════
 //  DEFAULTS — homologated values
 // ══════════════════════════════════════
@@ -1147,60 +1169,105 @@ function saveToHistory() {
   const r = computeResults(i);
   if (r.finalPrice === 0) { showToast('Sem valores para guardar','err'); return; }
 
+  const name = (document.getElementById('printName').value || '').trim();
   const entry = {
+    id: Date.now(),
+    name,
     time: new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),
-    desc: `${i.partWeight}g · ${i.printTime}h · ${i.profitMargin}%`,
-    price: r.finalPrice,
-    inputs: {...i}, results: {...r},
+    inputs: {...i},
+    results: {...r},
   };
   calcHistory.unshift(entry);
-  if (calcHistory.length > 10) calcHistory.pop();
+  if (calcHistory.length > 50) calcHistory.pop();
   renderHistory();
   showToast('💾 Guardado no histórico!','ok');
 }
 
 function renderHistory() {
-  const el = document.getElementById('historyList');
-  if (!calcHistory.length) {
-    el.innerHTML = '<div style="font-size:.76rem;color:var(--subtle);text-align:center;padding:12px 0">Sem cálculos guardados ainda</div>';
+  const query = (document.getElementById('historySearch')?.value || '').toLowerCase().trim();
+  const filtered = calcHistory.filter(e => {
+    if (!query) return true;
+    return (
+      (e.name || '').toLowerCase().includes(query) ||
+      String(e.inputs.partWeight).includes(query) ||
+      String(e.inputs.profitMargin).includes(query) ||
+      fmtEur(e.results.finalPrice).includes(query) ||
+      e.time.includes(query)
+    );
+  });
+
+  const countEl = document.getElementById('historyCount');
+  if (countEl) countEl.textContent = `${filtered.length} registo${filtered.length!==1?'s':''}`;
+
+  const emptyEl = document.getElementById('historyEmpty');
+  const tableEl = document.getElementById('historyTable');
+  const tbody   = document.getElementById('historyTbody');
+
+  if (!filtered.length) {
+    if (emptyEl) emptyEl.style.display = 'flex';
+    if (tableEl) tableEl.style.display = 'none';
+    if (emptyEl && calcHistory.length > 0) {
+      emptyEl.innerHTML = '<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"' + escHtml(query) + '"</strong></div>';
+    } else if (emptyEl) {
+      emptyEl.innerHTML = '<div class="history-empty-icon">🕐</div><div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> após um cálculo para o registar aqui.</div>';
+    }
     return;
   }
-  el.innerHTML = calcHistory.map((e,idx) => `
-    <div class="history-item" onclick="restoreHistory(${idx})">
-      <div class="history-meta">
-        <div class="history-time">${e.time}</div>
-        <div class="history-desc">${e.desc}</div>
-      </div>
-      <div class="history-price">${fmtEur(e.price)}</div>
-    </div>`).join('');
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (tableEl) tableEl.style.display = '';
+
+  tbody.innerHTML = filtered.map(e => `
+    <tr onclick="restoreHistory(${e.id})">
+      <td class="td-name">${e.name ? escHtml(e.name) : '<span class="no-name">Sem nome</span>'}</td>
+      <td class="td-mono">${e.inputs.partWeight}g</td>
+      <td class="td-mono">${e.inputs.printTime}h</td>
+      <td class="td-mono">${e.inputs.profitMargin}%</td>
+      <td class="td-mono">${fmtEur(e.results.baseCost)}</td>
+      <td class="td-price">${fmtEur(e.results.finalPrice)}</td>
+      <td class="td-time">${e.time}</td>
+      <td class="td-actions">
+        <button class="btn-restore" onclick="event.stopPropagation();restoreHistory(${e.id})">↩ Restaurar</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteHistory(${e.id})" title="Remover">✕</button>
+      </td>
+    </tr>`).join('');
 }
 
-function restoreHistory(idx) {
-  const e = calcHistory[idx];
+function restoreHistory(id) {
+  const e = calcHistory.find(h => h.id === id);
   if (!e) return;
   const i = e.inputs;
-  setValue('filamentPrice',    i.filamentPrice);
-  setValue('partWeight',       i.partWeight);
-  setValue('printTime',        i.printTime);
-  setValue('printerPrice',     i.printerPrice);
-  setValue('printerLife',      i.printerLife);
+  setValue('printName',      e.name || '');
+  setValue('filamentPrice',  i.filamentPrice);
+  setValue('partWeight',     i.partWeight);
+  setValue('printTime',      i.printTime);
+  setValue('printerPrice',   i.printerPrice);
+  setValue('printerLife',    i.printerLife);
   setValue('powerConsumption', i.powerConsumption);
   setValue('electricityPrice', i.electricityPrice);
-  setValue('failureRate',      i.failureRate);
-  setValue('indirectCosts',    i.indirectCosts);
-  setValue('profitMargin',     i.profitMargin);
+  setValue('failureRate',    i.failureRate);
+  setValue('indirectCosts',  i.indirectCosts);
+  setValue('profitMargin',   i.profitMargin);
   setSlider('printTimeSlider', i.printTime, 0, 48);
   setSlider('failureSlider',   i.failureRate, 0, 50);
   setSlider('indirectSlider',  i.indirectCosts, 0, 50);
   setSlider('marginSlider',    i.profitMargin, 0, 100);
   updateSliderLabels();
   liveCalc();
-  showToast('🕐 Cálculo restaurado do histórico','ok');
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('↩ Cálculo restaurado do histórico','ok');
+}
+
+function deleteHistory(id) {
+  calcHistory = calcHistory.filter(h => h.id !== id);
+  renderHistory();
 }
 
 function clearHistory() {
+  if (!calcHistory.length) return;
   calcHistory = [];
   renderHistory();
+  showToast('🗑️ Histórico limpo','');
 }
 
 // ── SETTINGS PANEL ─────────────────────
@@ -1243,8 +1310,7 @@ function saveSettings() {
   showToast('✅ Defaults guardados com sucesso!','ok');
 }
 function updateSettingsBanner() {
-  document.getElementById('settingsBannerSub').textContent =
-    `Filamento: €${defaults.filamentPrice}/kg · Impressora: €${defaults.printerPrice} · Margem: ${defaults.profitMargin}%`;
+  // Banner removido — parâmetros padrão agora apenas no painel lateral
 }
 
 // ── SIDEBAR MOBILE ──────────────────────
@@ -1256,6 +1322,7 @@ function toggleSidebar() {
 // ── HELPERS ────────────────────────────
 function v(id) { return (document.getElementById(id)||{}).value || ''; }
 function setText(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtEur(val) {
   return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
@@ -1269,12 +1336,4 @@ function downloadCSV(csv, filename) {
 }
 let toastTimer;
 function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-}
-</script>
-</body>
-</html>
+  c
