@@ -732,7 +732,7 @@ footer{position:relative;z-index:1;padding:40px 0 26px;border-top:1px solid rgba
       <p class="fdesc2">A plataforma profissional para gestão de negócios de impressão 3D. Calculadora, filamentos, pedidos e finanças integrados.</p>
       <div class="fsoc">
         <a href="https://instagram.com/3dzaap" class="sbtn" title="Instagram" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-        <a href="/cdn-cgi/l/email-protection#d3e0b7a9b2b2a393b4beb2babffdb0bcbe" class="sbtn" title="Email"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+        <a href="/cdn-cgi/l/email-protection#f5c6918f949485b59298949c99db969a98" class="sbtn" title="Email"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
       </div>
     </div>
     <div class="fcol"><h4>Produto</h4><ul class="flinks"><li><a href="#features">Funcionalidades</a></li><li><a href="#pricing">Preços</a></li><li><a href="#how">Como Funciona</a></li><li><a href="#faq">FAQ</a></li></ul></div>
@@ -769,8 +769,16 @@ function tfaq(btn){
   if(!op)it.classList.add("op");
 }
 
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("vis")}),{threshold:0.08,rootMargin:"0px 0px -28px 0px"});
-document.querySelectorAll(".fu").forEach(el=>obs.observe(el));
+// Fade-up com fallback robusto
+const fuEls = document.querySelectorAll(".fu");
+if("IntersectionObserver" in window){
+  const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vis");obs.unobserve(e.target)}}),{threshold:0.05,rootMargin:"0px 0px 0px 0px"});
+  fuEls.forEach(el=>obs.observe(el));
+  // Fallback: após 300ms, revelar tudo que ainda não foi revelado (fix para iframes/webviews)
+  setTimeout(()=>fuEls.forEach(el=>el.classList.add("vis")),300);
+}else{
+  fuEls.forEach(el=>el.classList.add("vis"));
+}
 
 document.querySelectorAll("a[href^='#']").forEach(a=>{
   a.addEventListener("click",e=>{
