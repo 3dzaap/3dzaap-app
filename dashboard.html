@@ -513,27 +513,27 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-label">Principal</div>
-        <a class="nav-item active" onclick="navigate('dashboard')" href="#">
+        <a class="nav-item active" href="dashboard.html">
           <span class="nav-icon">🏠</span> Início
         </a>
-        <a class="nav-item" onclick="navigate('calculator')" href="#">
+        <a class="nav-item" href="calculator.html">
           <span class="nav-icon">📐</span> Calculadora
         </a>
-        <a class="nav-item" onclick="navigate('filaments')" href="#">
+        <a class="nav-item" href="filaments.html">
           <span class="nav-icon">🎨</span> Filamentos
         </a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" id="nav-orders" onclick="navigate('orders')" href="#">
+        <a class="nav-item" id="nav-orders" href="orders.html" onclick="if(!canAccess('orders')){handleFeatureClick('orders','Pedidos','Pro');return false;}">
           <span class="nav-icon">📦</span> Pedidos
           <span class="nav-lock plan-badge" id="ordersLock" style="display:none">Pro+</span>
         </a>
-        <a class="nav-item" id="nav-financial" onclick="navigate('financial')" href="#">
+        <a class="nav-item" id="nav-financial" href="financial.html" onclick="if(!canAccess('financial')){handleFeatureClick('financial','Financeiro','Business');return false;}">
           <span class="nav-icon">💰</span> Financeiro
           <span class="nav-lock plan-badge" id="financialLock" style="display:none">Business</span>
         </a>
-        <a class="nav-item" id="nav-backoffice" onclick="navigate('backoffice')" href="#">
+        <a class="nav-item" id="nav-backoffice" href="backoffice.html">
           <span class="nav-icon">🗄️</span> BackOffice
         </a>
       </div>
@@ -562,7 +562,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="user-avatar" id="userAvatarSidebar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userNameSidebar">João Demo</div>
-          <div class="user-email" id="userEmailSidebar">utilizador@empresa.pt</div>
+          <div class="user-email" id="userEmailSidebar">—</div>
         </div>
         <span class="user-chevron" id="userChevron">▲</span>
       </div>
@@ -648,7 +648,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <!-- Quick Actions -->
       <div class="actions-grid">
-        <a class="action-card" onclick="navigate('calculator')" href="#">
+        <a class="action-card" href="calculator.html">
           <div class="action-icon">📐</div>
           <div class="action-title">Nova Calculação</div>
           <div class="action-desc">Calcular custo de impressão</div>
@@ -659,7 +659,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="action-desc">Registar pedido de cliente</div>
           <span class="action-lock" id="ordersActionLock" style="display:none">Pro+</span>
         </a>
-        <a class="action-card" onclick="navigate('filaments')" href="#">
+        <a class="action-card" href="filaments.html">
           <div class="action-icon">🎨</div>
           <div class="action-title">Gerir Filamentos</div>
           <div class="action-desc">Actualizar stock de filamentos</div>
@@ -670,7 +670,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="action-desc">Ver receitas e pagamentos</div>
           <span class="action-lock" id="financialActionLock" style="display:none">Business</span>
         </a>
-        <a class="action-card" onclick="navigate('backoffice')" href="#">
+        <a class="action-card" href="backoffice.html">
           <div class="action-icon">🗄️</div>
           <div class="action-title">BackOffice</div>
           <div class="action-desc">Backup e restauro de dados</div>
@@ -703,7 +703,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="card">
           <div class="card-header">
             <div class="card-title">🎨 Alertas de Stock</div>
-            <a class="card-action" onclick="navigate('filaments')" href="#">Gerir →</a>
+            <a class="card-action" href="filaments.html">Gerir →</a>
           </div>
           <div class="card-body" id="filamentAlertsBody">
             <div class="empty-state">
@@ -736,7 +736,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── STATE ──────────────────────────────
 const PLAN_FEATURES = {
   trial:    { calculator:true, filaments:true, orders:true, financial:true, backoffice:true },
@@ -782,9 +782,14 @@ function loadState() {
       const data = JSON.parse(saved);
       if (data.email) {
         state.user.email = data.email;
-        const name = data.email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-        state.user.name = data.name || name;
-        state.user.initials = state.user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        // onboarding saves fname + lname — not name
+        const fallbackName = data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+        const fullName = data.name
+          || (data.fname && data.lname ? data.fname + ' ' + data.lname : null)
+          || data.fname || data.lname
+          || fallbackName;
+        state.user.name = fullName;
+        state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       }
       if (data.companyName) {
         state.company.name = data.companyName;
@@ -1145,12 +1150,4 @@ function doLogout() {
 
 // ── HELPERS ────────────────────────────
 function fmtEur(val) {
-  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function escHtml(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-let toastTimer;
-function showToast(msg, type='') {
-  c
+  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFraction
