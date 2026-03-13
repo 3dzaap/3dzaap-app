@@ -326,6 +326,42 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
 .sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);backdrop-filter:blur(2px)}
 
+/* ── HIGHLIGHT ──────────────────────── */
+mark.hl{background:rgba(59,143,212,.18);color:var(--blue);border-radius:3px;padding:0 2px;font-weight:700}
+
+/* ── CONFIRM MODAL ──────────────────── */
+.confirm-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(13,17,23,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+}
+.confirm-overlay.open{display:flex}
+.confirm-modal{
+  background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);
+  padding:28px 28px 22px;max-width:380px;width:90%;
+  box-shadow:var(--sh-float);
+  animation:fadeUp .25s var(--ease);
+}
+.confirm-icon{font-size:2rem;text-align:center;margin-bottom:12px}
+.confirm-title{font-size:1rem;font-weight:800;color:var(--dark);text-align:center;margin-bottom:8px}
+.confirm-msg{font-size:.84rem;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:22px}
+.confirm-btns{display:flex;gap:10px}
+.confirm-cancel{
+  flex:1;padding:10px;border-radius:var(--rm);
+  background:rgba(255,255,255,.6);border:1.5px solid var(--border);
+  font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);
+  transition:background .18s;
+}
+.confirm-cancel:hover{background:rgba(255,255,255,.92)}
+.confirm-ok{
+  flex:1;padding:10px;border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--danger),#c53030);
+  color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;font-family:var(--f);
+  transition:opacity .18s,transform .18s;box-shadow:0 3px 10px rgba(239,68,68,.25);
+}
+.confirm-ok:hover{opacity:.9;transform:translateY(-1px)}
+
 /* ── TOAST ──────────────────────────── */
 .toast{position:fixed;bottom:28px;right:28px;z-index:400;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
 .toast.show{opacity:1;transform:none}
@@ -407,7 +443,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="user-avatar" id="userAvatar">JD</div>
         <div class="user-info">
           <div class="user-name" id="userName">João Demo</div>
-          <div class="user-email" id="userEmail">joao@demo.pt</div>
+          <div class="user-email" id="userEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a2c8cdc3cde2c6c7cfcd8cd2d6">[email&#160;protected]</a></div>
         </div>
         <span class="user-chevron" id="userChevron">▲</span>
       </div>
@@ -576,7 +612,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               <input type="text" id="historySearch" class="history-search" placeholder="Pesquisar por nome, peso, preço…" oninput="renderHistory()">
             </div>
             <span class="history-count" id="historyCount">0 registos</span>
-            <div class="history-clear-btn" onclick="clearHistory()">Limpar tudo</div>
+            <div class="history-clear-btn" onclick="clearHistory()">Limpar histórico</div>
           </div>
         </div>
         <div class="history-table-wrap">
@@ -667,7 +703,20 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 <div class="toast" id="toast"></div>
 
-<script>
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="confirm-ok" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════
 //  DEFAULTS — homologated
 // ══════════════════════════════════════
@@ -822,7 +871,11 @@ function setBar(id,pct){
 
 function clearFields(){
   setV('printName','');
-  applyDefaultsToForm();
+  setV('filamentPrice', HARDCODED_DEFAULTS.filamentPrice);
+  setV('partWeight',    HARDCODED_DEFAULTS.partWeight);
+  setV('printTime',     HARDCODED_DEFAULTS.printTime);
+  setSl('printTimeSlider', HARDCODED_DEFAULTS.printTime, 0, 48);
+  updateSliderLabels();
   liveCalc();
   showToast('🗑️ Campos limpos','');
 }
@@ -883,16 +936,27 @@ function saveToHistory(){
 }
 
 function renderHistory(){
-  const query=(document.getElementById('historySearch')?.value||'').toLowerCase().trim();
-  const filtered=calcHistory.filter(e=>
-    !query||
-    (e.name||'').toLowerCase().includes(query)||
-    String(e.inputs.partWeight).includes(query)||
-    fmtEur(e.results.finalPrice).replace(/\s/g,'').toLowerCase().includes(query.replace(/\s/g,''))||
-    e.time.includes(query)
-  );
+  const raw=(document.getElementById('historySearch')?.value||'').trim();
+  const query=raw.toLowerCase();
+  // pesquisa alargada: nome, peso, tempo, filamento, margem, custo base, preço final, hora
+  const filtered=calcHistory.filter(e=>{
+    if(!query) return true;
+    const haystack=[
+      (e.name||'').toLowerCase(),
+      String(e.inputs.partWeight),
+      String(e.inputs.printTime),
+      String(e.inputs.filamentPrice),
+      String(e.inputs.profitMargin),
+      fmtEur(e.results.baseCost).replace(/[^0-9,]/g,''),
+      fmtEur(e.results.finalPrice).replace(/[^0-9,]/g,''),
+      e.time,
+    ].join(' ');
+    return haystack.includes(query);
+  });
   const cEl=document.getElementById('historyCount');
-  if(cEl) cEl.textContent=`${filtered.length} registo${filtered.length!==1?'s':''}`;
+  if(cEl) cEl.textContent=query
+    ?`${filtered.length} resultado${filtered.length!==1?'s':''} para "${escH(raw)}"`
+    :`${filtered.length} registo${filtered.length!==1?'s':''}`;
   const emptyEl=document.getElementById('historyEmpty');
   const tableEl=document.getElementById('historyTable');
   const tbody=document.getElementById('historyTbody');
@@ -900,7 +964,7 @@ function renderHistory(){
     if(emptyEl){
       emptyEl.style.display='flex';
       emptyEl.innerHTML=calcHistory.length
-        ?`<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"${escH(query)}"</strong></div>`
+        ?`<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"${escH(raw)}"</strong></div>`
         :`<div class="history-empty-icon">🕐</div><div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> nos resultados para registar aqui.</div>`;
     }
     if(tableEl) tableEl.style.display='none';
@@ -908,9 +972,14 @@ function renderHistory(){
   }
   if(emptyEl) emptyEl.style.display='none';
   if(tableEl) tableEl.style.display='';
+  // highlight helper
+  function hl(str){
+    if(!query||!str) return escH(str||'');
+    return escH(str).replace(new RegExp('('+escH(raw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark class="hl">$1</mark>');
+  }
   tbody.innerHTML=filtered.map(e=>`
     <tr onclick="restoreHistory(${e.id})">
-      <td class="td-name">${e.name?escH(e.name):'<span class="no-name">Sem nome</span>'}</td>
+      <td class="td-name">${e.name?hl(e.name):'<span class="no-name">Sem nome</span>'}</td>
       <td class="td-mono">${e.inputs.partWeight}g</td>
       <td class="td-mono">${e.inputs.printTime}h</td>
       <td class="td-mono">${e.inputs.profitMargin}%</td>
@@ -945,9 +1014,19 @@ function restoreHistory(id){
 function deleteHistory(id){calcHistory=calcHistory.filter(h=>h.id!==id);renderHistory();}
 function clearHistory(){
   if(!calcHistory.length)return;
-  calcHistory=[];renderHistory();
-  showToast('🗑️ Histórico limpo','');
+  showConfirm(
+    'Limpar histórico?',
+    'Esta acção remove todos os registos guardados e não pode ser desfeita.',
+    ()=>{calcHistory=[];renderHistory();showToast('🗑️ Histórico limpo','');}
+  );
 }
+function showConfirm(title,msg,onConfirm){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmModal').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick=()=>{closeConfirm();onConfirm();};
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open');}
 
 // ── EXPORT / COPY ──────────────────────
 function exportCalcCSV(){
@@ -1041,11 +1120,4 @@ function dlCSV(csv,fn){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 let _tt;
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show '+type;
-  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
-}
-</script>
-</body>
-</html>
+functio
