@@ -776,29 +776,25 @@ function setDate() {
 
 // ── LOAD STATE ─────────────────────────
 function loadState() {
-  // Load user data from auth onboarding handoff
+  // Load user data — same pattern as calculator.html
   try {
     const saved = localStorage.getItem('3dzaap_user');
-    if (saved) {
-      const data = JSON.parse(saved);
-      if (data.email) {
-        state.user.email = data.email;
-        // onboarding saves fname + lname — not name
-        const fallbackName = data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-        const fullName = data.name
-          || (data.fname && data.lname ? data.fname + ' ' + data.lname : null)
-          || data.fname || data.lname
-          || fallbackName;
-        state.user.name = fullName;
-        state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      }
-      if (data.companyName) {
-        state.company.name = data.companyName;
-        state.company.initials = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || 'CO';
-      }
-      if (data.plan) state.company.plan = data.plan;
-      if (data.config) state.company.config = data.config;
+    if (!saved) { window.location.href = 'auth-onboarding.html'; return; }
+    const data = JSON.parse(saved);
+    if (data.email) {
+      state.user.email = data.email;
+      const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
+        : data.fname || data.lname || data.name
+        || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      state.user.name = fullName;
+      state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     }
+    if (data.companyName) {
+      state.company.name = data.companyName;
+      state.company.initials = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+    }
+    if (data.plan) state.company.plan = data.plan;
+    if (data.config) state.company.config = data.config;
   } catch(e) {}
 
   // Load filaments & orders from 3DZAAP storage
@@ -811,12 +807,6 @@ function loadState() {
 
   // Try IndexedDB too — async, updates after render
   loadFromIndexedDB();
-
-  // Redirect if no user
-  if (!localStorage.getItem('3dzaap_user')) {
-    window.location.href = 'auth-onboarding.html';
-    return;
-  }
 
   // Apply to UI
   document.getElementById('userNameSidebar').textContent = state.user.name;

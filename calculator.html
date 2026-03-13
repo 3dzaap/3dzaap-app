@@ -151,7 +151,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:20px;
-  align-items:start;
+  align-items:stretch;
 }
 
 /* ── GLASS CARD ─────────────────────── */
@@ -160,7 +160,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   border:1.5px solid var(--border);border-radius:var(--rl);
   box-shadow:var(--sh);overflow:hidden;
   animation:fadeUp .5s var(--ease) .15s both;
+  display:flex;flex-direction:column;
 }
+.glass-card .form-sections{flex:1}
+.glass-card .results-panel{flex:1}
 .glass-card.results-col{animation-delay:.22s}
 
 /* ── CARD HEADER ────────────────────── */
@@ -871,10 +874,10 @@ function setBar(id,pct){
 
 function clearFields(){
   setV('printName','');
-  setV('filamentPrice', HARDCODED_DEFAULTS.filamentPrice);
-  setV('partWeight',    HARDCODED_DEFAULTS.partWeight);
-  setV('printTime',     HARDCODED_DEFAULTS.printTime);
-  setSl('printTimeSlider', HARDCODED_DEFAULTS.printTime, 0, 48);
+  setV('filamentPrice', 0);
+  setV('partWeight',    0);
+  setV('printTime',     0);
+  setSl('printTimeSlider', 0, 0, 48);
   updateSliderLabels();
   liveCalc();
   showToast('🗑️ Campos limpos','');
