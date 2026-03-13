@@ -1120,4 +1120,11 @@ function dlCSV(csv,fn){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 let _tt;
-functio
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

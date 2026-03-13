@@ -737,7 +737,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ── STATE ──────────────────────────────
 const PLAN_FEATURES = {
   trial:    { calculator:true, filaments:true, orders:true, financial:true, backoffice:true },
@@ -1157,4 +1157,16 @@ function doLogout() {
 
 // ── HELPERS ────────────────────────────
 function fmtEur(val) {
-  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFraction
+  return '€\u00A0' + parseFloat(val||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let _toast;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(_toast);_toast=setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
