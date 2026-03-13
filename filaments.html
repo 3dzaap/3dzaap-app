@@ -165,12 +165,21 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .cell-mono{font-family:var(--mono);font-weight:600;font-size:.82rem}
 .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap}
 .status-green{background:rgba(34,197,94,.12);color:#15803d;border:1px solid rgba(34,197,94,.28)}
-.status-yellow{background:rgba(245,158,11,.12);color:#b45309;border:1px solid rgba(245,158,11,.28)}
+.status-orange{background:rgba(245,148,58,.13);color:#c2600a;border:1px solid rgba(245,148,58,.32)}
 .status-red{background:rgba(239,68,68,.10);color:#b91c1c;border:1px solid rgba(239,68,68,.24)}
 .status-dot{width:6px;height:6px;border-radius:50%}
 .status-green .status-dot{background:#22c55e}
-.status-yellow .status-dot{background:#f59e0b}
+.status-orange .status-dot{background:#f59e0b}
 .status-red .status-dot{background:#ef4444}
+.status-badge{position:relative}
+.status-badge .badge-tip{
+  display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;font-weight:500;
+  padding:5px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:200;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+.status-badge .badge-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(30,30,30,.92)}
+.status-badge:hover .badge-tip{display:block}
 .cell-actions{text-align:right;white-space:nowrap}
 .btn-icon{width:30px;height:30px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center;transition:all .18s;margin-left:4px}
 .btn-icon:hover{background:rgba(255,255,255,.95);border-color:rgba(59,143,212,.3)}
@@ -412,10 +421,10 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
           <div class="stat-tooltip" id="tipStock"></div>
         </div>
         <div class="stat-mini stat-has-tip" id="statCardLow">
-          <div class="stat-mini-icon si-orange">⚠️</div>
+          <div class="stat-mini-icon si-orange">🟠</div>
           <div class="stat-mini-body">
             <div class="stat-mini-val" id="statLow">0</div>
-            <div class="stat-mini-lbl">A usar (sem novos)</div>
+            <div class="stat-mini-lbl">Stock baixo</div>
           </div>
           <div class="stat-tooltip" id="tipLow"></div>
         </div>
@@ -445,7 +454,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
         <select id="filterStatus" class="filter-select" onchange="applyFilters()">
           <option value="">Todos os estados</option>
           <option value="green">Em stock</option>
-          <option value="yellow">A usar</option>
+          <option value="orange">Stock baixo</option>
           <option value="red">Esgotado</option>
         </select>
         <span class="filter-count" id="filterCount">0 filamentos</span>
@@ -530,18 +539,25 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
 
       <div class="form-row three">
         <div class="form-group">
-          <label class="form-label">Total de bobines</label>
+          <label class="form-label">Total de bobinas</label>
           <input type="number" id="fTotal" class="form-input mono" value="1" min="0" step="1">
         </div>
         <div class="form-group">
           <label class="form-label">Em uso</label>
           <input type="number" id="fInUse" class="form-input mono" value="0" min="0" step="1">
-          <div class="form-hint">Bobines abertas/a usar</div>
+          <div class="form-hint">Bobinas abertas/a usar</div>
         </div>
         <div class="form-group">
           <label class="form-label">Novas (auto)</label>
           <input type="number" id="fNewRolls" class="form-input mono" value="1" readonly style="opacity:.6;cursor:not-allowed">
           <div class="form-hint">Total − Em uso</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Alerta mínimo <span>(bobinas)</span></label>
+          <input type="number" id="fAlerta" class="form-input mono" value="0" min="0" step="1">
+          <div class="form-hint">0 = sem alerta · ex: 2 → 🟠 Stock baixo quando restar ≤ 2 bobinas novas</div>
         </div>
       </div>
 
@@ -773,16 +789,27 @@ function saveFilaments() {
 
 // ── STATUS ─────────────────────────────
 function getStatus(f) {
-  const total = parseInt(f.total) || 0;
-  const inUse = parseInt(f.inUse) || 0;
+  const total    = parseInt(f.total)  || 0;
+  const inUse    = parseInt(f.inUse)  || 0;
+  const alerta   = parseInt(f.alerta) || 0;
   const newRolls = Math.max(0, total - inUse);
-  if (newRolls > 0) return 'green';
-  if (inUse > 0) return 'yellow';
-  return 'red';
+  if (total === 0)                          return 'red';
+  if (newRolls === 0)                       return 'orange';
+  if (alerta > 0 && newRolls <= alerta)     return 'orange';
+  return 'green';
 }
 
 function statusLabel(s) {
-  return {green:'Em stock', yellow:'A usar', red:'Esgotado'}[s] || s;
+  return {green:'Em stock', orange:'Stock baixo', red:'Esgotado'}[s] || s;
+}
+
+function renderBadge(f) {
+  const s = getStatus(f);
+  const label = statusLabel(s);
+  const tip = (s === 'red' && f.emptyConfirmed)
+    ? `<span class="badge-tip">Esgotado automaticamente pelo consumo dos pedidos</span>`
+    : '';
+  return `<span class="status-badge status-${s}"><span class="status-dot"></span>${label}${tip}</span>`;
 }
 
 // ── RENDER TABLE ───────────────────────
@@ -876,7 +903,7 @@ function renderTable() {
         </div>
       </td>
       <td class="cell-mono">${price}</td>
-      <td><span class="status-badge status-${status}"><span class="status-dot"></span>${statusLabel(status)}</span></td>
+      <td>${renderBadge(f)}</td>
       <td class="cell-actions">
         <button class="btn-icon" onclick="openModal(${f.id})" title="Editar">✏️</button>
         <button class="btn-icon del" onclick="confirmDelete(${f.id})" title="Eliminar">🗑️</button>
@@ -895,7 +922,7 @@ function rollKg(rollSize) {
 function renderStats() {
   const total = filaments.length;
   const stock = filaments.filter(f => getStatus(f) === 'green');
-  const low   = filaments.filter(f => getStatus(f) === 'yellow');
+  const low   = filaments.filter(f => getStatus(f) === 'orange');
   const empty = filaments.filter(f => getStatus(f) === 'red');
 
   // Total kg: sum of (total bobinas × kg per roll)
@@ -954,10 +981,11 @@ function openModal(id = null) {
     document.getElementById('fVariation').value = f.variation || VARIATIONS[0];
     document.getElementById('fBrand').value = f.brand || BRANDS[0];
     document.getElementById('fRollSize').value = f.rollSize || ROLL_SIZES[0];
-    document.getElementById('fTotal').value = f.total || 0;
-    document.getElementById('fInUse').value = f.inUse || 0;
-    document.getElementById('fPrice').value = f.price || 25;
-    document.getElementById('fNotes').value = f.notes || '';
+    document.getElementById('fTotal').value  = f.total  || 0;
+    document.getElementById('fInUse').value  = f.inUse  || 0;
+    document.getElementById('fAlerta').value = f.alerta || 0;
+    document.getElementById('fPrice').value  = f.price  || 25;
+    document.getElementById('fNotes').value  = f.notes  || '';
     // highlight preset if matches
     document.querySelectorAll('.color-preset').forEach(p => {
       p.classList.toggle('selected', p.dataset.hex.toLowerCase() === selectedColor.toLowerCase());
@@ -972,10 +1000,11 @@ function openModal(id = null) {
     document.getElementById('fVariation').value = VARIATIONS[0];
     document.getElementById('fBrand').value = BRANDS[0];
     document.getElementById('fRollSize').value = ROLL_SIZES[0];
-    document.getElementById('fTotal').value = 1;
-    document.getElementById('fInUse').value = 0;
-    document.getElementById('fPrice').value = 25;
-    document.getElementById('fNotes').value = '';
+    document.getElementById('fTotal').value  = 1;
+    document.getElementById('fInUse').value  = 0;
+    document.getElementById('fAlerta').value = 0;
+    document.getElementById('fPrice').value  = 25;
+    document.getElementById('fNotes').value  = '';
     document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
   }
   syncNewRolls();
@@ -993,10 +1022,11 @@ function saveFilament() {
   const variation = document.getElementById('fVariation').value;
   const brand = document.getElementById('fBrand').value;
   const rollSize = document.getElementById('fRollSize').value;
-  const total = Math.max(0, parseInt(document.getElementById('fTotal').value) || 0);
-  const inUse = Math.max(0, parseInt(document.getElementById('fInUse').value) || 0);
-  const price = parseFloat(document.getElementById('fPrice').value) || 0;
-  const notes = document.getElementById('fNotes').value.trim();
+  const total  = Math.max(0, parseInt(document.getElementById('fTotal').value)  || 0);
+  const inUse  = Math.max(0, parseInt(document.getElementById('fInUse').value)  || 0);
+  const alerta = Math.max(0, parseInt(document.getElementById('fAlerta').value) || 0);
+  const price  = parseFloat(document.getElementById('fPrice').value) || 0;
+  const notes  = document.getElementById('fNotes').value.trim();
 
   if (inUse > total) {
     showToast('⚠️ "Em uso" não pode ser maior que "Total"', 'err');
@@ -1006,14 +1036,20 @@ function saveFilament() {
   const record = {
     colorHex: selectedColor,
     colorName, type, variation, brand, rollSize,
-    total, inUse, price, notes,
+    total, inUse, alerta, price, notes,
     newRolls: Math.max(0, total - inUse),
     updatedAt: new Date().toISOString(),
   };
 
   if (editingId !== null) {
     const idx = filaments.findIndex(f => f.id === editingId);
-    if (idx > -1) filaments[idx] = { ...filaments[idx], ...record };
+    if (idx > -1) {
+      const prev = filaments[idx];
+      // preserve emptyConfirmed metadado — only cleared if total > 0 again
+      if (record.total > 0) record.emptyConfirmed = false;
+      else record.emptyConfirmed = prev.emptyConfirmed || false;
+      filaments[idx] = { ...prev, ...record };
+    }
     showToast('✅ Filamento actualizado!', 'ok');
   } else {
     record.id = Date.now();
@@ -1080,6 +1116,8 @@ function stepField(e, id, field, delta) {
   if (field === 'total' && next < (parseInt(f.inUse)||0)) return;
   f[field] = next;
   f.newRolls = Math.max(0, (parseInt(f.total)||0) - (parseInt(f.inUse)||0));
+  // emptyConfirmed: only set via orders (Opção A); clear if total > 0 again
+  if (parseInt(f.total) > 0) f.emptyConfirmed = false;
   f.updatedAt = new Date().toISOString();
   // Update just the affected spans + newRolls cell (no full re-render for speed)
   const valEl = document.getElementById('sv-'+field+'-'+id);
