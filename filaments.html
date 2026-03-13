@@ -260,19 +260,13 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
 .tip-more{font-size:.73rem;color:var(--subtle);text-align:center;padding-top:5px;border-top:1px solid var(--border);margin-top:4px}
 
 /* ── QUICK EDIT ──────────────────────── */
-.cell-quick{cursor:pointer;position:relative;white-space:nowrap}
-.cell-quick:hover{background:rgba(59,143,212,.07)}
-.cell-quick .quick-hint{font-size:.65rem;opacity:0;margin-left:4px;transition:opacity .15s;color:var(--blue)}
-.cell-quick:hover .quick-hint{opacity:1}
-.quick-val{font-family:var(--mono);font-weight:600;font-size:.82rem}
-.quick-input{
-  width:60px;font-family:var(--mono);font-size:.82rem;font-weight:700;
-  padding:3px 6px;border-radius:6px;
-  border:1.5px solid var(--blue);
-  background:rgba(255,255,255,.95);
-  outline:none;color:var(--dark);
-  box-shadow:0 0 0 3px rgba(59,143,212,.15);
-}
+.cell-stepper{white-space:nowrap;padding:6px 10px !important}
+.stepper{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.85);border-radius:20px;padding:2px 6px;transition:border-color .18s,box-shadow .18s}
+.stepper:hover{border-color:rgba(59,143,212,.35);box-shadow:0 0 0 2px rgba(59,143,212,.08)}
+.stepper-btn{width:22px;height:22px;border-radius:50%;border:none;background:rgba(59,143,212,.12);color:var(--blue);font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .15s,transform .12s;flex-shrink:0;padding:0}
+.stepper-btn:hover{background:rgba(59,143,212,.25);transform:scale(1.12)}
+.stepper-btn:active{transform:scale(.95)}
+.stepper-val{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);min-width:22px;text-align:center;user-select:none}
 
 /* ── CONFIRM MODAL ──────────────────── */
 .confirm-overlay{position:fixed;inset:0;z-index:500;background:rgba(13,17,23,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
@@ -866,14 +860,20 @@ function renderTable() {
       <td><span class="cell-name">${escH(f.type||'—')}</span><br><span class="cell-sub">${escH(f.variation||'')}</span></td>
       <td class="cell-mono">${escH(f.brand||'—')}</td>
       <td class="cell-mono">${escH(f.rollSize||'—')}</td>
-      <td class="cell-quick" onclick="startQuickEdit(event,${f.id},'inUse')" title="Clica para editar">
-        <span class="quick-val">${f.inUse||0}</span>
-        <span class="quick-hint">✏️</span>
+      <td class="cell-stepper">
+        <div class="stepper">
+          <button class="stepper-btn" onclick="stepField(event,${f.id},'inUse',-1)">−</button>
+          <span class="stepper-val" id="sv-inUse-${f.id}">${f.inUse||0}</span>
+          <button class="stepper-btn" onclick="stepField(event,${f.id},'inUse',1)">+</button>
+        </div>
       </td>
       <td class="cell-mono">${newRolls}</td>
-      <td class="cell-quick" onclick="startQuickEdit(event,${f.id},'total')" title="Clica para editar">
-        <span class="quick-val">${f.total||0}</span>
-        <span class="quick-hint">✏️</span>
+      <td class="cell-stepper">
+        <div class="stepper">
+          <button class="stepper-btn" onclick="stepField(event,${f.id},'total',-1)">−</button>
+          <span class="stepper-val" id="sv-total-${f.id}">${f.total||0}</span>
+          <button class="stepper-btn" onclick="stepField(event,${f.id},'total',1)">+</button>
+        </div>
       </td>
       <td class="cell-mono">${price}</td>
       <td><span class="status-badge status-${status}"><span class="status-dot"></span>${statusLabel(status)}</span></td>
@@ -1068,51 +1068,27 @@ function exportCSV() {
 }
 
 // ── QUICK EDIT INLINE ─────────────────
-function startQuickEdit(e, id, field) {
+function stepField(e, id, field, delta) {
   e.stopPropagation();
-  const td = e.currentTarget;
-  // If already editing this cell, do nothing
-  if (td.querySelector('.quick-input')) return;
-
   const f = filaments.find(x => x.id === id);
   if (!f) return;
-
   const current = parseInt(f[field]) || 0;
-  const valSpan = td.querySelector('.quick-val');
-  const hintSpan = td.querySelector('.quick-hint');
-  if (valSpan) valSpan.style.display = 'none';
-  if (hintSpan) hintSpan.style.display = 'none';
-
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.min = '0';
-  input.className = 'quick-input';
-  input.value = current;
-  td.appendChild(input);
-  input.focus();
-  input.select();
-
-  function commit() {
-    const newVal = Math.max(0, parseInt(input.value) || 0);
-    f[field] = newVal;
-    // Recompute newRolls
-    f.newRolls = Math.max(0, (parseInt(f.total)||0) - (parseInt(f.inUse)||0));
-    f.updatedAt = new Date().toISOString();
-    saveFilaments();
-    renderTable();
-    renderStats();
-  }
-
-  input.addEventListener('blur', commit);
-  input.addEventListener('keydown', ev => {
-    if (ev.key === 'Enter') { input.blur(); }
-    if (ev.key === 'Escape') {
-      input.removeEventListener('blur', commit);
-      if (valSpan) valSpan.style.display = '';
-      if (hintSpan) hintSpan.style.display = '';
-      input.remove();
-    }
-  });
+  const next = Math.max(0, current + delta);
+  // inUse cannot exceed total
+  if (field === 'inUse' && next > (parseInt(f.total)||0)) return;
+  // total cannot go below inUse
+  if (field === 'total' && next < (parseInt(f.inUse)||0)) return;
+  f[field] = next;
+  f.newRolls = Math.max(0, (parseInt(f.total)||0) - (parseInt(f.inUse)||0));
+  f.updatedAt = new Date().toISOString();
+  // Update just the affected spans + newRolls cell (no full re-render for speed)
+  const valEl = document.getElementById('sv-'+field+'-'+id);
+  if (valEl) valEl.textContent = next;
+  // Novas cell: find sibling — do a targeted re-render of just this row's Novas
+  // For simplicity and correctness, re-render table + stats
+  saveFilaments();
+  renderTable();
+  renderStats();
 }
 
 // ── USER MENU ──────────────────────────
