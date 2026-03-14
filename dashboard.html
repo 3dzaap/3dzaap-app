@@ -577,9 +577,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-actions">
-        <a class="topbar-btn" href="3DZAAP.html" target="_blank">
-          <span>⚡</span> App Original
-        </a>
+
         <div class="topbar-notif" onclick="showToast('Sem notificações por agora','')">
           🔔
         </div>
@@ -606,7 +604,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <!-- Greeting -->
       <div class="greeting">
-        <h1 id="greetingText">Bom dia, João! 👋</h1>
+        <h1 id="greetingText">Bem-vindo! 👋</h1>
         <p>Aqui está o resumo da tua actividade</p>
         <div class="greeting-date" id="greetingDate"></div>
       </div>
@@ -643,7 +641,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <span class="stat-badge badge-down" id="stockBadge">—</span>
           </div>
           <div class="stat-value" id="statStock">0</div>
-          <div class="stat-label">Filamentos esgotados</div>
+          <div class="stat-label">Alertas de stock</div>
         </div>
       </div>
 
@@ -820,24 +818,22 @@ function loadState() {
 function loadFromIndexedDB() {
   try {
     const req = indexedDB.open('3dzaap_db', 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      ['filaments','orders','expenses'].forEach(s => {
+        if (!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath:'id'});
+      });
+    };
     req.onsuccess = e => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments') || !db.objectStoreNames.contains('orders')) return;
-      const tx = db.transaction(['filaments','orders'],'readonly');
-      tx.objectStore('filaments').getAll().onsuccess = e2 => {
-        if (e2.target.result && e2.target.result.length > 0) {
-          state.filaments = e2.target.result;
-          renderStats();
-          renderFilamentAlerts();
-        }
+      const tryLoad = (storeName, cb) => {
+        if (!db.objectStoreNames.contains(storeName)) return;
+        db.transaction(storeName,'readonly').objectStore(storeName).getAll().onsuccess = e2 => {
+          if (e2.target.result?.length) cb(e2.target.result);
+        };
       };
-      tx.objectStore('orders').getAll().onsuccess = e2 => {
-        if (e2.target.result && e2.target.result.length > 0) {
-          state.orders = e2.target.result;
-          renderStats();
-          renderRecentOrders();
-        }
-      };
+      tryLoad('filaments', data => { state.filaments = data; renderStats(); renderFilamentAlerts(); });
+      tryLoad('orders',    data => { state.orders    = data; renderStats(); renderRecentOrders(); });
     };
   } catch(e) {}
 }
@@ -892,46 +888,98 @@ function dismissBanner() {
 }
 
 // ── STATS ──────────────────────────────
+function getFilamentStatus(f) {
+  const total    = parseInt(f.total)  || 0;
+  const inUse    = parseInt(f.inUse)  || 0;
+  const alerta   = parseInt(f.alerta) || 0;
+  const newRolls = Math.max(0, total - inUse);
+  if (total === 0)                        return 'red';
+  if (newRolls === 0)                     return 'orange';
+  if (alerta > 0 && newRolls <= alerta)   return 'orange';
+  return 'green';
+}
+
 function renderStats() {
   const now = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  const monthOrders = state.orders.filter(o => {
-    const d = o.createdAt || o.created_at_date || o.date || '';
-    return d && d.startsWith(thisMonth);
-  });
+  // Previous month for comparison
+  const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
 
-  const revenue = monthOrders
-    .filter(o => o.paymentStatus === 'pago')
-    .reduce((s,o) => s + parseFloat(o.total||0), 0);
+  const monthOrders = state.orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
+  const prevOrders  = state.orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
 
-  const pending = monthOrders
-    .filter(o => o.paymentStatus !== 'pago' && o.status !== 'done')
-    .length;
+  // Revenue this month (paid)
+  const revenue     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  const prevRevenue = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
 
-  const paid = monthOrders
-    .filter(o => o.paymentStatus === 'pago')
-    .reduce((s,o) => s + parseFloat(o.total||0), 0);
+  // Active orders (not done)
+  const activeOrders = state.orders.filter(o => o.status !== 'done').length;
+  const activeThisMonth = monthOrders.filter(o => o.status !== 'done').length;
 
-  const outOfStock = state.filaments.filter(f => parseInt(f.total||0) === 0).length;
+  // Paid this month
+  const paid     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  const prevPaid = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
 
+  // Filament alerts — use new status logic
+  const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
+  const outOfStock = state.filaments.filter(f => getFilamentStatus(f) === 'red').length;
+  const stockLow   = state.filaments.filter(f => getFilamentStatus(f) === 'orange').length;
+  const totalAlerts = outOfStock + stockLow;
+
+  // Update values
   document.getElementById('statRevenue').textContent = fmtEur(revenue);
-  document.getElementById('statOrders').textContent = pending || state.orders.filter(o=>o.status!=='done').length;
-  document.getElementById('statPaid').textContent = fmtEur(paid);
-  document.getElementById('statStock').textContent = outOfStock;
+  document.getElementById('statOrders').textContent  = activeOrders;
+  document.getElementById('statPaid').textContent    = fmtEur(paid);
+  document.getElementById('statStock').textContent   = totalAlerts;
 
-  if (outOfStock > 0) {
-    document.getElementById('stockBadge').textContent = `${outOfStock} esgotado${outOfStock!==1?'s':''}`;
-    document.getElementById('stockBadge').className = 'stat-badge badge-down';
+  // Revenue badge — vs prev month
+  const revPct = prevRevenue > 0 ? Math.round((revenue - prevRevenue) / prevRevenue * 100) : null;
+  const revBadge = document.getElementById('revBadge');
+  if (revPct !== null) {
+    revBadge.textContent = (revPct >= 0 ? '+' : '') + revPct + '%';
+    revBadge.className = 'stat-badge ' + (revPct >= 0 ? 'badge-up' : 'badge-down');
   } else {
-    document.getElementById('stockBadge').textContent = 'Tudo OK';
-    document.getElementById('stockBadge').className = 'stat-badge badge-up';
+    revBadge.textContent = revenue > 0 ? fmtEur(revenue) : '—';
+    revBadge.className = 'stat-badge badge-neu';
   }
 
-  // Gate financial stats if not accessible
+  // Orders badge
+  const ordersBadge = document.getElementById('ordersBadge');
+  ordersBadge.textContent = activeThisMonth > 0 ? `${activeThisMonth} este mês` : `${activeOrders} total`;
+  ordersBadge.className = 'stat-badge badge-neu';
+
+  // Paid badge — vs prev month
+  const paidPct = prevPaid > 0 ? Math.round((paid - prevPaid) / prevPaid * 100) : null;
+  const paidBadge = document.getElementById('paidBadge');
+  if (paidPct !== null) {
+    paidBadge.textContent = (paidPct >= 0 ? '+' : '') + paidPct + '%';
+    paidBadge.className = 'stat-badge ' + (paidPct >= 0 ? 'badge-up' : 'badge-down');
+  } else {
+    paidBadge.textContent = paid > 0 ? 'Recebido' : '—';
+    paidBadge.className = 'stat-badge badge-neu';
+  }
+
+  // Stock badge
+  const stockBadge = document.getElementById('stockBadge');
+  if (outOfStock > 0) {
+    stockBadge.textContent = `${outOfStock} esgotado${outOfStock!==1?'s':''}`;
+    stockBadge.className = 'stat-badge badge-down';
+  } else if (stockLow > 0) {
+    stockBadge.textContent = `${stockLow} stock baixo`;
+    stockBadge.className = 'stat-badge badge-down';
+  } else {
+    stockBadge.textContent = 'Tudo OK ✅';
+    stockBadge.className = 'stat-badge badge-up';
+  }
+
+  // Gate financial stats
   if (!canAccess('financial')) {
     document.getElementById('statRevenue').classList.add('locked');
     document.getElementById('statPaid').classList.add('locked');
+    revBadge.style.display = 'none';
+    paidBadge.style.display = 'none';
   }
 }
 
@@ -967,28 +1015,39 @@ function renderRecentOrders() {
 // ── FILAMENT ALERTS ────────────────────
 function renderFilamentAlerts() {
   const el = document.getElementById('filamentAlertsBody');
+
+  // Use same status logic as filaments.html
   const alerts = state.filaments
-    .filter(f => parseInt(f.total||0) === 0 || parseInt(f.newRolls || Math.max(0,(f.total||0)-(f.inUse||f.in_use||0))) === 0)
-    .slice(0,6);
+    .filter(f => getFilamentStatus(f) !== 'green')
+    .sort((a,b) => {
+      // red first, then orange
+      const order = {red:0, orange:1, green:2};
+      return (order[getFilamentStatus(a)]||2) - (order[getFilamentStatus(b)]||2);
+    })
+    .slice(0, 6);
 
   if (!alerts.length) {
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Sem alertas de stock.<br>O teu inventário está em ordem!</div></div>`;
     return;
   }
 
+  const statusLabel = { red:'Esgotado', orange:'Stock baixo' };
+  const statusClass = { red:'fil-out', orange:'fil-low' };
+
   el.innerHTML = alerts.map(f => {
-    const total = parseInt(f.total||0);
-    const inUse = parseInt(f.inUse || f.in_use || 0);
+    const status   = getFilamentStatus(f);
+    const total    = parseInt(f.total||0);
+    const inUse    = parseInt(f.inUse||0);
     const newRolls = Math.max(0, total - inUse);
-    const isOut = total === 0;
-    const hex = f.colorHex || f.color_hex || '#999';
+    const hex      = f.colorHex || '#999';
+    const name     = f.colorName || f.color || '';
     return `<div class="fil-item">
       <div class="fil-color-dot" style="background:${escHtml(hex)}"></div>
       <div class="fil-info">
-        <div class="fil-name">${escHtml(f.type||'?')} ${escHtml(f.color||'')}</div>
-        <div class="fil-sub">${escHtml(f.variation||'')} · ${total} rolo${total!==1?'s':''}</div>
+        <div class="fil-name">${escHtml(f.type||'?')} ${escHtml(name)}</div>
+        <div class="fil-sub">${escHtml(f.brand||'')} · ${escHtml(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
       </div>
-      <span class="fil-status ${isOut ? 'fil-out' : 'fil-low'}">${isOut ? 'Esgotado' : 'Último rolo'}</span>
+      <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
     </div>`;
   }).join('');
 }
