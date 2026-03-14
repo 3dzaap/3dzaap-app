@@ -157,6 +157,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .bp-pago{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bp-pago .badge-dot{background:#22c55e}
 .bp-pendente{background:rgba(245,148,58,.12);color:#c2600a;border-color:rgba(245,148,58,.3)}.bp-pendente .badge-dot{background:#f59e0b}
 /* EXPAND BTN */
+.btn-icon{width:30px;height:30px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);cursor:pointer;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;transition:all .18s}
+.btn-icon:hover{background:rgba(255,255,255,.95);border-color:rgba(59,143,212,.3)}
+.btn-icon.del:hover{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:var(--danger)}
 .expand-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:rgba(255,255,255,.6);cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;transition:all .18s;color:var(--muted)}
 .expand-btn:hover{background:rgba(255,255,255,.95);border-color:rgba(59,143,212,.3);color:var(--blue)}
 .expand-btn.open{transform:rotate(180deg);border-color:rgba(59,143,212,.3);color:var(--blue)}
@@ -743,7 +746,11 @@ function renderOrders(keepExpandId) {
         <td class="cell-mono">€ ${fmtN(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
-        <td onclick="event.stopPropagation()"><button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')">▼</button></td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px">✏️</button>
+          <button class="btn-icon del" onclick="confirmDelete('${o.id}')" title="Eliminar" style="margin-right:4px">🗑️</button>
+          <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')">▼</button>
+        </td>
       </tr>
       <tr class="expand-details" id="exp-${o.id}">
         <td colspan="8">
@@ -909,6 +916,47 @@ function applyFilamentConsumption(order) {
   }
 }
 
+// ── OPÇÃO A: revert filament consumption ──
+function revertFilamentConsumption(order) {
+  const its = order.items || [];
+  let changed = false;
+  its.forEach(item => {
+    if (!item.filamentId) return;
+    const weightG = parseFloat(item.weightG) || 0;
+    if (weightG <= 0) return;
+    const fil = filaments.find(f => f.id == item.filamentId);
+    if (!fil) return;
+
+    const rollKgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
+    const kgPerRoll = rollKgMap[fil.rollSize] || 1;
+    const weightKg = weightG / 1000;
+
+    // Add back the kg consumed
+    fil.kgRemaining = (fil.kgRemaining || 0) + weightKg;
+
+    // If kgRemaining exceeds a full roll, reconstitute rolls
+    while (fil.kgRemaining > kgPerRoll) {
+      fil.kgRemaining -= kgPerRoll;
+      fil.total = (parseInt(fil.total) || 0) + 1;
+      // Restored rolls are "new" (not in use)
+      fil.newRolls = Math.max(0, (parseInt(fil.total) || 0) - (parseInt(fil.inUse) || 0));
+    }
+
+    // Clear emptyConfirmed if total > 0 again
+    if (parseInt(fil.total) > 0) {
+      fil.emptyConfirmed = false;
+      delete fil.emptyByOrder;
+      delete fil.emptyAt;
+    }
+
+    fil.updatedAt = new Date().toISOString();
+    changed = true;
+  });
+  if (changed) {
+    saveFilaments();
+  }
+}
+
 // ── TOGGLE PAYMENT ─────────────────────
 function togglePayment(id, newStatus) {
   const o = orders.find(x=>x.id===id);
@@ -1054,7 +1102,14 @@ function saveOrder() {
 
   if (editingId) {
     const idx = orders.findIndex(o=>o.id===editingId);
-    if (idx > -1) orders[idx] = {...orders[idx], ...base};
+    if (idx > -1) {
+      const prev = orders[idx];
+      // If prev was done, revert its filament consumption before applying new items
+      if (prev.status === 'done') revertFilamentConsumption(prev);
+      orders[idx] = {...prev, ...base};
+      // If still done (or newly done), re-apply with new items
+      if (orders[idx].status === 'done') applyFilamentConsumption(orders[idx]);
+    }
     showToast('✅ Pedido actualizado!','ok');
   } else {
     const num = getNextOrderNumber();
@@ -1083,7 +1138,9 @@ function confirmDelete(id) {
 }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
 function deleteOrder(id) {
-  orders = orders.filter(o=>o.id!==id);
+  const o = orders.find(x=>x.id===id);
+  if (o && o.status === 'done') revertFilamentConsumption(o);
+  orders = orders.filter(x=>x.id!==id);
   saveOrders();
   renderOrders();
   showToast('🗑️ Pedido eliminado','');
@@ -1146,10 +1203,10 @@ function printReceipt(id) {
     ${isPaid
       ? `<div class="rcpt-status-bar paid">
            <span><span class="rcpt-dot"></span>Pago em ${payDateStr}</span>
-           <span style="display:flex;align-items:center;gap:5px;opacity:.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
+           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
          </div>`
       : `<div class="rcpt-status-bar pending">
-           <span style="display:flex;align-items:center;gap:5px;opacity:.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
+           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
          </div>`}
     <div class="rcpt-body">
       <div class="rcpt-section-label">Dados do Cliente</div>
