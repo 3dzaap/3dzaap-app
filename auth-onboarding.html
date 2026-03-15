@@ -708,9 +708,16 @@ async function doLogin() {
     window.location.href = 'dashboard.html';
   } catch(err) {
     btn.classList.remove('loading');
-    showToast('Email ou password incorrectos ❌', 'err');
-    setFieldError('f-email-l', true);
-    setFieldError('f-pass-l', true);
+    const msg2 = err.message || String(err);
+    if (msg2.includes('24 seconds') || msg2.includes('security purposes') || msg2.includes('rate limit')) {
+      showToast('⏳ Aguarda alguns segundos e tenta novamente.', 'err');
+    } else if (msg2.includes('Invalid login') || msg2.includes('invalid') || msg2.includes('credentials')) {
+      showToast('❌ Email ou password incorrectos.', 'err');
+      setFieldError('f-email-l', true);
+      setFieldError('f-pass-l', true);
+    } else {
+      showToast('Erro: ' + msg2, 'err');
+    }
   }
 }
 
@@ -855,7 +862,16 @@ async function finishOnboarding() {
     showToast('Conta criada com sucesso! 🎉','ok');
   } catch(err) {
     btn.classList.remove('loading');
-    showToast('Erro ao criar conta: ' + (err.message || err), 'err');
+    const msg = err.message || String(err);
+    if (msg.includes('24 seconds') || msg.includes('security purposes') || msg.includes('rate limit')) {
+      showToast('⏳ Aguarda alguns segundos e tenta novamente.', 'err');
+    } else if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('User already registered')) {
+      showToast('❌ Este email já tem conta. Usa o login em vez de registar.', 'err');
+    } else if (msg.includes('Password should')) {
+      showToast('❌ A password deve ter pelo menos 6 caracteres.', 'err');
+    } else {
+      showToast('Erro ao criar conta: ' + msg, 'err');
+    }
   }
 }
 
