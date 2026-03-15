@@ -6,6 +6,10 @@
 <title>3DZAAP — Financeiro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -254,7 +258,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item active" href="financial.html"><span class="nav-icon">💰</span> Financeiro</a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
@@ -494,71 +498,58 @@ let expenses = [];
 let editingExpId = null;
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserData();
-  loadData();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  await loadData();
+  applyFeatureGating();
   buildCategorySelect();
   buildPeriodSelect();
   render();
 });
 
 // ── USER DATA ──────────────────────────
-function loadUserData() {
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent     = fullName;
+  document.getElementById('userEmail').textContent    = session.email;
+  document.getElementById('userAvatar').textContent   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent  = session.companyName;
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+  return session;
+}
+
+async function applyFeatureGating() {
   try {
-    const data = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
-    if (!data.email) { window.location.href = 'auth-onboarding.html'; return; }
-    document.getElementById('userEmail').textContent = data.email;
-    const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
-      : data.fname || data.lname || data.name
-      || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    document.getElementById('userName').textContent = fullName;
-    document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    if (data.companyName) {
-      document.getElementById('companyName').textContent = data.companyName;
-      document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if (data.plan) {
-      const L={trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent = L[data.plan]||'Business';
-    }
-  } catch(e){}
+    const session = await Auth.getSession();
+    const plan = session?.plan || 'trial';
+    if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan))
+      document.getElementById('ordersLock').style.display = '';
+    if (document.getElementById('financialLock') && !['trial','business'].includes(plan))
+      document.getElementById('financialLock').style.display = '';
+  } catch(e) {}
 }
 
 // ── LOAD / SAVE DATA ───────────────────
-function loadData() {
-  try { const o=localStorage.getItem('orders'); if(o) orders=JSON.parse(o); } catch(e){}
-  try { const e=localStorage.getItem('expenses'); if(e) expenses=JSON.parse(e); } catch(e){}
-  tryLoadIDB();
-}
-
-function tryLoadIDB() {
-  try {
-    const req = indexedDB.open('3dzaap_db',1);
-    req.onupgradeneeded = e => {
-      const db=e.target.result;
-      ['filaments','orders','expenses'].forEach(s=>{if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});});
-    };
-    req.onsuccess = e => {
-      const db=e.target.result;
-      if(db.objectStoreNames.contains('orders'))
-        db.transaction('orders','readonly').objectStore('orders').getAll().onsuccess=e2=>{if(e2.target.result?.length){orders=e2.target.result;render();}};
-      if(db.objectStoreNames.contains('expenses'))
-        db.transaction('expenses','readonly').objectStore('expenses').getAll().onsuccess=e2=>{if(e2.target.result?.length){expenses=e2.target.result;render();}};
-    };
-  } catch(e){}
+async function loadData() {
+  try { orders   = await DB.getOrders();   } catch(e) { orders = []; }
+  try { expenses = await DB.getExpenses(); } catch(e) { expenses = []; }
 }
 
 function saveExpenses() {
-  try { localStorage.setItem('expenses',JSON.stringify(expenses)); } catch(e){}
-  try {
-    const req=indexedDB.open('3dzaap_db',1);
-    req.onsuccess=e=>{
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('expenses')) return;
-      const tx=db.transaction('expenses','readwrite'), store=tx.objectStore('expenses');
-      store.clear().onsuccess=()=>expenses.forEach(x=>store.put(x));
-    };
-  } catch(e){}
+  // No-op — cada operação persiste individualmente
 }
 
 // ── PERIOD SELECT ──────────────────────
@@ -811,18 +802,22 @@ function saveExpense() {
   if(value<=0){ showToast('⚠️ Introduz um valor válido','err'); return; }
   if(!description){ showToast('⚠️ Adiciona uma descrição','err'); return; }
 
-  if(editingExpId){
-    const idx = expenses.findIndex(x=>x.id===editingExpId);
-    if(idx>-1) expenses[idx]={...expenses[idx],date,value,category,description,updatedAt:new Date().toISOString()};
-    showToast('✅ Despesa actualizada!','ok');
-  } else {
-    expenses.unshift({id:Date.now().toString(),date,value,category,description,createdAt:new Date().toISOString()});
-    showToast('✅ Despesa registada!','ok');
-  }
-  saveExpenses();
-  buildPeriodSelect();
-  render();
-  closeExpenseModal();
+  try {
+    if(editingExpId){
+      const prev = expenses.find(x=>x.id===editingExpId)||{};
+      const saved = await DB.saveExpense({...prev,id:editingExpId,date,value,category,description});
+      const idx = expenses.findIndex(x=>x.id===editingExpId);
+      if(idx>-1) expenses[idx]=saved;
+      showToast('✅ Despesa actualizada!','ok');
+    } else {
+      const saved = await DB.saveExpense({date,value,category,description});
+      expenses.unshift(saved);
+      showToast('✅ Despesa registada!','ok');
+    }
+    buildPeriodSelect();
+    render();
+    closeExpenseModal();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
 }
 
 // ── DELETE EXPENSE ─────────────────────
@@ -835,12 +830,14 @@ function confirmDeleteExp(id) {
   document.getElementById('confirmOverlay').classList.add('open');
 }
 function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
-function deleteExpense(id){
-  expenses = expenses.filter(x=>x.id!==id);
-  saveExpenses();
-  buildPeriodSelect();
-  render();
-  showToast('🗑️ Despesa eliminada','');
+async function deleteExpense(id){
+  try {
+    await DB.deleteExpense(id);
+    expenses = expenses.filter(x=>x.id!==id);
+    buildPeriodSelect();
+    render();
+    showToast('🗑️ Despesa eliminada','');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
 // ── EXPORT CSV ─────────────────────────
@@ -884,11 +881,10 @@ function closeUserMenu(){
 document.addEventListener('click',e=>{
   if(!e.target.closest('#userRow')&&!e.target.closest('#userDropdown')) closeUserMenu();
 });
-function doLogout(){
+async function doLogout() {
   closeUserMenu();
-  localStorage.removeItem('3dzaap_user');
   showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(()=>window.location.href='auth-onboarding.html',1300);
+  setTimeout(() => Auth.logout(), 1000);
 }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');

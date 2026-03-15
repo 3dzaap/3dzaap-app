@@ -6,6 +6,10 @@
 <title>3DZAAP — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -756,14 +760,15 @@ let state = {
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  loadState();
-  renderGreeting();
+  loadState().then(() => {
+    renderGreeting();
   renderBanner();
   renderStats();
   renderRecentOrders();
   renderFilamentAlerts();
   applyFeatureGating();
   setDate();
+  });
 });
 
 function setDate() {
@@ -773,69 +778,35 @@ function setDate() {
 }
 
 // ── LOAD STATE ─────────────────────────
-function loadState() {
-  // Load user data — same pattern as calculator.html
-  try {
-    const saved = localStorage.getItem('3dzaap_user');
-    if (!saved) { window.location.href = 'auth-onboarding.html'; return; }
-    const data = JSON.parse(saved);
-    if (data.email) {
-      state.user.email = data.email;
-      const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
-        : data.fname || data.lname || data.name
-        || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      state.user.name = fullName;
-      state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if (data.companyName) {
-      state.company.name = data.companyName;
-      state.company.initials = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
-    }
-    if (data.plan) state.company.plan = data.plan;
-    if (data.config) state.company.config = data.config;
-  } catch(e) {}
+async function loadState() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
 
-  // Load filaments & orders from 3DZAAP storage
-  try {
-    state.filaments = JSON.parse(localStorage.getItem('filaments')) || [];
-  } catch(e) { state.filaments = []; }
-  try {
-    state.orders = JSON.parse(localStorage.getItem('orders')) || [];
-  } catch(e) { state.orders = []; }
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 
-  // Try IndexedDB too — async, updates after render
-  loadFromIndexedDB();
+  state.user.email    = session.email;
+  state.user.name     = fullName;
+  state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  state.company.name    = session.companyName;
+  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  state.company.plan    = session.plan || 'trial';
+  state.company.config  = session.config || {};
 
-  // Apply to UI
-  document.getElementById('userNameSidebar').textContent = state.user.name;
-  document.getElementById('userEmailSidebar').textContent = state.user.email;
+  document.getElementById('userNameSidebar').textContent    = state.user.name;
+  document.getElementById('userEmailSidebar').textContent   = state.user.email;
   document.getElementById('companyNameSidebar').textContent = state.company.name;
-  document.getElementById('userAvatarSidebar').textContent = state.user.initials;
-  document.getElementById('companyAvatar').textContent = state.company.initials;
-  document.getElementById('planBadgeSidebar').textContent = PLAN_LABELS[state.company.plan] || 'Trial';
-}
+  document.getElementById('userAvatarSidebar').textContent  = state.user.initials;
+  document.getElementById('companyAvatar').textContent      = state.company.initials;
+  document.getElementById('planBadgeSidebar').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
 
-function loadFromIndexedDB() {
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      ['filaments','orders','expenses'].forEach(s => {
-        if (!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath:'id'});
-      });
-    };
-    req.onsuccess = e => {
-      const db = e.target.result;
-      const tryLoad = (storeName, cb) => {
-        if (!db.objectStoreNames.contains(storeName)) return;
-        db.transaction(storeName,'readonly').objectStore(storeName).getAll().onsuccess = e2 => {
-          if (e2.target.result?.length) cb(e2.target.result);
-        };
-      };
-      tryLoad('filaments', data => { state.filaments = data; renderStats(); renderFilamentAlerts(); });
-      tryLoad('orders',    data => { state.orders    = data; renderStats(); renderRecentOrders(); });
-    };
-  } catch(e) {}
+  // Load data from Supabase
+  try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
+  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders = []; }
 }
 
 // ── GREETING ───────────────────────────
@@ -1198,10 +1169,10 @@ document.addEventListener('click', e => {
   }
 });
 
-function doLogout() {
-  localStorage.removeItem('3dzaap_user');
+async function doLogout() {
+  closeUserMenu();
   showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(() => window.location.href = 'auth-onboarding.html', 1200);
+  setTimeout(() => Auth.logout(), 1000);
 }
 
 // ── HELPERS ────────────────────────────

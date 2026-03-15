@@ -6,6 +6,10 @@
 <title>3DZAAP — BackOffice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -205,7 +209,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item active" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
@@ -501,7 +505,13 @@ function loadUserData() {
       document.getElementById('planBadge').textContent = L[data.plan]||'Trial';
     }
     const plan = (data.plan||'trial');
-    if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display='';
+    if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan))
+      document.getElementById('ordersLock').style.display='';
+    const session2 = await Auth.getSession();
+    const plan2 = session2?.plan || 'trial';
+    if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan2))
+      document.getElementById('ordersLock').style.display='';
+    if (!['trial','business'].includes(plan2)) document.getElementById('financialLock').style.display='';
   } catch(e){}
 }
 
@@ -874,7 +884,7 @@ function confirmImport() {
     if(d.kind==='filaments'||(d.filaments?.length)) {
       const recs = d.kind==='all'?d.filaments:d.records;
       filaments = mergeArr(filaments, recs);
-      try{ localStorage.setItem('filaments',JSON.stringify(filaments)); } catch(e){}
+      try{ await DB.saveAllFilaments(filaments); } catch(e){}
       saveToIDB('filaments',filaments);
       setFb('fbImportFil',`✓ ${recs.length} filamentos importados`);
     }
@@ -886,7 +896,7 @@ function confirmImport() {
       // Update lastOrderNumber
       const nums = orders.map(o=>o.orderNumeric||0).filter(Boolean);
       if(nums.length){ const max=Math.max(...nums); try{localStorage.setItem('lastOrderNumber',String(max));}catch(e){} }
-      try{ localStorage.setItem('orders',JSON.stringify(orders)); } catch(e){}
+      try{ await DB.saveAllOrders(orders); } catch(e){}
       saveToIDB('orders',orders);
       setFb('fbImportOrd',`✓ ${recs.length} pedidos importados`);
     }
@@ -895,7 +905,7 @@ function confirmImport() {
     if(d.kind==='expenses'||(d.expenses?.length)) {
       const recs = d.kind==='all'?d.expenses:d.records;
       expenses = mergeArr(expenses, recs);
-      try{ localStorage.setItem('expenses',JSON.stringify(expenses)); } catch(e){}
+      try{ await DB.saveAllExpenses(expenses); } catch(e){}
       saveToIDB('expenses',expenses);
       setFb('fbImportExp',`✓ ${recs.length} despesas importadas`);
     }
@@ -997,11 +1007,10 @@ function closeUserMenu(){
 document.addEventListener('click',e=>{
   if(!e.target.closest('#userRow')&&!e.target.closest('#userDropdown')) closeUserMenu();
 });
-function doLogout(){
+async function doLogout() {
   closeUserMenu();
-  localStorage.removeItem('3dzaap_user');
   showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(()=>window.location.href='auth-onboarding.html',1300);
+  setTimeout(() => Auth.logout(), 1000);
 }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');

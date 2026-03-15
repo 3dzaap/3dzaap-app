@@ -6,6 +6,10 @@
 <title>3DZAAP — Filamentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -632,11 +636,11 @@ let sortDir = 'asc';
 let selectedColor = '#3B8FD4';
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserData();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
   populateSelects();
   renderColorPresets();
-  loadFilaments();
+  await loadFilaments();
   applyFeatureGating();
   syncNewRolls();
   ['fTotal','fInUse'].forEach(id => {
@@ -645,31 +649,34 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── USER DATA (same as calculator) ─────
-function loadUserData() {
-  try {
-    const data = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
-    if (!data.email) { window.location.href = 'auth-onboarding.html'; return; }
-    document.getElementById('userEmail').textContent = data.email;
-    const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
-      : data.fname || data.lname || data.name
-      || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    document.getElementById('userName').textContent = fullName;
-    document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    if (data.companyName) {
-      document.getElementById('companyName').textContent = data.companyName;
-      document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if (data.plan) {
-      const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent = L[data.plan] || 'Trial';
-    }
-  } catch(e) {}
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent     = fullName;
+  document.getElementById('userEmail').textContent    = session.email;
+  document.getElementById('userAvatar').textContent   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent  = session.companyName;
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+  return session;
 }
 
 // ── FEATURE GATING ─────────────────────
-function applyFeatureGating() {
+async function applyFeatureGating() {
   try {
-    const plan = (JSON.parse(localStorage.getItem('3dzaap_user') || '{}')).plan || 'trial';
+    const session = await Auth.getSession();
+    const plan = session?.plan || 'trial';
     if (!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display = '';
     if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display = '';
   } catch(e) {}
@@ -739,52 +746,16 @@ function syncNewRolls() {
 }
 
 // ── LOAD / SAVE FILAMENTS ──────────────
-function loadFilaments() {
+async function loadFilaments() {
   try {
-    const stored = localStorage.getItem('filaments');
-    if (stored) filaments = JSON.parse(stored);
+    filaments = await DB.getFilaments();
   } catch(e) { filaments = []; }
-  // try IndexedDB
-  tryLoadFromIDB();
   renderTable();
   renderStats();
 }
 
-function tryLoadFromIDB() {
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments')) db.createObjectStore('filaments', {keyPath:'id'});
-      if (!db.objectStoreNames.contains('orders')) db.createObjectStore('orders', {keyPath:'id'});
-    };
-    req.onsuccess = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments')) return;
-      const tx = db.transaction('filaments','readonly');
-      tx.objectStore('filaments').getAll().onsuccess = e2 => {
-        if (e2.target.result && e2.target.result.length > 0) {
-          filaments = e2.target.result;
-          renderTable();
-          renderStats();
-        }
-      };
-    };
-  } catch(e) {}
-}
-
-function saveFilaments() {
-  try { localStorage.setItem('filaments', JSON.stringify(filaments)); } catch(e) {}
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onsuccess = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments')) return;
-      const tx = db.transaction('filaments','readwrite');
-      const store = tx.objectStore('filaments');
-      store.clear().onsuccess = () => { filaments.forEach(f => store.put(f)); };
-    };
-  } catch(e) {}
+async function saveFilaments() {
+  // No-op — cada operação persiste individualmente via DB
 }
 
 // ── STATUS ─────────────────────────────
@@ -1041,27 +1012,24 @@ function saveFilament() {
     updatedAt: new Date().toISOString(),
   };
 
-  if (editingId !== null) {
-    const idx = filaments.findIndex(f => f.id === editingId);
-    if (idx > -1) {
-      const prev = filaments[idx];
-      // preserve emptyConfirmed metadado — only cleared if total > 0 again
+  try {
+    if (editingId !== null) {
+      const prev = filaments.find(f => f.id === editingId) || {};
       if (record.total > 0) record.emptyConfirmed = false;
       else record.emptyConfirmed = prev.emptyConfirmed || false;
-      filaments[idx] = { ...prev, ...record };
+      const saved = await DB.saveFilament({ ...prev, ...record, id: editingId });
+      const idx = filaments.findIndex(f => f.id === editingId);
+      if (idx > -1) filaments[idx] = saved;
+      showToast('✅ Filamento actualizado!', 'ok');
+    } else {
+      const saved = await DB.saveFilament(record);
+      filaments.unshift(saved);
+      showToast('✅ Filamento adicionado!', 'ok');
     }
-    showToast('✅ Filamento actualizado!', 'ok');
-  } else {
-    record.id = Date.now();
-    record.createdAt = new Date().toISOString();
-    filaments.unshift(record);
-    showToast('✅ Filamento adicionado!', 'ok');
-  }
-
-  saveFilaments();
-  renderTable();
-  renderStats();
-  closeModal();
+    renderTable();
+    renderStats();
+    closeModal();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
 }
 
 // ── DELETE ─────────────────────────────
@@ -1074,12 +1042,14 @@ function confirmDelete(id) {
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
-function deleteFilament(id) {
-  filaments = filaments.filter(f => f.id !== id);
-  saveFilaments();
-  renderTable();
-  renderStats();
-  showToast('🗑️ Filamento eliminado', '');
+async function deleteFilament(id) {
+  try {
+    await DB.deleteFilament(id);
+    filaments = filaments.filter(f => f.id !== id);
+    renderTable();
+    renderStats();
+    showToast('🗑️ Filamento eliminado', '');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
 function closeConfirm() {
@@ -1124,7 +1094,7 @@ function stepField(e, id, field, delta) {
   if (valEl) valEl.textContent = next;
   // Novas cell: find sibling — do a targeted re-render of just this row's Novas
   // For simplicity and correctness, re-render table + stats
-  saveFilaments();
+  DB.saveFilament(f).catch(e=>console.error(e));
   renderTable();
   renderStats();
 }
@@ -1144,11 +1114,9 @@ function closeUserMenu() {
 document.addEventListener('click', e => {
   if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
 });
-function doLogout() {
+async function doLogout() {
   closeUserMenu();
-  localStorage.removeItem('3dzaap_user');
-  showToast('Sessão terminada. Até logo! 👋', 'ok');
-  setTimeout(() => window.location.href = 'auth-onboarding.html', 1300);
+  await Auth.logout();
 }
 
 // ── SIDEBAR MOBILE ─────────────────────

@@ -6,6 +6,10 @@
 <title>3DZAAP — Pedidos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -556,10 +560,10 @@ const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'V
 const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserData();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
   applyFeatureGating();
-  loadData();
+  await loadData();
   // filament tooltip hover
   const icon = document.querySelector('#orderItemsList')?.parentElement?.querySelector('.tip-icon');
   if (icon) {
@@ -569,30 +573,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── USER DATA ──────────────────────────
-function loadUserData() {
-  try {
-    const data = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
-    if (!data.email) { window.location.href = 'auth-onboarding.html'; return; }
-    document.getElementById('userEmail').textContent = data.email;
-    const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
-      : data.fname || data.lname || data.name
-      || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    document.getElementById('userName').textContent = fullName;
-    document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    if (data.companyName) {
-      document.getElementById('companyName').textContent = data.companyName;
-      document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if (data.plan) {
-      const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent = L[data.plan] || 'Trial';
-    }
-  } catch(e) {}
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent     = fullName;
+  document.getElementById('userEmail').textContent    = session.email;
+  document.getElementById('userAvatar').textContent   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent  = session.companyName;
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+  return session;
 }
 
-function applyFeatureGating() {
+async function applyFeatureGating() {
   try {
-    const plan = (JSON.parse(localStorage.getItem('3dzaap_user') || '{}')).plan || 'trial';
+    const session = await Auth.getSession();
+    const plan = session?.plan || 'trial';
     if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display = '';
   } catch(e) {}
 }
@@ -831,7 +838,8 @@ function advanceStatus(id) {
   if (next === 'done') {
     applyFilamentConsumption(o);
   }
-  saveOrders();
+  if (o.status === 'done') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
+  await DB.saveOrder(o);
   renderOrders(id); // pass id to keep row expanded
   showToast(`📦 ${o.orderNumber} → ${STATUS_LABELS[next]}`, 'ok');
 }
@@ -965,7 +973,7 @@ function togglePayment(id, newStatus) {
   if (newStatus === 'pago') o.paymentDate = new Date().toISOString().split('T')[0];
   else delete o.paymentDate;
   o.updatedAt = new Date().toISOString();
-  saveOrders();
+  await DB.saveOrder(o);
   renderOrders(id); // preserve expanded row
   showToast(newStatus === 'pago' ? '✓ Marcado como pago' : '⏳ Marcado como pendente', 'ok');
 }
@@ -1100,31 +1108,31 @@ function saveOrder() {
   };
   if (base.paymentStatus === 'pago' && !base.paymentDate) base.paymentDate = new Date().toISOString().split('T')[0];
 
-  if (editingId) {
-    const idx = orders.findIndex(o=>o.id===editingId);
-    if (idx > -1) {
-      const prev = orders[idx];
-      // If prev was done, revert its filament consumption before applying new items
+  try {
+    if (editingId) {
+      const prev = orders.find(o=>o.id===editingId) || {};
       if (prev.status === 'done') revertFilamentConsumption(prev);
-      orders[idx] = {...prev, ...base};
-      // If still done (or newly done), re-apply with new items
-      if (orders[idx].status === 'done') applyFilamentConsumption(orders[idx]);
+      const merged = {...prev, ...base};
+      if (merged.status === 'done') applyFilamentConsumption(merged);
+      const saved = await DB.saveOrder(merged);
+      const idx = orders.findIndex(o=>o.id===editingId);
+      if (idx > -1) orders[idx] = saved;
+      showToast('✅ Pedido actualizado!','ok');
+    } else {
+      const num = getNextOrderNumber();
+      const newOrder = {
+        orderNumber: fmtOrderNum(num),
+        orderNumeric: num,
+        createdAt: base.createdAt || new Date().toISOString().split('T')[0],
+        ...base,
+      };
+      const saved = await DB.saveOrder(newOrder);
+      orders.unshift(saved);
+      showToast('✅ Pedido criado!','ok');
     }
-    showToast('✅ Pedido actualizado!','ok');
-  } else {
-    const num = getNextOrderNumber();
-    orders.unshift({
-      id: Date.now().toString(),
-      orderNumber: fmtOrderNum(num),
-      orderNumeric: num,
-      createdAt: base.createdAt || new Date().toISOString().split('T')[0],
-      ...base,
-    });
-    showToast('✅ Pedido criado!','ok');
-  }
-  saveOrders();
-  renderOrders();
-  closeModal();
+    renderOrders();
+    closeModal();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
 }
 
 // ── DELETE ─────────────────────────────
@@ -1137,13 +1145,15 @@ function confirmDelete(id) {
   document.getElementById('confirmOverlay').classList.add('open');
 }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
-function deleteOrder(id) {
-  const o = orders.find(x=>x.id===id);
-  if (o && o.status === 'done') revertFilamentConsumption(o);
-  orders = orders.filter(x=>x.id!==id);
-  saveOrders();
-  renderOrders();
-  showToast('🗑️ Pedido eliminado','');
+async function deleteOrder(id) {
+  try {
+    const o = orders.find(x=>x.id===id);
+    if (o && o.status === 'done') revertFilamentConsumption(o);
+    await DB.deleteOrder(id);
+    orders = orders.filter(x=>x.id!==id);
+    renderOrders();
+    showToast('🗑️ Pedido eliminado','');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
 // ── RECEIPT ────────────────────────────

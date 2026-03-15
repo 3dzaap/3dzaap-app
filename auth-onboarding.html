@@ -6,6 +6,10 @@
 <title>3DZAAP — Entrar / Criar Conta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -690,24 +694,24 @@ function setFieldError(id, show) {
 }
 
 // ── LOGIN ────────────────────────────
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   let ok = true;
   if (!isEmail(email)) { setFieldError('f-email-l', true); ok = false; } else { setFieldError('f-email-l', false); }
   if (pass.length < 1) { setFieldError('f-pass-l', true); ok = false; } else { setFieldError('f-pass-l', false); }
   if (!ok) return;
-  fakeLoad(document.getElementById('loginBtn'), () => {
-    formData.email = email;
-    formData.isNewUser = false;
-    // Se já existir dados da empresa guardados, vai directo ao dashboard
-    const existing = localStorage.getItem('3dzaap_user');
-    if (existing) {
-      window.location.href = 'dashboard.html';
-    } else {
-      showOnboarding();
-    }
-  });
+  const btn = document.getElementById('loginBtn');
+  btn.classList.add('loading');
+  try {
+    await Auth.login(email, pass);
+    window.location.href = 'dashboard.html';
+  } catch(err) {
+    btn.classList.remove('loading');
+    showToast('Email ou password incorrectos ❌', 'err');
+    setFieldError('f-email-l', true);
+    setFieldError('f-pass-l', true);
+  }
 }
 
 // ── SIGNUP ───────────────────────────
@@ -819,33 +823,45 @@ function clearSignature() {
 }
 
 // ── FINISH ───────────────────────────
-function finishOnboarding() {
+async function finishOnboarding() {
   const config = {
-    filamentPrice: +document.getElementById('cfgFilament').value || 25,
-    printerPrice: +document.getElementById('cfgPrinter').value || 600,
-    printerLife: +document.getElementById('cfgLife').value || 5000,
-    electricityPrice: +document.getElementById('cfgElec').value || 0.22,
-    profitMargin: +document.getElementById('cfgMargin').value || 30,
-    failureRate: +document.getElementById('cfgFailure').value || 5,
+    filamentPrice:    +document.getElementById('cfgFilament').value || 25,
+    printerPrice:     +document.getElementById('cfgPrinter').value  || 600,
+    printerLife:      +document.getElementById('cfgLife').value     || 5000,
+    electricityPrice: +document.getElementById('cfgElec').value     || 0.22,
+    profitMargin:     +document.getElementById('cfgMargin').value   || 30,
+    failureRate:      +document.getElementById('cfgFailure').value  || 5,
   };
   formData.config = config;
   if (_signatureB64) formData.signature = _signatureB64;
 
-  fakeLoad(document.getElementById('finishBtn'), () => {
+  const btn = document.getElementById('finishBtn');
+  btn.classList.add('loading');
+  try {
+    await Auth.register({
+      fname:       formData.fname,
+      lname:       formData.lname,
+      email:       formData.email,
+      pass:        formData.pass,
+      companyName: formData.companyName,
+      slug:        formData.slug,
+      plan:        selectedPlan,
+      config,
+      signature:   _signatureB64 || null,
+    });
     document.getElementById('onboardingPanel').style.display = 'none';
     document.getElementById('successPanel').style.display = 'block';
     document.getElementById('successCompanyPill').textContent = '🏭 ' + (formData.companyName || 'Empresa');
-    // Save to localStorage for demo handoff
-    localStorage.setItem('3dzaap_user', JSON.stringify(formData));
     showToast('Conta criada com sucesso! 🎉','ok');
-  });
+  } catch(err) {
+    btn.classList.remove('loading');
+    showToast('Erro ao criar conta: ' + (err.message || err), 'err');
+  }
 }
 
 // ── GO TO DASHBOARD ──────────────────
 function goToDashboard() {
-  fakeLoad(event.currentTarget, () => {
-    window.location.href = 'dashboard.html';
-  });
+  window.location.href = 'dashboard.html';
 }
 
 // ── HELPERS ──────────────────────────
