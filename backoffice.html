@@ -478,85 +478,51 @@ let _importType = null;
 let _importData = null;
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadUserData();
-  loadData();
-  loadLog();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  await loadData();
+  await loadLog();
   refreshStats();
 });
 
 // ── USER DATA ──────────────────────────
-function loadUserData() {
-  try {
-    const data = JSON.parse(localStorage.getItem('3dzaap_user') || '{}');
-    if (!data.email) { window.location.href = 'auth-onboarding.html'; return; }
-    document.getElementById('userEmail').textContent = data.email;
-    const fullName = (data.fname && data.lname) ? data.fname + ' ' + data.lname
-      : data.fname || data.lname || data.name
-      || data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    document.getElementById('userName').textContent = fullName;
-    document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    if (data.companyName) {
-      document.getElementById('companyName').textContent = data.companyName;
-      document.getElementById('companyAvatar').textContent = data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if (data.plan) {
-      const L={trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent = L[data.plan]||'Trial';
-    }
-    const plan = (data.plan||'trial');
-    if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan))
-      document.getElementById('ordersLock').style.display='';
-    const session2 = await Auth.getSession();
-    const plan2 = session2?.plan || 'trial';
-    if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan2))
-      document.getElementById('ordersLock').style.display='';
-    if (!['trial','business'].includes(plan2)) document.getElementById('financialLock').style.display='';
-  } catch(e){}
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  document.getElementById('userEmail').textContent = session.email;
+  const fullName = (session.fname && session.lname) ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent = fullName;
+  document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (session.companyName) {
+    document.getElementById('companyName').textContent = session.companyName;
+    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+  const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+  document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  const plan = session.plan || 'trial';
+  if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan))
+    document.getElementById('ordersLock').style.display = '';
+  if (document.getElementById('financialLock') && !['trial','business'].includes(plan))
+    document.getElementById('financialLock').style.display = '';
 }
 
 // ── LOAD DATA ──────────────────────────
-function loadData() {
-  try { const f=localStorage.getItem('filaments'); if(f) filaments=JSON.parse(f); } catch(e){}
-  try { const o=localStorage.getItem('orders');    if(o) orders=JSON.parse(o);    } catch(e){}
-  try { const e=localStorage.getItem('expenses');  if(e) expenses=JSON.parse(e);  } catch(e){}
-  tryLoadIDB();
-}
-
-function tryLoadIDB() {
+async function loadData() {
   try {
-    const req = indexedDB.open('3dzaap_db',1);
-    req.onupgradeneeded = e => {
-      const db=e.target.result;
-      ['filaments','orders','expenses'].forEach(s=>{
-        if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'});
-      });
-    };
-    req.onsuccess = e => {
-      const db=e.target.result;
-      const load = (store, arr, cb) => {
-        if(!db.objectStoreNames.contains(store)) return;
-        db.transaction(store,'readonly').objectStore(store).getAll().onsuccess=e2=>{
-          if(e2.target.result?.length){ arr.length=0; arr.push(...e2.target.result); cb(); }
-        };
-      };
-      load('filaments', filaments, refreshStats);
-      load('orders',    orders,    refreshStats);
-      load('expenses',  expenses,  refreshStats);
-    };
-  } catch(e){}
-}
-
-function saveToIDB(storeName, data) {
-  try {
-    const req = indexedDB.open('3dzaap_db',1);
-    req.onsuccess = e => {
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains(storeName)) return;
-      const tx=db.transaction(storeName,'readwrite'), store=tx.objectStore(storeName);
-      store.clear().onsuccess=()=>data.forEach(r=>store.put(r));
-    };
-  } catch(e){}
+    [filaments, orders, expenses] = await Promise.all([
+      DB.getFilaments(),
+      DB.getOrders(),
+      DB.getExpenses(),
+    ]);
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+    filaments = []; orders = []; expenses = [];
+  }
+  refreshStats();
 }
 
 // ── STORAGE STATS ──────────────────────
@@ -868,7 +834,7 @@ function parseAllCSV(text) {
   );
 }
 
-function confirmImport() {
+async function confirmImport() {
   if(!_importData) return;
   const merge = document.getElementById('mergeCheck').checked;
   const d = _importData;
@@ -884,8 +850,7 @@ function confirmImport() {
     if(d.kind==='filaments'||(d.filaments?.length)) {
       const recs = d.kind==='all'?d.filaments:d.records;
       filaments = mergeArr(filaments, recs);
-      try{ await DB.saveAllFilaments(filaments); } catch(e){}
-      saveToIDB('filaments',filaments);
+      try{ await DB.saveAllFilaments(filaments); } catch(e){ console.error('saveAllFilaments',e); }
       setFb('fbImportFil',`✓ ${recs.length} filamentos importados`);
     }
   }
@@ -893,11 +858,7 @@ function confirmImport() {
     if(d.kind==='orders'||(d.orders?.length)) {
       const recs = d.kind==='all'?d.orders:d.records;
       orders = mergeArr(orders, recs);
-      // Update lastOrderNumber
-      const nums = orders.map(o=>o.orderNumeric||0).filter(Boolean);
-      if(nums.length){ const max=Math.max(...nums); try{localStorage.setItem('lastOrderNumber',String(max));}catch(e){} }
-      try{ await DB.saveAllOrders(orders); } catch(e){}
-      saveToIDB('orders',orders);
+      try{ await DB.saveAllOrders(orders); } catch(e){ console.error('saveAllOrders',e); }
       setFb('fbImportOrd',`✓ ${recs.length} pedidos importados`);
     }
   }
@@ -905,8 +866,7 @@ function confirmImport() {
     if(d.kind==='expenses'||(d.expenses?.length)) {
       const recs = d.kind==='all'?d.expenses:d.records;
       expenses = mergeArr(expenses, recs);
-      try{ await DB.saveAllExpenses(expenses); } catch(e){}
-      saveToIDB('expenses',expenses);
+      try{ await DB.saveAllExpenses(expenses); } catch(e){ console.error('saveAllExpenses',e); }
       setFb('fbImportExp',`✓ ${recs.length} despesas importadas`);
     }
   }
@@ -935,23 +895,20 @@ function confirmClear(type) {
 
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
 
-function clearData(type) {
+async function clearData(type) {
   if(type==='filaments'){
     const count=filaments.length; filaments=[];
-    try{localStorage.removeItem('filaments');}catch(e){}
-    saveToIDB('filaments',[]);
+    try{ await DB.saveAllFilaments([]); } catch(e){ console.error(e); }
     addLog(`Filamentos eliminados: ${count} registos`,'warn');
     showToast(`🗑️ ${count} filamentos eliminados`,'');
   } else if(type==='orders'){
     const count=orders.length; orders=[];
-    try{localStorage.removeItem('orders');localStorage.removeItem('lastOrderNumber');}catch(e){}
-    saveToIDB('orders',[]);
+    try{ await DB.saveAllOrders([]); } catch(e){ console.error(e); }
     addLog(`Pedidos eliminados: ${count} registos`,'warn');
     showToast(`🗑️ ${count} pedidos eliminados`,'');
   } else if(type==='expenses'){
     const count=expenses.length; expenses=[];
-    try{localStorage.removeItem('expenses');}catch(e){}
-    saveToIDB('expenses',[]);
+    try{ await DB.saveAllExpenses([]); } catch(e){ console.error(e); }
     addLog(`Despesas eliminadas: ${count} registos`,'warn');
     showToast(`🗑️ ${count} despesas eliminadas`,'');
   }
@@ -959,20 +916,24 @@ function clearData(type) {
 }
 
 // ── ACTIVITY LOG ───────────────────────
-function loadLog() {
-  try { const l=localStorage.getItem('3dzaap_log'); if(l) activityLog=JSON.parse(l); } catch(e){}
+async function loadLog() {
+  try {
+    const rows = await DB.getLog();
+    activityLog = rows.map(r => ({
+      ts: new Date(r.created_at).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}),
+      msg: r.message,
+      type: r.type,
+    }));
+  } catch(e) { activityLog = []; }
   renderLog();
 }
 
-function addLog(msg, type='inf') {
-  const entry = {
-    ts: new Date().toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}),
-    msg, type,
-  };
-  activityLog.unshift(entry);
-  if(activityLog.length>100) activityLog = activityLog.slice(0,100);
-  try{ localStorage.setItem('3dzaap_log',JSON.stringify(activityLog)); }catch(e){}
+async function addLog(msg, type='inf') {
+  const ts = new Date().toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  activityLog.unshift({ ts, msg, type });
+  if(activityLog.length > 100) activityLog = activityLog.slice(0, 100);
   renderLog();
+  try { await DB.addLog(msg, type); } catch(e) { console.warn('addLog DB error', e); }
 }
 
 function renderLog() {
@@ -988,9 +949,9 @@ function renderLog() {
     </div>`).join('');
 }
 
-function clearLog() {
-  activityLog=[];
-  try{ localStorage.removeItem('3dzaap_log'); }catch(e){}
+async function clearLog() {
+  activityLog = [];
+  try { await DB.clearLog(); } catch(e) { console.warn('clearLog DB error', e); }
   renderLog();
   showToast('🗑️ Log limpo','');
 }

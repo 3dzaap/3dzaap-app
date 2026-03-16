@@ -737,9 +737,9 @@ let calcHistory = [];
 let advOpen = false;
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  loadUserData();
-  loadCompanyDefaults();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  await loadCompanyDefaults();
   applyDefaultsToForm();
   liveCalc();
   applyFeatureGating();
@@ -747,38 +747,44 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 // ── USER DATA ──────────────────────────
-function loadUserData(){
-  try{
-    const data=JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
-    if(data.email){
-      document.getElementById('userEmail').textContent=data.email;
-      const name=(data.fname&&data.lname)?data.fname+' '+data.lname
-        :data.fname||data.lname||data.name
-        ||data.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      document.getElementById('userName').textContent=name;
-      document.getElementById('userAvatar').textContent=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if(data.companyName){
-      document.getElementById('companyName').textContent=data.companyName;
-      document.getElementById('companyAvatar').textContent=data.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    }
-    if(data.plan){
-      const L={trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-      document.getElementById('planBadge').textContent=L[data.plan]||'Trial';
-    }
-    if(data.config){
-      const c=data.config;
-      ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
-        if(c[k]!==undefined) defaults[k]=c[k];
-      });
-    }
-  }catch(e){}
+async function loadUserData(){
+  const ok = await Auth.requireAuth();
+  if(!ok) return;
+  const session = await Auth.getSession();
+  if(!session) return;
+  document.getElementById('userEmail').textContent = session.email;
+  const name = (session.fname && session.lname) ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if(session.companyName){
+    document.getElementById('companyName').textContent = session.companyName;
+    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+  const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+  document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  // Aplicar defaults guardados no config da empresa
+  if(session.config){
+    const c = session.config;
+    ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
+      if(c[k] !== undefined) defaults[k] = c[k];
+    });
+  }
 }
 
-function loadCompanyDefaults(){
+async function loadCompanyDefaults(){
+  // Os defaults persistentes vivem em companies.config via Auth.updateCompany.
+  // loadUserData já aplica session.config; esta função é o fallback
+  // para o caso em que loadUserData correu antes do getSession completar.
   try{
-    const s=localStorage.getItem('3dzaap_calc_defaults');
-    if(s) defaults={...HARDCODED_DEFAULTS,...JSON.parse(s)};
+    const session = await Auth.getSession();
+    if(session?.config){
+      const c = session.config;
+      ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
+        if(c[k] !== undefined) defaults[k] = c[k];
+      });
+    }
   }catch(e){}
 }
 
@@ -922,16 +928,15 @@ function closeAdvPanel(){
   document.getElementById('advBackdrop').classList.remove('open');
   document.getElementById('advBtn').classList.remove('active-param');
 }
-function saveAsDefaults(){
-  defaults={...defaults,...getInputs()};
+async function saveAsDefaults(){
+  defaults = {...defaults, ...getInputs()};
   try{
-    localStorage.setItem('3dzaap_calc_defaults',JSON.stringify(defaults));
-    const user=JSON.parse(localStorage.getItem('3dzaap_user')||'{}');
-    user.config={...user.config,...defaults};
-    localStorage.setItem('3dzaap_user',JSON.stringify(user));
-  }catch(e){}
-  closeAdvPanel();
-  showToast('✅ Parâmetros padrão guardados!','ok');
+    await Auth.updateCompany({ config: defaults });
+    closeAdvPanel();
+    showToast('✅ Parâmetros padrão guardados!','ok');
+  }catch(e){
+    showToast('Erro ao guardar: ' + e.message,'err');
+  }
 }
 
 // ── HISTORY ────────────────────────────

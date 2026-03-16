@@ -605,81 +605,22 @@ async function applyFeatureGating() {
 }
 
 // ── LOAD / SAVE DATA ───────────────────
-function loadData() {
+async function loadData() {
   try {
-    const o = localStorage.getItem('orders');
-    if (o) orders = JSON.parse(o);
-    const ln = localStorage.getItem('lastOrderNumber');
-    if (ln) lastOrderNumber = parseInt(ln) || 0;
-    const f = localStorage.getItem('filaments');
-    if (f) filaments = JSON.parse(f);
-  } catch(e) {}
-  tryLoadIDB();
-}
-
-function tryLoadIDB() {
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments')) db.createObjectStore('filaments', {keyPath:'id'});
-      if (!db.objectStoreNames.contains('orders')) db.createObjectStore('orders', {keyPath:'id'});
-    };
-    req.onsuccess = e => {
-      const db = e.target.result;
-      // load orders
-      if (db.objectStoreNames.contains('orders')) {
-        db.transaction('orders','readonly').objectStore('orders').getAll().onsuccess = e2 => {
-          if (e2.target.result?.length) { orders = e2.target.result; renderOrders(); updateStats(); }
-        };
-      }
-      // load filaments
-      if (db.objectStoreNames.contains('filaments')) {
-        db.transaction('filaments','readonly').objectStore('filaments').getAll().onsuccess = e2 => {
-          if (e2.target.result?.length) filaments = e2.target.result;
-        };
-      }
-      // load lastOrderNumber
-      if (db.objectStoreNames.contains('orders')) {
-        try {
-          const ln2 = localStorage.getItem('lastOrderNumber');
-          if (ln2) lastOrderNumber = Math.max(lastOrderNumber, parseInt(ln2) || 0);
-        } catch(e) {}
-      }
-    };
-  } catch(e) {}
+    [orders, filaments, lastOrderNumber] = await Promise.all([
+      DB.getOrders(),
+      DB.getFilaments(),
+      DB.getLastOrderNumber(),
+    ]);
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+    orders = []; filaments = []; lastOrderNumber = 0;
+  }
   renderOrders();
   updateStats();
 }
 
-function saveOrders() {
-  try { localStorage.setItem('orders', JSON.stringify(orders)); } catch(e) {}
-  try { localStorage.setItem('lastOrderNumber', String(lastOrderNumber)); } catch(e) {}
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onsuccess = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('orders')) return;
-      const tx = db.transaction('orders','readwrite');
-      const store = tx.objectStore('orders');
-      store.clear().onsuccess = () => { orders.forEach(o => store.put(o)); };
-    };
-  } catch(e) {}
-}
-
-function saveFilaments() {
-  try { localStorage.setItem('filaments', JSON.stringify(filaments)); } catch(e) {}
-  try {
-    const req = indexedDB.open('3dzaap_db', 1);
-    req.onsuccess = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('filaments')) return;
-      const tx = db.transaction('filaments','readwrite');
-      const store = tx.objectStore('filaments');
-      store.clear().onsuccess = () => { filaments.forEach(f => store.put(f)); };
-    };
-  } catch(e) {}
-}
+// saveOrders e saveFilaments removidos — writes feitos directamente via DB.saveOrder / DB.saveFilament
 
 // ── ORDER NUMBERS ──────────────────────
 function getNextOrderNumber() { lastOrderNumber += 1; return lastOrderNumber; }
@@ -827,7 +768,7 @@ function updateStats() {
 }
 
 // ── ADVANCE STATUS ─────────────────────
-function advanceStatus(id) {
+async function advanceStatus(id) {
   const o = orders.find(x=>x.id===id);
   if (!o) return;
   const next = STATUS_NEXT[o.status];
@@ -845,7 +786,7 @@ function advanceStatus(id) {
 }
 
 // ── OPÇÃO A: filament auto-discount ────
-function applyFilamentConsumption(order) {
+async function applyFilamentConsumption(order) {
   let changed = false;
   const its = order.items || [];
   its.forEach(item => {
@@ -916,16 +857,19 @@ function applyFilamentConsumption(order) {
     }
 
     fil.updatedAt = new Date().toISOString();
+    fil._changed = true;
     changed = true;
   });
   if (changed) {
-    saveFilaments();
+    for (const fil of filaments) {
+      if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; }
+    }
     showToast('🎨 Stock de filamento actualizado automaticamente', 'ok');
   }
 }
 
 // ── OPÇÃO A: revert filament consumption ──
-function revertFilamentConsumption(order) {
+async function revertFilamentConsumption(order) {
   const its = order.items || [];
   let changed = false;
   its.forEach(item => {
@@ -958,15 +902,18 @@ function revertFilamentConsumption(order) {
     }
 
     fil.updatedAt = new Date().toISOString();
+    fil._changed = true;
     changed = true;
   });
   if (changed) {
-    saveFilaments();
+    for (const fil of filaments) {
+      if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; }
+    }
   }
 }
 
 // ── TOGGLE PAYMENT ─────────────────────
-function togglePayment(id, newStatus) {
+async function togglePayment(id, newStatus) {
   const o = orders.find(x=>x.id===id);
   if (!o) return;
   o.paymentStatus = newStatus;
@@ -1083,7 +1030,7 @@ function getItemsFromDOM() {
 }
 
 // ── SAVE ORDER ─────────────────────────
-function saveOrder() {
+async function saveOrder() {
   const clientName = document.getElementById('oClientName').value.trim();
   if (!clientName) { showToast('⚠️ Nome do cliente é obrigatório','err'); return; }
   const items = getItemsFromDOM().filter(i=>i.description.trim()!=='');
@@ -1157,11 +1104,11 @@ async function deleteOrder(id) {
 }
 
 // ── RECEIPT ────────────────────────────
-function printReceipt(id) {
+async function printReceipt(id) {
   const o = orders.find(x=>x.id===id);
   if (!o) return;
-  let userData = {};
-  try { userData = JSON.parse(localStorage.getItem('3dzaap_user') || '{}'); } catch(e) {}
+  const session = await Auth.getSession().catch(() => ({}));
+  const userData = session || {};
 
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
@@ -1338,11 +1285,10 @@ function closeUserMenu() {
 document.addEventListener('click', e => {
   if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
 });
-function doLogout() {
+async function doLogout() {
   closeUserMenu();
-  localStorage.removeItem('3dzaap_user');
   showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(() => window.location.href='auth-onboarding.html', 1300);
+  setTimeout(() => Auth.logout(), 1000);
 }
 
 // ── SIDEBAR MOBILE ─────────────────────
