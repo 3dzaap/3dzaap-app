@@ -367,10 +367,11 @@ const DB = {
     if (!_companyId) return;
     await _sb.from('activity_log').delete().eq('company_id', _companyId);
   },
-};
-
 
   // ── TEAM ────────────────────────────────────────────────────
+  // Gestão de membros e convites (plano Business)
+
+// ── TEAM ────────────────────────────────────────────────────
   // Gestão de membros e convites (plano Business)
 
   async getMembers() {
@@ -447,6 +448,8 @@ const DB = {
     await Auth._loadCompany();
     return data;
   },
+};
+
 
 // ============================================================
 // MAPPERS
