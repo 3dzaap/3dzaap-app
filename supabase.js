@@ -16,34 +16,26 @@ let _companyCache = null;  // objecto completo — evita queries repetidas
 const Auth = {
 
   async register({ fname, lname, email, pass, companyName, slug, plan, config, signature }) {
-    // Limpar cache antes de registar
-    _companyId    = null;
-    _companyCache = null;
-
     // 1. Criar utilizador no Supabase Auth
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
-      options: {
-        data: { fname, lname, companyName, plan },
-      }
+      options: { data: { fname, lname } }
     });
     if (authErr) throw authErr;
 
     const userId = authData.user.id;
     const cleanSlug = (slug || companyName).toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'empresa';
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // 2. Se não há sessão (confirmação de email activa), retornar sinal especial
-    //    O utilizador precisa de confirmar o email antes de continuar
-    if (!authData.session) {
-      return { user: authData.user, company: null, needsEmailConfirm: true };
+    // 2. Se a sessão foi retornada imediatamente (confirmação de email OFF),
+    //    activá-la para que auth.uid() funcione nas queries seguintes
+    if (authData.session) {
+      await _sb.auth.setSession(authData.session);
     }
 
-    // 3. Sessão disponível — activar e criar empresa
-    await _sb.auth.setSession(authData.session);
-
-    // 4. Criar empresa via RPC SECURITY DEFINER
+    // 3. Criar empresa via função SECURITY DEFINER (não precisa de sessão activa)
+    //    Esta função existe no Supabase e contorna a RLS correctamente
     let company = null;
     const { data: rpcData, error: rpcErr } = await _sb
       .rpc('create_company_for_user', {
@@ -58,8 +50,8 @@ const Auth = {
     if (!rpcErr && rpcData?.length) {
       company = rpcData[0];
     } else {
-      if (rpcErr) console.warn('rpc:', rpcErr.message);
-      // Fallback directo
+      // Fallback: inserção directa (funciona se email confirm estiver OFF)
+      if (rpcErr) console.warn('rpc create_company_for_user:', rpcErr.message);
       const { data: ins, error: insErr } = await _sb
         .from('companies')
         .insert({
@@ -97,35 +89,36 @@ const Auth = {
 
   // ── Carregar _companyId (com cache — evita queries repetidas) ────────────
   async _loadCompany(forceRefresh = false) {
-    // Retornar cache se já carregado e não forçar refresh
     if (!forceRefresh && _companyCache) return _companyCache;
 
     const { data: { user } } = await _sb.auth.getUser();
     if (!user) return null;
 
     let company = null;
+    let role    = 'owner';
 
-    // Única query: filtro directo por owner_id
-    const { data: owned, error } = await _sb
-      .from('companies')
-      .select('id, name, slug, plan, config, signature, trial_ends_at')
-      .eq('owner_id', user.id)
+    // 1. Via memberships (suporta owners + membros convidados)
+    const { data: mem } = await _sb
+      .from('memberships')
+      .select('role, companies(id, name, slug, plan, config, signature, trial_ends_at)')
+      .eq('user_id', user.id)
       .limit(1)
       .single();
 
-    if (!error && owned) {
-      company = owned;
+    if (mem?.companies) {
+      company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
+      role    = mem.role || 'member';
     }
 
-    // Fallback via memberships (se RLS usar memberships)
+    // 2. Fallback: owner_id directo (utilizadores migrados antes de memberships existir)
     if (!company) {
-      const { data: mem } = await _sb
-        .from('memberships')
-        .select('companies(id, name, slug, plan, config, signature, trial_ends_at)')
-        .eq('user_id', user.id)
+      const { data: owned } = await _sb
+        .from('companies')
+        .select('id, name, slug, plan, config, signature, trial_ends_at')
+        .eq('owner_id', user.id)
         .limit(1)
         .single();
-      if (mem?.companies) company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
+      if (owned) { company = owned; role = 'owner'; }
     }
 
     if (!company) {
@@ -134,8 +127,8 @@ const Auth = {
     }
 
     _companyId    = company.id;
-    _companyCache = company;
-    return company;
+    _companyCache = { ...company, role };
+    return _companyCache;
   },
 
   async getSession() {
@@ -153,6 +146,7 @@ const Auth = {
       config:      company?.config || {},
       signature:   company?.signature || null,
       companyId:   company?.id,
+      role:        company?.role || 'owner',
     };
   },
 
@@ -375,6 +369,85 @@ const DB = {
   },
 };
 
+
+  // ── TEAM ────────────────────────────────────────────────────
+  // Gestão de membros e convites (plano Business)
+
+  async getMembers() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('memberships')
+      .select('id, role, joined_at, user_id')
+      .eq('company_id', _companyId)
+      .order('joined_at');
+    if (error) throw error;
+    return data || [];
+  },
+
+  async updateMemberRole(membershipId, role) {
+    await _ensureCompany();
+    const { error } = await _sb
+      .from('memberships')
+      .update({ role })
+      .eq('id', membershipId)
+      .eq('company_id', _companyId);
+    if (error) throw error;
+  },
+
+  async removeMember(membershipId) {
+    await _ensureCompany();
+    const { error } = await _sb
+      .from('memberships')
+      .delete()
+      .eq('id', membershipId)
+      .eq('company_id', _companyId);
+    if (error) throw error;
+  },
+
+  async getInvites() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('invites')
+      .select('id, email, role, expires_at, accepted_at, created_at')
+      .eq('company_id', _companyId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createInvite(email, role = 'member') {
+    await _ensureCompany();
+    const { data: { user } } = await _sb.auth.getUser();
+    const { data, error } = await _sb
+      .from('invites')
+      .insert({ company_id: _companyId, email, role, invited_by: user.id })
+      .select('id, email, role, token, expires_at')
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async cancelInvite(inviteId) {
+    await _ensureCompany();
+    const { error } = await _sb
+      .from('invites')
+      .delete()
+      .eq('id', inviteId)
+      .eq('company_id', _companyId);
+    if (error) throw error;
+  },
+
+  async acceptInvite(token) {
+    const { data, error } = await _sb.rpc('accept_invite', { p_token: token });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    // Limpar cache para recarregar com a nova empresa
+    _companyId    = null;
+    _companyCache = null;
+    await Auth._loadCompany();
+    return data;
+  },
+
 // ============================================================
 // MAPPERS
 // ============================================================
@@ -445,7 +518,7 @@ function _mapOrderFromDB(row) {
 }
 
 function _mapOrderToDB(o) {
-  return {
+  const row = {
     order_number:   o.orderNumber,
     order_numeric:  o.orderNumeric,
     client_name:    o.clientName,
@@ -456,11 +529,13 @@ function _mapOrderToDB(o) {
     total:          parseFloat(o.total) || 0,
     status:         o.status,
     payment_status: o.paymentStatus,
-    created_at:     o.createdAt,
     due_date:       o.dueDate || null,
     payment_date:   o.paymentDate || null,
     notes:          o.notes || null,
   };
+  // Só enviar created_at se tiver valor — caso contrário DB usa DEFAULT NOW()
+  if (o.createdAt) row.created_at = o.createdAt;
+  return row;
 }
 
 function _mapExpenseFromDB(row) {
