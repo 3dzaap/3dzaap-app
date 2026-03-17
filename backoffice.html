@@ -819,9 +819,12 @@ function parseAllCSV(text) {
   if(filStart===-1&&ordStart===-1&&expStart===-1) throw new Error('Formato de backup não reconhecido.');
 
   let parsedFil=[],parsedOrd=[],parsedExp=[];
-  if(filStart>=0){ const sub=rows.slice(filStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseFilamentsCSV(t);parsedFil=_importData?.records||[];}catch(e){} _importData=null; }
-  if(ordStart>=0){ const sub=rows.slice(ordStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseOrdersCSV(t);parsedOrd=_importData?.records||[];}catch(e){} _importData=null; }
-  if(expStart>=0){ const sub=rows.slice(expStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseExpensesCSV(t);parsedExp=_importData?.records||[];}catch(e){} _importData=null; }
+  // Cada secção termina onde começa a próxima (ou no fim do ficheiro)
+  const filEnd = ordStart>=0 ? ordStart : (expStart>=0 ? expStart : rows.length);
+  const ordEnd = expStart>=0 ? expStart : rows.length;
+  if(filStart>=0){ const sub=rows.slice(filStart, filEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseFilamentsCSV(t);parsedFil=_importData?.records||[];}catch(e){console.warn('parse fil:',e);} _importData=null; }
+  if(ordStart>=0){ const sub=rows.slice(ordStart, ordEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseOrdersCSV(t);parsedOrd=_importData?.records||[];}catch(e){console.warn('parse ord:',e);} _importData=null; }
+  if(expStart>=0){ const sub=rows.slice(expStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseExpensesCSV(t);parsedExp=_importData?.records||[];}catch(e){console.warn('parse exp:',e);} _importData=null; }
 
   if(!parsedFil.length&&!parsedOrd.length&&!parsedExp.length) throw new Error('Nenhum dado encontrado no ficheiro de backup.');
   _importData={kind:'all',filaments:parsedFil,orders:parsedOrd,expenses:parsedExp};

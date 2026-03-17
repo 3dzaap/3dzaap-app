@@ -860,24 +860,24 @@ function renderTable() {
       <td class="cell-mono">${escH(f.rollSize||'—')}</td>
       <td class="cell-stepper">
         <div class="stepper">
-          <button class="stepper-btn" onclick="stepField(event,${f.id},'inUse',-1)">−</button>
+          <button class="stepper-btn" onclick="stepField(event,'${f.id}','inUse',-1)">−</button>
           <span class="stepper-val" id="sv-inUse-${f.id}">${f.inUse||0}</span>
-          <button class="stepper-btn" onclick="stepField(event,${f.id},'inUse',1)">+</button>
+          <button class="stepper-btn" onclick="stepField(event,'${f.id}','inUse',1)">+</button>
         </div>
       </td>
       <td class="cell-mono">${newRolls}</td>
       <td class="cell-stepper">
         <div class="stepper">
-          <button class="stepper-btn" onclick="stepField(event,${f.id},'total',-1)">−</button>
+          <button class="stepper-btn" onclick="stepField(event,'${f.id}','total',-1)">−</button>
           <span class="stepper-val" id="sv-total-${f.id}">${f.total||0}</span>
-          <button class="stepper-btn" onclick="stepField(event,${f.id},'total',1)">+</button>
+          <button class="stepper-btn" onclick="stepField(event,'${f.id}','total',1)">+</button>
         </div>
       </td>
       <td class="cell-mono">${price}</td>
       <td>${renderBadge(f)}</td>
       <td class="cell-actions">
-        <button class="btn-icon" onclick="openModal(${f.id})" title="Editar">✏️</button>
-        <button class="btn-icon del" onclick="confirmDelete(${f.id})" title="Eliminar">🗑️</button>
+        <button class="btn-icon" onclick="openModal('${f.id}')" title="Editar">✏️</button>
+        <button class="btn-icon del" onclick="confirmDelete('${f.id}')" title="Eliminar">🗑️</button>
       </td>
     </tr>`;
   }).join('');
