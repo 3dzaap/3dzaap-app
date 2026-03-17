@@ -7,7 +7,8 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let _companyId = null;
+let _companyId   = null;   // UUID da empresa
+let _companyCache = null;  // objecto completo — evita queries repetidas
 
 // ============================================================
 // AUTH
@@ -67,58 +68,48 @@ const Auth = {
       company = ins;
     }
 
-    _companyId = company.id;
+    _companyId    = company.id;
+    _companyCache = company;
     return { user: authData.user, company };
   },
 
   async login(email, pass) {
     const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    await Auth._loadCompany();
+    await Auth._loadCompany(); // populates _companyCache
     return data;
   },
 
   async logout() {
     await _sb.auth.signOut();
-    _companyId = null;
+    _companyId    = null;
+    _companyCache = null;
     window.location.href = 'auth-onboarding.html';
   },
 
-  // ── Carregar _companyId ────────────────────────────────────
-  // Estratégia robusta, sem depender de memberships:
-  //   1. Query companies SEM filtro explícito — a RLS filtra por owner_id automaticamente
-  //   2. Se RLS não estiver activa ou policy usa owner_id, retorna a company do user
-  async _loadCompany() {
+  // ── Carregar _companyId (com cache — evita queries repetidas) ────────────
+  async _loadCompany(forceRefresh = false) {
+    // Retornar cache se já carregado e não forçar refresh
+    if (!forceRefresh && _companyCache) return _companyCache;
+
     const { data: { user } } = await _sb.auth.getUser();
     if (!user) return null;
 
-    // Sem .eq() explícito — deixar a RLS policy da tabela companies filtrar
-    // A policy "company_read" faz: USING (owner_id = auth.uid())  ← padrão mais comum
-    // Se a policy usa memberships, o fallback abaixo resolve
     let company = null;
 
-    // Tentativa A: query sem filtro (RLS aplica automaticamente por owner_id)
-    const { data: companies, error: errA } = await _sb
+    // Única query: filtro directo por owner_id
+    const { data: owned, error } = await _sb
       .from('companies')
       .select('id, name, slug, plan, config, signature, trial_ends_at')
-      .limit(1);
+      .eq('owner_id', user.id)
+      .limit(1)
+      .single();
 
-    if (!errA && companies?.length) {
-      company = companies[0];
+    if (!error && owned) {
+      company = owned;
     }
 
-    // Tentativa B: filtro explícito por owner_id (se a RLS usar owner_id directo)
-    if (!company) {
-      const { data: owned } = await _sb
-        .from('companies')
-        .select('id, name, slug, plan, config, signature, trial_ends_at')
-        .eq('owner_id', user.id)
-        .limit(1)
-        .single();
-      if (owned) company = owned;
-    }
-
-    // Tentativa C: via memberships (se a tabela existir e a RLS usar memberships)
+    // Fallback via memberships (se RLS usar memberships)
     if (!company) {
       const { data: mem } = await _sb
         .from('memberships')
@@ -126,7 +117,7 @@ const Auth = {
         .eq('user_id', user.id)
         .limit(1)
         .single();
-      if (mem?.companies) company = mem.companies;
+      if (mem?.companies) company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
     }
 
     if (!company) {
@@ -134,14 +125,16 @@ const Auth = {
       return null;
     }
 
-    _companyId = company.id;
+    _companyId    = company.id;
+    _companyCache = company;
     return company;
   },
 
   async getSession() {
     const { data: { session } } = await _sb.auth.getSession();
     if (!session) return null;
-    const company = await Auth._loadCompany();
+    // Reutilizar cache se disponível (evita query extra após login/register)
+    const company = _companyCache || await Auth._loadCompany();
     const user = session.user;
     return {
       email:       user.email,
@@ -173,6 +166,9 @@ const Auth = {
       .update(fields)
       .eq('id', _companyId);
     if (error) throw error;
+    // Invalidar cache para reflectir os novos valores
+    _companyCache = null;
+    await Auth._loadCompany();
   },
 };
 
