@@ -153,7 +153,7 @@ async function runDiag() {
   }
 
   // ── 10. Test INSERT order ────────────────────────────────
-  const testOrder = { company_id: companyId, order_number:'TEST-DIAG', order_numeric:99999, client_name:'Diagnóstico', items:[], total:0, status:'orcamento', payment_status:'pendente' };
+  const testOrder = { company_id: companyId, order_number:'TEST-DIAG', order_numeric:99999, client_name:'Diagnóstico', items:[], total:0, status:'orcamento', payment_status:'pendente', created_at: new Date().toISOString() };
   const r10i = await sb.from('orders').insert(testOrder).select('id').single();
   if (r10i.error) {
     add('10. INSERT order (teste)', 'err', `❌ ${r10i.error.code} — ${r10i.error.message}\n\nEste é o erro "row violates row-level security policy for table orders".`);
