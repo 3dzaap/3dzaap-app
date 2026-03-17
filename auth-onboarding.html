@@ -6,9 +6,7 @@
 <title>3DZAAP — Entrar / Criar Conta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 3DZAAP data layer -->
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -29,11 +27,8 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-font-smoothing:antialiased}
 body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidden;line-height:1.6;min-height:100vh}
-
-/* ── BG ────────────────────────────── */
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.28) 0%,transparent 55%),
+  background:radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.28) 0%,transparent 55%),
     radial-gradient(ellipse 60% 50% at 95% 15%,rgba(245,148,58,.18) 0%,transparent 50%),
     radial-gradient(ellipse 70% 60% at 50% 100%,rgba(59,143,212,.20) 0%,transparent 55%),
     linear-gradient(145deg,#cde0f5 0%,#ddeeff 40%,#eef4ff 65%,#fdf0e8 100%);
@@ -44,145 +39,67 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .o2{width:480px;height:480px;background:radial-gradient(circle,rgba(245,148,58,.13) 0%,transparent 70%);bottom:-130px;left:-130px;animation:o2f 28s ease-in-out infinite}
 @keyframes o1f{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-60px,80px) scale(1.1)}70%{transform:translate(40px,-40px) scale(.95)}}
 @keyframes o2f{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,-70px)}}
-
-/* ── LAYOUT ────────────────────────── */
 .page{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
-
-/* ── CARD ──────────────────────────── */
-.card{
-  background:var(--glass);
-  backdrop-filter:var(--blur);
-  -webkit-backdrop-filter:var(--blur);
-  border:1.5px solid var(--border);
-  border-radius:var(--rx);
-  box-shadow:var(--sh-lg);
-  width:100%;max-width:460px;
-  padding:40px 40px 36px;
-  animation:cardIn .55s var(--ease) both;
-}
+.card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rx);box-shadow:var(--sh-lg);width:100%;max-width:460px;padding:40px 40px 36px;animation:cardIn .55s var(--ease) both}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
-
-/* ── LOGO ──────────────────────────── */
 .logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:28px;text-decoration:none}
-.logo-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);box-shadow:var(--sh)}
-.logo-txt{}
 .logo-name{font-size:1.35rem;font-weight:900;line-height:1;letter-spacing:-0.5px}
-.b3d{color:var(--blue)}
-.bzp{color:var(--orange)}
+.b3d{color:var(--blue)}.bzp{color:var(--orange)}
 .logo-sub{font-size:.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-top:2px}
-
-/* ── TABS ──────────────────────────── */
 .tabs{display:flex;gap:4px;background:rgba(255,255,255,0.4);border:1.5px solid var(--border);border-radius:var(--rm);padding:4px;margin-bottom:28px}
 .tab{flex:1;padding:9px;border-radius:11px;font-size:.88rem;font-weight:700;text-align:center;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .25s var(--ease)}
 .tab.active{background:var(--glass-s, rgba(255,255,255,0.85));color:var(--blue);box-shadow:var(--sh);font-weight:800}
-
-/* ── FORM ──────────────────────────── */
 .form-title{font-size:1.22rem;font-weight:800;margin-bottom:4px;color:var(--black)}
 .form-sub{font-size:.85rem;color:var(--muted);margin-bottom:24px}
 .form-sub span{color:var(--blue);font-weight:600;cursor:pointer}
-
 .field{margin-bottom:16px}
 .field label{display:block;font-size:.82rem;font-weight:700;color:var(--dark);margin-bottom:6px;letter-spacing:.3px}
 .field-wrap{position:relative}
 .field-wrap .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;opacity:.55;pointer-events:none}
-.inp{
-  width:100%;padding:12px 14px 12px 42px;
-  border-radius:var(--rm);
-  border:1.5px solid var(--bdark);
-  background:rgba(255,255,255,0.7);
-  font-family:var(--f);font-size:.93rem;color:var(--black);
-  transition:all .2s var(--ease);
-  outline:none;
-}
+.inp{width:100%;padding:12px 14px 12px 42px;border-radius:var(--rm);border:1.5px solid var(--bdark);background:rgba(255,255,255,0.7);font-family:var(--f);font-size:.93rem;color:var(--black);transition:all .2s var(--ease);outline:none}
 .inp:focus{border-color:var(--blue);background:rgba(255,255,255,0.92);box-shadow:0 0 0 3px rgba(59,143,212,0.15)}
 .inp.error{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,0.12)}
-.inp.ok{border-color:var(--success)}
 .inp::placeholder{color:var(--subtle)}
-.inp-no-ico{padding-left:14px}
-
 .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--muted);font-size:1rem;opacity:.7;transition:opacity .2s}
 .eye-btn:hover{opacity:1}
-
 .field-hint{font-size:.75rem;color:var(--muted);margin-top:5px}
 .field-error{font-size:.75rem;color:var(--danger);margin-top:5px;display:none}
 .field.has-error .field-error{display:block}
 .field.has-error .field-hint{display:none}
-
 .slug-preview{font-family:var(--mono);font-size:.75rem;color:var(--blue);margin-top:5px;opacity:.8}
-
-/* Password strength */
 .pw-bar{height:3px;border-radius:2px;background:rgba(0,0,0,0.08);margin-top:8px;overflow:hidden}
 .pw-fill{height:100%;border-radius:2px;width:0;transition:width .3s,background .3s}
-
-/* Row */
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-/* Divider */
 .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--subtle);font-size:.8rem;font-weight:600}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdark)}
-
-/* Google btn */
-.btn-google{
-  width:100%;padding:11px;border-radius:var(--rm);border:1.5px solid var(--bdark);
-  background:rgba(255,255,255,0.75);backdrop-filter:var(--blur-sm);
-  font-family:var(--f);font-size:.9rem;font-weight:700;color:var(--dark);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-  transition:all .25s var(--ease);
-}
+.btn-google{width:100%;padding:11px;border-radius:var(--rm);border:1.5px solid var(--bdark);background:rgba(255,255,255,0.75);backdrop-filter:var(--blur-sm);font-family:var(--f);font-size:.9rem;font-weight:700;color:var(--dark);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .25s var(--ease)}
 .btn-google:hover{background:rgba(255,255,255,0.95);box-shadow:var(--sh);transform:translateY(-1px)}
 .btn-google svg{width:18px;height:18px;flex-shrink:0}
-
-/* Primary btn */
-.btn-primary{
-  width:100%;padding:13px;border-radius:var(--rm);border:none;
-  background:linear-gradient(135deg,var(--blue),var(--blue-d));
-  color:#fff;font-family:var(--f);font-size:.95rem;font-weight:800;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-  box-shadow:0 6px 22px rgba(59,143,212,.38),inset 0 1px 0 rgba(255,255,255,.18);
-  transition:all .3s var(--ease);margin-top:20px;position:relative;overflow:hidden;
-}
-.btn-primary::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.12);opacity:0;transition:opacity .2s}
-.btn-primary:hover::before{opacity:1}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,143,212,.48)}
-.btn-primary:active{transform:scale(.98)}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-primary{width:100%;padding:13px;border-radius:var(--rm);border:none;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;font-family:var(--f);font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 22px rgba(59,143,212,.38),inset 0 1px 0 rgba(255,255,255,.18);transition:all .3s var(--ease);margin-top:20px;position:relative;overflow:hidden}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,143,212,.48)}
+.btn-primary:active:not(:disabled){transform:scale(.98)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none !important}
 .btn-primary .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
 .btn-primary.loading .btn-label{display:none}
 .btn-primary.loading .spinner{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Terms */
 .terms{font-size:.75rem;color:var(--muted);text-align:center;margin-top:14px}
 .terms a{color:var(--blue);text-decoration:none;font-weight:600}
-.terms a:hover{text-decoration:underline}
-
-/* Forgot */
 .forgot{font-size:.78rem;color:var(--blue);font-weight:600;cursor:pointer;display:block;text-align:right;margin-top:4px;text-decoration:none}
-.forgot:hover{text-decoration:underline}
-
-/* ── ONBOARDING STEPS ──────────────── */
 .steps-header{text-align:center;margin-bottom:28px}
 .steps-title{font-size:1.22rem;font-weight:800;margin-bottom:4px}
 .steps-sub{font-size:.85rem;color:var(--muted)}
-
 .steps-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px}
 .step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;border:2px solid var(--border);background:rgba(255,255,255,.5);color:var(--muted);transition:all .3s var(--ease);flex-shrink:0}
 .step-dot.active{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;border-color:var(--blue);box-shadow:0 4px 14px rgba(59,143,212,.4)}
 .step-dot.done{background:var(--success);color:#fff;border-color:var(--success)}
 .step-line{flex:1;height:2px;background:var(--bdark);max-width:60px;transition:background .3s}
 .step-line.done{background:var(--success)}
-
 .step-panel{display:none;animation:panelIn .35s var(--ease) both}
 .step-panel.active{display:block}
 @keyframes panelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
-
-/* Plan cards (mini) */
 .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-.plan-card{
-  border:2px solid var(--bdark);border-radius:var(--rm);padding:14px 14px 12px;
-  background:rgba(255,255,255,.45);cursor:pointer;transition:all .25s var(--ease);
-  position:relative;
-}
+.plan-card{border:2px solid var(--bdark);border-radius:var(--rm);padding:14px 14px 12px;background:rgba(255,255,255,.45);cursor:pointer;transition:all .25s var(--ease);position:relative}
 .plan-card:hover{border-color:var(--blue);background:rgba(255,255,255,.7);transform:translateY(-2px);box-shadow:var(--sh)}
 .plan-card.selected{border-color:var(--blue);background:rgba(59,143,212,.08);box-shadow:0 0 0 3px rgba(59,143,212,.15)}
 .plan-card.recommended{border-color:var(--orange)}
@@ -198,39 +115,21 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .plan-card.recommended.selected .plan-check{border-color:var(--orange);background:var(--orange)}
 .plan-check::after{content:'✓';font-size:.65rem;color:#fff;display:none;font-weight:800}
 .plan-card.selected .plan-check::after{display:block}
-
-/* Trial badge */
 .trial-info{background:rgba(34,197,94,.1);border:1.5px solid rgba(34,197,94,.25);border-radius:var(--rm);padding:10px 14px;font-size:.8rem;color:#15803d;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
-
-/* Success screen */
 .success-screen{text-align:center;padding:8px 0}
 .success-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(34,197,94,.08));border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;animation:popIn .5s var(--ease) both}
 @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 .success-screen h2{font-size:1.3rem;font-weight:800;margin-bottom:6px}
 .success-screen p{font-size:.88rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
 .company-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(59,143,212,.1);border:1.5px solid rgba(59,143,212,.2);border-radius:20px;padding:4px 14px;font-size:.85rem;font-weight:700;color:var(--blue);margin-bottom:20px}
-
-/* Reset screen */
 .reset-sent{text-align:center;display:none}
 .reset-sent .icon{font-size:2.5rem;margin-bottom:12px}
 .reset-sent h3{font-size:1.1rem;font-weight:800;margin-bottom:6px}
 .reset-sent p{font-size:.85rem;color:var(--muted)}
-
-/* Toast */
-.toast{
-  position:fixed;bottom:24px;right:24px;z-index:999;
-  background:var(--dark);color:#fff;
-  padding:12px 18px;border-radius:var(--rm);font-size:.85rem;font-weight:600;
-  box-shadow:0 12px 40px rgba(0,0,0,.25);
-  transform:translateY(80px);opacity:0;
-  transition:all .35s var(--ease);pointer-events:none;max-width:320px;
-  display:flex;align-items:center;gap:8px;
-}
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--dark);color:#fff;padding:12px 18px;border-radius:var(--rm);font-size:.85rem;font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.25);transform:translateY(80px);opacity:0;transition:all .35s var(--ease);pointer-events:none;max-width:320px;display:flex;align-items:center;gap:8px}
 .toast.show{transform:none;opacity:1}
 .toast.ok{background:var(--success)}
 .toast.err{background:var(--danger)}
-
-/* Responsive */
 @media(max-width:500px){
   .card{padding:28px 22px 24px;border-radius:var(--rl)}
   .plan-grid{grid-template-columns:1fr}
@@ -246,7 +145,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <div class="page">
   <div class="card" id="mainCard">
 
-    <!-- Logo -->
     <a href="index.html" class="logo">
       <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;font-weight:900;box-shadow:0 4px 16px rgba(59,143,212,.4)">3</div>
       <div class="logo-txt">
@@ -255,37 +153,30 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
     </a>
 
-    <!-- ═══════════════ LOGIN / SIGNUP PANEL ═══════════════ -->
+    <!-- ═══ AUTH PANEL ═══ -->
     <div id="authPanel">
-
-      <!-- Tabs -->
       <div class="tabs">
         <button class="tab active" onclick="switchTab('login')">Entrar</button>
         <button class="tab" onclick="switchTab('signup')">Criar Conta</button>
       </div>
 
-      <!-- LOGIN FORM -->
+      <!-- LOGIN -->
       <div id="loginForm">
         <div class="form-title">Bem-vindo de volta 👋</div>
         <div class="form-sub">Sem conta? <span onclick="switchTab('signup')">Regista-te grátis</span></div>
-
-        <!-- Google -->
         <button class="btn-google" onclick="googleAuth()">
           <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
           Continuar com Google
         </button>
-
         <div class="divider">ou</div>
-
         <div class="field" id="f-email-l">
           <label>Email</label>
           <div class="field-wrap">
             <span class="ico">✉️</span>
             <input type="email" class="inp" id="loginEmail" placeholder="tu@empresa.com" autocomplete="email">
           </div>
-          <div class="field-error" id="err-email-l">Email inválido</div>
+          <div class="field-error">Email inválido</div>
         </div>
-
         <div class="field" id="f-pass-l">
           <label>Password</label>
           <div class="field-wrap">
@@ -294,10 +185,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <button class="eye-btn" onclick="toggleEye('loginPass',this)" type="button">👁️</button>
           </div>
           <a href="#" class="forgot" onclick="showReset(event)">Esqueceu a password?</a>
-          <div class="field-error" id="err-pass-l">Password incorrecta</div>
+          <div class="field-error">Password incorrecta</div>
         </div>
-
-        <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+        <button class="btn-primary" id="loginBtn">
           <span class="btn-label">Entrar na conta</span>
           <div class="spinner"></div>
         </button>
@@ -307,7 +197,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div id="resetForm" style="display:none">
         <div class="form-title">Recuperar password 🔑</div>
         <div class="form-sub">Envia-mos um link para o teu email. <span onclick="cancelReset()">Voltar ao login</span></div>
-
         <div id="resetInputArea">
           <div class="field">
             <label>Email da conta</label>
@@ -316,16 +205,15 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               <input type="email" class="inp" id="resetEmail" placeholder="tu@empresa.com">
             </div>
           </div>
-          <button class="btn-primary" onclick="doReset()">
+          <button class="btn-primary" id="resetBtn">
             <span class="btn-label">Enviar link de recuperação</span>
             <div class="spinner"></div>
           </button>
         </div>
-
         <div class="reset-sent" id="resetSent">
           <div class="icon">📬</div>
           <h3>Email enviado!</h3>
-          <p>Verifica a tua caixa de entrada e segue as instruções para criar uma nova password.</p>
+          <p>Verifica a tua caixa de entrada e segue as instruções.</p>
           <button class="btn-primary" style="margin-top:20px" onclick="cancelReset()">
             <span class="btn-label">Voltar ao login</span>
             <div class="spinner"></div>
@@ -333,18 +221,15 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </div>
       </div>
 
-      <!-- SIGNUP FORM -->
+      <!-- SIGNUP -->
       <div id="signupForm" style="display:none">
         <div class="form-title">Começa grátis hoje 🚀</div>
         <div class="form-sub">14 dias de trial completo. Sem cartão. <span onclick="switchTab('login')">Já tens conta?</span></div>
-
         <button class="btn-google" onclick="googleAuth()">
           <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
           Registar com Google
         </button>
-
         <div class="divider">ou com email</div>
-
         <div class="row">
           <div class="field" id="f-fname">
             <label>Primeiro nome</label>
@@ -363,16 +248,14 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="field-error">Campo obrigatório</div>
           </div>
         </div>
-
         <div class="field" id="f-email-s">
           <label>Email profissional</label>
           <div class="field-wrap">
             <span class="ico">✉️</span>
             <input type="email" class="inp" id="signupEmail" placeholder="tu@empresa.com" autocomplete="email">
           </div>
-          <div class="field-error" id="err-email-s">Email inválido</div>
+          <div class="field-error">Email inválido</div>
         </div>
-
         <div class="field" id="f-pass-s">
           <label>Password</label>
           <div class="field-wrap">
@@ -384,22 +267,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="field-hint" id="pwHint">Use letras, números e símbolos</div>
           <div class="field-error">Mínimo 8 caracteres</div>
         </div>
-
-        <button class="btn-primary" id="signupBtn" onclick="doSignup()">
+        <button class="btn-primary" id="signupBtn">
           <span class="btn-label">Criar conta grátis</span>
           <div class="spinner"></div>
         </button>
-
-        <div class="terms">
-          Ao criares conta, aceitas os nossos <a href="#">Termos</a> e <a href="#">Política de Privacidade</a>
-        </div>
+        <div class="terms">Ao criares conta, aceitas os nossos <a href="#">Termos</a> e <a href="#">Política de Privacidade</a></div>
       </div>
     </div>
 
-    <!-- ═══════════════ ONBOARDING PANEL ═══════════════ -->
+    <!-- ═══ ONBOARDING PANEL ═══ -->
     <div id="onboardingPanel" style="display:none">
-
-      <!-- Step progress -->
       <div class="steps-bar">
         <div class="step-dot active" id="dot1">1</div>
         <div class="step-line" id="line1"></div>
@@ -408,13 +285,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="step-dot" id="dot3">3</div>
       </div>
 
-      <!-- STEP 1: Empresa -->
+      <!-- STEP 1 -->
       <div class="step-panel active" id="step1">
         <div class="steps-header">
           <div class="steps-title">🏭 A tua empresa</div>
           <div class="steps-sub">Estes dados aparecem nos recibos e documentos</div>
         </div>
-
         <div class="field" id="f-cname">
           <label>Nome da empresa</label>
           <div class="field-wrap">
@@ -424,7 +300,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="slug-preview" id="slugPreview"></div>
           <div class="field-error">Nome obrigatório (mín. 2 caracteres)</div>
         </div>
-
         <div class="field" id="f-slug">
           <label>URL da empresa <span style="color:var(--subtle);font-weight:500">(editável)</span></label>
           <div class="field-wrap">
@@ -432,9 +307,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <input type="text" class="inp" id="companySlug" placeholder="printlab-studio" oninput="validateSlugInput(this.value)" style="padding-left:52px;font-family:var(--mono);font-size:.88rem">
           </div>
           <div class="field-hint">Apenas letras minúsculas, números e hífens</div>
-          <div class="field-error" id="err-slug">Slug inválido ou já em uso</div>
+          <div class="field-error">Slug inválido</div>
         </div>
-
         <div class="field">
           <label>País <span style="color:var(--subtle);font-weight:500">(moeda e pagamentos)</span></label>
           <div class="field-wrap">
@@ -449,40 +323,32 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </select>
           </div>
         </div>
-
-        <button class="btn-primary" onclick="goStep(2)">
+        <button class="btn-primary" id="step1Btn">
           <span class="btn-label">Continuar →</span>
           <div class="spinner"></div>
         </button>
       </div>
 
-      <!-- STEP 2: Plano -->
+      <!-- STEP 2 -->
       <div class="step-panel" id="step2">
         <div class="steps-header">
           <div class="steps-title">✨ Escolhe o teu plano</div>
           <div class="steps-sub">Todos os planos incluem 14 dias de trial grátis</div>
         </div>
-
-        <div class="trial-info">
-          🎁 <span>14 dias grátis em qualquer plano — sem cartão necessário</span>
-        </div>
-
+        <div class="trial-info">🎁 <span>14 dias grátis em qualquer plano — sem cartão necessário</span></div>
         <div class="plan-grid">
-
           <div class="plan-card" id="plan-trial" onclick="selectPlan('trial')">
             <div class="plan-check"></div>
             <div class="plan-name">Trial</div>
             <div class="plan-price free">Grátis <small>14 dias</small></div>
             <div class="plan-feat">Todos os módulos<br>1 utilizador<br>Sem cartão</div>
           </div>
-
           <div class="plan-card selected" id="plan-starter" onclick="selectPlan('starter')">
             <div class="plan-check"></div>
             <div class="plan-name">Starter</div>
             <div class="plan-price">€9,90 <small>/mês</small></div>
             <div class="plan-feat">Calculadora<br>Filamentos<br>1 utilizador</div>
           </div>
-
           <div class="plan-card recommended" id="plan-pro" onclick="selectPlan('pro')">
             <div class="plan-badge">Popular</div>
             <div class="plan-check"></div>
@@ -490,353 +356,281 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="plan-price">€19,90 <small>/mês</small></div>
             <div class="plan-feat">+ Pedidos<br>Pipeline completo<br>Recibos PDF</div>
           </div>
-
           <div class="plan-card" id="plan-business" onclick="selectPlan('business')">
             <div class="plan-check"></div>
             <div class="plan-name">Business</div>
             <div class="plan-price">€39,90 <small>/mês</small></div>
             <div class="plan-feat">+ Financeiro<br>Marca própria<br>Multi-user</div>
           </div>
-
         </div>
-
-        <button class="btn-primary" onclick="goStep(3)" style="margin-top:16px">
+        <button class="btn-primary" id="step2Btn" style="margin-top:16px">
           <span class="btn-label">Confirmar plano →</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="goStep(1)">← Voltar</span>
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(1)">← Voltar</span>
         </div>
       </div>
 
-      <!-- STEP 3: Configurações iniciais -->
+      <!-- STEP 3 -->
       <div class="step-panel" id="step3">
         <div class="steps-header">
           <div class="steps-title">⚙️ Configuração rápida</div>
           <div class="steps-sub">Defaults da calculadora (editável depois)</div>
         </div>
-
         <div class="row">
           <div class="field">
             <label>Preço filamento (€/kg)</label>
-            <div class="field-wrap">
-              <span class="ico">🧵</span>
+            <div class="field-wrap"><span class="ico">🧵</span>
               <input type="number" class="inp" id="cfgFilament" value="25" min="1" step="0.5">
             </div>
           </div>
           <div class="field">
             <label>Preço impressora (€)</label>
-            <div class="field-wrap">
-              <span class="ico">🖨️</span>
+            <div class="field-wrap"><span class="ico">🖨️</span>
               <input type="number" class="inp" id="cfgPrinter" value="600" min="50" step="50">
             </div>
           </div>
         </div>
-
         <div class="row">
           <div class="field">
             <label>Vida útil (horas)</label>
-            <div class="field-wrap">
-              <span class="ico">⏱️</span>
+            <div class="field-wrap"><span class="ico">⏱️</span>
               <input type="number" class="inp" id="cfgLife" value="5000" min="100" step="100">
             </div>
           </div>
           <div class="field">
             <label>Eletricidade (€/kWh)</label>
-            <div class="field-wrap">
-              <span class="ico">⚡</span>
+            <div class="field-wrap"><span class="ico">⚡</span>
               <input type="number" class="inp" id="cfgElec" value="0.22" min="0.01" step="0.01">
             </div>
           </div>
         </div>
-
         <div class="row">
           <div class="field">
             <label>Margem de lucro (%)</label>
-            <div class="field-wrap">
-              <span class="ico">📈</span>
+            <div class="field-wrap"><span class="ico">📈</span>
               <input type="number" class="inp" id="cfgMargin" value="30" min="0" max="200" step="1">
             </div>
           </div>
           <div class="field">
             <label>Taxa de falhas (%)</label>
-            <div class="field-wrap">
-              <span class="ico">⚠️</span>
+            <div class="field-wrap"><span class="ico">⚠️</span>
               <input type="number" class="inp" id="cfgFailure" value="5" min="0" max="50" step="1">
             </div>
           </div>
         </div>
-
-        <!-- Assinatura -->
-        <div class="row" style="margin-top:4px">
-          <div class="field" style="width:100%">
-            <label>Assinatura para recibos <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
-            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-              <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s" onmouseover="this.style.background='rgba(59,143,212,.12)'" onmouseout="this.style.background='rgba(59,143,212,.06)'">
-                📎 Carregar imagem
-                <input type="file" id="sigUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadSignature(this)">
-              </label>
-              <div id="sigPreviewWrap" style="display:none;align-items:center;gap:8px">
-                <img id="sigPreview" style="height:40px;width:auto;border-radius:6px;border:1px solid rgba(0,0,0,.1);background:#fff;padding:2px">
-                <span style="font-size:.75rem;cursor:pointer;color:var(--muted)" onclick="clearSignature()">✕ Remover</span>
-              </div>
+        <div class="field" style="margin-top:4px">
+          <label>Assinatura para recibos <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+            <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s" onmouseover="this.style.background='rgba(59,143,212,.12)'" onmouseout="this.style.background='rgba(59,143,212,.06)'">
+              📎 Carregar imagem
+              <input type="file" id="sigUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadSignature(this)">
+            </label>
+            <div id="sigPreviewWrap" style="display:none;align-items:center;gap:8px">
+              <img id="sigPreview" style="height:40px;width:auto;border-radius:6px;border:1px solid rgba(0,0,0,.1);background:#fff;padding:2px">
+              <span style="font-size:.75rem;cursor:pointer;color:var(--muted)" onclick="clearSignature()">✕ Remover</span>
             </div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:5px">Aparece nos recibos de pagamento — PNG ou JPG, fundo transparente recomendado</div>
           </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:5px">PNG ou JPG, fundo transparente recomendado</div>
         </div>
-
-        <button class="btn-primary" id="finishBtn" onclick="if(!_registerInProgress) finishOnboarding()">
+        <button class="btn-primary" id="finishBtn">
           <span class="btn-label">🚀 Entrar no dashboard</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="goStep(2)">← Voltar</span>
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
         </div>
       </div>
-
     </div>
 
-    <!-- ═══════════════ SUCCESS PANEL ═══════════════ -->
+    <!-- ═══ SUCCESS PANEL ═══ -->
     <div id="successPanel" style="display:none">
       <div class="success-screen">
         <div class="success-icon">🎉</div>
         <h2>Tudo pronto!</h2>
-        <div class="company-pill" id="successCompanyPill">🏭 PrintLab Studio</div>
+        <div class="company-pill" id="successCompanyPill"></div>
         <p>A tua conta foi criada com sucesso.<br>O teu trial de 14 dias começa agora.</p>
-        <button class="btn-primary" onclick="goToDashboard()">
+        <button class="btn-primary" onclick="window.location.href='dashboard.html'">
           <span class="btn-label">Ir para o dashboard →</span>
           <div class="spinner"></div>
         </button>
-        <div class="terms" style="margin-top:16px">
-          Irás ser redirecionado para o teu <strong>Dashboard</strong>
-        </div>
+        <div class="terms" style="margin-top:16px">Irás ser redirecionado para o teu <strong>Dashboard</strong></div>
       </div>
     </div>
 
-  </div><!-- /card -->
-</div><!-- /page -->
+  </div>
+</div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── STATE ────────────────────────────
-let currentTab = 'login';
-let currentStep = 1;
-let selectedPlan = 'starter';
-let formData = {};
+// ══════════════════════════════════════════════════════════════
+//  ESTADO — uma única fonte de verdade
+// ══════════════════════════════════════════════════════════════
+const STATE = {
+  tab:          'login',
+  step:         1,
+  plan:         'starter',
+  form:         {},          // dados do utilizador (step signup)
+  signatureB64: null,
+  // Mutex: garante que cada operação async corre uma única vez
+  loginBusy:    false,
+  signupBusy:   false,
+  finishBusy:   false,
+  resetBusy:    false,
+};
 
-// ── TABS ─────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  BOOT — verificar sessão existente
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session) { window.location.href = 'dashboard.html'; return; }
+  } catch(e) {}
+
+  // Ligar botões com addEventListener (sem onclick no HTML — evita duplicados)
+  document.getElementById('loginBtn').addEventListener('click',  doLogin);
+  document.getElementById('signupBtn').addEventListener('click', doSignup);
+  document.getElementById('resetBtn').addEventListener('click',  doReset);
+  document.getElementById('step1Btn').addEventListener('click',  () => goStep(2));
+  document.getElementById('step2Btn').addEventListener('click',  () => goStep(3));
+  document.getElementById('finishBtn').addEventListener('click', finishOnboarding);
+
+  // Enter — apenas em campos relevantes, nunca durante onboarding
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('onboardingPanel').style.display !== 'none') return;
+    if (document.getElementById('successPanel').style.display    !== 'none') return;
+    if (document.getElementById('resetForm').style.display       !== 'none') return;
+    if (STATE.tab === 'login')  doLogin();
+    if (STATE.tab === 'signup') doSignup();
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════════
 function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='signup'));
+  STATE.tab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
   });
-  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('loginForm').style.display  = tab === 'login'  ? 'block' : 'none';
   document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
-  document.getElementById('resetForm').style.display = 'none';
+  document.getElementById('resetForm').style.display  = 'none';
 }
 
-// ── EYE TOGGLE ───────────────────────
-function toggleEye(id, btn) {
-  const inp = document.getElementById(id);
-  const isText = inp.type === 'text';
-  inp.type = isText ? 'password' : 'text';
-  btn.textContent = isText ? '👁️' : '🙈';
-}
-
-// ── PASSWORD STRENGTH ─────────────────
-function checkPasswordStrength(val) {
-  const fill = document.getElementById('pwFill');
-  const hint = document.getElementById('pwHint');
-  let score = 0;
-  if (val.length >= 8) score++;
-  if (/[A-Z]/.test(val)) score++;
-  if (/[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  const pct = (score / 4) * 100;
-  const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
-  const hints = ['Muito fraca','Fraca','Boa','Forte 💪'];
-  fill.style.width = pct + '%';
-  fill.style.background = colors[score-1] || '#ef4444';
-  if (val.length === 0) { fill.style.width = '0'; hint.textContent = 'Use letras, números e símbolos'; return; }
-  hint.textContent = hints[score-1] || 'Muito fraca';
-}
-
-// ── FORGOT / RESET ───────────────────
-function showReset(e) {
-  e.preventDefault();
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('resetForm').style.display = 'block';
-  document.querySelector('.tabs').style.display = 'none';
-}
-function cancelReset() {
-  document.getElementById('loginForm').style.display = 'block';
-  document.getElementById('resetForm').style.display = 'none';
-  document.querySelector('.tabs').style.display = 'flex';
-  document.getElementById('resetSent').style.display = 'none';
-  document.getElementById('resetInputArea').style.display = 'block';
-}
-function doReset() {
-  const email = document.getElementById('resetEmail').value.trim();
-  if (!isEmail(email)) { showToast('Insere um email válido','err'); return; }
-  fakeLoad(event.currentTarget, () => {
-    document.getElementById('resetInputArea').style.display = 'none';
-    document.getElementById('resetSent').style.display = 'block';
-  });
-}
-
-// ── VALIDATION ───────────────────────
-function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-function setFieldError(id, show) {
-  const f = document.getElementById(id);
-  if (f) f.classList.toggle('has-error', show);
-}
-
-// ── LOGIN ────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════════════════
 async function doLogin() {
+  if (STATE.loginBusy) return;
+
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   let ok = true;
-  if (!isEmail(email)) { setFieldError('f-email-l', true); ok = false; } else { setFieldError('f-email-l', false); }
-  if (pass.length < 1) { setFieldError('f-pass-l', true); ok = false; } else { setFieldError('f-pass-l', false); }
+  if (!isEmail(email)) { setErr('f-email-l', true); ok = false; } else { setErr('f-email-l', false); }
+  if (!pass)           { setErr('f-pass-l',  true); ok = false; } else { setErr('f-pass-l',  false); }
   if (!ok) return;
-  const btn = document.getElementById('loginBtn');
-  btn.classList.add('loading');
-  btn.disabled = true;
+
+  STATE.loginBusy = true;
+  const btn = setBusy('loginBtn', true);
   try {
     await Auth.login(email, pass);
     window.location.href = 'dashboard.html';
   } catch(err) {
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    const msg2 = err.message || String(err);
-    if (msg2.includes('24 seconds') || msg2.includes('security purposes') || msg2.includes('rate limit')) {
-      showToast('⏳ Aguarda alguns segundos e tenta novamente.', 'err');
-    } else if (msg2.includes('Invalid login') || msg2.includes('invalid') || msg2.includes('credentials')) {
-      showToast('❌ Email ou password incorrectos.', 'err');
-      setFieldError('f-email-l', true);
-      setFieldError('f-pass-l', true);
+    STATE.loginBusy = false;
+    setBusy('loginBtn', false);
+    const msg = err.message || '';
+    if (msg.match(/invalid|credentials|password/i)) {
+      toast('❌ Email ou password incorrectos.', 'err');
+      setErr('f-email-l', true); setErr('f-pass-l', true);
+    } else if (msg.match(/rate.limit|security|24 sec|429/i)) {
+      toast('⏳ Demasiadas tentativas. Aguarda 60 segundos.', 'err');
     } else {
-      showToast('Erro: ' + msg2, 'err');
+      toast('Erro: ' + (msg || 'Tenta novamente.'), 'err');
     }
   }
 }
 
-// ── SIGNUP ───────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  SIGNUP (apenas valida e avança para onboarding)
+// ══════════════════════════════════════════════════════════════
 function doSignup() {
+  if (STATE.signupBusy) return;
+
   const fname = document.getElementById('signupFname').value.trim();
   const lname = document.getElementById('signupLname').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const pass  = document.getElementById('signupPass').value;
   let ok = true;
-  if (!fname) { setFieldError('f-fname', true); ok = false; } else { setFieldError('f-fname', false); }
-  if (!lname) { setFieldError('f-lname', true); ok = false; } else { setFieldError('f-lname', false); }
-  if (!isEmail(email)) { setFieldError('f-email-s', true); ok = false; } else { setFieldError('f-email-s', false); }
-  if (pass.length < 8) { setFieldError('f-pass-s', true); ok = false; } else { setFieldError('f-pass-s', false); }
+  if (!fname)           { setErr('f-fname',   true); ok = false; } else { setErr('f-fname',   false); }
+  if (!lname)           { setErr('f-lname',   true); ok = false; } else { setErr('f-lname',   false); }
+  if (!isEmail(email))  { setErr('f-email-s', true); ok = false; } else { setErr('f-email-s', false); }
+  if (pass.length < 8)  { setErr('f-pass-s',  true); ok = false; } else { setErr('f-pass-s',  false); }
   if (!ok) return;
-  fakeLoad(document.getElementById('signupBtn'), () => {
-    formData = { fname, lname, email, pass, isNewUser: true };
-    showOnboarding();
-  });
+
+  // Guardar dados e avançar — SEM chamar Auth ainda
+  STATE.form = { fname, lname, email, pass };
+  STATE.tab  = 'onboarding';
+
+  STATE.signupBusy = true;
+  const btn = setBusy('signupBtn', true);
+  setTimeout(() => {
+    STATE.signupBusy = false;
+    setBusy('signupBtn', false);
+    document.getElementById('authPanel').style.display      = 'none';
+    document.getElementById('onboardingPanel').style.display = 'block';
+    setStep(1);
+  }, 900);
 }
 
-// ── GOOGLE ───────────────────────────
-function googleAuth() {
-  showToast('Em integração com Supabase Auth 🔗');
-  // In production: supabase.auth.signInWithOAuth({ provider: 'google' })
-}
-
-// ── ONBOARDING ───────────────────────
-function showOnboarding() {
-  document.getElementById('authPanel').style.display = 'none';
-  document.getElementById('onboardingPanel').style.display = 'block';
-  setStep(1);
-}
-
+// ══════════════════════════════════════════════════════════════
+//  ONBOARDING STEPS
+// ══════════════════════════════════════════════════════════════
 function goStep(n) {
   if (n === 2) {
     const name = document.getElementById('companyName').value.trim();
     const slug = document.getElementById('companySlug').value.trim();
-    if (name.length < 2) { setFieldError('f-cname', true); showToast('Nome da empresa obrigatório','err'); return; }
-    if (!slug || !/^[a-z0-9-]+$/.test(slug)) { setFieldError('f-slug', true); showToast('Slug inválido','err'); return; }
-    setFieldError('f-cname', false); setFieldError('f-slug', false);
-    formData.companyName = name; formData.slug = slug;
+    if (name.length < 2) { setErr('f-cname', true); toast('Nome da empresa obrigatório','err'); return; }
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) { setErr('f-slug', true); toast('Slug inválido','err'); return; }
+    setErr('f-cname', false); setErr('f-slug', false);
+    STATE.form.companyName = name;
+    STATE.form.slug        = slug;
   }
-  if (n === 3) { formData.plan = selectedPlan; }
+  if (n === 3) {
+    STATE.form.plan = STATE.plan;
+  }
   setStep(n);
 }
 
 function setStep(n) {
-  currentStep = n;
-  // Panels
-  for (let i=1;i<=3;i++) {
-    const p = document.getElementById('step'+i);
-    p.classList.toggle('active', i===n);
+  STATE.step = n;
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('step' + i).classList.toggle('active', i === n);
+    const d = document.getElementById('dot' + i);
+    d.classList.remove('active', 'done');
+    if      (i < n) { d.classList.add('done');   d.textContent = '✓'; }
+    else if (i === n){ d.classList.add('active'); d.textContent = i;   }
+    else             { d.textContent = i; }
   }
-  // Dots
-  for (let i=1;i<=3;i++) {
-    const d = document.getElementById('dot'+i);
-    d.classList.remove('active','done');
-    if (i < n) d.classList.add('done'), d.textContent = '✓';
-    else if (i === n) d.classList.add('active'), d.textContent = i;
-    else d.textContent = i;
-  }
-  // Lines
-  for (let i=1;i<=2;i++) {
-    document.getElementById('line'+i).classList.toggle('done', i < n);
+  for (let i = 1; i <= 2; i++) {
+    document.getElementById('line' + i).classList.toggle('done', i < n);
   }
 }
 
-// ── PLAN SELECT ──────────────────────
-function selectPlan(plan) {
-  selectedPlan = plan;
-  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('plan-'+plan).classList.add('selected');
-}
-
-// ── SLUG ─────────────────────────────
-function generateSlug(val) {
-  const slug = val.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9\s-]/g,'')
-    .trim().replace(/\s+/g,'-')
-    .replace(/-+/g,'-').substring(0,40);
-  document.getElementById('companySlug').value = slug;
-  document.getElementById('slugPreview').textContent = slug ? 'app.3dzaap.com/' + slug : '';
-}
-function validateSlugInput(val) {
-  const clean = val.toLowerCase().replace(/[^a-z0-9-]/g,'');
-  if (val !== clean) document.getElementById('companySlug').value = clean;
-  document.getElementById('slugPreview').textContent = clean ? 'app.3dzaap.com/' + clean : '';
-}
-
-// ── SIGNATURE ────────────────────────
-let _signatureB64 = null;
-function loadSignature(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    _signatureB64 = e.target.result;
-    document.getElementById('sigPreview').src = _signatureB64;
-    document.getElementById('sigPreviewWrap').style.display = 'flex';
-  };
-  reader.readAsDataURL(file);
-}
-function clearSignature() {
-  _signatureB64 = null;
-  document.getElementById('sigUpload').value = '';
-  document.getElementById('sigPreviewWrap').style.display = 'none';
-  document.getElementById('sigPreview').src = '';
-}
-
-// ── FINISH ───────────────────────────
-let _registerInProgress = false;
-
+// ══════════════════════════════════════════════════════════════
+//  FINISH — única chamada a Auth.register, mutex rigoroso
+// ══════════════════════════════════════════════════════════════
 async function finishOnboarding() {
-  if (_registerInProgress) return;   // bloquear cliques múltiplos
-  _registerInProgress = true;
+  // Mutex estrito — bloqueia qualquer nova chamada enquanto estiver a processar
+  if (STATE.finishBusy) return;
+  STATE.finishBusy = true;
+
+  const btn = setBusy('finishBtn', true);
+
   const config = {
     filamentPrice:    +document.getElementById('cfgFilament').value || 25,
     printerPrice:     +document.getElementById('cfgPrinter').value  || 600,
@@ -845,88 +639,192 @@ async function finishOnboarding() {
     profitMargin:     +document.getElementById('cfgMargin').value   || 30,
     failureRate:      +document.getElementById('cfgFailure').value  || 5,
   };
-  formData.config = config;
-  if (_signatureB64) formData.signature = _signatureB64;
 
-  const btn = document.getElementById('finishBtn');
-  btn.classList.add('loading');
-  btn.disabled = true;
   try {
     await Auth.register({
-      fname:       formData.fname,
-      lname:       formData.lname,
-      email:       formData.email,
-      pass:        formData.pass,
-      companyName: formData.companyName,
-      slug:        formData.slug,
-      plan:        selectedPlan,
+      fname:       STATE.form.fname,
+      lname:       STATE.form.lname,
+      email:       STATE.form.email,
+      pass:        STATE.form.pass,
+      companyName: STATE.form.companyName,
+      slug:        STATE.form.slug,
+      plan:        STATE.plan,
       config,
-      signature:   _signatureB64 || null,
+      signature:   STATE.signatureB64 || null,
     });
+
+    // Sucesso — mostrar ecrã final e NÃO resetar o mutex (impede re-submit)
     document.getElementById('onboardingPanel').style.display = 'none';
-    document.getElementById('successPanel').style.display = 'block';
-    document.getElementById('successCompanyPill').textContent = '🏭 ' + (formData.companyName || 'Empresa');
-    showToast('Conta criada com sucesso! 🎉','ok');
+    document.getElementById('successPanel').style.display    = 'block';
+    document.getElementById('successCompanyPill').textContent = '🏭 ' + (STATE.form.companyName || 'Empresa');
+    toast('Conta criada com sucesso! 🎉', 'ok');
+
+    // Redirigir automaticamente após 3 segundos
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 3000);
+
   } catch(err) {
-    _registerInProgress = false;
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    const msg = err.message || String(err);
-    if (msg.includes('429') || msg.includes('rate limit') || msg.includes('security purposes') || msg.includes('24 seconds')) {
-      showToast('⏳ Demasiadas tentativas. Aguarda 60 segundos e tenta novamente.', 'err');
-    } else if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('User already registered')) {
-      showToast('❌ Este email já tem conta. Usa o login em vez de registar.', 'err');
-    } else if (msg.includes('Password should') || msg.includes('weak_password')) {
-      showToast('❌ A password deve ter pelo menos 6 caracteres.', 'err');
-    } else if (msg.includes('Erro ao criar empresa')) {
-      showToast('⚠️ Conta criada mas empresa falhou. Contacta o suporte.', 'err');
+    // Erro — resetar mutex para permitir nova tentativa
+    STATE.finishBusy = false;
+    setBusy('finishBtn', false);
+
+    const msg = err.message || '';
+    if (msg.match(/429|rate.limit|security|24 sec/i)) {
+      toast('⏳ Demasiadas tentativas. Aguarda 60 segundos e tenta novamente.', 'err');
+    } else if (msg.match(/already.registered|already.been|User already/i)) {
+      toast('❌ Este email já tem conta. Usa o login.', 'err');
+    } else if (msg.match(/password|weak/i)) {
+      toast('❌ A password deve ter pelo menos 6 caracteres.', 'err');
+    } else if (msg.match(/empresa|company/i)) {
+      toast('⚠️ Conta criada. Erro ao criar empresa: ' + msg, 'err');
     } else {
-      showToast('Erro: ' + msg, 'err');
+      toast('Erro: ' + (msg || 'Tenta novamente.'), 'err');
     }
   }
 }
 
-// ── GO TO DASHBOARD ──────────────────
-function goToDashboard() {
-  window.location.href = 'dashboard.html';
+// ══════════════════════════════════════════════════════════════
+//  RESET PASSWORD
+// ══════════════════════════════════════════════════════════════
+function showReset(e) {
+  e.preventDefault();
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'block';
+  document.querySelector('.tabs').style.display      = 'none';
+}
+function cancelReset() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('resetForm').style.display = 'none';
+  document.querySelector('.tabs').style.display      = 'flex';
+  document.getElementById('resetSent').style.display      = 'none';
+  document.getElementById('resetInputArea').style.display = 'block';
+}
+async function doReset() {
+  if (STATE.resetBusy) return;
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!isEmail(email)) { toast('Insere um email válido','err'); return; }
+  STATE.resetBusy = true;
+  setBusy('resetBtn', true);
+  try {
+    await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth-onboarding.html' });
+    document.getElementById('resetInputArea').style.display = 'none';
+    document.getElementById('resetSent').style.display      = 'block';
+  } catch(e) {
+    toast('Erro ao enviar email: ' + (e.message || ''), 'err');
+  } finally {
+    STATE.resetBusy = false;
+    setBusy('resetBtn', false);
+  }
 }
 
-// ── HELPERS ──────────────────────────
-function fakeLoad(btn, cb, delay=1200) {
-  if (!btn) { cb(); return; }
-  btn.classList.add('loading');
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    cb();
-  }, delay);
+// ══════════════════════════════════════════════════════════════
+//  GOOGLE AUTH
+// ══════════════════════════════════════════════════════════════
+function googleAuth() {
+  toast('Integração Google — em breve 🔗');
 }
 
-let toastTimer;
-function showToast(msg, type='') {
+// ══════════════════════════════════════════════════════════════
+//  PLANOS
+// ══════════════════════════════════════════════════════════════
+function selectPlan(plan) {
+  STATE.plan = plan;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('plan-' + plan).classList.add('selected');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SLUG
+// ══════════════════════════════════════════════════════════════
+function generateSlug(val) {
+  const slug = val.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim().replace(/\s+/g, '-')
+    .replace(/-+/g, '-').substring(0, 40);
+  document.getElementById('companySlug').value = slug;
+  document.getElementById('slugPreview').textContent = slug ? 'app.3dzaap.com/' + slug : '';
+}
+function validateSlugInput(val) {
+  const clean = val.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (val !== clean) document.getElementById('companySlug').value = clean;
+  document.getElementById('slugPreview').textContent = clean ? 'app.3dzaap.com/' + clean : '';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ASSINATURA
+// ══════════════════════════════════════════════════════════════
+function loadSignature(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    STATE.signatureB64 = e.target.result;
+    document.getElementById('sigPreview').src = STATE.signatureB64;
+    document.getElementById('sigPreviewWrap').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+function clearSignature() {
+  STATE.signatureB64 = null;
+  document.getElementById('sigUpload').value = '';
+  document.getElementById('sigPreviewWrap').style.display = 'none';
+  document.getElementById('sigPreview').src = '';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PASSWORD STRENGTH
+// ══════════════════════════════════════════════════════════════
+function checkPasswordStrength(val) {
+  const fill = document.getElementById('pwFill');
+  const hint = document.getElementById('pwHint');
+  if (!val) { fill.style.width = '0'; hint.textContent = 'Use letras, números e símbolos'; return; }
+  let score = 0;
+  if (val.length >= 8)           score++;
+  if (/[A-Z]/.test(val))         score++;
+  if (/[0-9]/.test(val))         score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  fill.style.width      = (score / 4 * 100) + '%';
+  fill.style.background = ['#ef4444','#f97316','#eab308','#22c55e'][score - 1] || '#ef4444';
+  hint.textContent      = ['Muito fraca','Fraca','Boa','Forte 💪'][score - 1] || 'Muito fraca';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOGGLE EYE
+// ══════════════════════════════════════════════════════════════
+function toggleEye(id, btn) {
+  const inp = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type    = isText ? 'password' : 'text';
+  btn.textContent = isText ? '👁️' : '🙈';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+function setErr(id, show) {
+  const f = document.getElementById(id);
+  if (f) f.classList.toggle('has-error', show);
+}
+
+// Activa/desactiva loading num botão; retorna o elemento
+function setBusy(id, busy) {
+  const btn = document.getElementById(id);
+  if (!btn) return null;
+  btn.disabled = busy;
+  btn.classList.toggle('loading', busy);
+  return btn;
+}
+
+let _toastTimer;
+function toast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  t.className   = 'toast show ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
 }
-
-// ── KEYBOARD ─────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  // Nunca disparar durante o onboarding ou ecrã de sucesso
-  const onboarding = document.getElementById('onboardingPanel');
-  const success    = document.getElementById('successPanel');
-  if (onboarding?.style.display !== 'none') return;
-  if (success?.style.display !== 'none') return;
-  if (currentTab === 'login' && document.getElementById('loginForm').style.display !== 'none') doLogin();
-  if (currentTab === 'signup') doSignup();
-});
-
-// ── DEMO: pre-fill for easy testing ──
-// Uncomment to test onboarding directly:
-// setTimeout(() => { formData.email='demo@test.com'; showOnboarding(); }, 100);
 </script>
 </body>
 </html>
