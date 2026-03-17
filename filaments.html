@@ -337,11 +337,11 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
       <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
       <div class="sidebar-logo-text">Print Manager</div>
     </div>
-    <div class="sidebar-company">
+        <div class="sidebar-company">
       <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">PL</div>
-        <span class="company-name" id="companyName">PrintLab Studio</span>
-        <span class="company-plan" id="planBadge">Trial</span>
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -349,30 +349,30 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
         <div class="nav-section-label">Principal</div>
         <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
         <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-        <a class="nav-item active" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
+        <a class="nav-item active" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','')"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','')"><span class="nav-icon">💳</span> Assinatura</a>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
-    <div class="sidebar-footer">
+        <div class="sidebar-footer">
       <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu()">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu()">💳 Gerir assinatura</a>
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
         <a class="dd-item" href="index.html">🌐 Ver landing page</a>
         <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
       </div>
       <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatar">JD</div>
+        <div class="user-avatar" id="userAvatar">—</div>
         <div class="user-info">
           <div class="user-name" id="userName">—</div>
           <div class="user-email" id="userEmail">—</div>
@@ -658,13 +658,13 @@ async function loadUserData() {
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  document.getElementById('userName').textContent     = fullName;
-  document.getElementById('userEmail').textContent    = session.email;
-  document.getElementById('userAvatar').textContent   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent    = fullName;
+  document.getElementById('userEmail').textContent   = session.email;
+  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   if (document.getElementById('companyName'))
-    document.getElementById('companyName').textContent  = session.companyName;
+    document.getElementById('companyName').textContent = session.companyName || '—';
   if (document.getElementById('companyAvatar'))
-    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+    document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   if (document.getElementById('planBadge')) {
     const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
     document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
@@ -987,7 +987,7 @@ function closeModal() {
   editingId = null;
 }
 
-function saveFilament() {
+async function saveFilament() {
   const colorName = document.getElementById('colorName').value.trim() || 'Sem nome';
   const type = document.getElementById('fType').value;
   const variation = document.getElementById('fVariation').value;
@@ -1116,7 +1116,8 @@ document.addEventListener('click', e => {
 });
 async function doLogout() {
   closeUserMenu();
-  await Auth.logout();
+  showToast('Sessão terminada. Até logo! 👋','ok');
+  setTimeout(() => Auth.logout(), 1000);
 }
 
 // ── SIDEBAR MOBILE ─────────────────────

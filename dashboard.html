@@ -507,66 +507,46 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="sidebar-logo-text">Print Manager</div>
     </div>
 
-    <div class="sidebar-company">
-      <div class="company-pill" onclick="toggleUserMenu()">
-        <div class="company-avatar" id="companyAvatar">PL</div>
-        <span class="company-name" id="companyNameSidebar">PrintLab Studio</span>
-        <span class="company-plan" id="planBadgeSidebar">Trial</span>
+        <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatarSidebar">—</div>
+        <span class="company-name" id="companyNameSidebar">—</span>
+        <span class="company-plan" id="planBadgeSidebar">—</span>
       </div>
     </div>
 
     <nav class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-section-label">Principal</div>
-        <a class="nav-item active" href="dashboard.html">
-          <span class="nav-icon">🏠</span> Início
-        </a>
-        <a class="nav-item" href="calculator.html">
-          <span class="nav-icon">📐</span> Calculadora
-        </a>
-        <a class="nav-item" href="filaments.html">
-          <span class="nav-icon">🎨</span> Filamentos
-        </a>
+        <a class="nav-item active" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" id="nav-orders" href="orders.html" onclick="if(!canAccess('orders')){handleFeatureClick('orders','Pedidos','Pro');return false;}">
-          <span class="nav-icon">📦</span> Pedidos
-          <span class="nav-lock plan-badge" id="ordersLock" style="display:none">Pro+</span>
-        </a>
-        <a class="nav-item" id="nav-financial" href="financial.html" onclick="if(!canAccess('financial')){handleFeatureClick('financial','Financeiro','Business');return false;}">
-          <span class="nav-icon">💰</span> Financeiro
-          <span class="nav-lock plan-badge" id="financialLock" style="display:none">Business</span>
-        </a>
-        <a class="nav-item" id="nav-backoffice" href="backoffice.html">
-          <span class="nav-icon">🗄️</span> BackOffice
-        </a>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Conta</div>
-        <a class="nav-item" onclick="navigate('settings')" href="#">
-          <span class="nav-icon">⚙️</span> Configurações
-        </a>
-        <a class="nav-item" onclick="navigate('billing')" href="#">
-          <span class="nav-icon">💳</span> Assinatura
-        </a>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
 
-    <div class="sidebar-footer">
-      <!-- Dropdown (abre para cima) -->
+        <div class="sidebar-footer">
       <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" onclick="navigate('settings');closeUserMenu()">⚙️ Configurações da conta</a>
-        <a class="dd-item" onclick="navigate('billing');closeUserMenu()">💳 Gerir assinatura</a>
-        <div class="dd-divider"></div>
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
         <a class="dd-item" href="index.html">🌐 Ver landing page</a>
         <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
       </div>
       <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatarSidebar">JD</div>
+        <div class="user-avatar" id="userAvatarSidebar">—</div>
         <div class="user-info">
-          <div class="user-name" id="userNameSidebar">João Demo</div>
+          <div class="user-name" id="userNameSidebar">—</div>
           <div class="user-email" id="userEmailSidebar">—</div>
         </div>
         <span class="user-chevron" id="userChevron">▲</span>

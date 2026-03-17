@@ -52,6 +52,12 @@ const Auth = {
       .single();
     if (compErr) throw compErr;
 
+    // 3. Criar membership owner — as RLS policies usam a tabela memberships
+    const { error: memErr } = await _sb
+      .from('memberships')
+      .insert({ user_id: authData.user.id, company_id: company.id, role: 'owner' });
+    if (memErr) console.warn('membership insert:', memErr.message);
+
     _companyId = company.id;
     return { user: authData.user, company };
   },
@@ -72,13 +78,46 @@ const Auth = {
   },
 
   // Carregar company_id do utilizador autenticado
+  // Tenta via memberships (alinhado com RLS), fallback para owner_id
   async _loadCompany() {
     const { data: { user } } = await _sb.auth.getUser();
     if (!user) return null;
+
+    // 1. Tentar via memberships (o que as RLS policies usam)
+    const { data: mem } = await _sb
+      .from('memberships')
+      .select('company_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .single();
+
+    let companyId = mem?.company_id || null;
+
+    // 2. Fallback: owner_id directo (utilizadores criados antes da tabela memberships)
+    if (!companyId) {
+      const { data: owned } = await _sb
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1)
+        .single();
+      companyId = owned?.id || null;
+
+      // Se encontrou via owner_id mas não tem membership, criar agora
+      if (companyId) {
+        await _sb.from('memberships')
+          .insert({ user_id: user.id, company_id: companyId, role: 'owner' })
+          .then(r => r.error && console.warn('membership auto-create:', r.error.message));
+      }
+    }
+
+    if (!companyId) return null;
+    _companyId = companyId;
+
     const { data: company } = await _sb
       .from('companies')
       .select('id, name, slug, plan, config, signature, trial_ends_at')
-      .eq('owner_id', user.id)
+      .eq('id', companyId)
       .single();
     if (company) _companyId = company.id;
     return company;

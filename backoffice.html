@@ -193,11 +193,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
       <div class="sidebar-logo-text">Print Manager</div>
     </div>
-    <div class="sidebar-company">
+        <div class="sidebar-company">
       <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">PL</div>
-        <span class="company-name" id="companyName">PrintLab Studio</span>
-        <span class="company-plan" id="planBadge">Trial</span>
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -205,30 +205,30 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="nav-section-label">Principal</div>
         <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
         <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item active" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','')"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','')"><span class="nav-icon">💳</span> Assinatura</a>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
-    <div class="sidebar-footer">
+        <div class="sidebar-footer">
       <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu()">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu()">💳 Gerir assinatura</a>
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
         <a class="dd-item" href="index.html">🌐 Ver landing page</a>
         <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout()">🚪 Sair</a>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
       </div>
       <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatar">JD</div>
+        <div class="user-avatar" id="userAvatar">—</div>
         <div class="user-info">
           <div class="user-name" id="userName">—</div>
           <div class="user-email" id="userEmail">—</div>
@@ -491,23 +491,22 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
-  document.getElementById('userEmail').textContent = session.email;
-  const fullName = (session.fname && session.lname) ? session.fname + ' ' + session.lname
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  document.getElementById('userName').textContent = fullName;
-  document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  if (session.companyName) {
-    document.getElementById('companyName').textContent = session.companyName;
-    document.getElementById('companyAvatar').textContent = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent    = fullName;
+  document.getElementById('userEmail').textContent   = session.email;
+  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent = session.companyName || '—';
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
   }
-  const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-  document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
-  const plan = session.plan || 'trial';
-  if (document.getElementById('ordersLock') && !['trial','pro','business'].includes(plan))
-    document.getElementById('ordersLock').style.display = '';
-  if (document.getElementById('financialLock') && !['trial','business'].includes(plan))
-    document.getElementById('financialLock').style.display = '';
+  return session;
 }
 
 // ── LOAD DATA ──────────────────────────
@@ -846,29 +845,33 @@ async function confirmImport() {
     return Object.values(map);
   };
 
-  if(d.kind==='filaments'||d.kind==='all') {
-    if(d.kind==='filaments'||(d.filaments?.length)) {
-      const recs = d.kind==='all'?d.filaments:d.records;
-      filaments = mergeArr(filaments, recs);
-      try{ await DB.saveAllFilaments(filaments); } catch(e){ console.error('saveAllFilaments',e); }
-      setFb('fbImportFil',`✓ ${recs.length} filamentos importados`);
-    }
+  // Garantir que _companyId está carregado antes de escrever
+  await Auth._loadCompany();
+
+  const filRecs = d.kind==='all' ? (d.filaments||[]) : (d.kind==='filaments' ? (d.records||[]) : null);
+  const ordRecs = d.kind==='all' ? (d.orders||[])    : (d.kind==='orders'    ? (d.records||[]) : null);
+  const expRecs = d.kind==='all' ? (d.expenses||[])  : (d.kind==='expenses'  ? (d.records||[]) : null);
+
+  if(filRecs !== null) {
+    filaments = mergeArr(filaments, filRecs);
+    try {
+      await DB.saveAllFilaments(filaments);
+      setFb('fbImportFil',`✓ ${filRecs.length} filamentos importados`);
+    } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
   }
-  if(d.kind==='orders'||d.kind==='all') {
-    if(d.kind==='orders'||(d.orders?.length)) {
-      const recs = d.kind==='all'?d.orders:d.records;
-      orders = mergeArr(orders, recs);
-      try{ await DB.saveAllOrders(orders); } catch(e){ console.error('saveAllOrders',e); }
-      setFb('fbImportOrd',`✓ ${recs.length} pedidos importados`);
-    }
+  if(ordRecs !== null) {
+    orders = mergeArr(orders, ordRecs);
+    try {
+      await DB.saveAllOrders(orders);
+      setFb('fbImportOrd',`✓ ${ordRecs.length} pedidos importados`);
+    } catch(e) { console.error('saveAllOrders',e); setFb('fbImportOrd',`❌ Erro: ${e.message}`,true); }
   }
-  if(d.kind==='expenses'||d.kind==='all') {
-    if(d.kind==='expenses'||(d.expenses?.length)) {
-      const recs = d.kind==='all'?d.expenses:d.records;
-      expenses = mergeArr(expenses, recs);
-      try{ await DB.saveAllExpenses(expenses); } catch(e){ console.error('saveAllExpenses',e); }
-      setFb('fbImportExp',`✓ ${recs.length} despesas importadas`);
-    }
+  if(expRecs !== null) {
+    expenses = mergeArr(expenses, expRecs);
+    try {
+      await DB.saveAllExpenses(expenses);
+      setFb('fbImportExp',`✓ ${expRecs.length} despesas importadas`);
+    } catch(e) { console.error('saveAllExpenses',e); setFb('fbImportExp',`❌ Erro: ${e.message}`,true); }
   }
   if(d.kind==='all') setFb('fbImportAll',`✓ Backup restaurado`);
 
