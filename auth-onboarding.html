@@ -641,7 +641,7 @@ async function finishOnboarding() {
   };
 
   try {
-    await Auth.register({
+    const result = await Auth.register({
       fname:       STATE.form.fname,
       lname:       STATE.form.lname,
       email:       STATE.form.email,
@@ -653,14 +653,22 @@ async function finishOnboarding() {
       signature:   STATE.signatureB64 || null,
     });
 
-    // Sucesso — mostrar ecrã final e NÃO resetar o mutex (impede re-submit)
     document.getElementById('onboardingPanel').style.display = 'none';
     document.getElementById('successPanel').style.display    = 'block';
     document.getElementById('successCompanyPill').textContent = '🏭 ' + (STATE.form.companyName || 'Empresa');
-    toast('Conta criada com sucesso! 🎉', 'ok');
 
-    // Redirigir automaticamente após 3 segundos
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 3000);
+    if (result.needsEmailConfirm) {
+      // Confirmação de email necessária
+      document.getElementById('successPanel').querySelector('h2').textContent = 'Confirma o teu email 📬';
+      document.getElementById('successPanel').querySelector('p').innerHTML =
+        'Enviámos um email de confirmação para <strong>' + STATE.form.email + '</strong>.<br>' +
+        'Clica no link para activar a conta e entrar no dashboard.';
+      document.getElementById('successPanel').querySelector('.btn-primary').style.display = 'none';
+      toast('✅ Verifica o teu email para confirmar a conta.', 'ok');
+    } else {
+      toast('Conta criada com sucesso! 🎉', 'ok');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+    }
 
   } catch(err) {
     // Erro — resetar mutex para permitir nova tentativa
@@ -669,7 +677,9 @@ async function finishOnboarding() {
 
     const msg = err.message || '';
     if (msg.match(/429|rate.limit|security|24 sec/i)) {
-      toast('⏳ Demasiadas tentativas. Aguarda 60 segundos e tenta novamente.', 'err');
+      toast('⏳ Email bloqueado temporariamente. Usa um email diferente ou aguarda 1 hora.', 'err');
+      // Não resetar o mutex — forçar uso de email diferente
+      return;
     } else if (msg.match(/already.registered|already.been|User already/i)) {
       toast('❌ Este email já tem conta. Usa o login.', 'err');
     } else if (msg.match(/password|weak/i)) {

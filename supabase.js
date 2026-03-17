@@ -16,26 +16,34 @@ let _companyCache = null;  // objecto completo — evita queries repetidas
 const Auth = {
 
   async register({ fname, lname, email, pass, companyName, slug, plan, config, signature }) {
+    // Limpar cache antes de registar
+    _companyId    = null;
+    _companyCache = null;
+
     // 1. Criar utilizador no Supabase Auth
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
-      options: { data: { fname, lname } }
+      options: {
+        data: { fname, lname, companyName, plan },
+      }
     });
     if (authErr) throw authErr;
 
     const userId = authData.user.id;
     const cleanSlug = (slug || companyName).toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'empresa';
 
-    // 2. Se a sessão foi retornada imediatamente (confirmação de email OFF),
-    //    activá-la para que auth.uid() funcione nas queries seguintes
-    if (authData.session) {
-      await _sb.auth.setSession(authData.session);
+    // 2. Se não há sessão (confirmação de email activa), retornar sinal especial
+    //    O utilizador precisa de confirmar o email antes de continuar
+    if (!authData.session) {
+      return { user: authData.user, company: null, needsEmailConfirm: true };
     }
 
-    // 3. Criar empresa via função SECURITY DEFINER (não precisa de sessão activa)
-    //    Esta função existe no Supabase e contorna a RLS correctamente
+    // 3. Sessão disponível — activar e criar empresa
+    await _sb.auth.setSession(authData.session);
+
+    // 4. Criar empresa via RPC SECURITY DEFINER
     let company = null;
     const { data: rpcData, error: rpcErr } = await _sb
       .rpc('create_company_for_user', {
@@ -50,8 +58,8 @@ const Auth = {
     if (!rpcErr && rpcData?.length) {
       company = rpcData[0];
     } else {
-      // Fallback: inserção directa (funciona se email confirm estiver OFF)
-      if (rpcErr) console.warn('rpc create_company_for_user:', rpcErr.message);
+      if (rpcErr) console.warn('rpc:', rpcErr.message);
+      // Fallback directo
       const { data: ins, error: insErr } = await _sb
         .from('companies')
         .insert({
