@@ -15,34 +15,59 @@ let _companyId = null;
 const Auth = {
 
   async register({ fname, lname, email, pass, companyName, slug, plan, config, signature }) {
+    // 1. Criar utilizador no Supabase Auth
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
       options: { data: { fname, lname } }
     });
     if (authErr) throw authErr;
 
-    // Inserir empresa — RLS em companies permite INSERT sem restrição de tenant
-    const { data: company, error: compErr } = await _sb
-      .from('companies')
-      .insert({
-        owner_id:  authData.user.id,
-        name:      companyName,
-        slug:      slug || companyName.toLowerCase().replace(/\s+/g,'-'),
-        plan:      plan || 'trial',
-        config:    config || {},
-        signature: signature || null,
-      })
-      .select()
-      .single();
-    if (compErr) throw compErr;
+    const userId = authData.user.id;
+    const cleanSlug = (slug || companyName).toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    // 2. Se a sessão foi retornada imediatamente (confirmação de email OFF),
+    //    activá-la para que auth.uid() funcione nas queries seguintes
+    if (authData.session) {
+      await _sb.auth.setSession(authData.session);
+    }
+
+    // 3. Criar empresa via função SECURITY DEFINER (não precisa de sessão activa)
+    //    Esta função existe no Supabase e contorna a RLS correctamente
+    let company = null;
+    const { data: rpcData, error: rpcErr } = await _sb
+      .rpc('create_company_for_user', {
+        p_user_id:   userId,
+        p_name:      companyName,
+        p_slug:      cleanSlug,
+        p_plan:      plan || 'trial',
+        p_config:    config || {},
+        p_signature: signature || null,
+      });
+
+    if (!rpcErr && rpcData?.length) {
+      company = rpcData[0];
+    } else {
+      // Fallback: inserção directa (funciona se email confirm estiver OFF)
+      if (rpcErr) console.warn('rpc create_company_for_user:', rpcErr.message);
+      const { data: ins, error: insErr } = await _sb
+        .from('companies')
+        .insert({
+          owner_id:  userId,
+          name:      companyName,
+          slug:      cleanSlug,
+          plan:      plan || 'trial',
+          config:    config || {},
+          signature: signature || null,
+        })
+        .select()
+        .single();
+      if (insErr) throw new Error('Erro ao criar empresa: ' + insErr.message);
+      company = ins;
+    }
 
     _companyId = company.id;
-
-    // Tentar criar membership — se a tabela existir, ótimo; se não, ignora
-    await _sb.from('memberships')
-      .insert({ user_id: authData.user.id, company_id: company.id, role: 'owner' })
-      .then(r => r.error && console.info('memberships table not available:', r.error.message));
-
     return { user: authData.user, company };
   },
 
