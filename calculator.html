@@ -6,103 +6,1191 @@
 <title>3DZAAP — Calculadora</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
+<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 3DZAAP data layer -->
 <script src="supabase.js"></script>
-
-<script src="js/core/calculator.js"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-/* MANTENDO TODO O TEU CSS ORIGINAL (Liquid Glass / Layout / Sidebar)
-   Nenhuma cor ou margem foi alterada aqui.
-*/
 :root{
-  --white:#FFFFFF;--black:#0D1117;--blue:#3B8FD4;--blue-lt:#72B8F0;
-  --orange:#F5943A;--orange-lt:#FFB870;--success:#22c55e;--danger:#ef4444;
-  --glass-bg:rgba(255,255,255,0.03);--glass-border:rgba(255,255,255,0.08);
+  --blue:#3B8FD4;--blue-d:#2a6fb0;--blue-dd:#1a4f80;--blue-lt:#72B8F0;--blue-g:rgba(59,143,212,0.10);
+  --orange:#F5943A;--orange-d:#d4762a;--orange-lt:#FFB870;--orange-g:rgba(245,148,58,0.12);
+  --black:#0D1117;--dark:#1a2332;--muted:#4A5568;--subtle:#94A3B8;
+  --border:rgba(255,255,255,0.28);--bdark:rgba(0,0,0,0.08);
+  --glass:rgba(255,255,255,0.60);--glass-s:rgba(255,255,255,0.92);
+  --blur:blur(22px) saturate(1.8);--blur-sm:blur(14px) saturate(1.6);
+  --sh:0 8px 32px rgba(30,60,120,0.12),0 2px 8px rgba(30,60,120,0.06);
+  --sh-lg:0 24px 64px rgba(30,60,120,0.18),0 4px 16px rgba(30,60,120,0.10);
+  --sh-float:0 32px 80px rgba(30,60,120,0.24),0 8px 24px rgba(30,60,120,0.14);
+  --r:10px;--rm:16px;--rl:24px;--rx:32px;
+  --f:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --success:#22c55e;--danger:#ef4444;--warning:#f59e0b;
+  --sidebar-w:260px;
 }
-/* ... resto do teu CSS original ... */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidden;line-height:1.6}
+
+/* ── BG ─────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 15%,rgba(245,148,58,.14) 0%,transparent 50%),
+    radial-gradient(ellipse 70% 60% at 50% 100%,rgba(59,143,212,.18) 0%,transparent 55%),
+    linear-gradient(145deg,#cde0f5 0%,#ddeeff 40%,#eef4ff 65%,#fdf0e8 100%)}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.o1{width:660px;height:660px;background:radial-gradient(circle,rgba(59,143,212,.14) 0%,transparent 70%);top:-200px;right:-160px;animation:o1f 22s ease-in-out infinite}
+.o2{width:480px;height:480px;background:radial-gradient(circle,rgba(245,148,58,.11) 0%,transparent 70%);bottom:-120px;left:-120px;animation:o2f 28s ease-in-out infinite}
+@keyframes o1f{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-50px,70px) scale(1.08)}70%{transform:translate(30px,-30px) scale(.96)}}
+@keyframes o2f{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-60px)}}
+
+/* ── LAYOUT ─────────────────────────── */
+.layout{position:relative;z-index:1;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ────────────────────────── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:#e8f1fb;
+  
+  border-right:1.5px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:100;
+  transition:left .3s var(--ease);
+}
+.sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo img{height:36px;width:auto;object-fit:contain}
+.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
+.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
+.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-section{margin-bottom:6px}
+.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:background .18s,color .18s;text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500;position:relative}
+.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
+.nav-item.active{background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08));color:var(--blue);font-weight:700;border:1px solid rgba(59,143,212,.25)}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
+
+/* ── SIDEBAR FOOTER ─────────────────── */
+.sidebar-footer{padding:10px 12px;border-top:1.5px solid var(--border);position:relative}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
+.user-row:hover{background:rgba(59,143,212,.07)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
+.user-chevron.up{transform:rotate(180deg)}
+.user-dropdown{position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);z-index:200;overflow:hidden;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease)}
+.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s}
+.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
+.dd-item.danger{color:var(--danger)}
+.dd-item.danger:hover{background:rgba(239,68,68,.08)}
+.dd-divider{height:1px;background:var(--border);margin:3px 0}
+
+/* ── MAIN ───────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR — apenas breadcrumb ─────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,0.72);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);
+  border-bottom:1.5px solid var(--border);
+  padding:0 28px;height:60px;
+  display:flex;align-items:center;
+}
+.topbar-breadcrumb{display:flex;align-items:center;gap:8px}
+.topbar-breadcrumb a{font-size:.82rem;color:var(--muted);text-decoration:none;transition:color .18s}
+.topbar-breadcrumb a:hover{color:var(--blue)}
+.topbar-breadcrumb span{font-size:.82rem;color:var(--subtle)}
+.topbar-breadcrumb strong{font-size:.9rem;font-weight:800;color:var(--dark)}
+
+/* ── PAGE ───────────────────────────── */
+.page{padding:28px 28px 48px}
+
+/* ── PAGE HEADER ────────────────────── */
+.page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:20px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.page-header-text h1{font-size:1.45rem;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.page-header-text p{font-size:.88rem;color:var(--muted)}
+
+/* ── BOTÃO PARÂMETROS AVANÇADOS (inline no header) */
+.btn-adv-trigger{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 18px;border-radius:var(--rm);
+  background:rgba(255,255,255,.6);
+  border:1.5px solid var(--border);
+  font-size:.82rem;font-weight:600;color:var(--muted);
+  cursor:pointer;transition:all .22s var(--ease);
+  font-family:var(--f);white-space:nowrap;flex-shrink:0;
+  box-shadow:var(--sh);
+}
+.btn-adv-trigger:hover{
+  background:rgba(59,143,212,.1);
+  border-color:rgba(59,143,212,.35);
+  color:var(--blue);
+}
+.btn-adv-trigger.active-param{
+  background:linear-gradient(135deg,rgba(59,143,212,.14),rgba(59,143,212,.06));
+  border-color:rgba(59,143,212,.45);
+  color:var(--blue);font-weight:700;
+}
+.btn-adv-trigger .adv-trigger-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--subtle);transition:background .22s;
+}
+.btn-adv-trigger.active-param .adv-trigger-dot{background:var(--blue)}
+
+/* ── CALC LAYOUT — 1fr 1fr simétrico ── */
+.calc-layout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  align-items:stretch;
+}
+
+/* ── GLASS CARD ─────────────────────── */
+.glass-card{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);
+  box-shadow:var(--sh);overflow:hidden;
+  animation:fadeUp .5s var(--ease) .15s both;
+  display:flex;flex-direction:column;
+}
+.glass-card .form-sections{flex:1}
+.glass-card .results-panel{flex:1}
+.glass-card.results-col{animation-delay:.22s}
+
+/* ── CARD HEADER ────────────────────── */
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1.5px solid var(--border);background:rgba(255,255,255,.25)}
+.card-header-title{font-size:.92rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
+.card-header-badge{font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(59,143,212,.1);color:var(--blue);border:1px solid rgba(59,143,212,.22)}
+
+/* ── CARD FOOTER — limpar campos ──── */
+.card-footer{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:12px 22px;border-top:1.5px solid var(--border);
+  background:rgba(255,255,255,.15);
+}
+.btn-clear{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:var(--r);
+  background:transparent;border:1.5px solid rgba(239,68,68,.2);
+  font-size:.75rem;font-weight:600;color:var(--subtle);
+  cursor:pointer;transition:all .18s var(--ease);font-family:var(--f);
+}
+.btn-clear:hover{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.35);color:var(--danger)}
+
+/* ── FORM SECTIONS ──────────────────── */
+.form-sections{padding:4px 0}
+.form-section{padding:16px 22px;border-bottom:1.5px solid rgba(255,255,255,.55)}
+.form-section:last-child{border-bottom:none}
+.section-title{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.section-title-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.82rem}
+.si-blue{background:rgba(59,143,212,.15);border:1px solid rgba(59,143,212,.25)}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.74rem;font-weight:600;color:var(--muted)}
+.field-hint{font-size:.69rem;color:var(--subtle);font-weight:400}
+.field-wrap{position:relative}
+.field-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--subtle);pointer-events:none}
+.field input[type=number],.field input[type=text]{
+  width:100%;padding:8px 42px 8px 11px;
+  background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.8);
+  border-radius:var(--r);font-size:.86rem;font-weight:600;color:var(--dark);
+  font-family:var(--mono);transition:border-color .18s,box-shadow .18s,background .18s;outline:none;
+}
+.field input[type=text]{padding-right:11px;font-family:var(--f);font-weight:500}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12);background:rgba(255,255,255,.95)}
+.field input:hover:not(:focus){border-color:rgba(59,143,212,.35)}
+.field-with-slider{display:flex;flex-direction:column;gap:5px}
+.slider-row{display:flex;align-items:center;gap:9px}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);cursor:pointer;transition:transform .15s}
+.slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-val{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--blue);min-width:38px;text-align:right}
+
+/* ── RESULTS ────────────────────────── */
+.results-panel{padding:18px 22px}
+.price-hero{
+  text-align:center;padding:20px 16px 16px;
+  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
+  border:1.5px solid rgba(59,143,212,.22);border-radius:var(--rm);
+  margin-bottom:18px;position:relative;overflow:hidden;
+}
+.price-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(59,143,212,.15) 0%,transparent 70%)}
+.price-hero-label{font-size:.70rem;font-weight:800;color:var(--blue);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.price-hero-value{font-family:var(--mono);font-size:2.2rem;font-weight:800;color:var(--dark);line-height:1;margin-bottom:4px;transition:all .3s var(--ease)}
+.price-hero-value.updated{animation:priceFlash .4s var(--ease)}
+@keyframes priceFlash{0%{transform:scale(1)}40%{transform:scale(1.04);color:var(--blue)}100%{transform:scale(1);color:var(--dark)}}
+.price-hero-sub{font-size:.73rem;color:var(--muted)}
+.breakdown-list{display:flex;flex-direction:column;margin-bottom:16px}
+.breakdown-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--r);transition:background .15s}
+.breakdown-item:hover{background:rgba(59,143,212,.05)}
+.breakdown-item.divider{border-top:1.5px solid rgba(255,255,255,.6);margin-top:4px;padding-top:10px}
+.breakdown-item.total-row{background:linear-gradient(135deg,rgba(59,143,212,.1),rgba(59,143,212,.04));border:1.5px solid rgba(59,143,212,.2);border-radius:var(--rm);margin-top:6px;padding:10px 14px}
+.breakdown-left{display:flex;align-items:center;gap:8px}
+.breakdown-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.breakdown-dot.blue{background:var(--blue)}.breakdown-dot.green{background:var(--success)}.breakdown-dot.orange{background:var(--orange)}.breakdown-dot.purple{background:#a855f7}
+.breakdown-label{font-size:.80rem;color:var(--muted);font-weight:500}
+.breakdown-value{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);transition:color .2s}
+.breakdown-value.zero{color:var(--subtle)}
+.total-row .breakdown-label{font-weight:800;color:var(--dark);font-size:.86rem}
+.total-row .breakdown-value{font-size:.98rem;color:var(--blue)}
+.cost-bar{height:3px;background:rgba(59,143,212,.12);border-radius:2px;margin-top:2px;overflow:hidden}
+.cost-bar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .5s var(--ease)}
+.results-actions{display:flex;gap:8px}
+.btn-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-size:.76rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f)}
+.btn-action:hover{background:rgba(255,255,255,.9);color:var(--dark);border-color:rgba(59,143,212,.3)}
+.btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
+
+/* ── HISTÓRICO ──────────────────────── */
+.history-card{animation:fadeUp .5s var(--ease) .3s both}
+.history-search-wrap{position:relative;display:flex;align-items:center}
+.history-search-icon{position:absolute;left:10px;font-size:.80rem;pointer-events:none;color:var(--subtle)}
+.history-search{padding:6px 12px 6px 30px;border-radius:var(--r);background:rgba(255,255,255,.7);border:1.5px solid var(--border);font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;width:220px;transition:border-color .18s,width .25s var(--ease)}
+.history-search:focus{border-color:rgba(59,143,212,.4);width:260px}
+.history-count{font-size:.74rem;color:var(--subtle);font-weight:600;white-space:nowrap}
+.history-clear-btn{font-size:.75rem;font-weight:600;color:var(--subtle);cursor:pointer;padding:4px 10px;border-radius:var(--r);transition:color .18s,background .18s}
+.history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
+.history-table-wrap{overflow-x:auto}
+.history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.6}
+.history-empty-icon{font-size:2rem;opacity:.35}
+.history-table{width:100%;border-collapse:collapse;min-width:580px}
+.history-table thead tr{background:rgba(255,255,255,.3);border-bottom:1.5px solid var(--border)}
+.history-table th{padding:10px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
+.history-table tbody tr{border-bottom:1px solid rgba(255,255,255,.55);transition:background .15s;cursor:pointer}
+.history-table tbody tr:last-child{border-bottom:none}
+.history-table tbody tr:hover{background:rgba(59,143,212,.05)}
+.history-table td{padding:10px 16px;font-size:.82rem;color:var(--dark);vertical-align:middle}
+.td-name{font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-name .no-name{color:var(--subtle);font-weight:400;font-style:italic}
+.td-mono{font-family:var(--mono);font-weight:600}
+.td-price{font-family:var(--mono);font-weight:800;color:var(--blue)}
+.td-time{font-size:.73rem;color:var(--subtle);font-family:var(--mono)}
+.td-actions{text-align:right;white-space:nowrap}
+.btn-restore{font-size:.71rem;font-weight:700;padding:4px 10px;border-radius:var(--r);border:1.5px solid rgba(59,143,212,.3);background:rgba(59,143,212,.07);color:var(--blue);cursor:pointer;transition:all .18s;font-family:var(--f)}
+.btn-restore:hover{background:rgba(59,143,212,.15);border-color:var(--blue)}
+.btn-del{font-size:.76rem;padding:4px 8px;border-radius:var(--r);border:none;background:transparent;color:var(--subtle);cursor:pointer;transition:color .18s,background .18s;margin-left:4px}
+.btn-del:hover{color:var(--danger);background:rgba(239,68,68,.08)}
+
+/* ═══════════════════════════════════════════════
+   PAINEL AVANÇADO FLUTUANTE
+   ═══════════════════════════════════════════════ */
+.adv-backdrop{position:fixed;inset:0;z-index:160;background:rgba(13,17,23,0.15);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);opacity:0;pointer-events:none;transition:opacity .28s ease}
+.adv-backdrop.open{opacity:1;pointer-events:auto}
+.adv-panel{
+  position:fixed;top:72px;right:28px;
+  width:370px;max-height:calc(100vh - 96px);overflow-y:auto;z-index:161;
+  background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid rgba(255,255,255,.55);border-radius:var(--rl);box-shadow:var(--sh-float);
+  opacity:0;transform:translateY(-14px) scale(0.98);pointer-events:none;
+  transition:opacity .32s var(--ease),transform .32s var(--ease);
+}
+.adv-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.adv-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:1;background:rgba(255,255,255,.88);backdrop-filter:var(--blur-sm);border-radius:var(--rl) var(--rl) 0 0}
+.adv-title{font-size:.93rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:8px}
+.adv-close{width:28px;height:28px;border-radius:50%;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background .18s,color .18s}
+.adv-close:hover{background:rgba(239,68,68,.12);color:var(--danger)}
+.adv-body{padding:16px 20px 8px}
+.adv-desc{font-size:.79rem;color:var(--muted);margin-bottom:16px;line-height:1.55}
+.adv-section{margin-bottom:18px}
+.adv-section-title{font-size:.71rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.7)}
+.adv-section-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem}
+.si-orange{background:rgba(245,148,58,.14);border:1px solid rgba(245,148,58,.25)}
+.si-purple{background:rgba(168,85,247,.13);border:1px solid rgba(168,85,247,.22)}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adv-field{display:flex;flex-direction:column;gap:4px}
+.adv-field.full{grid-column:1/-1}
+.adv-field label{font-size:.74rem;font-weight:600;color:var(--muted)}
+.adv-wrap{position:relative}
+.adv-unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--subtle);pointer-events:none}
+.adv-field input[type=number]{width:100%;padding:8px 38px 8px 10px;background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.85);border-radius:var(--r);font-size:.85rem;font-weight:600;color:var(--dark);font-family:var(--mono);outline:none;transition:border-color .18s,box-shadow .18s}
+.adv-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12)}
+.adv-field input:hover:not(:focus){border-color:rgba(59,143,212,.3)}
+.adv-slider-wrap{margin-top:5px;display:flex;align-items:center;gap:8px}
+.adv-slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.18);border-radius:2px;outline:none;cursor:pointer}
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 5px rgba(59,143,212,.3);cursor:pointer;transition:transform .15s}
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+.adv-slider-val{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);min-width:36px;text-align:right}
+.adv-footer{padding:14px 20px 16px;border-top:1.5px solid var(--border);display:flex;gap:9px;background:rgba(255,255,255,.45);border-radius:0 0 var(--rl) var(--rl);position:sticky;bottom:0;backdrop-filter:var(--blur-sm)}
+.btn-adv-save{flex:1;padding:10px;border-radius:var(--rm);border:none;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;font-size:.85rem;font-weight:800;font-family:var(--f);cursor:pointer;transition:opacity .18s,transform .18s;box-shadow:0 3px 12px rgba(59,143,212,.28)}
+.btn-adv-save:hover{opacity:.9;transform:translateY(-1px)}
+.btn-adv-cancel{padding:10px 16px;border-radius:var(--rm);background:rgba(255,255,255,.6);border:1.5px solid var(--border);font-size:.83rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);transition:background .18s}
+.btn-adv-cancel:hover{background:rgba(255,255,255,.95)}
+
+/* ── MOBILE ─────────────────────────── */
+.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+
+/* ── CONFIRM MODAL ──────────────────── */
+.confirm-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(13,17,23,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+}
+.confirm-overlay.open{display:flex}
+.confirm-modal{
+  background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);
+  padding:28px 28px 22px;max-width:380px;width:90%;
+  box-shadow:var(--sh-float);
+  animation:fadeUp .25s var(--ease);
+}
+.confirm-icon{font-size:2rem;text-align:center;margin-bottom:12px}
+.confirm-title{font-size:1rem;font-weight:800;color:var(--dark);text-align:center;margin-bottom:8px}
+.confirm-msg{font-size:.84rem;color:var(--muted);text-align:center;line-height:1.5;margin-bottom:22px}
+.confirm-btns{display:flex;gap:10px}
+.confirm-cancel{
+  flex:1;padding:10px;border-radius:var(--rm);
+  background:rgba(255,255,255,.6);border:1.5px solid var(--border);
+  font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);
+  transition:background .18s;
+}
+.confirm-cancel:hover{background:rgba(255,255,255,.92)}
+.confirm-ok{
+  flex:1;padding:10px;border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--danger),#c53030);
+  color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;font-family:var(--f);
+  transition:opacity .18s,transform .18s;box-shadow:0 3px 10px rgba(239,68,68,.25);
+}
+.confirm-ok:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── TOAST ──────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:400;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
+.toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
+
+/* ── ANIMATIONS ─────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── RESPONSIVE ─────────────────────── */
+@media(max-width:1100px){.calc-layout{grid-template-columns:1fr}}
+@media(max-width:680px){
+  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  .main{margin-left:0}
+  .mob-toggle{display:flex}
+  .page{padding:16px 16px 40px}
+  .topbar{padding:0 16px 0 56px}
+  .fields-grid{grid-template-columns:1fr}
+  .adv-panel{right:12px;left:12px;width:auto;top:68px}
+  .page-header{flex-direction:column;gap:12px}
+}
+
+  /* ── iOS / Safari fixes ─────────────────
+     backdrop-filter dentro de transform contexts
+     bloqueia eventos de toque no iOS.
+     Solução: remover transform dos orbs decorativos,
+     usar apenas opacity. ────────────────── */
+  .o1, .o2, .o3 {
+    animation: none !important;
+    transform: none !important;
+  }
+  /* Eliminar delay de 300ms em elementos clicáveis */
+  a, button, .nav-item, .btn, .btn-icon,
+  .stepper-btn, .tab, .mat-btn, .modal-mat-btn,
+  .plan-card, .user-row, .dd-item, .color-preset,
+  .home-card, .action-card, .stat-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Scroll suave na sidebar iOS */
+  .sidebar-nav, .sidebar, .modal, .page {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Garantir que orbs decorativos nunca bloqueiam toque */
+  .bg, .orb, .o1, .o2 {
+    pointer-events: none !important;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Fix para backdrop-filter em modais no iOS:
+     garantir que o overlay não bloqueia scroll */
+  .modal-overlay.open, .confirm-overlay.open,
+  .gate-overlay.open {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  /* ── iOS Safari fix: substituir transform por left
+     backdrop-filter + transform = bug iOS que bloqueia toque ── */
+  @media(max-width:680px){
+    .sidebar{
+      transform: none !important;
+      left: calc(-1 * var(--sidebar-w, 260px));
+      transition: left .3s cubic-bezier(0.22,1,0.36,1);
+      /* Solid background no mobile — evita o bug backdrop-filter+transform */
+      background: #e8f1fb !important;
+      
+    }
+    .sidebar.open{
+      left: 0 !important;
+    }
+  }
+/* Garantir sidebar acima do overlay em mobile */
+  @media(max-width:680px){
+    .sidebar{ z-index: 300 !important; }
+      }
+
+  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
+  
+.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
+.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
 </style>
 </head>
-<body onload="initCalc()">
+<body>
 
-<div id="sideOverlay" onclick="toggleSidebar()"></div>
-<aside id="sidebar">
-    </aside>
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
 
-<main>
-    <div class="calculator-container">
-        <input type="number" id="pieceWeight" value="100" oninput="updateUI()">
-        <input type="number" id="printTime" value="120" oninput="updateUI()">
-        <input type="number" id="filPrice" value="25" oninput="updateUI()">
-        <input type="number" id="filWeight" value="1000" oninput="updateUI()">
-        <input type="number" id="powerCons" value="150" oninput="updateUI()">
-        <input type="number" id="kwhPrice" value="0.22" oninput="updateUI()">
-        <input type="number" id="machPrice" value="300" oninput="updateUI()">
-        <input type="number" id="machLife" value="24" oninput="updateUI()">
-        <input type="number" id="machHours" value="12" oninput="updateUI()">
-        <input type="number" id="failRate" value="5" oninput="updateUI()">
-        <input type="number" id="profitMargin" value="50" oninput="updateUI()">
-        <input type="number" id="laborFee" value="5" oninput="updateUI()">
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+<div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
-        <div id="resMaterial">€ 0.00</div>
-        <div id="resEnergy">€ 0.00</div>
-        <div id="resMachine">€ 0.00</div>
-        <div id="resTotal">€ 0.00</div>
+<div class="layout">
+
+  <!-- ── SIDEBAR ─────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">Print Manager</div>
     </div>
-</main>
+        <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item active" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Gestão</div>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Conta</div>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
+      </div>
+    </nav>
+        <div class="sidebar-footer">
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
+        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar">—</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
+        </div>
+        <span class="user-chevron" id="userChevron">▲</span>
+      </div>
+    </div>
+  </aside>
 
-<script>
-/**
- * MANTENDO AS TUAS FUNÇÕES AUXILIARES ORIGINAIS DO 3DZAAP.HTML
- */
+  <!-- ── MAIN ─────────────────────────── -->
+  <div class="main">
+
+    <!-- Topbar: só breadcrumb -->
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html">Dashboard</a>
+        <span>›</span>
+        <strong>📐 Calculadora</strong>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <!-- Page header + botão parâmetros avançados -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1>📐 Calculadora de Impressão</h1>
+          <p>Calcula o custo real e o preço de venda das tuas peças — lógica 100% homologada</p>
+        </div>
+        <button class="btn-adv-trigger" id="advBtn" onclick="toggleAdvPanel()">
+          <span class="adv-trigger-dot"></span>
+          ⚙️ Parâmetros Avançados
+        </button>
+      </div>
+
+      <!-- Colunas simétricas 1fr 1fr -->
+      <div class="calc-layout">
+
+        <!-- ── INPUTS ───────────────────── -->
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="card-header-title">⚙️ Parâmetros</div>
+            <span class="card-header-badge">⚡ Cálculo ao vivo</span>
+          </div>
+          <div class="form-sections">
+
+            <!-- Nome -->
+            <div class="form-section">
+              <div class="fields-grid">
+                <div class="field full">
+                  <label>Nome da impressão <span class="field-hint">(opcional — identifica no histórico)</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Material & Impressão -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon si-blue">📊</div>
+                Material &amp; Impressão
+              </div>
+              <div class="fields-grid">
+                <div class="field">
+                  <label>Preço do filamento</label>
+                  <div class="field-wrap">
+                    <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
+                    <span class="field-unit">€/kg</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Peso da peça</label>
+                  <div class="field-wrap">
+                    <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">g</span>
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Tempo de impressão</label>
+                  <div class="field-with-slider">
+                    <div class="field-wrap">
+                      <input type="number" id="printTime" value="3" step="0.1" min="0" oninput="syncSlider('printTime','printTimeSlider',0,48);liveCalc()">
+                      <span class="field-unit">h</span>
+                    </div>
+                    <div class="slider-row">
+                      <input type="range" id="printTimeSlider" min="0" max="48" step="0.5" value="3" oninput="syncInput('printTimeSlider','printTime');liveCalc()">
+                      <span class="slider-val" id="printTimeVal">3h</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- Limpar campos — discreto no rodapé -->
+          <div class="card-footer">
+            <button class="btn-clear" onclick="clearFields()">🗑️ Limpar campos</button>
+          </div>
+        </div><!-- /inputs card -->
+
+        <!-- ── RESULTADOS ─────────────── -->
+        <div class="glass-card results-col">
+          <div class="card-header">
+            <div class="card-header-title">📋 Resultados</div>
+            <span class="card-header-badge" id="liveIndicator">⚡ Ao vivo</span>
+          </div>
+          <div class="results-panel">
+            <div class="price-hero">
+              <div class="price-hero-label">💰 Preço de venda sugerido</div>
+              <div class="price-hero-value" id="rFinal">€&nbsp;0,00</div>
+              <div class="price-hero-sub" id="rFinalSub">Introduz os parâmetros para calcular</div>
+            </div>
+            <div class="breakdown-list">
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo do filamento</span></div>
+                <span class="breakdown-value zero" id="rFilament">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Amortização impressora</span></div>
+                <span class="breakdown-value zero" id="rAmortization">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barAmortization" style="width:0%"></div></div>
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo eletricidade</span></div>
+                <span class="breakdown-value zero" id="rElectricity">€ 0,00</span>
+              </div>
+              <div class="cost-bar"><div class="cost-bar-fill" id="barElectricity" style="width:0%"></div></div>
+              <div class="breakdown-item divider">
+                <div class="breakdown-left"><div class="breakdown-dot green"></div><span class="breakdown-label" style="font-weight:700">Custo base</span></div>
+                <span class="breakdown-value" id="rBase" style="font-weight:800">€ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Falhas (<span id="rFailurePct">5</span>%)</span></div>
+                <span class="breakdown-value zero" id="rFailure">€ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Indiretos (<span id="rIndirectPct">10</span>%)</span></div>
+                <span class="breakdown-value zero" id="rIndirect">€ 0,00</span>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-left"><div class="breakdown-dot purple"></div><span class="breakdown-label">+ Margem (<span id="rMarginPct">30</span>%)</span></div>
+                <span class="breakdown-value zero" id="rMargin">€ 0,00</span>
+              </div>
+              <div class="breakdown-item total-row">
+                <div class="breakdown-left"><span class="breakdown-label">💰 Preço Final</span></div>
+                <span class="breakdown-value" id="rFinalRow">€ 0,00</span>
+              </div>
+            </div>
+            <div class="results-actions">
+              <button class="btn-action" onclick="exportCalcCSV()">📄 CSV</button>
+              <button class="btn-action" id="copyBtnPanel" onclick="copyResults()">📋 Copiar</button>
+              <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
+            </div>
+          </div>
+        </div><!-- /results card -->
+
+      </div><!-- /calc-layout -->
+
+      <!-- ── HISTÓRICO — largura total ─── -->
+      <div class="glass-card history-card" style="margin-top:20px">
+        <div class="card-header">
+          <div class="card-header-title">🕐 Histórico de Cálculos</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="history-search-wrap">
+              <span class="history-search-icon">🔍</span>
+              <input type="text" id="historySearch" class="history-search" placeholder="Pesquisar por nome, peso, preço…" oninput="renderHistory()">
+            </div>
+            <span class="history-count" id="historyCount">0 registos</span>
+            <div class="history-clear-btn" onclick="clearHistory()">Limpar histórico</div>
+          </div>
+        </div>
+        <div class="history-table-wrap">
+          <div class="history-empty" id="historyEmpty">
+            <div class="history-empty-icon">🕐</div>
+            <div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> nos resultados para registar aqui.</div>
+          </div>
+          <table class="history-table" id="historyTable" style="display:none">
+            <thead>
+              <tr>
+                <th>Nome</th><th>Peso</th><th>Tempo</th><th>Margem</th>
+                <th>Custo Base</th><th>Preço Final</th><th>Hora</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- PAINEL AVANÇADO FLUTUANTE -->
+<div class="adv-panel" id="advPanel">
+  <div class="adv-header">
+    <div class="adv-title">⚙️ Parâmetros Avançados</div>
+    <button class="adv-close" onclick="closeAdvPanel()">✕</button>
+  </div>
+  <div class="adv-body">
+    <p class="adv-desc">
+      Amortização, energia e margens. Alterações aplicam-se imediatamente.<br>
+      <strong>Guardar como padrão</strong> define os valores para novos cálculos.
+    </p>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-orange">⚙️</div>
+        Amortização &amp; Energia
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label>Preço da impressora</label>
+          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">€</span></div>
+        </div>
+        <div class="adv-field">
+          <label>Vida útil</label>
+          <div class="adv-wrap"><input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()"><span class="adv-unit">h</span></div>
+        </div>
+        <div class="adv-field">
+          <label>Consumo elétrico</label>
+          <div class="adv-wrap"><input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()"><span class="adv-unit">W</span></div>
+        </div>
+        <div class="adv-field">
+          <label>Preço eletricidade</label>
+          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit">€/kWh</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-purple">📈</div>
+        Perdas &amp; Margem
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field full">
+          <label>Taxa de falhas</label>
+          <div class="adv-wrap"><input type="number" id="failureRate" value="5" step="1" min="0" max="100" oninput="syncAdvSlider('failureRate','failureSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="failureSlider" min="0" max="50" step="1" value="5" oninput="syncAdvInput('failureSlider','failureRate');liveCalc()"><span class="adv-slider-val" id="failureVal">5%</span></div>
+        </div>
+        <div class="adv-field full">
+          <label>Custos indiretos</label>
+          <div class="adv-wrap"><input type="number" id="indirectCosts" value="10" step="1" min="0" max="100" oninput="syncAdvSlider('indirectCosts','indirectSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="indirectSlider" min="0" max="50" step="1" value="10" oninput="syncAdvInput('indirectSlider','indirectCosts');liveCalc()"><span class="adv-slider-val" id="indirectVal">10%</span></div>
+        </div>
+        <div class="adv-field full">
+          <label>Margem de lucro</label>
+          <div class="adv-wrap"><input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()"><span class="adv-slider-val" id="marginVal">30%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="adv-footer">
+    <button class="btn-adv-save" onclick="saveAsDefaults()">💾 Guardar como padrão</button>
+    <button class="btn-adv-cancel" onclick="closeAdvPanel()">Fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="confirm-ok" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════════
+//  DEFAULTS — homologated
+// ══════════════════════════════════════
+const HARDCODED_DEFAULTS = {
+  filamentPrice:25,partWeight:50,printTime:3,
+  printerPrice:600,printerLife:5000,powerConsumption:200,
+  electricityPrice:0.22,failureRate:5,indirectCosts:10,profitMargin:30,
+};
+let defaults = {...HARDCODED_DEFAULTS};
+let calcHistory = [];
+let advOpen = false;
+
+// ── INIT ───────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  await loadCompanyDefaults();
+  applyDefaultsToForm();
+  liveCalc();
+  applyFeatureGating();
+  renderHistory();
+});
+
+// ── USER DATA ──────────────────────────
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent    = fullName;
+  document.getElementById('userEmail').textContent   = session.email;
+  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent = session.companyName || '—';
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+  return session;
+}
+
+async function loadCompanyDefaults(){
+  // Os defaults persistentes vivem em companies.config via Auth.updateCompany.
+  // loadUserData já aplica session.config; esta função é o fallback
+  // para o caso em que loadUserData correu antes do getSession completar.
+  try{
+    const session = await Auth.getSession();
+    if(session?.config){
+      const c = session.config;
+      ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
+        if(c[k] !== undefined) defaults[k] = c[k];
+      });
+    }
+  }catch(e){}
+}
+
+function applyDefaultsToForm(){
+  setV('filamentPrice',defaults.filamentPrice);
+  setV('partWeight',defaults.partWeight);
+  setV('printTime',defaults.printTime);
+  setV('printerPrice',defaults.printerPrice);
+  setV('printerLife',defaults.printerLife);
+  setV('powerConsumption',defaults.powerConsumption);
+  setV('electricityPrice',defaults.electricityPrice);
+  setV('failureRate',defaults.failureRate);
+  setV('indirectCosts',defaults.indirectCosts);
+  setV('profitMargin',defaults.profitMargin);
+  setSl('printTimeSlider',defaults.printTime,0,48);
+  setSl('failureSlider',defaults.failureRate,0,50);
+  setSl('indirectSlider',defaults.indirectCosts,0,50);
+  setSl('marginSlider',defaults.profitMargin,0,100);
+  updateSliderLabels();
+}
+
+// ── FEATURE GATING ─────────────────────
+async function applyFeatureGating(){
+  try{
+    const session = await Auth.getSession();
+    const plan = session?.plan || 'trial';
+    if(!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display='';
+    if(!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display='';
+  }catch(e){}
+}
+
+// ══════════════════════════════════════
+//  CORE CALCULATION — homologated
+// ══════════════════════════════════════
+function getInputs(){
+  return{
+    filamentPrice:pf('filamentPrice'),partWeight:pf('partWeight'),printTime:pf('printTime'),
+    printerPrice:pf('printerPrice'),printerLife:pf('printerLife')||1,
+    powerConsumption:pf('powerConsumption'),electricityPrice:pf('electricityPrice'),
+    failureRate:pf('failureRate'),indirectCosts:pf('indirectCosts'),profitMargin:pf('profitMargin'),
+  };
+}
+
+function computeResults(i){
+  const filamentCost     =(i.filamentPrice/1000)*i.partWeight;
+  const amortizationCost =(i.printerPrice/i.printerLife)*i.printTime;
+  const electricityCost  =(i.powerConsumption/1000)*i.printTime*i.electricityPrice;
+  const baseCost         =filamentCost+amortizationCost+electricityCost;
+  const failureCost      =baseCost*(i.failureRate/100);
+  const indirectCost     =baseCost*(i.indirectCosts/100);
+  const marginCost       =(baseCost+failureCost+indirectCost)*(i.profitMargin/100);
+  const finalPrice       =baseCost+failureCost+indirectCost+marginCost;
+  return{filamentCost,amortizationCost,electricityCost,baseCost,failureCost,indirectCost,marginCost,finalPrice};
+}
+
+let _lt;
+function liveCalc(){
+  clearTimeout(_lt);
+  _lt=setTimeout(_render,40);
+  updateSliderLabels();
+  updatePctLabels();
+}
+
+function _render(){
+  const i=getInputs();
+  const r=computeResults(i);
+  const heroEl=document.getElementById('rFinal');
+  const nv=fmtEur(r.finalPrice);
+  if(heroEl.textContent!==nv){
+    heroEl.textContent=nv;
+    heroEl.classList.remove('updated');void heroEl.offsetWidth;heroEl.classList.add('updated');
+  }
+  document.getElementById('rFinalRow').textContent=nv;
+  document.getElementById('rFinalSub').textContent=r.finalPrice>0
+    ?`Custo base ${fmtEur(r.baseCost)} · Margem ${fmtEur(r.marginCost)}`
+    :'Introduz os parâmetros para calcular';
+  setRes('rFilament',r.filamentCost);
+  setRes('rAmortization',r.amortizationCost);
+  setRes('rElectricity',r.electricityCost);
+  setRes('rBase',r.baseCost,true);
+  setRes('rFailure',r.failureCost);
+  setRes('rIndirect',r.indirectCost);
+  setRes('rMargin',r.marginCost);
+  const tot=r.finalPrice||1;
+  setBar('barFilament',r.filamentCost/tot*100);
+  setBar('barAmortization',r.amortizationCost/tot*100);
+  setBar('barElectricity',r.electricityCost/tot*100);
+}
+
+function setRes(id,val,bold){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=fmtEur(val);
+  el.className='breakdown-value'+(val===0?' zero':'');
+  if(bold) el.style.fontWeight='800';
+}
+function setBar(id,pct){
+  const el=document.getElementById(id);
+  if(el) el.style.width=Math.min(100,Math.max(0,pct)).toFixed(1)+'%';
+}
+
+function clearFields(){
+  setV('printName','');
+  setV('filamentPrice', 0);
+  setV('partWeight',    0);
+  setV('printTime',     0);
+  setSl('printTimeSlider', 0, 0, 48);
+  updateSliderLabels();
+  liveCalc();
+  showToast('🗑️ Campos limpos','');
+}
+
+// ── SLIDERS ────────────────────────────
+function syncSlider(inputId,sliderId,min,max){setSl(sliderId,pf(inputId),min,max);updateSliderLabels();}
+function syncInput(sliderId,inputId){setV(inputId,document.getElementById(sliderId).value);updateSliderLabels();}
+function syncAdvSlider(inputId,sliderId,min,max){syncSlider(inputId,sliderId,min,max);}
+function syncAdvInput(sliderId,inputId){syncInput(sliderId,inputId);}
+
+function updateSliderLabels(){
+  setT('printTimeVal',pf('printTime')+'h');
+  setT('failureVal',pf('failureRate')+'%');
+  setT('indirectVal',pf('indirectCosts')+'%');
+  setT('marginVal',pf('profitMargin')+'%');
+}
+function updatePctLabels(){
+  setT('rFailurePct',String(pf('failureRate')));
+  setT('rIndirectPct',String(pf('indirectCosts')));
+  setT('rMarginPct',String(pf('profitMargin')));
+}
+
+// ── ADVANCED PANEL ─────────────────────
+function toggleAdvPanel(){advOpen?closeAdvPanel():openAdvPanel();}
+function openAdvPanel(){
+  advOpen=true;
+  document.getElementById('advPanel').classList.add('open');
+  document.getElementById('advBackdrop').classList.add('open');
+  document.getElementById('advBtn').classList.add('active-param');
+}
+function closeAdvPanel(){
+  advOpen=false;
+  document.getElementById('advPanel').classList.remove('open');
+  document.getElementById('advBackdrop').classList.remove('open');
+  document.getElementById('advBtn').classList.remove('active-param');
+}
+async function saveAsDefaults(){
+  defaults = {...defaults, ...getInputs()};
+  try{
+    await Auth.updateCompany({ config: defaults });
+    closeAdvPanel();
+    showToast('✅ Parâmetros padrão guardados!','ok');
+  }catch(e){
+    showToast('Erro ao guardar: ' + e.message,'err');
+  }
+}
+
+// ── HISTORY ────────────────────────────
+function saveToHistory(){
+  const i=getInputs();const r=computeResults(i);
+  if(r.finalPrice===0){showToast('Sem valores para guardar','err');return;}
+  const name=(document.getElementById('printName').value||'').trim();
+  calcHistory.unshift({id:Date.now(),name,time:new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),inputs:{...i},results:{...r}});
+  if(calcHistory.length>50) calcHistory.pop();
+  renderHistory();
+  showToast('💾 Guardado no histórico!','ok');
+}
+
+function renderHistory(){
+  const raw=(document.getElementById('historySearch')?.value||'').trim();
+  const query=raw.toLowerCase();
+  // pesquisa alargada: nome, peso, tempo, filamento, margem, custo base, preço final, hora
+  const filtered=calcHistory.filter(e=>{
+    if(!query) return true;
+    const haystack=[
+      (e.name||'').toLowerCase(),
+      String(e.inputs.partWeight),
+      String(e.inputs.printTime),
+      String(e.inputs.filamentPrice),
+      String(e.inputs.profitMargin),
+      fmtEur(e.results.baseCost).replace(/[^0-9,]/g,''),
+      fmtEur(e.results.finalPrice).replace(/[^0-9,]/g,''),
+      e.time,
+    ].join(' ');
+    return haystack.includes(query);
+  });
+  const cEl=document.getElementById('historyCount');
+  if(cEl) cEl.textContent=query
+    ?`${filtered.length} resultado${filtered.length!==1?'s':''} para "${escH(raw)}"`
+    :`${filtered.length} registo${filtered.length!==1?'s':''}`;
+  const emptyEl=document.getElementById('historyEmpty');
+  const tableEl=document.getElementById('historyTable');
+  const tbody=document.getElementById('historyTbody');
+  if(!filtered.length){
+    if(emptyEl){
+      emptyEl.style.display='flex';
+      emptyEl.innerHTML=calcHistory.length
+        ?`<div class="history-empty-icon">🔍</div><div>Nenhum resultado para <strong>"${escH(raw)}"</strong></div>`
+        :`<div class="history-empty-icon">🕐</div><div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> nos resultados para registar aqui.</div>`;
+    }
+    if(tableEl) tableEl.style.display='none';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  if(tableEl) tableEl.style.display='';
+  // highlight helper
+  function hl(str){
+    if(!query||!str) return escH(str||'');
+    return escH(str).replace(new RegExp('('+escH(raw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark class="hl">$1</mark>');
+  }
+  tbody.innerHTML=filtered.map(e=>`
+    <tr onclick="restoreHistory(${e.id})">
+      <td class="td-name">${e.name?hl(e.name):'<span class="no-name">Sem nome</span>'}</td>
+      <td class="td-mono">${e.inputs.partWeight}g</td>
+      <td class="td-mono">${e.inputs.printTime}h</td>
+      <td class="td-mono">${e.inputs.profitMargin}%</td>
+      <td class="td-mono">${fmtEur(e.results.baseCost)}</td>
+      <td class="td-price">${fmtEur(e.results.finalPrice)}</td>
+      <td class="td-time">${e.time}</td>
+      <td class="td-actions">
+        <button class="btn-restore" onclick="event.stopPropagation();restoreHistory(${e.id})">↩ Restaurar</button>
+        <button class="btn-del" onclick="event.stopPropagation();deleteHistory(${e.id})" title="Remover">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function restoreHistory(id){
+  const e=calcHistory.find(h=>h.id===id);if(!e)return;
+  const i=e.inputs;
+  setV('printName',e.name||'');
+  setV('filamentPrice',i.filamentPrice);setV('partWeight',i.partWeight);
+  setV('printTime',i.printTime);setV('printerPrice',i.printerPrice);
+  setV('printerLife',i.printerLife);setV('powerConsumption',i.powerConsumption);
+  setV('electricityPrice',i.electricityPrice);setV('failureRate',i.failureRate);
+  setV('indirectCosts',i.indirectCosts);setV('profitMargin',i.profitMargin);
+  setSl('printTimeSlider',i.printTime,0,48);
+  setSl('failureSlider',i.failureRate,0,50);
+  setSl('indirectSlider',i.indirectCosts,0,50);
+  setSl('marginSlider',i.profitMargin,0,100);
+  updateSliderLabels();liveCalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('↩ Cálculo restaurado','ok');
+}
+
+function deleteHistory(id){calcHistory=calcHistory.filter(h=>h.id!==id);renderHistory();}
+function clearHistory(){
+  if(!calcHistory.length)return;
+  showConfirm(
+    'Limpar histórico?',
+    'Esta acção remove todos os registos guardados e não pode ser desfeita.',
+    ()=>{calcHistory=[];renderHistory();showToast('🗑️ Histórico limpo','');}
+  );
+}
+function showConfirm(title,msg,onConfirm){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmModal').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick=()=>{closeConfirm();onConfirm();};
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open');}
+
+// ── EXPORT / COPY ──────────────────────
+function exportCalcCSV(){
+  const i=getInputs();const r=computeResults(i);
+  const name=document.getElementById('printName').value.trim();
+  const rows=[
+    ['Campo','Valor'],['Nome',name||'—'],
+    ['Preço filamento (€/kg)',i.filamentPrice],['Peso peça (g)',i.partWeight],
+    ['Tempo impressão (h)',i.printTime],['Preço impressora (€)',i.printerPrice],
+    ['Vida útil (h)',i.printerLife],['Consumo elétrico (W)',i.powerConsumption],
+    ['Preço eletricidade (€/kWh)',i.electricityPrice],['Taxa falhas (%)',i.failureRate],
+    ['Custos indiretos (%)',i.indirectCosts],['Margem lucro (%)',i.profitMargin],
+    ['---','---'],
+    ['Custo filamento',r.filamentCost.toFixed(4)],['Custo amortização',r.amortizationCost.toFixed(4)],
+    ['Custo eletricidade',r.electricityCost.toFixed(4)],['Custo base',r.baseCost.toFixed(4)],
+    ['+ Falhas',r.failureCost.toFixed(4)],['+ Indiretos',r.indirectCost.toFixed(4)],
+    ['+ Margem',r.marginCost.toFixed(4)],['PREÇO FINAL',r.finalPrice.toFixed(4)],
+  ];
+  const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
+  dlCSV(rows.map(r=>r.join(';')).join('\n'),`calculo_${ts}.csv`);
+  showToast('📄 CSV exportado!','ok');
+}
+
+function copyResults(){
+  const i=getInputs();const r=computeResults(i);
+  const name=document.getElementById('printName').value.trim();
+  const txt=[
+    name?name:null,
+    `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}`,
+    '='.repeat(46),
+    `Custo filamento:    €${r.filamentCost.toFixed(2)}`,
+    `Custo amortização:  €${r.amortizationCost.toFixed(2)}`,
+    `Custo eletricidade: €${r.electricityCost.toFixed(2)}`,
+    `Custo base:         €${r.baseCost.toFixed(2)}`,
+    `+ Falhas (${i.failureRate}%):    €${r.failureCost.toFixed(2)}`,
+    `+ Indiretos (${i.indirectCosts}%): €${r.indirectCost.toFixed(2)}`,
+    `+ Margem (${i.profitMargin}%):   €${r.marginCost.toFixed(2)}`,
+    '-'.repeat(46),
+    `💰 PREÇO FINAL:      €${r.finalPrice.toFixed(2)}`,
+  ].filter(Boolean).join('\n');
+  const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(()=>{showToast('📋 Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
+  }else{fbCopy(txt);}
+}
+function fbCopy(t){
+  const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');showToast('📋 Copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  document.body.removeChild(ta);
+}
+
+// ── USER MENU ──────────────────────────
+function toggleUserMenu(){
+  const dd=document.getElementById('userDropdown');
+  const ch=document.getElementById('userChevron');
+  const open=dd.classList.toggle('open');
+  ch.classList.toggle('up',open);
+}
+function closeUserMenu(){
+  document.getElementById('userDropdown').classList.remove('open');
+  const ch=document.getElementById('userChevron');if(ch)ch.classList.remove('up');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#userRow')&&!e.target.closest('#userDropdown')) closeUserMenu();
+});
+
+async function doLogout() {
+  closeUserMenu();
+  showToast('Sessão terminada. Até logo! 👋','ok');
+  setTimeout(() => Auth.logout(), 1000);
+}
+
+// ── SIDEBAR MOBILE ──────────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+
+// ── HELPERS ────────────────────────────
 function pf(id){return parseFloat((document.getElementById(id)||{}).value)||0;}
+function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
+function setSl(id,v,mn,mx){const el=document.getElementById(id);if(el)el.value=Math.min(mx,Math.max(mn,v));}
 function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtEur(v){return '€\u00A0'+parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});}
-
-/**
- * ATUALIZAÇÃO DA LÓGICA USANDO O MOTOR CENTRALIZADO
- * Mantém o mesmo comportamento, mas os cálculos vêm do calculator.js
- */
-function updateUI() {
-    if (typeof PrintCalculator === 'undefined') return;
-
-    // Coleta dados dos teus IDs originais
-    const inputs = {
-        weightGrams: pf('pieceWeight'),
-        printTimeMinutes: pf('printTime'),
-        filamentPrice: pf('filPrice'),
-        filamentWeight: pf('filWeight'),
-        powerConsumption: pf('powerCons'),
-        kwhPrice: pf('kwhPrice'),
-        machinePrice: pf('machPrice'),
-        machineLifeMonths: pf('machLife'),
-        machineHoursPerDay: pf('machHours'),
-        failureRate: pf('failRate'),
-        profitMargin: pf('profitMargin'),
-        laborFee: pf('laborFee')
-    };
-
-    // Executa o cálculo pelo motor central
-    const res = PrintCalculator.calculate(inputs);
-
-    // Preenche os teus spans/divs de resultado originais
-    setT('resMaterial', fmtEur(res.materialCost));
-    setT('resEnergy',   fmtEur(res.energyCost));
-    setT('resMachine',  fmtEur(res.machineCost));
-    setT('resTotal',    fmtEur(res.finalPrice));
+function dlCSV(csv,fn){
+  const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
-
-async function initCalc() {
-    // Teu código de inicialização do Supabase/Auth original
-    updateUI();
-}
-
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sideOverlay').classList.toggle('open');
+let _tt;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
 </body>
