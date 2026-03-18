@@ -364,6 +364,19 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
     .sidebar{ z-index: 300 !important; }
     .sidebar-overlay{ z-index: 280 !important; }
   }
+
+  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
+  .sidebar-overlay {
+    left: 0;
+    transition: left .3s ease;
+  }
+  .sidebar-overlay.open {
+    left: var(--sidebar-w);
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: auto;
+  }
 </style>
 </head>
 <body>

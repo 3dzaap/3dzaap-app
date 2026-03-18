@@ -56,10 +56,12 @@ body { font-family: sans-serif; background: #d0e4f4; min-height: 100vh; }
 /* ── Overlay ── */
 .sidebar-overlay {
   display: none;
-  position: fixed; inset: 0;
+  position: fixed;
+  /* Começa DEPOIS da sidebar — nunca a cobre */
+  top: 0; bottom: 0;
+  left: var(--sidebar-w); right: 0;
   z-index: 280;
   background: rgba(13,17,23,.45);
-  /* NO backdrop-filter — causes iOS stacking context bug */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }

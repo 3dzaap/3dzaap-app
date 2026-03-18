@@ -242,6 +242,19 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     .sidebar{ z-index: 300 !important; }
     .sidebar-overlay{ z-index: 280 !important; }
   }
+
+  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
+  .sidebar-overlay {
+    left: 0;
+    transition: left .3s ease;
+  }
+  .sidebar-overlay.open {
+    left: var(--sidebar-w);
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: auto;
+  }
 </style>
 </head>
 <body>

@@ -400,6 +400,19 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
     .sidebar{ z-index: 300 !important; }
     .sidebar-overlay{ z-index: 280 !important; }
   }
+
+  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
+  .sidebar-overlay {
+    left: 0;
+    transition: left .3s ease;
+  }
+  .sidebar-overlay.open {
+    left: var(--sidebar-w);
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: auto;
+  }
 </style>
 </head>
 <body>
