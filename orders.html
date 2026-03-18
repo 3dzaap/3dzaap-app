@@ -158,6 +158,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .bs-aprovado{background:rgba(5,150,105,.10);color:#059669;border-color:rgba(5,150,105,.3)}.bs-aprovado .badge-dot{background:#10b981}
 .bs-printing{background:rgba(239,68,68,.10);color:#dc2626;border-color:rgba(239,68,68,.3)}.bs-printing .badge-dot{background:#ef4444}
 .bs-done{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bs-done .badge-dot{background:#22c55e}
+.bs-em_producao{background:rgba(245,158,11,.12);color:#d97706;border-color:rgba(245,158,11,.3)}.bs-em_producao .badge-dot{background:#f59e0b}
+.bs-concluido{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bs-concluido .badge-dot{background:#22c55e}
+.bs-entregue{background:rgba(59,130,246,.10);color:#1d4ed8;border-color:rgba(59,130,246,.24)}.bs-entregue .badge-dot{background:#3b82f6}
+.bs-cancelado{background:rgba(239,68,68,.10);color:#b91c1c;border-color:rgba(239,68,68,.24)}.bs-cancelado .badge-dot{background:#ef4444}
 .bp-pago{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bp-pago .badge-dot{background:#22c55e}
 .bp-pendente{background:rgba(245,148,58,.12);color:#c2600a;border-color:rgba(245,148,58,.3)}.bp-pendente .badge-dot{background:#f59e0b}
 /* EXPAND BTN */
@@ -363,19 +367,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     .sidebar{ z-index: 300 !important; }
     .sidebar-overlay{ z-index: 280 !important; }
   }
-
-  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
-  .sidebar-overlay {
-    left: 0;
-    transition: left .3s ease;
-  }
-  .sidebar-overlay.open {
-    left: var(--sidebar-w);
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: auto;
-  }
 </style>
 </head>
 <body>
@@ -404,7 +395,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Materiais</a>
         <a class="nav-item active" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -469,11 +460,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <select id="filterStatus" class="filter-select" onchange="renderOrders()">
           <option value="">Todos os estados</option>
           <option value="orcamento">Orçamento</option>
-          <option value="modelagem">Modelagem</option>
-          <option value="validacao">Validação</option>
-          <option value="aprovado">Aprovado</option>
-          <option value="printing">Printing</option>
-          <option value="done">Concluído</option>
+          <option value="em_producao">Em Produção</option>
+          <option value="concluido">Concluído</option>
+          <option value="entregue">Entregue</option>
+          <option value="cancelado">Cancelado</option>
         </select>
         <select id="filterPayment" class="filter-select" onchange="renderOrders()">
           <option value="">Todos os pagamentos</option>
@@ -534,12 +524,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="form-section-divider" style="margin-top:18px">📦 Itens do Pedido</div>
       <div class="items-header">
         <span>Descrição</span><span>Qtd</span>
-        <span style="text-align:right">Filamento
+        <span style="text-align:right">Material
           <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px">ℹ️
-            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares filamento, o consumo não será descontado do stock automaticamente.</span>
+            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Selecciona o material usado. O consumo será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right">Peso (g)</span>
+        <span style="text-align:right">Qty (g/ml)</span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -555,11 +545,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <label class="form-label">Estado do pedido</label>
           <select id="oStatus" class="form-select">
             <option value="orcamento">Orçamento</option>
-            <option value="modelagem">Modelagem</option>
-            <option value="validacao">Validação</option>
-            <option value="aprovado">Aprovado</option>
-            <option value="printing">Printing</option>
-            <option value="done">Concluído</option>
+            <option value="em_producao">Em Produção</option>
+            <option value="concluido">Concluído</option>
+            <option value="entregue">Entregue</option>
+            <option value="cancelado">Cancelado</option>
           </select>
         </div>
         <div class="form-group">
@@ -630,8 +619,8 @@ let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
 
-const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',done:'Concluído'};
-const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
+const STATUS_LABELS = {orcamento:'Orçamento',em_producao:'Em Produção',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
+const STATUS_NEXT = {orcamento:'em_producao',em_producao:'concluido',concluido:'entregue',entregue:null,cancelado:null};
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -828,7 +817,7 @@ function toggleExpand(id) {
 // ── STATS ──────────────────────────────
 function updateStats() {
   const total = orders.length;
-  const progress = orders.filter(o => !['done','orcamento'].includes(o.status)).length;
+  const progress = orders.filter(o => !['concluido','entregue','orcamento','cancelado'].includes(o.status)).length;
   const pending = orders.filter(o => o.paymentStatus === 'pendente');
   const paid = orders.filter(o => o.paymentStatus === 'pago');
   const pendingVal = pending.reduce((s,o)=>s+(o.total||0),0);
@@ -850,10 +839,10 @@ async function advanceStatus(id) {
   o.status = next;
   o.updatedAt = new Date().toISOString();
   // OPÇÃO A: when done, discount filament stock
-  if (next === 'done') {
+  if (next === 'concluido') {
     applyFilamentConsumption(o);
   }
-  if (o.status === 'done') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
+  if (o.status === 'concluido') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
   await DB.saveOrder(o);
   renderOrders(id); // pass id to keep row expanded
   showToast(`📦 ${o.orderNumber} → ${STATUS_LABELS[next]}`, 'ok');
@@ -1132,9 +1121,9 @@ async function saveOrder() {
   try {
     if (editingId) {
       const prev = orders.find(o=>o.id===editingId) || {};
-      if (prev.status === 'done') revertFilamentConsumption(prev);
+      if (prev.status === 'concluido') revertFilamentConsumption(prev);
       const merged = {...prev, ...base};
-      if (merged.status === 'done') applyFilamentConsumption(merged);
+      if (merged.status === 'concluido') applyFilamentConsumption(merged);
       const saved = await DB.saveOrder(merged);
       const idx = orders.findIndex(o=>o.id===editingId);
       if (idx > -1) orders[idx] = saved;
@@ -1169,7 +1158,7 @@ function closeConfirm() { document.getElementById('confirmOverlay').classList.re
 async function deleteOrder(id) {
   try {
     const o = orders.find(x=>x.id===id);
-    if (o && o.status === 'done') revertFilamentConsumption(o);
+    if (o && o.status === 'concluido') revertFilamentConsumption(o);
     await DB.deleteOrder(id);
     orders = orders.filter(x=>x.id!==id);
     renderOrders();
@@ -1187,7 +1176,7 @@ async function printReceipt(id) {
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
-  const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',done:'Concluído'};
+  const statusMap = {orcamento:'Orçamento',em_producao:'Em Produção',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
   const today = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
