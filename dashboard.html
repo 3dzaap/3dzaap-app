@@ -773,9 +773,15 @@ async function loadState() {
   state.user.name     = fullName;
   state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   state.company.name    = session.companyName;
-  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  state.company.initials = (session.companyName||'Empresa').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
   state.company.plan    = session.plan || 'trial';
   state.company.config  = session.config || {};
+
+  // Calcular dias de trial restantes
+  if (session.trialEndsAt) {
+    const daysLeft = Math.max(0, Math.ceil((new Date(session.trialEndsAt) - new Date()) / 86400000));
+    state.company.trialDaysLeft = daysLeft;
+  }
 
   document.getElementById('userNameSidebar').textContent    = state.user.name;
   document.getElementById('userEmailSidebar').textContent   = state.user.email;
@@ -1102,12 +1108,10 @@ function navigate(page) {
     return false;
   }
 
-  // For now, real modules go to 3DZAAP.html with tab param
+  // Módulos → 3DZAAP.html com parâmetro de tab
   const tabMap = { calculator:'calculator', filaments:'filaments', orders:'orders', financial:'financial', backoffice:'backoffice' };
   if (tabMap[page]) {
-    // Route to standalone module pages
-    const pageMap = { calculator:'calculator.html', filaments:'filaments.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
-    window.location.href = pageMap[page] || '#';
+    window.location.href = '3DZAAP.html?tab=' + tabMap[page];
     return false;
   }
 

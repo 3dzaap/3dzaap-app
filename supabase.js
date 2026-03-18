@@ -1,5 +1,7 @@
 // ============================================================
-// supabase.js — Camada de dados 3DZAAP  v2
+// supabase.js — Camada de dados 3DZAAP  v2.1
+// Correcções: _loadCompany resiliente, mappers alinhados com
+// o formato local do 3DZAAP.html (color, brand[], etc.)
 // ============================================================
 
 const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
@@ -7,8 +9,8 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let _companyId   = null;   // UUID da empresa
-let _companyCache = null;  // objecto completo — evita queries repetidas
+let _companyId    = null;   // UUID da empresa
+let _companyCache = null;   // objecto completo — evita queries repetidas
 
 // ============================================================
 // AUTH
@@ -23,19 +25,19 @@ const Auth = {
     });
     if (authErr) throw authErr;
 
-    const userId = authData.user.id;
+    const userId = authData.user?.id;
+    if (!userId) throw new Error('Utilizador não foi criado correctamente.');
+
     const cleanSlug = (slug || companyName).toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // 2. Se a sessão foi retornada imediatamente (confirmação de email OFF),
-    //    activá-la para que auth.uid() funcione nas queries seguintes
+    // 2. Activar sessão se disponível (email confirm OFF)
     if (authData.session) {
       await _sb.auth.setSession(authData.session);
     }
 
-    // 3. Criar empresa via função SECURITY DEFINER (não precisa de sessão activa)
-    //    Esta função existe no Supabase e contorna a RLS correctamente
+    // 3. Criar empresa via RPC SECURITY DEFINER
     let company = null;
     const { data: rpcData, error: rpcErr } = await _sb
       .rpc('create_company_for_user', {
@@ -51,7 +53,7 @@ const Auth = {
       company = rpcData[0];
     } else {
       // Fallback: inserção directa (funciona se email confirm estiver OFF)
-      if (rpcErr) console.warn('rpc create_company_for_user:', rpcErr.message);
+      if (rpcErr) console.warn('[3DZAAP] rpc create_company_for_user:', rpcErr.message);
       const { data: ins, error: insErr } = await _sb
         .from('companies')
         .insert({
@@ -70,13 +72,19 @@ const Auth = {
 
     _companyId    = company.id;
     _companyCache = company;
-    return { user: authData.user, company };
+
+    // Indicar se precisa confirmar email
+    const needsEmailConfirm = !authData.session;
+    return { user: authData.user, company, needsEmailConfirm };
   },
 
   async login(email, pass) {
     const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    await Auth._loadCompany(); // populates _companyCache
+    // Limpar cache para forçar reload com a sessão nova
+    _companyId    = null;
+    _companyCache = null;
+    await Auth._loadCompany();
     return data;
   },
 
@@ -87,42 +95,52 @@ const Auth = {
     window.location.href = 'auth-onboarding.html';
   },
 
-  // ── Carregar _companyId (com cache — evita queries repetidas) ────────────
+  // ── Carregar _companyId — resiliente a memberships inexistente ──────────
   async _loadCompany(forceRefresh = false) {
     if (!forceRefresh && _companyCache) return _companyCache;
 
-    const { data: { user } } = await _sb.auth.getUser();
-    if (!user) return null;
+    const { data: { user }, error: userErr } = await _sb.auth.getUser();
+    if (userErr || !user) return null;
 
     let company = null;
     let role    = 'owner';
 
-    // 1. Via memberships (suporta owners + membros convidados)
-    const { data: mem } = await _sb
-      .from('memberships')
-      .select('role, companies(id, name, slug, plan, config, signature, trial_ends_at)')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
+    // 1. Tentativa via memberships (suporta convidados)
+    //    Envolvido em try/catch — se a tabela não existir (42P01) ignora
+    try {
+      const { data: mem, error: memErr } = await _sb
+        .from('memberships')
+        .select('role, companies(id, name, slug, plan, config, signature, trial_ends_at)')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
 
-    if (mem?.companies) {
-      company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
-      role    = mem.role || 'member';
+      // PGRST116 = 0 rows, 42P01 = tabela não existe — ambos são OK para ignorar
+      if (!memErr && mem?.companies) {
+        company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
+        role    = mem.role || 'member';
+      }
+    } catch (_) {
+      // Silenciar — fallback abaixo
     }
 
-    // 2. Fallback: owner_id directo (utilizadores migrados antes de memberships existir)
+    // 2. Fallback: owner_id directo
     if (!company) {
-      const { data: owned } = await _sb
+      const { data: owned, error: ownedErr } = await _sb
         .from('companies')
         .select('id, name, slug, plan, config, signature, trial_ends_at')
         .eq('owner_id', user.id)
         .limit(1)
         .single();
-      if (owned) { company = owned; role = 'owner'; }
+
+      if (!ownedErr && owned) {
+        company = owned;
+        role    = 'owner';
+      }
     }
 
     if (!company) {
-      console.warn('3DZAAP: company not found for user', user.id);
+      console.warn('[3DZAAP] Company not found for user', user.id);
       return null;
     }
 
@@ -134,19 +152,19 @@ const Auth = {
   async getSession() {
     const { data: { session } } = await _sb.auth.getSession();
     if (!session) return null;
-    // Reutilizar cache se disponível (evita query extra após login/register)
     const company = _companyCache || await Auth._loadCompany();
-    const user = session.user;
+    const user    = session.user;
     return {
       email:       user.email,
       fname:       user.user_metadata?.fname || '',
       lname:       user.user_metadata?.lname || '',
-      companyName: company?.name || '',
-      plan:        company?.plan || 'trial',
+      companyName: company?.name  || '',
+      plan:        company?.plan  || 'trial',
       config:      company?.config || {},
       signature:   company?.signature || null,
       companyId:   company?.id,
       role:        company?.role || 'owner',
+      trialEndsAt: company?.trial_ends_at || null,
     };
   },
 
@@ -168,7 +186,6 @@ const Auth = {
       .update(fields)
       .eq('id', _companyId);
     if (error) throw error;
-    // Invalidar cache para reflectir os novos valores
     _companyCache = null;
     await Auth._loadCompany();
   },
@@ -179,7 +196,13 @@ const Auth = {
 // ============================================================
 async function _ensureCompany() {
   if (!_companyId) await Auth._loadCompany();
-  if (!_companyId) throw new Error('Não foi possível determinar a empresa. Faz login novamente.');
+  if (!_companyId) throw new Error('Empresa não encontrada. Faz login novamente.');
+}
+
+// Detecta ID local (timestamp numérico) vs UUID do Supabase
+function _isLocalId(id) {
+  if (!id) return true;
+  return typeof id === 'number' || /^\d{10,}$/.test(String(id));
 }
 
 const DB = {
@@ -200,7 +223,9 @@ const DB = {
   async saveFilament(filament) {
     await _ensureCompany();
     const row = _mapFilamentToDB(filament);
-    if (filament.id && !_isLocalId(filament.id)) {
+    const isNew = !filament.id || _isLocalId(filament.id);
+
+    if (!isNew) {
       const { data, error } = await _sb
         .from('filaments')
         .update(row)
@@ -260,8 +285,10 @@ const DB = {
 
   async saveOrder(order) {
     await _ensureCompany();
-    const row = _mapOrderToDB(order);
-    if (order.id && !_isLocalId(order.id)) {
+    const row   = _mapOrderToDB(order);
+    const isNew = !order.id || _isLocalId(order.id);
+
+    if (!isNew) {
       const { data, error } = await _sb
         .from('orders').update(row)
         .eq('id', order.id).eq('company_id', _companyId)
@@ -308,8 +335,10 @@ const DB = {
 
   async saveExpense(expense) {
     await _ensureCompany();
-    const row = _mapExpenseToDB(expense);
-    if (expense.id && !_isLocalId(expense.id)) {
+    const row   = _mapExpenseToDB(expense);
+    const isNew = !expense.id || _isLocalId(expense.id);
+
+    if (!isNew) {
       const { data, error } = await _sb
         .from('expenses').update(row)
         .eq('id', expense.id).eq('company_id', _companyId)
@@ -343,7 +372,6 @@ const DB = {
   },
 
   // ── ACTIVITY LOG ────────────────────────────────────────────
-  // Tabela opcional — falha silenciosa se não existir
 
   async getLog() {
     if (!_companyId) await Auth._loadCompany();
@@ -357,10 +385,10 @@ const DB = {
   },
 
   async addLog(message, type = 'inf') {
-    if (!_companyId) return; // log é opcional
+    if (!_companyId) return;
     await _sb.from('activity_log')
       .insert({ company_id: _companyId, message, type })
-      .then(r => r.error && console.info('activity_log:', r.error.message));
+      .then(r => r.error && console.info('[3DZAAP] activity_log:', r.error.message));
   },
 
   async clearLog() {
@@ -369,10 +397,6 @@ const DB = {
   },
 
   // ── TEAM ────────────────────────────────────────────────────
-  // Gestão de membros e convites (plano Business)
-
-// ── TEAM ────────────────────────────────────────────────────
-  // Gestão de membros e convites (plano Business)
 
   async getMembers() {
     await _ensureCompany();
@@ -442,7 +466,6 @@ const DB = {
     const { data, error } = await _sb.rpc('accept_invite', { p_token: token });
     if (error) throw error;
     if (data?.error) throw new Error(data.error);
-    // Limpar cache para recarregar com a nova empresa
     _companyId    = null;
     _companyCache = null;
     await Auth._loadCompany();
@@ -450,52 +473,59 @@ const DB = {
   },
 };
 
-
 // ============================================================
-// MAPPERS
+// MAPPERS — alinhados com o formato do 3DZAAP.html
 // ============================================================
 
 function _mapFilamentFromDB(row) {
   return {
     id:             row.id,
-    colorHex:       row.color_hex,
-    colorName:      row.color_name,
+    // Campos no formato que o 3DZAAP.html usa internamente
+    colorHex:       row.color_hex  || '',
+    colorName:      row.color_name || '',
+    color:          row.color_name || '',   // alias para compatibilidade
     type:           row.type,
-    variation:      row.variation,
-    brand:          row.brand,
-    rollSize:       row.roll_size,
-    total:          row.total,
-    inUse:          row.in_use,
-    newRolls:       row.new_rolls,
+    variation:      row.variation  || '',
+    // brand: guardado como string separada por vírgula, exposto como array
+    brand:          row.brand ? row.brand.split(',').map(b => b.trim()).filter(Boolean) : [],
+    rollSize:       row.roll_size  || '1kg',
+    total:          parseInt(row.total || 0),
+    inUse:          parseInt(row.in_use || 0),
+    newRolls:       Math.max(0, parseInt(row.total || 0) - parseInt(row.in_use || 0)),
     price:          parseFloat(row.price || 0),
-    alerta:         row.alerta || 0,
+    alerta:         parseInt(row.alerta || 0),
     notes:          row.notes || '',
-    kgRemaining:    row.kg_remaining,
+    kgRemaining:    row.kg_remaining  ?? null,
     emptyConfirmed: row.empty_confirmed || false,
-    emptyByOrder:   row.empty_by_order,
-    emptyAt:        row.empty_at,
+    emptyByOrder:   row.empty_by_order || null,
+    emptyAt:        row.empty_at       || null,
     createdAt:      row.created_at,
     updatedAt:      row.updated_at,
   };
 }
 
 function _mapFilamentToDB(f) {
+  // brand: aceita array ou string
+  const brandStr = Array.isArray(f.brand)
+    ? f.brand.join(',')
+    : (f.brand || '');
+
   return {
-    color_hex:       f.colorHex,
-    color_name:      f.colorName,
+    color_hex:       f.colorHex || f.color_hex || '',
+    color_name:      f.colorName || f.color_name || f.color || '',
     type:            f.type,
-    variation:       f.variation || null,
-    brand:           f.brand || null,
-    roll_size:       f.rollSize,
+    variation:       f.variation  || null,
+    brand:           brandStr     || null,
+    roll_size:       f.rollSize   || f.roll_size || '1kg',
     total:           parseInt(f.total) || 0,
-    in_use:          parseInt(f.inUse) || 0,
+    in_use:          parseInt(f.inUse ?? f.in_use) || 0,
     price:           parseFloat(f.price) || 0,
-    alerta:          parseInt(f.alerta) || 0,
+    alerta:          parseInt(f.alerta)  || 0,
     notes:           f.notes || null,
-    kg_remaining:    f.kgRemaining ?? null,
-    empty_confirmed: f.emptyConfirmed || false,
-    empty_by_order:  f.emptyByOrder || null,
-    empty_at:        f.emptyAt || null,
+    kg_remaining:    f.kgRemaining ?? f.kg_remaining ?? null,
+    empty_confirmed: f.emptyConfirmed ?? f.empty_confirmed ?? false,
+    empty_by_order:  f.emptyByOrder  ?? f.empty_by_order  ?? null,
+    empty_at:        f.emptyAt       ?? f.empty_at        ?? null,
   };
 }
 
@@ -505,17 +535,17 @@ function _mapOrderFromDB(row) {
     orderNumber:   row.order_number,
     orderNumeric:  row.order_numeric,
     clientName:    row.client_name,
-    clientEmail:   row.client_email || '',
-    clientPhone:   row.client_phone || '',
-    items:         row.items || [],
-    description:   row.description || '',
+    clientEmail:   row.client_email  || '',
+    clientPhone:   row.client_phone  || '',
+    items:         row.items         || [],
+    description:   row.description   || '',
     total:         parseFloat(row.total || 0),
     status:        row.status,
     paymentStatus: row.payment_status,
     createdAt:     row.created_at,
-    dueDate:       row.due_date || '',
-    paymentDate:   row.payment_date || '',
-    notes:         row.notes || '',
+    dueDate:       row.due_date      || '',
+    paymentDate:   row.payment_date  || '',
+    notes:         row.notes         || '',
     updatedAt:     row.updated_at,
   };
 }
@@ -525,18 +555,17 @@ function _mapOrderToDB(o) {
     order_number:   o.orderNumber,
     order_numeric:  o.orderNumeric,
     client_name:    o.clientName,
-    client_email:   o.clientEmail || null,
-    client_phone:   o.clientPhone || null,
-    items:          o.items || [],
-    description:    o.description || '',
+    client_email:   o.clientEmail  || null,
+    client_phone:   o.clientPhone  || null,
+    items:          o.items        || [],
+    description:    o.description  || '',
     total:          parseFloat(o.total) || 0,
     status:         o.status,
     payment_status: o.paymentStatus,
-    due_date:       o.dueDate || null,
-    payment_date:   o.paymentDate || null,
-    notes:          o.notes || null,
+    due_date:       o.dueDate      || null,
+    payment_date:   o.paymentDate  || null,
+    notes:          o.notes        || null,
   };
-  // Só enviar created_at se tiver valor — caso contrário DB usa DEFAULT NOW()
   if (o.createdAt) row.created_at = o.createdAt;
   return row;
 }
@@ -562,30 +591,30 @@ function _mapExpenseToDB(e) {
   };
 }
 
-function _isLocalId(id) {
-  return typeof id === 'number' || /^\d{10,}$/.test(String(id));
-}
-
 // ============================================================
-// MIGRAÇÃO
+// MIGRAÇÃO — importar dados locais do 3DZAAP.html para Supabase
 // ============================================================
 const Migration = {
+
   async importFromLocalStorage() {
     const results = { filaments: 0, orders: 0, expenses: 0 };
     try {
       const fils = JSON.parse(localStorage.getItem('filaments') || '[]');
       if (fils.length) { await DB.saveAllFilaments(fils); results.filaments = fils.length; }
-    } catch(e) { console.warn('Filaments migration error:', e); }
+    } catch(e) { console.warn('[3DZAAP] Filaments migration error:', e); }
     try {
       const ords = JSON.parse(localStorage.getItem('orders') || '[]');
       if (ords.length) { await DB.saveAllOrders(ords); results.orders = ords.length; }
-    } catch(e) { console.warn('Orders migration error:', e); }
+    } catch(e) { console.warn('[3DZAAP] Orders migration error:', e); }
     try {
       const exps = JSON.parse(localStorage.getItem('expenses') || '[]');
       if (exps.length) { await DB.saveAllExpenses(exps); results.expenses = exps.length; }
-    } catch(e) { console.warn('Expenses migration error:', e); }
+    } catch(e) { console.warn('[3DZAAP] Expenses migration error:', e); }
     localStorage.setItem('3dzaap_migrated', '1');
     return results;
   },
-  isMigrated() { return localStorage.getItem('3dzaap_migrated') === '1'; },
+
+  isMigrated() {
+    return localStorage.getItem('3dzaap_migrated') === '1';
+  },
 };

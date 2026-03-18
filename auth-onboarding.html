@@ -464,17 +464,19 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 <div class="toast" id="toast"></div>
 
+
+<div class="toast" id="toast"></div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
-//  ESTADO — uma única fonte de verdade
+//  ESTADO — única fonte de verdade
 // ══════════════════════════════════════════════════════════════
 const STATE = {
   tab:          'login',
   step:         1,
   plan:         'starter',
-  form:         {},          // dados do utilizador (step signup)
+  form:         {},
   signatureB64: null,
-  // Mutex: garante que cada operação async corre uma única vez
   loginBusy:    false,
   signupBusy:   false,
   finishBusy:   false,
@@ -482,15 +484,15 @@ const STATE = {
 };
 
 // ══════════════════════════════════════════════════════════════
-//  BOOT — verificar sessão existente
+//  BOOT — verificar sessão existente, ligar eventos
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // Se já há sessão activa → directo para dashboard
   try {
     const { data: { session } } = await _sb.auth.getSession();
     if (session) { window.location.href = 'dashboard.html'; return; }
   } catch(e) {}
 
-  // Ligar botões com addEventListener (sem onclick no HTML — evita duplicados)
   document.getElementById('loginBtn').addEventListener('click',  doLogin);
   document.getElementById('signupBtn').addEventListener('click', doSignup);
   document.getElementById('resetBtn').addEventListener('click',  doReset);
@@ -498,7 +500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('step2Btn').addEventListener('click',  () => goStep(3));
   document.getElementById('finishBtn').addEventListener('click', finishOnboarding);
 
-  // Enter — apenas em campos relevantes, nunca durante onboarding
+  // Enter só funciona fora do onboarding e success
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     if (document.getElementById('onboardingPanel').style.display !== 'none') return;
@@ -531,12 +533,12 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPass').value;
   let ok = true;
-  if (!isEmail(email)) { setErr('f-email-l', true); ok = false; } else { setErr('f-email-l', false); }
-  if (!pass)           { setErr('f-pass-l',  true); ok = false; } else { setErr('f-pass-l',  false); }
+  if (!isEmail(email)) { setErr('f-email-l', true);  ok = false; } else { setErr('f-email-l', false); }
+  if (!pass)           { setErr('f-pass-l',  true);  ok = false; } else { setErr('f-pass-l',  false); }
   if (!ok) return;
 
   STATE.loginBusy = true;
-  const btn = setBusy('loginBtn', true);
+  setBusy('loginBtn', true);
   try {
     await Auth.login(email, pass);
     window.location.href = 'dashboard.html';
@@ -547,6 +549,8 @@ async function doLogin() {
     if (msg.match(/invalid|credentials|password/i)) {
       toast('❌ Email ou password incorrectos.', 'err');
       setErr('f-email-l', true); setErr('f-pass-l', true);
+    } else if (msg.match(/email.*not.*confirmed|confirm.*email/i)) {
+      toast('📬 Confirma o teu email antes de entrar.', 'err');
     } else if (msg.match(/rate.limit|security|24 sec|429/i)) {
       toast('⏳ Demasiadas tentativas. Aguarda 60 segundos.', 'err');
     } else {
@@ -556,7 +560,7 @@ async function doLogin() {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  SIGNUP (apenas valida e avança para onboarding)
+//  SIGNUP — valida e avança para onboarding
 // ══════════════════════════════════════════════════════════════
 function doSignup() {
   if (STATE.signupBusy) return;
@@ -566,25 +570,24 @@ function doSignup() {
   const email = document.getElementById('signupEmail').value.trim();
   const pass  = document.getElementById('signupPass').value;
   let ok = true;
-  if (!fname)           { setErr('f-fname',   true); ok = false; } else { setErr('f-fname',   false); }
-  if (!lname)           { setErr('f-lname',   true); ok = false; } else { setErr('f-lname',   false); }
-  if (!isEmail(email))  { setErr('f-email-s', true); ok = false; } else { setErr('f-email-s', false); }
-  if (pass.length < 8)  { setErr('f-pass-s',  true); ok = false; } else { setErr('f-pass-s',  false); }
+  if (!fname)          { setErr('f-fname',   true); ok = false; } else { setErr('f-fname',   false); }
+  if (!lname)          { setErr('f-lname',   true); ok = false; } else { setErr('f-lname',   false); }
+  if (!isEmail(email)) { setErr('f-email-s', true); ok = false; } else { setErr('f-email-s', false); }
+  if (pass.length < 8) { setErr('f-pass-s',  true); ok = false; } else { setErr('f-pass-s',  false); }
   if (!ok) return;
 
-  // Guardar dados e avançar — SEM chamar Auth ainda
   STATE.form = { fname, lname, email, pass };
   STATE.tab  = 'onboarding';
-
   STATE.signupBusy = true;
-  const btn = setBusy('signupBtn', true);
+  setBusy('signupBtn', true);
+
   setTimeout(() => {
     STATE.signupBusy = false;
     setBusy('signupBtn', false);
-    document.getElementById('authPanel').style.display      = 'none';
+    document.getElementById('authPanel').style.display       = 'none';
     document.getElementById('onboardingPanel').style.display = 'block';
     setStep(1);
-  }, 900);
+  }, 600);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -594,8 +597,8 @@ function goStep(n) {
   if (n === 2) {
     const name = document.getElementById('companyName').value.trim();
     const slug = document.getElementById('companySlug').value.trim();
-    if (name.length < 2) { setErr('f-cname', true); toast('Nome da empresa obrigatório','err'); return; }
-    if (!slug || !/^[a-z0-9-]+$/.test(slug)) { setErr('f-slug', true); toast('Slug inválido','err'); return; }
+    if (name.length < 2) { setErr('f-cname', true);  toast('Nome da empresa obrigatório', 'err'); return; }
+    if (!slug || !/^[a-z0-9-]+$/.test(slug)) { setErr('f-slug', true); toast('Slug inválido', 'err'); return; }
     setErr('f-cname', false); setErr('f-slug', false);
     STATE.form.companyName = name;
     STATE.form.slug        = slug;
@@ -612,9 +615,9 @@ function setStep(n) {
     document.getElementById('step' + i).classList.toggle('active', i === n);
     const d = document.getElementById('dot' + i);
     d.classList.remove('active', 'done');
-    if      (i < n) { d.classList.add('done');   d.textContent = '✓'; }
-    else if (i === n){ d.classList.add('active'); d.textContent = i;   }
-    else             { d.textContent = i; }
+    if      (i < n)  { d.classList.add('done');   d.textContent = '✓'; }
+    else if (i === n) { d.classList.add('active'); d.textContent = i;   }
+    else              { d.textContent = i; }
   }
   for (let i = 1; i <= 2; i++) {
     document.getElementById('line' + i).classList.toggle('done', i < n);
@@ -625,11 +628,9 @@ function setStep(n) {
 //  FINISH — única chamada a Auth.register, mutex rigoroso
 // ══════════════════════════════════════════════════════════════
 async function finishOnboarding() {
-  // Mutex estrito — bloqueia qualquer nova chamada enquanto estiver a processar
   if (STATE.finishBusy) return;
   STATE.finishBusy = true;
-
-  const btn = setBusy('finishBtn', true);
+  setBusy('finishBtn', true);
 
   const config = {
     filamentPrice:    +document.getElementById('cfgFilament').value || 25,
@@ -653,12 +654,13 @@ async function finishOnboarding() {
       signature:   STATE.signatureB64 || null,
     });
 
+    // Mostrar ecrã de sucesso
     document.getElementById('onboardingPanel').style.display = 'none';
     document.getElementById('successPanel').style.display    = 'block';
     document.getElementById('successCompanyPill').textContent = '🏭 ' + (STATE.form.companyName || 'Empresa');
 
     if (result.needsEmailConfirm) {
-      // Confirmação de email necessária
+      // Email de confirmação necessário — não redirecionar ainda
       document.getElementById('successPanel').querySelector('h2').textContent = 'Confirma o teu email 📬';
       document.getElementById('successPanel').querySelector('p').innerHTML =
         'Enviámos um email de confirmação para <strong>' + STATE.form.email + '</strong>.<br>' +
@@ -666,26 +668,26 @@ async function finishOnboarding() {
       document.getElementById('successPanel').querySelector('.btn-primary').style.display = 'none';
       toast('✅ Verifica o teu email para confirmar a conta.', 'ok');
     } else {
-      toast('Conta criada com sucesso! 🎉', 'ok');
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+      // Sessão activa → redirecionar directamente
+      toast('🎉 Conta criada com sucesso!', 'ok');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1800);
     }
 
   } catch(err) {
-    // Erro — resetar mutex para permitir nova tentativa
     STATE.finishBusy = false;
     setBusy('finishBtn', false);
 
     const msg = err.message || '';
     if (msg.match(/429|rate.limit|security|24 sec/i)) {
+      // Não repor mutex — forçar email diferente
       toast('⏳ Email bloqueado temporariamente. Usa um email diferente ou aguarda 1 hora.', 'err');
-      // Não resetar o mutex — forçar uso de email diferente
-      return;
     } else if (msg.match(/already.registered|already.been|User already/i)) {
       toast('❌ Este email já tem conta. Usa o login.', 'err');
+      STATE.finishBusy = false;
     } else if (msg.match(/password|weak/i)) {
       toast('❌ A password deve ter pelo menos 6 caracteres.', 'err');
     } else if (msg.match(/empresa|company/i)) {
-      toast('⚠️ Conta criada. Erro ao criar empresa: ' + msg, 'err');
+      toast('⚠️ Conta criada mas erro ao criar empresa: ' + msg, 'err');
     } else {
       toast('Erro: ' + (msg || 'Tenta novamente.'), 'err');
     }
@@ -711,11 +713,14 @@ function cancelReset() {
 async function doReset() {
   if (STATE.resetBusy) return;
   const email = document.getElementById('resetEmail').value.trim();
-  if (!isEmail(email)) { toast('Insere um email válido','err'); return; }
+  if (!isEmail(email)) { toast('Insere um email válido', 'err'); return; }
   STATE.resetBusy = true;
   setBusy('resetBtn', true);
   try {
-    await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth-onboarding.html' });
+    const { error } = await _sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/auth-onboarding.html'
+    });
+    if (error) throw error;
     document.getElementById('resetInputArea').style.display = 'none';
     document.getElementById('resetSent').style.display      = 'block';
   } catch(e) {
@@ -727,7 +732,7 @@ async function doReset() {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  GOOGLE AUTH
+//  GOOGLE AUTH (placeholder)
 // ══════════════════════════════════════════════════════════════
 function googleAuth() {
   toast('Integração Google — em breve 🔗');
@@ -799,18 +804,15 @@ function checkPasswordStrength(val) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  TOGGLE EYE
+//  TOGGLE EYE / HELPERS
 // ══════════════════════════════════════════════════════════════
 function toggleEye(id, btn) {
   const inp = document.getElementById(id);
   const isText = inp.type === 'text';
-  inp.type    = isText ? 'password' : 'text';
+  inp.type        = isText ? 'password' : 'text';
   btn.textContent = isText ? '👁️' : '🙈';
 }
 
-// ══════════════════════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════════════════════
 function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
 function setErr(id, show) {
@@ -818,7 +820,6 @@ function setErr(id, show) {
   if (f) f.classList.toggle('has-error', show);
 }
 
-// Activa/desactiva loading num botão; retorna o elemento
 function setBusy(id, busy) {
   const btn = document.getElementById(id);
   if (!btn) return null;
@@ -833,7 +834,7 @@ function toast(msg, type = '') {
   t.textContent = msg;
   t.className   = 'toast show ' + type;
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
 }
 </script>
 </body>
