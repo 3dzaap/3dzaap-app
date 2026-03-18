@@ -341,6 +341,34 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
     -webkit-overflow-scrolling: touch;
     overflow-y: auto;
   }
+
+  /* ── iOS Safari fix: substituir transform por left
+     backdrop-filter + transform = bug iOS que bloqueia toque ── */
+  @media(max-width:680px){
+    .sidebar{
+      transform: none !important;
+      left: calc(-1 * var(--sidebar-w, 260px));
+      transition: left .3s cubic-bezier(0.22,1,0.36,1);
+      /* Solid background no mobile — evita o bug backdrop-filter+transform */
+      background: #e8f1fb !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .sidebar.open{
+      left: 0 !important;
+    }
+  }
+
+  /* ── iOS: sidebar-overlay sem backdrop-filter ── */
+  .sidebar-overlay{
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  /* Garantir sidebar acima do overlay em mobile */
+  @media(max-width:680px){
+    .sidebar{ z-index: 300 !important; }
+    .sidebar-overlay{ z-index: 280 !important; }
+  }
 </style>
 </head>
 <body>
