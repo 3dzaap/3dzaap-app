@@ -331,7 +331,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 /* ── MOBILE ─────────────────────────── */
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
-.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);color:var(--blue);border-radius:3px;padding:0 2px;font-weight:700}
 
 /* ── CONFIRM MODAL ──────────────────── */
 .confirm-overlay{
@@ -440,29 +439,15 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       left: 0 !important;
     }
   }
-
-  /* ── iOS: sidebar-overlay sem backdrop-filter ── */
-  .sidebar-overlay{
-    
-  }
-  /* Garantir sidebar acima do overlay em mobile */
+/* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-    .sidebar-overlay{ z-index: 280 !important; }
-  }
+      }
 
   /* ── Fix iOS: overlay nunca cobre a sidebar ── */
-  .sidebar-overlay {
-    left: 0;
-    transition: left .3s ease;
-  }
-  .sidebar-overlay.open {
-    left: var(--sidebar-w);
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: auto;
-  }
+  
+.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
+.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
 </style>
 </head>
 <body>
