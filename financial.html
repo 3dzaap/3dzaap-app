@@ -110,6 +110,12 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
 /* CHART */
 .chart-bar-revenue{fill:rgba(59,143,212,.75)}
 .chart-bar-expense{fill:rgba(239,68,68,.55)}
+.chart-bar-revenue{cursor:pointer}.chart-bar-expense{cursor:pointer}
+.chart-tooltip{position:fixed;pointer-events:none;background:rgba(13,17,23,.92);color:#fff;border-radius:10px;padding:10px 14px;font-size:.78rem;font-family:'Outfit',sans-serif;line-height:1.7;z-index:999;opacity:0;transition:opacity .15s;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.3);min-width:160px}
+.chart-tooltip.show{opacity:1}
+.chart-tooltip-title{font-weight:800;font-size:.82rem;margin-bottom:6px;color:#e2e8f0}
+.chart-tooltip-row{display:flex;align-items:center;gap:8px}
+.chart-tooltip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .chart-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);font-weight:600}
 .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
@@ -416,6 +422,7 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="chart-tooltip" id="chartTooltip"></div>
 <script>
 'use strict';
 
@@ -593,8 +600,16 @@ function renderChart() {
   months.forEach(function(m, i) {
     var cx = (i + 0.5) * colW;
     var x1 = cx - barW - gap, x2 = cx;
-    if (m.revenue > 0) h += '<rect x="' + x1 + '" y="' + scY(m.revenue) + '" width="' + barW + '" height="' + ((m.revenue / maxVal) * cH) + '" rx="3" class="chart-bar-revenue"/>';
-    if (m.expense > 0) h += '<rect x="' + x2 + '" y="' + scY(m.expense) + '" width="' + barW + '" height="' + ((m.expense / maxVal) * cH) + '" rx="3" class="chart-bar-expense"/>';
+    var hRev = (m.revenue / maxVal) * cH;
+    var hExp = (m.expense / maxVal) * cH;
+
+    // Revenue bar with invisible wider hit area + data attrs for tooltip
+    var tipData = 'data-rev="' + m.revenue.toFixed(2) + '" data-exp="' + m.expense.toFixed(2) + '" data-profit="' + m.profit.toFixed(2) + '" data-label="' + m.label + '"';
+    if (m.revenue > 0) h += '<rect x="' + x1 + '" y="' + scY(m.revenue) + '" width="' + barW + '" height="' + hRev + '" rx="3" class="chart-bar-revenue" ' + tipData + ' onmouseenter="showChartTip(event,this)" onmouseleave="hideChartTip()"/>';
+    if (m.expense > 0) h += '<rect x="' + x2 + '" y="' + scY(m.expense) + '" width="' + barW + '" height="' + hExp + '" rx="3" class="chart-bar-expense" ' + tipData + ' onmouseenter="showChartTip(event,this)" onmouseleave="hideChartTip()"/>';
+
+    // Invisible hit area covering full column height for easier hover
+    h += '<rect x="' + (cx - colW * 0.4) + '" y="0" width="' + (colW * 0.8) + '" height="' + cH + '" fill="transparent" ' + tipData + ' onmouseenter="showChartTip(event,this)" onmouseleave="hideChartTip()"/>';
 
     var py = scY(Math.max(m.profit, 0));
     var cx2 = cx + gap + barW / 2;
@@ -604,7 +619,7 @@ function renderChart() {
       var pcx = (i - 0.5) * colW + gap + barW / 2;
       h += '<line x1="' + pcx + '" y1="' + ppy + '" x2="' + cx2 + '" y2="' + py + '" stroke="rgba(34,197,94,.8)" stroke-width="1.5" stroke-dasharray="3,2"/>';
     }
-    h += '<circle cx="' + cx2 + '" cy="' + py + '" r="3" fill="rgba(34,197,94,.9)"/>';
+    h += '<circle cx="' + cx2 + '" cy="' + py + '" r="4" fill="rgba(34,197,94,.9)" ' + tipData + ' onmouseenter="showChartTip(event,this)" onmouseleave="hideChartTip()" style="cursor:pointer"/>';
 
     var isActive = m.key === _periodo;
     h += '<text x="' + (cx + gap / 2) + '" y="' + (cH + 16) + '" text-anchor="middle" font-size="10" font-weight="' + (isActive ? 800 : 500) + '" fill="' + (isActive ? '#3B8FD4' : '#94a3b8') + '" font-family="Outfit">' + m.label + '</text>';
@@ -613,6 +628,44 @@ function renderChart() {
   h += '</g>';
   svg.innerHTML = h;
 }
+
+// ── CHART TOOLTIPS ─────────────────────────────────────────────
+function showChartTip(e, el) {
+  var tip = document.getElementById('chartTooltip');
+  var rev    = parseFloat(el.dataset.rev    || 0);
+  var exp    = parseFloat(el.dataset.exp    || 0);
+  var profit = parseFloat(el.dataset.profit || 0);
+  var label  = el.dataset.label || '';
+
+  tip.innerHTML =
+    '<div class="chart-tooltip-title">' + label.charAt(0).toUpperCase() + label.slice(1) + '</div>' +
+    '<div class="chart-tooltip-row"><span class="chart-tooltip-dot" style="background:rgba(59,143,212,.85)"></span>Receita: <strong>' + fmtEur(rev) + '</strong></div>' +
+    '<div class="chart-tooltip-row"><span class="chart-tooltip-dot" style="background:rgba(239,68,68,.75)"></span>Despesas: <strong>' + fmtEur(exp) + '</strong></div>' +
+    '<div class="chart-tooltip-row" style="border-top:1px solid rgba(255,255,255,.1);margin-top:5px;padding-top:5px"><span class="chart-tooltip-dot" style="background:rgba(34,197,94,.85)"></span>Lucro: <strong style="color:' + (profit >= 0 ? '#86efac' : '#fca5a5') + '">' + fmtEur(profit) + '</strong></div>';
+
+  tip.classList.add('show');
+  positionChartTip(e);
+}
+
+function positionChartTip(e) {
+  var tip = document.getElementById('chartTooltip');
+  var x = e.clientX + 14, y = e.clientY - 10;
+  // Keep within viewport
+  if (x + 180 > window.innerWidth)  x = e.clientX - 190;
+  if (y + 120 > window.innerHeight) y = e.clientY - 120;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+
+function hideChartTip() {
+  document.getElementById('chartTooltip').classList.remove('show');
+}
+
+// Update tooltip position on mouse move within SVG
+document.addEventListener('mousemove', function(e) {
+  var tip = document.getElementById('chartTooltip');
+  if (tip && tip.classList.contains('show')) positionChartTip(e);
+});
 
 function fmtCompact(v) {
   return v >= 1000 ? '\u20ac' + (v / 1000).toFixed(1) + 'k' : '\u20ac' + Math.round(v);
@@ -928,7 +981,8 @@ function fmtEur(v) {
 }
 function fmtDate(s) {
   if (!s) return '\u2014';
-  var d = new Date(s + 'T12:00:00');
+  var clean = s.slice(0, 10);
+  var d = new Date(clean + 'T12:00:00');
   return isNaN(d.getTime()) ? s : d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 function escH(s) {

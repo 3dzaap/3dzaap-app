@@ -513,8 +513,7 @@ function _mapFilamentToDB(f) {
     ? f.brand.join(',')
     : (f.brand || '');
 
-  return {
-    material_class:  f.materialClass || f.material_class || 'fdm',
+  const rowData = {
     color_hex:       f.colorHex || f.color_hex || '',
     color_name:      f.colorName || f.color_name || f.color || '',
     type:            f.type,
@@ -531,6 +530,11 @@ function _mapFilamentToDB(f) {
     empty_by_order:  f.emptyByOrder  ?? f.empty_by_order  ?? null,
     empty_at:        f.emptyAt       ?? f.empty_at        ?? null,
   };
+  // Only include material_class if the column exists (added via 3dzaap_add_resin.sql)
+  // Sending it before the column exists causes a schema cache error
+  const matClass = f.materialClass || f.material_class;
+  if (matClass) rowData.material_class = matClass;
+  return rowData;
 }
 
 function _mapOrderFromDB(row) {

@@ -827,8 +827,8 @@ async function loadState() {
   state.user.email    = session.email;
   state.user.name     = fullName;
   state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  state.company.name    = session.companyName;
-  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  state.company.name    = session.companyName || 'Empresa';
+  state.company.initials = (session.companyName||'Empresa').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
   state.company.plan    = session.plan || 'trial';
   state.company.config  = session.config || {};
 

@@ -1361,7 +1361,7 @@ function toggleSidebar() {
 
 // ── HELPERS ────────────────────────────
 function fmtN(v){ return parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtDate(s){ if(!s) return '—'; const p=s.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s; }
+function fmtDate(s){ if(!s) return '—'; const d=s.slice(0,10); const p=d.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s; }
 function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
 let _tt;
