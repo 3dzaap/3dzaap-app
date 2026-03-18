@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3DZAAP — Calculadora Profissional</title>
+    <title>3DZAAP — Calculadora</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
-    <script src="js/core/calculator.js"></script>
     
+    <script src="js/core/calculator.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos simplificados para o exemplo, mantendo o Liquid Glass */
+        /* Mantendo o teu estilo Liquid Glass original */
         body { font-family: 'Outfit', sans-serif; background: #0D1117; color: white; padding: 20px; }
         .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; margin: auto; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         input { background: rgba(0,0,0,0.3); border: 1px solid #3B8FD4; color: white; padding: 8px; border-radius: 5px; width: 100%; box-sizing: border-box; }
-        .result-box { margin-top: 20px; padding: 15px; background: rgba(59, 143, 212, 0.2); border-left: 4px solid #3B8FD4; border-radius: 5px; }
-        .btn-download { background: #F5943A; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; }
         label { font-size: 0.85rem; color: #94A3B8; display: block; margin-bottom: 5px; }
+        .res-destaque { color: #F5943A; font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -27,47 +27,48 @@
     <div class="grid">
         <div>
             <label>Peso da Peça (g)</label>
-            <input type="number" id="pieceWeight" value="100" oninput="updateUI()">
+            <input type="number" id="pieceWeight" value="100" oninput="renderCalculation()">
         </div>
         <div>
             <label>Tempo (minutos)</label>
-            <input type="number" id="printTime" value="120" oninput="updateUI()">
+            <input type="number" id="printTime" value="120" oninput="renderCalculation()">
         </div>
         <div>
             <label>Preço Rolo (€)</label>
-            <input type="number" id="filPrice" value="25" oninput="updateUI()">
+            <input type="number" id="filPrice" value="25" oninput="renderCalculation()">
         </div>
         <div>
             <label>Peso Rolo (g)</label>
-            <input type="number" id="filWeight" value="1000" oninput="updateUI()">
+            <input type="number" id="filWeight" value="1000" oninput="renderCalculation()">
         </div>
     </div>
 
-    <div class="result-box">
-        <p>Custo Material: <span id="resMaterial">€ 0.00</span></p>
-        <p>Custo Energia: <span id="resEnergy">€ 0.00</span></p>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1)">
-        <h3 style="margin: 0">Total Final: <span id="resTotal" style="color: #F5943A;">€ 0.00</span></h3>
+    <div style="margin-top:20px; border-top: 1px solid #333; pt: 15px;">
+        <p>Material: <span id="resMaterial">€ 0.00</span></p>
+        <p>Energia: <span id="resEnergy">€ 0.00</span></p>
+        <p>Preço Final: <span id="resTotal" class="res-destaque">€ 0.00</span></p>
     </div>
-
-    <button class="btn-download" onclick="downloadCalculatorJS()">⬇️ Descarregar calculator.js</button>
 </div>
 
 <script>
-    // Função que conecta a UI ao Motor Centralizado (Passo 1)
-    function updateUI() {
+    /**
+     * Esta função substitui a lógica antiga 'pf()' e 'setV()'
+     * utilizando agora o objeto global PrintCalculator do ficheiro externo.
+     */
+    function renderCalculation() {
         if (typeof PrintCalculator === 'undefined') {
-            console.error("Motor calculator.js não encontrado!");
+            console.warn("Aguardando carregamento do calculator.js...");
             return;
         }
 
+        // 1. Captura os valores da UI
         const inputs = {
             weightGrams: parseFloat(document.getElementById('pieceWeight').value) || 0,
             printTimeMinutes: parseFloat(document.getElementById('printTime').value) || 0,
             filamentPrice: parseFloat(document.getElementById('filPrice').value) || 0,
             filamentWeight: parseFloat(document.getElementById('filWeight').value) || 1000,
-            // Valores padrão vindos do teu blueprint/HTML original
-            powerConsumption: 150, 
+            // Valores fixos (podem vir das configurações da conta no futuro)
+            powerConsumption: 150,
             kwhPrice: 0.22,
             machinePrice: 300,
             machineLifeMonths: 24,
@@ -77,51 +78,17 @@
             laborFee: 2
         };
 
+        // 2. Chama o motor centralizado
         const res = PrintCalculator.calculate(inputs);
 
+        // 3. Atualiza a UI
         document.getElementById('resMaterial').textContent = '€ ' + res.materialCost.toFixed(2);
         document.getElementById('resEnergy').textContent = '€ ' + res.energyCost.toFixed(2);
         document.getElementById('resTotal').textContent = '€ ' + res.finalPrice.toFixed(2);
     }
 
-    // Função auxiliar para criares o ficheiro JS rapidamente
-    function downloadCalculatorJS() {
-        const code = `const PrintCalculator = {
-    calculate(p) {
-        const filWeight = parseFloat(p.filamentWeight) || 1000;
-        const filPrice = parseFloat(p.filamentPrice) || 0;
-        const weightGrams = parseFloat(p.weightGrams) || 0;
-
-        const materialCost = (filPrice / filWeight) * weightGrams;
-        const energyCost = (p.printTimeMinutes / 60) * (p.powerConsumption / 1000) * p.kwhPrice;
-        
-        const totalMachineHours = p.machineLifeMonths * 30 * p.machineHoursPerDay;
-        const depreciationPerMin = p.machinePrice / (totalMachineHours * 60);
-        const machineCost = depreciationPerMin * p.printTimeMinutes;
-
-        const productionCost = materialCost + energyCost + machineCost;
-        const totalWithFailures = productionCost * (1 + (p.failureRate / 100));
-        const profitAmount = totalWithFailures * (p.profitMargin / 100);
-        const finalPrice = totalWithFailures + profitAmount + p.laborFee;
-
-        return {
-            materialCost, energyCost, machineCost,
-            productionCost: totalWithFailures,
-            profitAmount: profitAmount,
-            finalPrice: finalPrice
-        };
-    }
-};`;
-        const blob = new Blob([code], { type: 'text/javascript' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'calculator.js';
-        a.click();
-    }
-
-    // Inicializar
-    window.onload = updateUI;
+    // Inicializa ao carregar
+    window.onload = renderCalculation;
 </script>
 
 </body>
