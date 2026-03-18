@@ -56,12 +56,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 /* ── SIDEBAR ────────────────────────── */
 .sidebar{
   width:var(--sidebar-w);flex-shrink:0;
-  background:rgba(255,255,255,0.68);
-  backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  background:#e8f1fb;
+  
   border-right:1.5px solid var(--border);
   display:flex;flex-direction:column;
   position:fixed;top:0;left:0;height:100vh;z-index:250;
-  transition:transform .3s var(--ease);
+  transition:left .3s var(--ease);
 }
 .sidebar-logo{
   padding:20px 22px 16px;
@@ -443,11 +443,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   border:1.5px solid var(--border);box-shadow:var(--sh);
   cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem;
 }
-.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);backdrop-filter:blur(2px)}
-
-/* ── ANIMATIONS ─────────────────────── */
-@keyframes fadeSlide{
-  from{opacity:0;transform:translateY(14px)}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);transform:translateY(14px)}
   to{opacity:1;transform:none}
 }
 
@@ -468,8 +464,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 }
 @media(max-width:680px){
   :root{--sidebar-w:260px}
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:none}
+  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}
+  .sidebar.open{left:0}
   .sidebar-overlay.open{display:block}
   .main{margin-left:0}
   .mob-toggle{display:flex}
@@ -528,8 +524,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       transition: left .3s cubic-bezier(0.22,1,0.36,1);
       /* Solid background no mobile — evita o bug backdrop-filter+transform */
       background: #e8f1fb !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
+      
     }
     .sidebar.open{
       left: 0 !important;
@@ -538,8 +533,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
   /* ── iOS: sidebar-overlay sem backdrop-filter ── */
   .sidebar-overlay{
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    
   }
   /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){

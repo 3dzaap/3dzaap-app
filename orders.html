@@ -45,7 +45,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 /* LAYOUT */
 .layout{position:relative;z-index:1;display:flex;min-height:100vh}
 /* SIDEBAR */
-.sidebar{width:var(--sidebar-w);flex-shrink:0;background:rgba(255,255,255,0.68);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:250;transition:transform .3s var(--ease)}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:#e8f1fb;border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:250;transition:left .3s var(--ease)}
 .sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
 .sidebar-logo img{height:36px;width:auto;object-fit:contain}
 .sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
@@ -250,7 +250,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){
-  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:none}
+  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
   .sidebar-overlay.open{display:block}.main{margin-left:0}
   .mob-toggle{display:flex}.page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
@@ -347,8 +347,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       transition: left .3s cubic-bezier(0.22,1,0.36,1);
       /* Solid background no mobile — evita o bug backdrop-filter+transform */
       background: #e8f1fb !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
+      
     }
     .sidebar.open{
       left: 0 !important;
@@ -357,8 +356,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
   /* ── iOS: sidebar-overlay sem backdrop-filter ── */
   .sidebar-overlay{
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    
   }
   /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
