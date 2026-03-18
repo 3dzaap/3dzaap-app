@@ -157,8 +157,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .bs-validacao{background:rgba(37,99,235,.10);color:#2563eb;border-color:rgba(37,99,235,.3)}.bs-validacao .badge-dot{background:#3b82f6}
 .bs-aprovado{background:rgba(5,150,105,.10);color:#059669;border-color:rgba(5,150,105,.3)}.bs-aprovado .badge-dot{background:#10b981}
 .bs-printing{background:rgba(239,68,68,.10);color:#dc2626;border-color:rgba(239,68,68,.3)}.bs-printing .badge-dot{background:#ef4444}
-.bs-done{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bs-done .badge-dot{background:#22c55e}
-.bs-em_producao{background:rgba(245,158,11,.12);color:#d97706;border-color:rgba(245,158,11,.3)}.bs-em_producao .badge-dot{background:#f59e0b}
 .bs-concluido{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bs-concluido .badge-dot{background:#22c55e}
 .bs-entregue{background:rgba(59,130,246,.10);color:#1d4ed8;border-color:rgba(59,130,246,.24)}.bs-entregue .badge-dot{background:#3b82f6}
 .bs-cancelado{background:rgba(239,68,68,.10);color:#b91c1c;border-color:rgba(239,68,68,.24)}.bs-cancelado .badge-dot{background:#ef4444}
@@ -460,7 +458,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <select id="filterStatus" class="filter-select" onchange="renderOrders()">
           <option value="">Todos os estados</option>
           <option value="orcamento">Orçamento</option>
-          <option value="em_producao">Em Produção</option>
+          <option value="modelagem">Modelagem</option>
+          <option value="validacao">Validação</option>
+          <option value="aprovado">Aprovado</option>
+          <option value="printing">Printing</option>
           <option value="concluido">Concluído</option>
           <option value="entregue">Entregue</option>
           <option value="cancelado">Cancelado</option>
@@ -545,7 +546,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <label class="form-label">Estado do pedido</label>
           <select id="oStatus" class="form-select">
             <option value="orcamento">Orçamento</option>
-            <option value="em_producao">Em Produção</option>
+            <option value="modelagem">Modelagem</option>
+            <option value="validacao">Validação</option>
+            <option value="aprovado">Aprovado</option>
+            <option value="printing">Printing</option>
             <option value="concluido">Concluído</option>
             <option value="entregue">Entregue</option>
             <option value="cancelado">Cancelado</option>
@@ -619,8 +623,8 @@ let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
 
-const STATUS_LABELS = {orcamento:'Orçamento',em_producao:'Em Produção',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
-const STATUS_NEXT = {orcamento:'em_producao',em_producao:'concluido',concluido:'entregue',entregue:null,cancelado:null};
+const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
+const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'concluido',concluido:'entregue',entregue:null,cancelado:null};
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -839,7 +843,7 @@ async function advanceStatus(id) {
   o.status = next;
   o.updatedAt = new Date().toISOString();
   // OPÇÃO A: when done, discount filament stock
-  if (next === 'concluido') {
+  if (next === 'concluido' || next === 'entregue') {
     applyFilamentConsumption(o);
   }
   if (o.status === 'concluido') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
@@ -1176,7 +1180,7 @@ async function printReceipt(id) {
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
-  const statusMap = {orcamento:'Orçamento',em_producao:'Em Produção',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
+  const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
   const today = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});

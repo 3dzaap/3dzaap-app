@@ -154,7 +154,10 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;border:1px solid transparent}
 .badge-dot{width:6px;height:6px;border-radius:50%}
 .bs-orcamento{background:rgba(148,163,184,.12);color:#64748b;border-color:rgba(148,163,184,.3)}.bs-orcamento .badge-dot{background:#94a3b8}
-.bs-em_producao{background:rgba(245,158,11,.12);color:#d97706;border-color:rgba(245,158,11,.3)}.bs-em_producao .badge-dot{background:#f59e0b}
+.bs-modelagem{background:rgba(245,158,11,.12);color:#d97706;border-color:rgba(245,158,11,.3)}.bs-modelagem .badge-dot{background:#f59e0b}
+.bs-validacao{background:rgba(37,99,235,.10);color:#2563eb;border-color:rgba(37,99,235,.3)}.bs-validacao .badge-dot{background:#3b82f6}
+.bs-aprovado{background:rgba(5,150,105,.10);color:#059669;border-color:rgba(5,150,105,.3)}.bs-aprovado .badge-dot{background:#10b981}
+.bs-printing{background:rgba(239,68,68,.10);color:#dc2626;border-color:rgba(239,68,68,.3)}.bs-printing .badge-dot{background:#ef4444}
 .bs-concluido{background:rgba(34,197,94,.12);color:#16a34a;border-color:rgba(34,197,94,.3)}.bs-concluido .badge-dot{background:#22c55e}
 .bs-entregue{background:rgba(59,130,246,.10);color:#1d4ed8;border-color:rgba(59,130,246,.24)}.bs-entregue .badge-dot{background:#3b82f6}
 .bs-cancelado{background:rgba(239,68,68,.10);color:#b91c1c;border-color:rgba(239,68,68,.24)}.bs-cancelado .badge-dot{background:#ef4444}
@@ -419,13 +422,7 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
 // ── STATE ──────────────────────────────────────────────────────
 var orders = [], expenses = [], _periodo = '', _editingExpId = null;
 
-var STATUS_LABELS = {
-  orcamento: 'Or\u00e7amento',
-  em_producao: 'Em Produ\u00e7\u00e3o',
-  concluido: 'Conclu\u00eddo',
-  entregue: 'Entregue',
-  cancelado: 'Cancelado'
-};
+var STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
 
 var CAT = {
   materiais:    { label: 'Materiais',    color: 'rgba(59,143,212,.12)',  text: '#1d4ed8', border: 'rgba(59,143,212,.3)'  },
@@ -754,7 +751,7 @@ function renderOrdTable(po) {
   if (!sorted.length) { tableEl.style.display = 'none'; emptyEl.style.display = 'flex'; return; }
   tableEl.style.display = ''; emptyEl.style.display = 'none';
 
-  var cls = { orcamento:'bs-orcamento', em_producao:'bs-em_producao', concluido:'bs-concluido', entregue:'bs-entregue', cancelado:'bs-cancelado' };
+  var cls = { orcamento:'bs-orcamento', modelagem:'bs-modelagem', validacao:'bs-validacao', aprovado:'bs-aprovado', printing:'bs-printing', concluido:'bs-concluido', entregue:'bs-entregue', cancelado:'bs-cancelado' };
 
   tbody.innerHTML = sorted.map(function(o) {
     var sCls = cls[o.status] || 'bs-orcamento';
