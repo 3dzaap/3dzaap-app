@@ -483,6 +483,41 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   .stats-grid{grid-template-columns:1fr}
   .actions-grid{grid-template-columns:1fr}
 }
+
+  /* ── iOS / Safari fixes ─────────────────
+     backdrop-filter dentro de transform contexts
+     bloqueia eventos de toque no iOS.
+     Solução: remover transform dos orbs decorativos,
+     usar apenas opacity. ────────────────── */
+  .o1, .o2, .o3 {
+    animation: none !important;
+    transform: none !important;
+  }
+  /* Eliminar delay de 300ms em elementos clicáveis */
+  a, button, .nav-item, .btn, .btn-icon,
+  .stepper-btn, .tab, .mat-btn, .modal-mat-btn,
+  .plan-card, .user-row, .dd-item, .color-preset,
+  .home-card, .action-card, .stat-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Scroll suave na sidebar iOS */
+  .sidebar-nav, .sidebar, .modal, .page {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Garantir que orbs decorativos nunca bloqueiam toque */
+  .bg, .orb, .o1, .o2 {
+    pointer-events: none !important;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Fix para backdrop-filter em modais no iOS:
+     garantir que o overlay não bloqueia scroll */
+  .modal-overlay.open, .confirm-overlay.open,
+  .gate-overlay.open {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
 </style>
 </head>
 <body>
@@ -773,15 +808,9 @@ async function loadState() {
   state.user.name     = fullName;
   state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   state.company.name    = session.companyName;
-  state.company.initials = (session.companyName||'Empresa').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
   state.company.plan    = session.plan || 'trial';
   state.company.config  = session.config || {};
-
-  // Calcular dias de trial restantes
-  if (session.trialEndsAt) {
-    const daysLeft = Math.max(0, Math.ceil((new Date(session.trialEndsAt) - new Date()) / 86400000));
-    state.company.trialDaysLeft = daysLeft;
-  }
 
   document.getElementById('userNameSidebar').textContent    = state.user.name;
   document.getElementById('userEmailSidebar').textContent   = state.user.email;
@@ -1108,10 +1137,12 @@ function navigate(page) {
     return false;
   }
 
-  // Módulos → 3DZAAP.html com parâmetro de tab
+  // For now, real modules go to 3DZAAP.html with tab param
   const tabMap = { calculator:'calculator', filaments:'filaments', orders:'orders', financial:'financial', backoffice:'backoffice' };
   if (tabMap[page]) {
-    window.location.href = '3DZAAP.html?tab=' + tabMap[page];
+    // Route to standalone module pages
+    const pageMap = { calculator:'calculator.html', filaments:'filaments.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
+    window.location.href = pageMap[page] || '#';
     return false;
   }
 

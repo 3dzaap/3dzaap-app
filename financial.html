@@ -339,6 +339,41 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
 @media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){.fin-grid{grid-template-columns:1fr}.fin-kpi-grid{grid-template-columns:1fr 1fr}}
 
+
+  /* ── iOS / Safari fixes ─────────────────
+     backdrop-filter dentro de transform contexts
+     bloqueia eventos de toque no iOS.
+     Solução: remover transform dos orbs decorativos,
+     usar apenas opacity. ────────────────── */
+  .o1, .o2, .o3 {
+    animation: none !important;
+    transform: none !important;
+  }
+  /* Eliminar delay de 300ms em elementos clicáveis */
+  a, button, .nav-item, .btn, .btn-icon,
+  .stepper-btn, .tab, .mat-btn, .modal-mat-btn,
+  .plan-card, .user-row, .dd-item, .color-preset,
+  .home-card, .action-card, .stat-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Scroll suave na sidebar iOS */
+  .sidebar-nav, .sidebar, .modal, .page {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Garantir que orbs decorativos nunca bloqueiam toque */
+  .bg, .orb, .o1, .o2 {
+    pointer-events: none !important;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Fix para backdrop-filter em modais no iOS:
+     garantir que o overlay não bloqueia scroll */
+  .modal-overlay.open, .confirm-overlay.open,
+  .gate-overlay.open {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
 </style>
 </head>
 <body>
