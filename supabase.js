@@ -480,6 +480,9 @@ const DB = {
 function _mapFilamentFromDB(row) {
   return {
     id:             row.id,
+    // Classe de material: 'fdm' | 'resin'
+    materialClass:  row.material_class || 'fdm',
+    material_class: row.material_class || 'fdm',
     // Campos no formato que o 3DZAAP.html usa internamente
     colorHex:       row.color_hex  || '',
     colorName:      row.color_name || '',
@@ -511,6 +514,7 @@ function _mapFilamentToDB(f) {
     : (f.brand || '');
 
   return {
+    material_class:  f.materialClass || f.material_class || 'fdm',
     color_hex:       f.colorHex || f.color_hex || '',
     color_name:      f.colorName || f.color_name || f.color || '',
     type:            f.type,

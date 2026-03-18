@@ -330,7 +330,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Materiais</a>
         <a class="nav-item active" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -460,12 +460,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="form-section-divider" style="margin-top:18px">📦 Itens do Pedido</div>
       <div class="items-header">
         <span>Descrição</span><span>Qtd</span>
-        <span style="text-align:right">Filamento
+        <span style="text-align:right">Material
           <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px">ℹ️
-            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares filamento, o consumo não será descontado do stock automaticamente.</span>
+            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right">Peso (g)</span>
+        <span style="text-align:right">Qty (g/ml)</span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -797,10 +797,17 @@ async function applyFilamentConsumption(order) {
     const fil = filaments.find(f => f.id == item.filamentId); // == intentional: number vs string
     if (!fil) return;
 
-    const rollKgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
+    const rollKgMap = {
+      // FDM — bobinas (kg)
+      '1kg':1, '500g':0.5, '300g':0.3, '250g':0.25, '100g':0.1,
+      // Resina — frascos (litros, usados como "kg" na mesma lógica de volume)
+      '500ml':0.5, '1L':1, '2L':2, '5L':5,
+    };
+    const isResin  = (fil.materialClass || fil.material_class || 'fdm') === 'resin';
     const kgPerRoll = rollKgMap[fil.rollSize] || 1;
-
-    // Initialise kgRemaining if never set: assume inUse rolls are full
+    // Para resina, weightG é ml — converter para L (mesma escala que kgPerRoll em L)
+    // Para FDM, weightG é g — converter para kg
+    const consumeUnits = isResin ? (weightG / 1000) : (weightG / 1000);
     if (fil.kgRemaining === undefined || fil.kgRemaining === null) {
       fil.kgRemaining = (parseInt(fil.inUse) || 0) * kgPerRoll;
       // If no inUse rolls, try to open one from newRolls
@@ -811,7 +818,7 @@ async function applyFilamentConsumption(order) {
       }
     }
 
-    let remainingToConsume = weightG / 1000; // convert g to kg
+    let remainingToConsume = consumeUnits; // kg (FDM) ou L (resina)
 
     while (remainingToConsume > 0) {
       if (fil.kgRemaining > 0) {
@@ -864,7 +871,7 @@ async function applyFilamentConsumption(order) {
     for (const fil of filaments) {
       if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; }
     }
-    showToast('🎨 Stock de filamento actualizado automaticamente', 'ok');
+    showToast('🎨 Stock de material actualizado automaticamente', 'ok');
   }
 }
 
@@ -879,9 +886,12 @@ async function revertFilamentConsumption(order) {
     const fil = filaments.find(f => f.id == item.filamentId);
     if (!fil) return;
 
-    const rollKgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
+    const rollKgMap = {
+      '1kg':1, '500g':0.5, '300g':0.3, '250g':0.25, '100g':0.1,
+      '500ml':0.5, '1L':1, '2L':2, '5L':5,
+    };
     const kgPerRoll = rollKgMap[fil.rollSize] || 1;
-    const weightKg = weightG / 1000;
+    const weightKg = weightG / 1000; // g→kg ou ml→L (mesma conversão)
 
     // Add back the kg consumed
     fil.kgRemaining = (fil.kgRemaining || 0) + weightKg;
@@ -969,11 +979,33 @@ function closeModal() {
 function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,4); }
 
 function buildFilamentOptions(selectedId) {
-  const none = `<option value="">— sem filamento —</option>`;
-  const opts = filaments.map(f =>
-    `<option value="${f.id}" ${f.id==selectedId?'selected':''}>${escH(f.colorName)} ${escH(f.type)} (${escH(f.brand)})</option>`
+  const none = `<option value="">— sem material —</option>`;
+  const fdm   = filaments.filter(f => (f.materialClass || f.material_class || 'fdm') === 'fdm');
+  const resin = filaments.filter(f => (f.materialClass || f.material_class || 'fdm') === 'resin');
+
+  const buildOpts = list => list.map(f =>
+    `<option value="${f.id}" ${f.id == selectedId ? 'selected' : ''}>` +
+    `${escH(f.colorName)} ${escH(f.type)} (${escH(Array.isArray(f.brand) ? f.brand[0] : f.brand)})</option>`
   ).join('');
-  return none + opts;
+
+  let html = none;
+  if (fdm.length)   html += `<optgroup label="🧵 Filamentos FDM">${buildOpts(fdm)}</optgroup>`;
+  if (resin.length) html += `<optgroup label="🧪 Resinas SLA/MSLA">${buildOpts(resin)}</optgroup>`;
+  return html;
+}
+
+// Retorna o placeholder correcto (g para FDM, ml para resina)
+function getMaterialUnit(filamentId) {
+  if (!filamentId) return 'g';
+  const fil = filaments.find(f => f.id == filamentId);
+  if (!fil) return 'g';
+  return (fil.materialClass || fil.material_class || 'fdm') === 'resin' ? 'ml' : 'g';
+}
+
+// Actualiza o placeholder do campo de quantidade quando o material muda
+function updateWeightUnit(itemId, filamentId) {
+  const input = document.getElementById('wInput-' + itemId);
+  if (input) input.placeholder = getMaterialUnit(filamentId);
 }
 
 function addOrderItem(item = null) {
@@ -989,9 +1021,9 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','description',this.value)">
     <input type="number" class="item-input mono" min="1" value="${it.quantity||1}"
       oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildFilamentOptions(it.filamentId)}</select>
-    <input type="number" class="item-input mono" placeholder="g" min="0" value="${it.weightG||''}"
-      oninput="updateItem('${id}','weightG',this.value)">
+    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value);updateWeightUnit('${id}',this.value)">${buildFilamentOptions(it.filamentId)}</select>
+    <input type="number" class="item-input mono" placeholder="${getMaterialUnit(it.filamentId)}" min="0" value="${it.weightG||''}"
+      id="wInput-${id}" oninput="updateItem('${id}','weightG',this.value)">
     <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice||0}"
       oninput="updateItem('${id}','unitPrice',this.value)">
     <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>`;
