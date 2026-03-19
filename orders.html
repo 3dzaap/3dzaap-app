@@ -223,17 +223,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .item-total{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);text-align:right;padding-right:4px}
 .item-remove{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;color:var(--subtle);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .item-remove:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--danger)}
-/* Material type indicator on select */
-.item-select.is-resin{border-color:rgba(124,58,237,.35);background-color:rgba(124,58,237,.06)}
-.item-select.is-fdm{border-color:rgba(59,143,212,.3);background-color:rgba(59,143,212,.04)}
-/* Weight input wrapper with inline unit badge */
+/* Weight input — unidade inline */
 .weight-wrap{position:relative;display:flex;align-items:center}
-.weight-wrap .weight-input{width:100%;padding-right:28px}
-.weight-unit-badge{position:absolute;right:7px;font-size:.68rem;font-weight:800;pointer-events:none;color:var(--subtle);font-family:var(--mono)}
-.weight-unit-badge.resin{color:rgba(124,58,237,.8)}
-/* Header weight label */
-#weightUnitHeader{transition:color .2s}
-#weightUnitHeader.resin-mode{color:rgba(124,58,237,.9)}
+.weight-wrap .weight-input{width:100%;padding-right:26px}
+.weight-unit-badge{position:absolute;right:6px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:rgba(13,17,23,.06);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
 .grand-total-lbl{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .grand-total-val{font-family:var(--mono);font-size:1rem;font-weight:800;color:var(--dark)}
@@ -537,7 +530,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right" id="weightUnitHeader" title="FDM: gramas (g) · Resina: mililitros (ml)">g / ml</span>
+        <span style="text-align:right" id="weightUnitHeader">g / ml</span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -1021,7 +1014,7 @@ function openModal(id = null) {
   document.getElementById('orderItemsList').innerHTML = '';
   // reset weight unit header
   const _hdr = document.getElementById('weightUnitHeader');
-  if (_hdr) { _hdr.textContent = 'g / ml'; _hdr.classList.remove('resin-mode'); }
+  if (_hdr) _hdr.textContent = 'g / ml';
   document.getElementById('oGrandTotal').textContent = '€ 0,00';
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
@@ -1091,10 +1084,7 @@ function applyCalcPrefill(p) {
     window._calcMode         = p.mode || 'fdm';
     // Update header based on calc mode
     const hdr = document.getElementById('weightUnitHeader');
-    if (hdr) {
-      if (window._calcMode === 'resin') { hdr.textContent = 'ml'; hdr.classList.add('resin-mode'); }
-      else { hdr.textContent = 'g'; hdr.classList.remove('resin-mode'); }
-    }
+    if (hdr) hdr.textContent = window._calcMode === 'resin' ? 'ml' : 'g';
   }, 80);
 }
 
@@ -1104,90 +1094,61 @@ function _iid() { return Date.now().toString(36) + Math.random().toString(36).sl
 function buildMaterialOptions(selectedId) {
   const none = `<option value="">— sem material —</option>`;
   if (!filaments.length) return none;
-
-  // Separar por tipo
-  const fdm   = filaments.filter(f => !_isResinMaterial_byObj(f));
-  const resin = filaments.filter(f =>  _isResinMaterial_byObj(f));
-
-  const mkOpt = (f, isResin) => {
-    const prefix = isResin ? '[Resina]' : '[FDM]';
-    const unit   = isResin ? 'ml' : 'g';
-    const sel    = f.id == selectedId ? 'selected' : '';
-    const brand  = f.brand ? ' · ' + escH(f.brand) : '';
-    return `<option value="${f.id}" ${sel} data-resin="${isResin}">${prefix} ${escH(f.colorName)} — ${escH(f.type)}${brand} (${unit})</option>`;
-  };
-
-  // Usar optgroups para separação visual clara
-  let html = none;
-  if (fdm.length)   html += `<optgroup label="── FDM (g) ──">${fdm.map(f=>mkOpt(f,false)).join('')}</optgroup>`;
-  if (resin.length) html += `<optgroup label="── Resina (ml) ──">${resin.map(f=>mkOpt(f,true)).join('')}</optgroup>`;
-  return html;
+  // Lista plana — prefixo FDM/Resina em cada entrada
+  const opts = filaments.map(f => {
+    const isResin = _isResinMaterial_byObj(f);
+    const prefix  = isResin ? '[Resina]' : '[FDM]';
+    const unit    = isResin ? 'ml' : 'g';
+    const brand   = f.brand ? ' · ' + escH(f.brand) : '';
+    const sel     = f.id == selectedId ? 'selected' : '';
+    return `<option value="${f.id}" ${sel}>${prefix} ${escH(f.colorName)} — ${escH(f.type)}${brand} (${unit})</option>`;
+  }).join('');
+  return none + opts;
 }
 
-// helper por objecto — usa materialClass guardado pelo módulo Materiais
+// Detecta resina: usa materialClass (campo do módulo Materiais)
+// com fallback por regex para compatibilidade com dados antigos
 function _isResinMaterial_byObj(f) {
-  const mc = f.materialClass || f.material_class || '';
-  if (mc) return mc === 'resin';
-  // fallback para dados antigos sem materialClass
+  if (!f) return false;
+  const mc = (f.materialClass || f.material_class || '').toLowerCase();
+  if (mc === 'resin' || mc === 'resina') return true;
+  if (mc === 'fdm') return false;
   return /resina|resin|sla|dlp|msla/i.test((f.type||'') + ' ' + (f.variation||''));
 }
 
-// helper por id
 function _isResinMaterial(filamentId) {
   if (!filamentId) return false;
-  const fil = filaments.find(f => f.id == filamentId);
+  const fil = filaments.find(f => String(f.id) === String(filamentId));
   if (!fil) return false;
   return _isResinMaterial_byObj(fil);
 }
 
-// Update weight unit for a row based on selected material
+// Actualiza a unidade de peso da linha e do header
 function _updateWeightUnit(rowId, filamentId) {
   const isResin = _isResinMaterial(filamentId);
-  const unit    = isResin ? 'ml' : 'g';
+  const unit    = filamentId ? (isResin ? 'ml' : 'g') : 'g/ml';
 
+  // Actualizar badge e placeholder da linha
   const row = document.querySelector(`.item-row[data-id="${rowId}"]`);
   if (row) {
-    // 1. Input placeholder
-    const weightInput = row.querySelector('.weight-input');
-    if (weightInput) weightInput.placeholder = unit;
-
-    // 2. Inline badge next to input
     const badge = row.querySelector('.weight-unit-badge');
-    if (badge) {
-      badge.textContent = filamentId ? unit : 'g/ml';
-      badge.className   = 'weight-unit-badge' + (isResin && filamentId ? ' resin' : '');
-    }
-
-    // 3. Select border colour
-    const sel = row.querySelector('.item-select');
-    if (sel) {
-      sel.classList.toggle('is-resin', isResin);
-      sel.classList.toggle('is-fdm',  !isResin && !!filamentId);
-      if (!filamentId) { sel.classList.remove('is-resin','is-fdm'); }
-    }
+    if (badge) badge.textContent = unit;
+    const inp = row.querySelector('.weight-input');
+    if (inp) inp.placeholder = unit;
   }
 
-  // 4. Update column header
-  const allResin = _items.length > 0 && _items.every(it => _isResinMaterial(it.filamentId));
-  const allFDM   = _items.length > 0 && _items.every(it => !_isResinMaterial(it.filamentId));
-  const anySet   = _items.some(it => it.filamentId);
-  const header   = document.getElementById('weightUnitHeader');
-  if (header) {
-    if (!anySet)       { header.textContent = 'g / ml';   header.classList.remove('resin-mode'); }
-    else if (allResin) { header.textContent = 'ml';       header.classList.add('resin-mode'); }
-    else if (allFDM)   { header.textContent = 'g';        header.classList.remove('resin-mode'); }
-    else               { header.textContent = 'g / ml';   header.classList.remove('resin-mode'); }
-  }
+  // Actualizar header da coluna
+  const anySet  = _items.some(it => it.filamentId);
+  const allResin = anySet && _items.every(it => _isResinMaterial(it.filamentId));
+  const allFDM   = anySet && _items.every(it => !_isResinMaterial(it.filamentId));
+  const hdr = document.getElementById('weightUnitHeader');
+  if (hdr) hdr.textContent = !anySet ? 'g / ml' : allResin ? 'ml' : allFDM ? 'g' : 'g / ml';
 }
 
 function addOrderItem(item = null) {
   const id = _iid();
   const it = item ? {...item, _id:id} : {_id:id, description:'', quantity:1, unitPrice:0, filamentId:'', weightG:''};
   _items.push(it);
-
-  // Determine unit for this item
-  const isResin  = _isResinMaterial(it.filamentId);
-  const unitPlh  = it.filamentId ? (isResin ? 'ml' : 'g') : 'g/ml';
 
   const list = document.getElementById('orderItemsList');
   const row = document.createElement('div');
@@ -1198,37 +1159,28 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','description',this.value)">
     <input type="number" class="item-input mono" min="1" value="${it.quantity||1}"
       oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value);_updateWeightUnit('${id}',this.value)">${buildMaterialOptions(it.filamentId)}</select>
+    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildMaterialOptions(it.filamentId)}</select>
     <div class="weight-wrap">
-      <input type="number" class="item-input mono weight-input" placeholder="${unitPlh}" min="0" value="${it.weightG||''}"
+      <input type="number" class="item-input mono weight-input" placeholder="g/ml" min="0" value="${it.weightG||''}"
         oninput="updateItem('${id}','weightG',this.value)">
-      <span class="weight-unit-badge${isResin?' resin':''}">${unitPlh}</span>
+      <span class="weight-unit-badge">g/ml</span>
     </div>
     <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice||0}"
       oninput="updateItem('${id}','unitPrice',this.value)">
     <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>`;
   list.appendChild(row);
-  // Must run AFTER appendChild so DOM exists for querySelector
+  // Actualizar unidade após append (DOM já existe)
   _updateWeightUnit(id, it.filamentId);
-  // If material preselected, colour the select too
-  if (it.filamentId) {
-    const sel = row.querySelector('.item-select');
-    if (sel) {
-      sel.classList.toggle('is-resin', _isResinMaterial(it.filamentId));
-      sel.classList.toggle('is-fdm',  !_isResinMaterial(it.filamentId));
-    }
-  }
   recalcTotal();
 }
 
 function updateItem(id, field, val) {
   const it = _items.find(i=>i._id===id);
   if (!it) return;
-  if (field === 'quantity')   it.quantity  = parseInt(val)||0;
-  else if (field === 'unitPrice') it.unitPrice = parseFloat(val)||0;
-  else it[field] = val;
-  // When material changes, update unit label for this row
-  if (field === 'filamentId') _updateWeightUnit(id, val);
+  if (field === 'quantity')        it.quantity   = parseInt(val)||0;
+  else if (field === 'unitPrice')  it.unitPrice  = parseFloat(val)||0;
+  else                             it[field]     = val;
+  if (field === 'filamentId')      _updateWeightUnit(id, val);
   recalcTotal();
 }
 
