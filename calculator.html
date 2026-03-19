@@ -4,14 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3DZAAP — Calculadora</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 3DZAAP data layer -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
+});
+</script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+
 :root{
   --blue:#3B8FD4;--blue-d:#2a6fb0;--blue-dd:#1a4f80;--blue-lt:#72B8F0;--blue-g:rgba(59,143,212,0.10);
   --orange:#F5943A;--orange-d:#d4762a;--orange-lt:#FFB870;--orange-g:rgba(245,148,58,0.12);
@@ -384,8 +393,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     
       }
 
-  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
-
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:#e8f1fb;border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:250;transition:left .3s var(--ease)}
 .sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
 .sidebar-logo img{height:36px;width:auto;object-fit:contain}
@@ -587,12 +594,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 /* MOBILE */
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
-
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){
   .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
-  .main{margin-left:0}
+  .sidebar-overlay.open{display:block}.main{margin-left:0}
   .mob-toggle{display:flex}.page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}.form-row.three{grid-template-columns:1fr 1fr}
@@ -696,28 +703,23 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   }
 
   /* ── iOS: sidebar-overlay sem backdrop-filter ── */
-  
+  .sidebar-overlay{
+    
+  }
   /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-    
+    .sidebar-overlay{ z-index: 280 !important; }
   }
 
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}</style>
+</style>
 </head>
 <body>
 
-<div class="bg"></div>
-<div class="orb o1"></div>
-<div class="orb o2"></div>
-
-
-
-<div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
-
-<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
 <div class="layout">
 
   <!-- SIDEBAR -->
@@ -772,12 +774,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   </aside>
 
   <!-- MAIN -->
-
-  <!-- ── SIDEBAR ─────────────────────── -->
-  
-
-  <!-- ── MAIN ─────────────────────────── -->
   <div class="main">
+
 
     <!-- Topbar: só breadcrumb -->
     <header class="topbar">
@@ -960,89 +958,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
     </div><!-- /page -->
   </div><!-- /main -->
+  </div><!-- /main -->
+
 </div><!-- /layout -->
 
-<!-- PAINEL AVANÇADO FLUTUANTE -->
-<div class="adv-panel" id="advPanel">
-  <div class="adv-header">
-    <div class="adv-title">⚙️ Parâmetros Avançados</div>
-    <button class="adv-close" onclick="closeAdvPanel()">✕</button>
-  </div>
-  <div class="adv-body">
-    <p class="adv-desc">
-      Amortização, energia e margens. Alterações aplicam-se imediatamente.<br>
-      <strong>Guardar como padrão</strong> define os valores para novos cálculos.
-    </p>
-    <div class="adv-section">
-      <div class="adv-section-title">
-        <div class="adv-section-icon si-orange">⚙️</div>
-        Amortização &amp; Energia
-      </div>
-      <div class="adv-grid">
-        <div class="adv-field">
-          <label>Preço da impressora</label>
-          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">€</span></div>
-        </div>
-        <div class="adv-field">
-          <label>Vida útil</label>
-          <div class="adv-wrap"><input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()"><span class="adv-unit">h</span></div>
-        </div>
-        <div class="adv-field">
-          <label>Consumo elétrico</label>
-          <div class="adv-wrap"><input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()"><span class="adv-unit">W</span></div>
-        </div>
-        <div class="adv-field">
-          <label>Preço eletricidade</label>
-          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit">€/kWh</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="adv-section">
-      <div class="adv-section-title">
-        <div class="adv-section-icon si-purple">📈</div>
-        Perdas &amp; Margem
-      </div>
-      <div class="adv-grid">
-        <div class="adv-field full">
-          <label>Taxa de falhas</label>
-          <div class="adv-wrap"><input type="number" id="failureRate" value="5" step="1" min="0" max="100" oninput="syncAdvSlider('failureRate','failureSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
-          <div class="adv-slider-wrap"><input type="range" id="failureSlider" min="0" max="50" step="1" value="5" oninput="syncAdvInput('failureSlider','failureRate');liveCalc()"><span class="adv-slider-val" id="failureVal">5%</span></div>
-        </div>
-        <div class="adv-field full">
-          <label>Custos indiretos</label>
-          <div class="adv-wrap"><input type="number" id="indirectCosts" value="10" step="1" min="0" max="100" oninput="syncAdvSlider('indirectCosts','indirectSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
-          <div class="adv-slider-wrap"><input type="range" id="indirectSlider" min="0" max="50" step="1" value="10" oninput="syncAdvInput('indirectSlider','indirectCosts');liveCalc()"><span class="adv-slider-val" id="indirectVal">10%</span></div>
-        </div>
-        <div class="adv-field full">
-          <label>Margem de lucro</label>
-          <div class="adv-wrap"><input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()"><span class="adv-unit">%</span></div>
-          <div class="adv-slider-wrap"><input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()"><span class="adv-slider-val" id="marginVal">30%</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="adv-footer">
-    <button class="btn-adv-save" onclick="saveAsDefaults()">💾 Guardar como padrão</button>
-    <button class="btn-adv-cancel" onclick="closeAdvPanel()">Fechar</button>
-  </div>
-</div>
+<script>
 
-<div class="toast" id="toast"></div>
-
-<!-- CONFIRM MODAL -->
-<div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
-  <div class="confirm-modal">
-    <div class="confirm-icon">🗑️</div>
-    <div class="confirm-title" id="confirmTitle">Confirmar</div>
-    <div class="confirm-msg" id="confirmMsg"></div>
-    <div class="confirm-btns">
-      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
-      <button class="confirm-ok" id="confirmOkBtn">Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════
 //  DEFAULTS — homologated
 // ══════════════════════════════════════
@@ -1428,30 +1349,6 @@ async function doLogout() {
   setTimeout(() => Auth.logout(), 1000);
 }
 
-// ── SIDEBAR MOBILE ──────────────────────
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sideOverlay').classList.toggle('open');
-}
-
-// ── HELPERS ────────────────────────────
-function pf(id){return parseFloat((document.getElementById(id)||{}).value)||0;}
-function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
-function setSl(id,v,mn,mx){const el=document.getElementById(id);if(el)el.value=Math.min(mx,Math.max(mn,v));}
-function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
-function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtEur(v){return '€\u00A0'+parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function dlCSV(csv,fn){
-  const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
-let _tt;
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show '+(type||'');
-  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
-}
 </script>
 </body>
 </html>
