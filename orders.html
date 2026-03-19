@@ -537,7 +537,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right" id="weightUnitHeader" title="FDM: peso em gramas | Resina: volume em mililitros">Qtd. uso (g)</span>
+        <span style="text-align:right" id="weightUnitHeader" title="FDM: gramas (g) · Resina: mililitros (ml)">g / ml</span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -1021,7 +1021,7 @@ function openModal(id = null) {
   document.getElementById('orderItemsList').innerHTML = '';
   // reset weight unit header
   const _hdr = document.getElementById('weightUnitHeader');
-  if (_hdr) { _hdr.textContent = 'Qtd. uso (g)'; _hdr.classList.remove('resin-mode'); }
+  if (_hdr) { _hdr.textContent = 'g / ml'; _hdr.classList.remove('resin-mode'); }
   document.getElementById('oGrandTotal').textContent = '€ 0,00';
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
@@ -1092,8 +1092,8 @@ function applyCalcPrefill(p) {
     // Update header based on calc mode
     const hdr = document.getElementById('weightUnitHeader');
     if (hdr) {
-      if (window._calcMode === 'resin') { hdr.textContent = 'Volume (ml) 🧪'; hdr.classList.add('resin-mode'); }
-      else { hdr.textContent = 'Peso (g) 🖨️'; hdr.classList.remove('resin-mode'); }
+      if (window._calcMode === 'resin') { hdr.textContent = 'ml'; hdr.classList.add('resin-mode'); }
+      else { hdr.textContent = 'g'; hdr.classList.remove('resin-mode'); }
     }
   }, 80);
 }
@@ -1103,36 +1103,41 @@ function _iid() { return Date.now().toString(36) + Math.random().toString(36).sl
 
 function buildMaterialOptions(selectedId) {
   const none = `<option value="">— sem material —</option>`;
+  if (!filaments.length) return none;
 
-  // Separar FDM de Resina
+  // Separar por tipo
   const fdm   = filaments.filter(f => !_isResinMaterial_byObj(f));
   const resin = filaments.filter(f =>  _isResinMaterial_byObj(f));
 
-  const mkOption = (f, isResin) => {
-    const unit = isResin ? 'ml' : 'g';
-    const sel  = f.id == selectedId ? 'selected' : '';
-    return `<option value="${f.id}" ${sel} data-resin="${isResin}">${escH(f.colorName)} — ${escH(f.type)}${f.brand ? ' ('+escH(f.brand)+')' : ''} [${unit}]</option>`;
+  const mkOpt = (f, isResin) => {
+    const prefix = isResin ? '[Resina]' : '[FDM]';
+    const unit   = isResin ? 'ml' : 'g';
+    const sel    = f.id == selectedId ? 'selected' : '';
+    const brand  = f.brand ? ' · ' + escH(f.brand) : '';
+    return `<option value="${f.id}" ${sel} data-resin="${isResin}">${prefix} ${escH(f.colorName)} — ${escH(f.type)}${brand} (${unit})</option>`;
   };
 
+  // Usar optgroups para separação visual clara
   let html = none;
-  if (fdm.length)   html += `<optgroup label="🖨️ FDM — Filamento (g)">${fdm.map(f=>mkOption(f,false)).join('')}</optgroup>`;
-  if (resin.length) html += `<optgroup label="🧪 Resina — SLA/DLP (ml)">${resin.map(f=>mkOption(f,true)).join('')}</optgroup>`;
-  // fallback se sem grupos (lista vazia de um tipo)
-  if (!fdm.length && !resin.length) html += filaments.map(f=>mkOption(f, _isResinMaterial_byObj(f))).join('');
+  if (fdm.length)   html += `<optgroup label="── FDM (g) ──">${fdm.map(f=>mkOpt(f,false)).join('')}</optgroup>`;
+  if (resin.length) html += `<optgroup label="── Resina (ml) ──">${resin.map(f=>mkOpt(f,true)).join('')}</optgroup>`;
   return html;
 }
 
-// helper por objecto (evita lookup duplo)
+// helper por objecto — usa materialClass guardado pelo módulo Materiais
 function _isResinMaterial_byObj(f) {
+  const mc = f.materialClass || f.material_class || '';
+  if (mc) return mc === 'resin';
+  // fallback para dados antigos sem materialClass
   return /resina|resin|sla|dlp|msla/i.test((f.type||'') + ' ' + (f.variation||''));
 }
 
-// helper: is a material resin-type?
+// helper por id
 function _isResinMaterial(filamentId) {
   if (!filamentId) return false;
   const fil = filaments.find(f => f.id == filamentId);
   if (!fil) return false;
-  return /resina|resin|sla|dlp|msla/i.test((fil.type||'') + ' ' + (fil.variation||''));
+  return _isResinMaterial_byObj(fil);
 }
 
 // Update weight unit for a row based on selected material
@@ -1149,8 +1154,8 @@ function _updateWeightUnit(rowId, filamentId) {
     // 2. Inline badge next to input
     const badge = row.querySelector('.weight-unit-badge');
     if (badge) {
-      badge.textContent = unit;
-      badge.className   = 'weight-unit-badge' + (isResin ? ' resin' : '');
+      badge.textContent = filamentId ? unit : 'g/ml';
+      badge.className   = 'weight-unit-badge' + (isResin && filamentId ? ' resin' : '');
     }
 
     // 3. Select border colour
@@ -1168,10 +1173,10 @@ function _updateWeightUnit(rowId, filamentId) {
   const anySet   = _items.some(it => it.filamentId);
   const header   = document.getElementById('weightUnitHeader');
   if (header) {
-    if (!anySet)       { header.textContent = 'Qtd. uso (g)';      header.classList.remove('resin-mode'); }
-    else if (allResin) { header.textContent = 'Volume (ml) 🧪';    header.classList.add('resin-mode'); }
-    else if (allFDM)   { header.textContent = 'Peso (g) 🖨️';       header.classList.remove('resin-mode'); }
-    else               { header.textContent = 'g / ml';             header.classList.remove('resin-mode'); }
+    if (!anySet)       { header.textContent = 'g / ml';   header.classList.remove('resin-mode'); }
+    else if (allResin) { header.textContent = 'ml';       header.classList.add('resin-mode'); }
+    else if (allFDM)   { header.textContent = 'g';        header.classList.remove('resin-mode'); }
+    else               { header.textContent = 'g / ml';   header.classList.remove('resin-mode'); }
   }
 }
 
@@ -1182,7 +1187,7 @@ function addOrderItem(item = null) {
 
   // Determine unit for this item
   const isResin  = _isResinMaterial(it.filamentId);
-  const unitPlh  = isResin ? 'ml' : 'g';
+  const unitPlh  = it.filamentId ? (isResin ? 'ml' : 'g') : 'g/ml';
 
   const list = document.getElementById('orderItemsList');
   const row = document.createElement('div');
