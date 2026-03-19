@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="sidebar.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -246,11 +245,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 /* MOBILE */
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){
   .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
-  .main{margin-left:0}
+  .sidebar-overlay.open{display:block}.main{margin-left:0}
   .mob-toggle{display:flex}.page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}.form-row.three{grid-template-columns:1fr 1fr}
@@ -392,17 +392,70 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
   }
 
   /* ── iOS: sidebar-overlay sem backdrop-filter ── */
+  .sidebar-overlay{
+    
+  }
   /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-    }
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}</style>
+    .sidebar-overlay{ z-index: 280 !important; }
+  }
+</style>
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
-  <app-sidebar active="financial"></app-sidebar>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">Print Manager</div>
+    </div>
+        <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Gestão</div>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item active" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Conta</div>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
+      </div>
+    </nav>
+        <div class="sidebar-footer">
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
+        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar">—</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
+        </div>
+        <span class="user-chevron" id="userChevron">▲</span>
+      </div>
+    </div>
+  </aside>
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
@@ -494,6 +547,7 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
 <script>
 
 let orders = [];
+let expenses = [];
 let _periodo = '';
 
 const STATUS_LABELS = {
@@ -505,6 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadUserData();
   setToday();
   await loadOrders();
+  await loadExpenses();
   applyFeatureGating();
 });
 
@@ -556,6 +611,14 @@ async function loadOrders() {
     showToast('Erro ao carregar pedidos: ' + e.message, 'err');
   }
   renderAll();
+}
+
+async function loadExpenses() {
+  try {
+    expenses = await DB.getExpenses();
+  } catch(e) {
+    expenses = [];
+  }
 }
 
 function renderAll() {
