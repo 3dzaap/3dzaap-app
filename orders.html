@@ -225,12 +225,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .item-remove:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--danger)}
 /* Weight input — unidade inline */
 .weight-wrap{position:relative;display:flex;align-items:center}
-.weight-wrap .weight-input{width:100%;padding-right:26px}
-.weight-unit-badge{position:absolute;right:6px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1;text-transform:none}
-/* esconder spinners nativos no campo de peso */
+.weight-wrap .weight-input{width:100%;padding-right:22px}
+/* Spinner à direita — forçar via direction */
 .weight-input::-webkit-outer-spin-button,
-.weight-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.weight-input{-moz-appearance:textfield;text-align:right;padding-right:28px !important}
+.weight-input::-webkit-inner-spin-button{opacity:1;position:absolute;right:0}
+.weight-input{direction:rtl;text-align:left;padding-right:20px}
+.weight-unit-badge{position:absolute;right:18px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1;text-transform:none}
 /* forcar minusculas no header independente do pai */
 #weightUnitHeader{text-transform:none !important;font-family:var(--mono);font-size:.7rem;letter-spacing:0}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:rgba(13,17,23,.06);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
@@ -536,7 +536,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right" id="weightUnitHeader">g / ml</span>
+        <span style="text-align:right;white-space:nowrap" id="weightUnitHeader">Qtd <span id="weightUnitLabel" style="font-family:var(--mono)">g/ml</span></span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -1019,8 +1019,8 @@ function openModal(id = null) {
   _items = [];
   document.getElementById('orderItemsList').innerHTML = '';
   // reset weight unit header
-  const _hdr = document.getElementById('weightUnitHeader');
-  if (_hdr) _hdr.textContent = 'g / ml';
+  const _lbl = document.getElementById('weightUnitLabel');
+  if (_lbl) _lbl.textContent = 'g/ml';
   document.getElementById('oGrandTotal').textContent = '€ 0,00';
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
@@ -1089,8 +1089,8 @@ function applyCalcPrefill(p) {
     window._calcMaterialCost = p.material_cost || 0;
     window._calcMode         = p.mode || 'fdm';
     // Update header based on calc mode
-    const hdr = document.getElementById('weightUnitHeader');
-    if (hdr) hdr.textContent = window._calcMode === 'resin' ? 'ml' : 'g';
+    const lbl2 = document.getElementById('weightUnitLabel');
+    if (lbl2) lbl2.textContent = window._calcMode === 'resin' ? 'ml' : 'g';
   }, 80);
 }
 
@@ -1146,8 +1146,8 @@ function _updateWeightUnit(rowId, filamentId) {
   const anySet  = _items.some(it => it.filamentId);
   const allResin = anySet && _items.every(it => _isResinMaterial(it.filamentId));
   const allFDM   = anySet && _items.every(it => !_isResinMaterial(it.filamentId));
-  const hdr = document.getElementById('weightUnitHeader');
-  if (hdr) hdr.textContent = !anySet ? 'g / ml' : allResin ? 'ml' : allFDM ? 'g' : 'g / ml';
+  const lbl = document.getElementById('weightUnitLabel');
+  if (lbl) lbl.textContent = !anySet ? 'g/ml' : allResin ? 'ml' : allFDM ? 'g' : 'g/ml';
 }
 
 function addOrderItem(item = null) {
