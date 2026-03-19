@@ -530,7 +530,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Selecciona o material usado. O consumo será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right">Qty (g/ml)</span>
+        <span style="text-align:right">QTD (g/ml)</span>
         <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
@@ -1058,12 +1058,22 @@ function getSelectedMC(selectEl) {
 
 // Update the visible tag next to a material select
 function updateMatTag(itemId, selectEl) {
-  const mc  = getSelectedMC(selectEl);
-  const row = document.querySelector(`.item-mat-tag-row[data-tagfor="${itemId}"]`);
-  if (!row) return;
-  if (mc === 'fdm')   { row.innerHTML = '<span class="mat-tag fdm">FDM</span>'; }
-  else if (mc === 'resin') { row.innerHTML = '<span class="mat-tag resin">Resina</span>'; }
-  else { row.innerHTML = ''; }
+  const mc       = getSelectedMC(selectEl);
+  const tagRow   = document.querySelector(`.item-mat-tag-row[data-tagfor="${itemId}"]`);
+  const weightEl = document.getElementById('weight-' + itemId);
+
+  if (tagRow) {
+    if      (mc === 'fdm')   { tagRow.innerHTML = '<span class="mat-tag fdm">FDM</span>'; }
+    else if (mc === 'resin') { tagRow.innerHTML = '<span class="mat-tag resin">Resina</span>'; }
+    else                     { tagRow.innerHTML = ''; }
+  }
+
+  if (weightEl) {
+    // FDM → gramas (g), Resina → mililitros (ml), nada seleccionado → g/ml
+    if      (mc === 'fdm')   { weightEl.placeholder = 'g'; }
+    else if (mc === 'resin') { weightEl.placeholder = 'ml'; }
+    else                     { weightEl.placeholder = 'g/ml'; }
+  }
 }
 
 function addOrderItem(item = null) {
@@ -1079,8 +1089,13 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','description',this.value)">
     <input type="number" class="item-input mono" min="1" value="${it.quantity||1}"
       oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildFilamentOptions(it.filamentId)}</select>
-    <input type="number" class="item-input mono" placeholder="g" min="0" value="${it.weightG||''}"
+    <div class="item-mat-wrap">
+      <div class="item-mat-tag-row" data-tagfor="${id}"></div>
+      <select class="item-select" id="matsel-${id}"
+        onchange="updateItem('${id}','filamentId',this.value);updateMatTag('${id}',this)"
+      >${buildFilamentOptions(it.filamentId)}</select>
+    </div>
+    <input type="number" class="item-input mono" id="weight-${id}" placeholder="g/ml" min="0" value="${it.weightG||''}"
       oninput="updateItem('${id}','weightG',this.value)">
     <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice||0}"
       oninput="updateItem('${id}','unitPrice',this.value)">
