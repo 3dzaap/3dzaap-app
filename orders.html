@@ -222,6 +222,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .item-input.mono{font-family:var(--mono);font-weight:600;text-align:right}
 .item-select{width:100%;padding:7px 24px 7px 8px;border-radius:8px;background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.9);font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;cursor:pointer;transition:border-color .18s}
 .item-select:focus{border-color:var(--blue)}
+.mat-tag{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:.62rem;font-weight:800;letter-spacing:.03em;white-space:nowrap;flex-shrink:0;line-height:1.5}
+.mat-tag.fdm{background:rgba(59,143,212,.15);color:#1d4ed8;border:1px solid rgba(59,143,212,.3)}
+.mat-tag.resin{background:rgba(139,92,246,.14);color:#6d28d9;border:1px solid rgba(139,92,246,.28)}
+.item-mat-wrap{display:flex;flex-direction:column;gap:3px}
+.item-mat-tag-row{display:flex;align-items:center;gap:4px;min-height:14px}
 .item-total{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);text-align:right;padding-right:4px}
 .item-remove{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;color:var(--subtle);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .item-remove:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--danger)}
@@ -1030,12 +1035,35 @@ function closeModal() {
 // ── ITEMS ──────────────────────────────
 function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,4); }
 
+function getMaterialClass(f) {
+  return f.materialClass || f.material_class || 'fdm';
+}
+
 function buildFilamentOptions(selectedId) {
-  const none = `<option value="">— sem filamento —</option>`;
-  const opts = filaments.map(f =>
-    `<option value="${f.id}" ${f.id==selectedId?'selected':''}>${escH(f.colorName)} ${escH(f.type)} (${escH(f.brand)})</option>`
-  ).join('');
-  return none + opts;
+  const none = `<option value="" data-mc="">— sem material —</option>`;
+  const toOpt = f => {
+    const brand = Array.isArray(f.brand) ? f.brand[0] : (f.brand || '');
+    const mc = getMaterialClass(f);
+    const prefix = mc === 'resin' ? '[Resina] ' : '[FDM] ';
+    return `<option value="${f.id}" data-mc="${mc}" ${f.id==selectedId?'selected':''}>${prefix}${escH(f.colorName)} ${escH(f.type)} · ${escH(brand)}</option>`;
+  };
+  return none + filaments.map(toOpt).join('');
+}
+
+// Returns the material_class of the currently selected filament in a select element
+function getSelectedMC(selectEl) {
+  const opt = selectEl.options[selectEl.selectedIndex];
+  return opt ? (opt.dataset.mc || '') : '';
+}
+
+// Update the visible tag next to a material select
+function updateMatTag(itemId, selectEl) {
+  const mc  = getSelectedMC(selectEl);
+  const row = document.querySelector(`.item-mat-tag-row[data-tagfor="${itemId}"]`);
+  if (!row) return;
+  if (mc === 'fdm')   { row.innerHTML = '<span class="mat-tag fdm">FDM</span>'; }
+  else if (mc === 'resin') { row.innerHTML = '<span class="mat-tag resin">Resina</span>'; }
+  else { row.innerHTML = ''; }
 }
 
 function addOrderItem(item = null) {
@@ -1058,6 +1086,9 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','unitPrice',this.value)">
     <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>`;
   list.appendChild(row);
+  // Set initial mat tag if a filament is already selected
+  const sel = document.getElementById('matsel-' + id);
+  if (sel) updateMatTag(id, sel);
   recalcTotal();
 }
 

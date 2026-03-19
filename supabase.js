@@ -225,22 +225,40 @@ const DB = {
     const row = _mapFilamentToDB(filament);
     const isNew = !filament.id || _isLocalId(filament.id);
 
-    if (!isNew) {
-      const { data, error } = await _sb
-        .from('filaments')
-        .update(row)
-        .eq('id', filament.id)
-        .eq('company_id', _companyId)
-        .select().single();
-      if (error) throw error;
-      return _mapFilamentFromDB(data);
-    } else {
-      const { data, error } = await _sb
-        .from('filaments')
-        .insert({ ...row, company_id: _companyId })
-        .select().single();
-      if (error) throw error;
-      return _mapFilamentFromDB(data);
+    // Include material_class only if provided (requires 3dzaap_add_resin.sql)
+    const matClass = filament.materialClass || filament.material_class;
+    const rowWithMat  = matClass ? { ...row, material_class: matClass } : row;
+    const rowWithout  = row;
+
+    const tryOp = async (rowData) => {
+      if (!isNew) {
+        const { data, error } = await _sb
+          .from('filaments')
+          .update(rowData)
+          .eq('id', filament.id)
+          .eq('company_id', _companyId)
+          .select().single();
+        if (error) throw error;
+        return _mapFilamentFromDB(data);
+      } else {
+        const { data, error } = await _sb
+          .from('filaments')
+          .insert({ ...rowData, company_id: _companyId })
+          .select().single();
+        if (error) throw error;
+        return _mapFilamentFromDB(data);
+      }
+    };
+
+    // Try with material_class first; if column missing, retry without
+    try {
+      return await tryOp(rowWithMat);
+    } catch (err) {
+      if (matClass && err.message && err.message.includes('material_class')) {
+        console.warn('[3DZAAP] material_class column not found — run 3dzaap_add_resin.sql');
+        return await tryOp(rowWithout);
+      }
+      throw err;
     }
   },
 
@@ -502,6 +520,7 @@ function _mapFilamentFromDB(row) {
     emptyConfirmed: row.empty_confirmed || false,
     emptyByOrder:   row.empty_by_order || null,
     emptyAt:        row.empty_at       || null,
+    purchaseDate:   row.purchase_date || null,
     createdAt:      row.created_at,
     updatedAt:      row.updated_at,
   };
@@ -529,11 +548,10 @@ function _mapFilamentToDB(f) {
     empty_confirmed: f.emptyConfirmed ?? f.empty_confirmed ?? false,
     empty_by_order:  f.emptyByOrder  ?? f.empty_by_order  ?? null,
     empty_at:        f.emptyAt       ?? f.empty_at        ?? null,
+    purchase_date:   f.purchaseDate  || f.purchase_date   || null,
   };
-  // Only include material_class if the column exists (added via 3dzaap_add_resin.sql)
-  // Sending it before the column exists causes a schema cache error
-  const matClass = f.materialClass || f.material_class;
-  if (matClass) rowData.material_class = matClass;
+  // material_class is added by 3dzaap_add_resin.sql
+  // Do NOT include here - it's handled at the saveFilament level with fallback
   return rowData;
 }
 

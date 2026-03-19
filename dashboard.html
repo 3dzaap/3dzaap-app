@@ -578,7 +578,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Material</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -905,6 +905,11 @@ function getFilamentStatus(f) {
   return 'green';
 }
 
+function getMonth(s) {
+  if (!s) return '';
+  return s.slice(0, 7); // Works for both '2026-03-18' and '2026-03-18T00:00:00+00:00'
+}
+
 function renderStats() {
   const now = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -913,16 +918,16 @@ function renderStats() {
   const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
   const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
 
-  const monthOrders = state.orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
-  const prevOrders  = state.orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
+  const monthOrders = state.orders.filter(o => getMonth(o.createdAt) === thisMonth);
+  const prevOrders  = state.orders.filter(o => getMonth(o.createdAt) === prevMonth);
 
   // Revenue this month (paid)
   const revenue     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
   const prevRevenue = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
 
   // Active orders (not done)
-  const activeOrders = state.orders.filter(o => o.status !== 'done').length;
-  const activeThisMonth = monthOrders.filter(o => o.status !== 'done').length;
+  const activeOrders = state.orders.filter(o => !['concluido','entregue','cancelado'].includes(o.status)).length;
+  const activeThisMonth = monthOrders.filter(o => !['concluido','entregue','cancelado'].includes(o.status)).length;
 
   // Paid this month
   const paid     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
@@ -1003,7 +1008,7 @@ function renderRecentOrders() {
 
   el.innerHTML = recent.map(o => {
     const status = o.status || 'orcamento';
-    const statusLabel = { orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação', aprovado:'Aprovado', printing:'Imprimindo', done:'Concluído' }[status] || status;
+    const statusLabel = { orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação', aprovado:'Aprovado', printing:'Printing', concluido:'Concluído', entregue:'Entregue', cancelado:'Cancelado', done:'Concluído' }[status] || status;
     const date = o.createdAt || o.created_at_date || '';
     const dateStr = date ? new Date(date).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : '';
     return `<div class="order-row" onclick="navigate('orders')">

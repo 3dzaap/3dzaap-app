@@ -689,8 +689,13 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Notas</div>
-      <div class="form-row full">
+      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Compra &amp; Notas</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de compra <span>(opcional)</span></label>
+          <input type="date" id="fPurchaseDate" class="form-input">
+          <div class="form-hint">Usada para registar despesa automática no Financeiro</div>
+        </div>
         <div class="form-group">
           <label class="form-label">Notas <span>(opcional)</span></label>
           <input type="text" id="fNotes" class="form-input" placeholder="Ex: NF disponível, comprado na Amazon…">
@@ -1177,7 +1182,8 @@ function openModal(id = null) {
     document.querySelectorAll('.color-preset').forEach(p =>
       p.classList.toggle('selected', p.dataset.hex.toLowerCase() === selectedColor.toLowerCase()));
 
-    document.getElementById('fNotes').value = m.notes || '';
+    document.getElementById('fNotes').value        = m.notes        || '';
+    document.getElementById('fPurchaseDate').value = m.purchaseDate || '';
 
     if (mc === 'fdm') {
       document.getElementById('fType').value      = m.type || FDM_TYPES[0];
@@ -1231,7 +1237,8 @@ function openModal(id = null) {
     document.getElementById('rPrice').value     = 30;
     document.getElementById('rExpiry').value    = '';
     document.getElementById('rWavelength').value= '';
-    document.getElementById('fNotes').value     = '';
+    document.getElementById('fNotes').value        = '';
+    document.getElementById('fPurchaseDate').value = '';
     syncFDMNew(); syncResinNew();
   }
 
@@ -1291,6 +1298,7 @@ async function saveMaterial() {
       alerta:    Math.max(0, parseInt(document.getElementById('fAlerta').value) || 0),
       price:     parseFloat(document.getElementById('fPrice').value) || 0,
       notes,
+      purchaseDate,
     };
   } else {
     const total = Math.max(0, parseInt(document.getElementById('rTotal').value) || 0);
@@ -1313,7 +1321,8 @@ async function saveMaterial() {
       alerta:    Math.max(0, parseInt(document.getElementById('rAlerta').value) || 0),
       price:     parseFloat(document.getElementById('rPrice').value) || 0,
       notes:     notesStr,
-      emptyAt:   expiry ? expiry + 'T00:00:00Z' : null,         // reutiliza emptyAt para validade
+      emptyAt:   expiry ? expiry + 'T00:00:00Z' : null,
+      purchaseDate,         // reutiliza emptyAt para validade
     };
   }
 
@@ -1328,6 +1337,24 @@ async function saveMaterial() {
       const saved = await DB.saveFilament(record);
       allMaterials.unshift(saved);
       showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado!`, 'ok');
+    // Auto-create expense if purchase date and price are set (new items only)
+    if (purchaseDate && record.price > 0) {
+      try {
+        const matLabel = isFDM ? record.type : record.type;
+        const brandStr = Array.isArray(record.brand) ? record.brand[0] : (record.brand || '');
+        const desc = `${record.colorName} ${matLabel}${brandStr ? ' · ' + brandStr : ''} (${record.rollSize || record.rollSize}) ×${record.total}`;
+        const totalCost = record.price * (record.total || 1);
+        await DB.saveExpense({
+          date: purchaseDate,
+          value: parseFloat(totalCost.toFixed(2)),
+          category: 'materiais',
+          description: desc,
+        });
+        showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado + despesa registada!`, 'ok');
+      } catch(expErr) {
+        console.warn('Auto-expense failed:', expErr.message);
+      }
+    }
     }
     updateToggleCounts();
     applyFilters();
