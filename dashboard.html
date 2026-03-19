@@ -9,6 +9,7 @@
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 3DZAAP data layer -->
+<script src="sidebar.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -443,6 +444,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   border:1.5px solid var(--border);box-shadow:var(--sh);
   cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem;
 }
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);transform:translateY(14px)}
   to{opacity:1;transform:none}
 }
 
@@ -529,15 +531,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       left: 0 !important;
     }
   }
-/* Garantir sidebar acima do overlay em mobile */
+
+  /* ── iOS: sidebar-overlay sem backdrop-filter ── */
+  .sidebar-overlay{
+    
+  }
+  /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-      }
-
-  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
-  
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
+    .sidebar-overlay{ z-index: 280 !important; }
+  }
 </style>
 </head>
 <body>
@@ -547,67 +550,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <div class="orb o2"></div>
 
 <!-- Mobile toggle -->
-<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
-<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
-
 <div class="layout">
 
   <!-- ── SIDEBAR ─────────────────────── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div style="display:none;align-items:center;gap:8px">
-        <span style="font-size:1.4rem;font-weight:900;color:var(--blue)">3D</span><span style="font-size:1.4rem;font-weight:900;color:var(--orange)">ZAAP</span>
-      </div>
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-
-        <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatarSidebar">—</div>
-        <span class="company-name" id="companyNameSidebar">—</span>
-        <span class="company-plan" id="planBadgeSidebar">—</span>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item active" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
-      </div>
-    </nav>
-
-        <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
-        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
-      </div>
-      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatarSidebar">—</div>
-        <div class="user-info">
-          <div class="user-name" id="userNameSidebar">—</div>
-          <div class="user-email" id="userEmailSidebar">—</div>
-        </div>
-        <span class="user-chevron" id="userChevron">▲</span>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar active="dashboard"></app-sidebar>
 
   <!-- ── MAIN CONTENT ─────────────────── -->
   <div class="main">
@@ -794,16 +740,16 @@ let state = {
 };
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  const loaded = await loadState();
-  if (!loaded) return; // auth redirect or no session
-  renderGreeting();
+document.addEventListener('DOMContentLoaded', () => {
+  loadState().then(() => {
+    renderGreeting();
   renderBanner();
   renderStats();
   renderRecentOrders();
   renderFilamentAlerts();
   applyFeatureGating();
   setDate();
+  });
 });
 
 function setDate() {
@@ -827,33 +773,21 @@ async function loadState() {
   state.user.email    = session.email;
   state.user.name     = fullName;
   state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  state.company.name    = session.companyName || 'Empresa';
-  state.company.initials = (session.companyName||'Empresa').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  state.company.name    = session.companyName;
+  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
   state.company.plan    = session.plan || 'trial';
   state.company.config  = session.config || {};
 
-  document.getElementById('userNameSidebar').textContent    = state.user.name;
-  document.getElementById('userEmailSidebar').textContent   = state.user.email;
-  document.getElementById('companyNameSidebar').textContent = state.company.name;
-  document.getElementById('userAvatarSidebar').textContent  = state.user.initials;
-  document.getElementById('companyAvatarSidebar').textContent = state.company.initials;
-  document.getElementById('planBadgeSidebar').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
+  document.getElementById('userName').textContent    = state.user.name;
+  document.getElementById('userEmail').textContent   = state.user.email;
+  document.getElementById('companyName').textContent = state.company.name;
+  document.getElementById('userAvatar').textContent  = state.user.initials;
+  document.getElementById('companyAvatar').textContent      = state.company.initials;
+  document.getElementById('planBadge').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
 
   // Load data from Supabase
-  try {
-    state.filaments = await DB.getFilaments();
-  } catch(e) {
-    state.filaments = [];
-    console.error('[Dashboard] getFilaments error:', e.message);
-  }
-  try {
-    state.orders = await DB.getOrders();
-  } catch(e) {
-    state.orders = [];
-    console.error('[Dashboard] getOrders error:', e.message);
-    showToast('Erro ao carregar pedidos: ' + e.message, 'err');
-  }
-  return true; // signal success to caller
+  try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
+  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders = []; }
 }
 
 // ── GREETING ───────────────────────────
@@ -917,11 +851,6 @@ function getFilamentStatus(f) {
   return 'green';
 }
 
-function getMonth(s) {
-  if (!s) return '';
-  return s.slice(0, 7); // Works for both '2026-03-18' and '2026-03-18T00:00:00+00:00'
-}
-
 function renderStats() {
   const now = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -930,16 +859,16 @@ function renderStats() {
   const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
   const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
 
-  const monthOrders = state.orders.filter(o => getMonth(o.createdAt) === thisMonth);
-  const prevOrders  = state.orders.filter(o => getMonth(o.createdAt) === prevMonth);
+  const monthOrders = state.orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
+  const prevOrders  = state.orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
 
   // Revenue this month (paid)
   const revenue     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
   const prevRevenue = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
 
   // Active orders (not done)
-  const activeOrders = state.orders.filter(o => !['concluido','entregue','cancelado'].includes(o.status)).length;
-  const activeThisMonth = monthOrders.filter(o => !['concluido','entregue','cancelado'].includes(o.status)).length;
+  const activeOrders = state.orders.filter(o => o.status !== 'done').length;
+  const activeThisMonth = monthOrders.filter(o => o.status !== 'done').length;
 
   // Paid this month
   const paid     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
@@ -1020,7 +949,7 @@ function renderRecentOrders() {
 
   el.innerHTML = recent.map(o => {
     const status = o.status || 'orcamento';
-    const statusLabel = { orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação', aprovado:'Aprovado', printing:'Printing', concluido:'Concluído', entregue:'Entregue', cancelado:'Cancelado', done:'Concluído' }[status] || status;
+    const statusLabel = { orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação', aprovado:'Aprovado', printing:'Imprimindo', done:'Concluído' }[status] || status;
     const date = o.createdAt || o.created_at_date || '';
     const dateStr = date ? new Date(date).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : '';
     return `<div class="order-row" onclick="navigate('orders')">

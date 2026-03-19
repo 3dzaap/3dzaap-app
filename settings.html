@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sidebar.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -39,43 +40,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 /* LAYOUT */
 .layout{position:relative;z-index:1;display:flex;min-height:100vh}
 /* SIDEBAR */
-.sidebar{width:var(--sidebar-w);flex-shrink:0;background:#e8f1fb;border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:250;transition:left .3s var(--ease)}
-.sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
-.sidebar-logo img{height:36px;width:auto;object-fit:contain}
-.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
-.sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
-.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
-.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
-.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
-.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.nav-section{margin-bottom:6px}
-.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
-.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:background .18s,color .18s;text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500;position:relative;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
-.nav-item.active{background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08));color:var(--blue);font-weight:700;border:1px solid rgba(59,143,212,.25)}
-.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
-.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
-.nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
-.sidebar-footer{padding:10px 12px;border-top:1.5px solid var(--border);position:relative;overflow:visible}
-.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.user-row:hover{background:rgba(59,143,212,.07)}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
-.user-info{flex:1;min-width:0}
-.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
-.user-chevron.up{transform:rotate(180deg)}
-.user-dropdown{position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);z-index:300;overflow:hidden;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease)}
-.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
-.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
-.dd-item.danger{color:var(--danger)}
-.dd-item.danger:hover{background:rgba(239,68,68,.08)}
-.dd-divider{height:1px;background:var(--border);margin:3px 0}
+
 /* SIDEBAR OVERLAY */
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
+
 /* MAIN */
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border-bottom:1.5px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between}
@@ -174,13 +141,13 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
 .toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 /* MOBILE */
-.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:900px){.form-grid{grid-template-columns:1fr}.form-grid.three{grid-template-columns:1fr 1fr}}
 @media(max-width:680px){
-  .sidebar{left:calc(-1 * var(--sidebar-w));z-index:300}.sidebar.open{left:0}
-  .sidebar-overlay.open{left:var(--sidebar-w)}
-  .main{margin-left:0}.mob-toggle{display:flex}
+  
+  
+  .main{margin-left:0}
   .page{padding:16px 16px 80px}.topbar{padding:0 16px 0 56px}
   .tabs-bar{gap:2px}.tab-btn{padding:7px 12px;font-size:.78rem}
 }
@@ -188,56 +155,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
-<button class="mob-toggle" id="mobToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sideOverlay"></div>
+
+
+<app-sidebar active="settings"></app-sidebar>
 <div class="layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-    <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">&#8212;</div>
-        <span class="company-name" id="companyName">&#8212;</span>
-        <span class="company-plan" id="planBadge">&#8212;</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item" href="dashboard.html"><span class="nav-icon">&#127968;</span> In&iacute;cio</a>
-        <a class="nav-item" href="calculator.html"><span class="nav-icon">&#128208;</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gest&atilde;o</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">&#127912;</span> Materiais</a>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">&#128230;</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">&#128176;</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">&#128452;</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item active" href="settings.html"><span class="nav-icon">&#9881;</span> Configura&ccedil;&otilde;es</a>
-        <a class="nav-item" href="#" id="navBilling"><span class="nav-icon">&#128179;</span> Assinatura</a>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="settings.html">&#9881; Configura&ccedil;&otilde;es</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" id="ddLogout">&#128682; Sair</a>
-      </div>
-      <div class="user-row" id="userRow">
-        <div class="user-avatar" id="userAvatar">&#8212;</div>
-        <div class="user-info">
-          <div class="user-name" id="userName">&#8212;</div>
-          <div class="user-email" id="userEmail">&#8212;</div>
-        </div>
-        <span class="user-chevron" id="userChevron">&#9650;</span>
-      </div>
-    </div>
-  </aside>
+  
 
   <div class="main">
     <header class="topbar">
@@ -602,17 +524,7 @@ function wireEvents() {
     });
   });
 
-  // Sidebar
-  document.getElementById('mobToggle').addEventListener('click', toggleSidebar);
-  document.getElementById('sideOverlay').addEventListener('click', closeSidebar);
-  document.getElementById('userRow').addEventListener('click', toggleUserMenu);
-  document.getElementById('ddLogout').addEventListener('click', doLogout);
-  document.getElementById('navBilling').addEventListener('click', function(e){
-    e.preventDefault(); showToast('Assinatura \u2014 em breve', '');
-  });
-  document.addEventListener('click', function(e){
-    if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
-  });
+
 
   // Dirty tracking
   document.querySelectorAll('.form-input,.form-select,.form-textarea').forEach(function(el){

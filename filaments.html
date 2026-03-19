@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sidebar.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -288,6 +289,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
 
 /* ── MOBILE ─────────────────────────── */
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);font-size:.72rem;font-weight:700}
 .expiry-ok{color:var(--muted);font-size:.78rem}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -353,73 +355,24 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
       left: 0 !important;
     }
   }
-/* Garantir sidebar acima do overlay em mobile */
+
+  /* ── iOS: sidebar-overlay sem backdrop-filter ── */
+  .sidebar-overlay{
+    
+  }
+  /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-      }
-
-  /* ── Fix iOS: overlay nunca cobre a sidebar ── */
-  
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
+    .sidebar-overlay{ z-index: 280 !important; }
+  }
 </style>
 </head>
 <body>
 <div class="bg"></div>
 <div class="orb o1"></div>
 <div class="orb o2"></div>
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
-<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
-
 <div class="layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-    <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">—</div>
-        <span class="company-name" id="companyName">—</span>
-        <span class="company-plan" id="planBadge">—</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gestão</div>
-        <a class="nav-item active" href="filaments.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
-      </div>
-      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatar">—</div>
-        <div class="user-info">
-          <div class="user-name" id="userName">—</div>
-          <div class="user-email" id="userEmail">—</div>
-        </div>
-        <span class="user-chevron" id="userChevron">▲</span>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar active="filaments"></app-sidebar>
 
   <div class="main">
     <header class="topbar">
@@ -434,7 +387,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
       <div class="page-header">
         <div class="page-header-text">
           <h1 id="pageTitle">🎨 Materiais</h1>
-          <p id="pageSubtitle">Gere o teu stock de materiais — filamentos FDM e resinas SLA/MSLA</p>
+          <p id="pageSubtitle">Gere o teu stock de filamentos FDM e resinas SLA/MSLA</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
@@ -689,13 +642,8 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Compra &amp; Notas</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Data de compra <span>(opcional)</span></label>
-          <input type="date" id="fPurchaseDate" class="form-input">
-          <div class="form-hint">Usada para registar despesa automática no Financeiro</div>
-        </div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Notas</div>
+      <div class="form-row full">
         <div class="form-group">
           <label class="form-label">Notas <span>(opcional)</span></label>
           <input type="text" id="fNotes" class="form-input" placeholder="Ex: NF disponível, comprado na Amazon…">
@@ -1182,8 +1130,7 @@ function openModal(id = null) {
     document.querySelectorAll('.color-preset').forEach(p =>
       p.classList.toggle('selected', p.dataset.hex.toLowerCase() === selectedColor.toLowerCase()));
 
-    document.getElementById('fNotes').value        = m.notes        || '';
-    document.getElementById('fPurchaseDate').value = m.purchaseDate || '';
+    document.getElementById('fNotes').value = m.notes || '';
 
     if (mc === 'fdm') {
       document.getElementById('fType').value      = m.type || FDM_TYPES[0];
@@ -1237,8 +1184,7 @@ function openModal(id = null) {
     document.getElementById('rPrice').value     = 30;
     document.getElementById('rExpiry').value    = '';
     document.getElementById('rWavelength').value= '';
-    document.getElementById('fNotes').value        = '';
-    document.getElementById('fPurchaseDate').value = '';
+    document.getElementById('fNotes').value     = '';
     syncFDMNew(); syncResinNew();
   }
 
@@ -1276,8 +1222,7 @@ function applyModalClass() {
 async function saveMaterial() {
   const isFDM    = modalClass === 'fdm';
   const colorName = document.getElementById('colorName').value.trim() || 'Sem nome';
-  const notes        = document.getElementById('fNotes').value.trim();
-  const purchaseDate = document.getElementById('fPurchaseDate').value || null;
+  const notes     = document.getElementById('fNotes').value.trim();
 
   let record;
 
@@ -1299,7 +1244,6 @@ async function saveMaterial() {
       alerta:    Math.max(0, parseInt(document.getElementById('fAlerta').value) || 0),
       price:     parseFloat(document.getElementById('fPrice').value) || 0,
       notes,
-      purchaseDate,
     };
   } else {
     const total = Math.max(0, parseInt(document.getElementById('rTotal').value) || 0);
@@ -1322,8 +1266,7 @@ async function saveMaterial() {
       alerta:    Math.max(0, parseInt(document.getElementById('rAlerta').value) || 0),
       price:     parseFloat(document.getElementById('rPrice').value) || 0,
       notes:     notesStr,
-      emptyAt:   expiry ? expiry + 'T00:00:00Z' : null,
-      purchaseDate,         // reutiliza emptyAt para validade
+      emptyAt:   expiry ? expiry + 'T00:00:00Z' : null,         // reutiliza emptyAt para validade
     };
   }
 
@@ -1338,24 +1281,6 @@ async function saveMaterial() {
       const saved = await DB.saveFilament(record);
       allMaterials.unshift(saved);
       showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado!`, 'ok');
-    }
-    // Auto-create expense if purchase date and price are set (new items only)
-    if (purchaseDate && record.price > 0) {
-      try {
-        const matLabel = isFDM ? record.type : record.type;
-        const brandStr = Array.isArray(record.brand) ? record.brand[0] : (record.brand || '');
-        const desc = `${record.colorName} ${matLabel}${brandStr ? ' · ' + brandStr : ''} (${record.rollSize || record.rollSize}) ×${record.total}`;
-        const totalCost = record.price * (record.total || 1);
-        await DB.saveExpense({
-          date: purchaseDate,
-          value: parseFloat(totalCost.toFixed(2)),
-          category: 'materiais',
-          description: desc,
-        });
-        showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado + despesa registada!`, 'ok');
-      } catch(expErr) {
-        console.warn('Auto-expense failed:', expErr.message);
-      }
     }
     updateToggleCounts();
     applyFilters();

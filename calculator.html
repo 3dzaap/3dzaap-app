@@ -9,6 +9,7 @@
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 3DZAAP data layer -->
+<script src="sidebar.js"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -49,50 +50,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .layout{position:relative;z-index:1;display:flex;min-height:100vh}
 
 /* ── SIDEBAR ────────────────────────── */
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;
-  background:#e8f1fb;
-  
-  border-right:1.5px solid var(--border);
-  display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;height:100vh;z-index:100;
-  transition:left .3s var(--ease);
-}
-.sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
-.sidebar-logo img{height:36px;width:auto;object-fit:contain}
-.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
-.sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
-.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
-.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
-.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
-.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
-.nav-section{margin-bottom:6px}
-.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
-.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:background .18s,color .18s;text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500;position:relative}
-.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
-.nav-item.active{background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08));color:var(--blue);font-weight:700;border:1px solid rgba(59,143,212,.25)}
-.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
-.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
-.nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
 
 /* ── SIDEBAR FOOTER ─────────────────── */
-.sidebar-footer{padding:10px 12px;border-top:1.5px solid var(--border);position:relative}
-.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
-.user-row:hover{background:rgba(59,143,212,.07)}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
-.user-info{flex:1;min-width:0}
-.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
-.user-chevron.up{transform:rotate(180deg)}
-.user-dropdown{position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);z-index:200;overflow:hidden;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease)}
-.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
-.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s}
-.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
-.dd-item.danger{color:var(--danger)}
-.dd-item.danger:hover{background:rgba(239,68,68,.08)}
-.dd-divider{height:1px;background:var(--border);margin:3px 0}
 
 /* ── MAIN ───────────────────────────── */
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
@@ -330,7 +289,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .btn-adv-cancel:hover{background:rgba(255,255,255,.95)}
 
 /* ── MOBILE ─────────────────────────── */
-.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
 
 /* ── CONFIRM MODAL ──────────────────── */
 .confirm-overlay{
@@ -377,11 +335,11 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 /* ── RESPONSIVE ─────────────────────── */
 @media(max-width:1100px){.calc-layout{grid-template-columns:1fr}}
 @media(max-width:680px){
-  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}
-  .sidebar.open{left:0}
-  .sidebar-overlay.open{display:block}
+  
+  
+  
   .main{margin-left:0}
-  .mob-toggle{display:flex}
+  
   .page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}
   .fields-grid{grid-template-columns:1fr}
@@ -399,17 +357,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     transform: none !important;
   }
   /* Eliminar delay de 300ms em elementos clicáveis */
-  a, button, .nav-item, .btn, .btn-icon,
-  .stepper-btn, .tab, .mat-btn, .modal-mat-btn,
-  .plan-card, .user-row, .dd-item, .color-preset,
-  .home-card, .action-card, .stat-card {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
+  a, button, 
   /* Scroll suave na sidebar iOS */
-  .sidebar-nav, .sidebar, .modal, .page {
-    -webkit-overflow-scrolling: touch;
-  }
+  
   /* Garantir que orbs decorativos nunca bloqueiam toque */
   .bg, .orb, .o1, .o2 {
     pointer-events: none !important;
@@ -427,27 +377,17 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   /* ── iOS Safari fix: substituir transform por left
      backdrop-filter + transform = bug iOS que bloqueia toque ── */
   @media(max-width:680px){
-    .sidebar{
-      transform: none !important;
-      left: calc(-1 * var(--sidebar-w, 260px));
-      transition: left .3s cubic-bezier(0.22,1,0.36,1);
-      /* Solid background no mobile — evita o bug backdrop-filter+transform */
-      background: #e8f1fb !important;
-      
-    }
-    .sidebar.open{
-      left: 0 !important;
-    }
+    
+    
   }
 /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
-    .sidebar{ z-index: 300 !important; }
+    
       }
 
   /* ── Fix iOS: overlay nunca cobre a sidebar ── */
   
-.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
-.sidebar-overlay.open{display:block;left:var(--sidebar-w)}
+
 </style>
 </head>
 <body>
@@ -456,62 +396,15 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
-<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
+
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
+<app-sidebar active="calculator"></app-sidebar>
 <div class="layout">
 
   <!-- ── SIDEBAR ─────────────────────── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-        <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">—</div>
-        <span class="company-name" id="companyName">—</span>
-        <span class="company-plan" id="planBadge">—</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item active" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
-      </div>
-    </nav>
-        <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
-        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
-      </div>
-      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatar">—</div>
-        <div class="user-info">
-          <div class="user-name" id="userName">—</div>
-          <div class="user-email" id="userEmail">—</div>
-        </div>
-        <span class="user-chevron" id="userChevron">▲</span>
-      </div>
-    </div>
-  </aside>
+  
 
   <!-- ── MAIN ─────────────────────────── -->
   <div class="main">
@@ -1158,9 +1051,6 @@ function closeUserMenu(){
   document.getElementById('userDropdown').classList.remove('open');
   const ch=document.getElementById('userChevron');if(ch)ch.classList.remove('up');
 }
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#userRow')&&!e.target.closest('#userDropdown')) closeUserMenu();
-});
 
 async function doLogout() {
   closeUserMenu();
