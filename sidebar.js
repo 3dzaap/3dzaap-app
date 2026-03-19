@@ -87,6 +87,68 @@
     connectedCallback() {
       const active = this.getAttribute('active') || '';
 
+      // Inject CSS if not already present (makes component self-contained)
+      if (!document.getElementById('_app-sidebar-css')) {
+        const st = document.createElement('style');
+        st.id = '_app-sidebar-css';
+        st.textContent = `.sidebar{ width:var(--sidebar-w);flex-shrink:0; background:#e8f1fb; border-right:1.5px solid var(--border); display:flex;flex-direction:column; position:fixed;top:0;left:0;height:100vh;z-index:250; transition:left .3s var(--ease); }
+.sidebar-logo{ padding:20px 22px 16px; border-bottom:1.5px solid var(--border); display:flex;align-items:center;gap:12px; }
+.sidebar-logo img{height:36px;width:auto;object-fit:contain}
+.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sidebar-company{ padding:14px 18px; border-bottom:1.5px solid var(--border); }
+.company-pill{ display:flex;align-items:center;gap:9px; background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22); border-radius:40px;padding:7px 14px;cursor:pointer; transition:background .2s,border-color .2s; }
+.company-pill:hover{background:rgba(59,143,212,.15);border-color:rgba(59,143,212,.35)}
+.company-avatar{ width:28px;height:28px;border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--blue-d)); display:flex;align-items:center;justify-content:center; font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0; }
+.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-section{margin-bottom:6px}
+.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
+.nav-item{ display:flex;align-items:center;gap:11px; padding:9px 12px;border-radius:var(--r); cursor:pointer;transition:background .18s,color .18s; text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500; position:relative; }
+.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
+.nav-item.active{ background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08)); color:var(--blue);font-weight:700; border:1px solid rgba(59,143,212,.25); }
+.nav-item.active::before{ content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%); width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0; }
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.nav-lock{ margin-left:auto;font-size:.65rem;font-weight:700; background:rgba(148,163,184,.15);color:var(--subtle); border:1px solid rgba(148,163,184,.25);border-radius:20px;padding:2px 7px; white-space:nowrap; }
+.nav-lock.plan-badge{background:rgba(245,148,58,.12);color:var(--orange);border-color:rgba(245,148,58,.3)}
+.sidebar-footer{ padding:10px 12px; border-top:1.5px solid var(--border); position:relative; overflow:visible; }
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
+.user-row:hover{background:rgba(59,143,212,.07)}
+.user-avatar{ width:32px;height:32px;border-radius:50%; background:linear-gradient(135deg,var(--orange),var(--orange-d)); display:flex;align-items:center;justify-content:center; font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0; }
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
+.user-chevron.up{transform:rotate(180deg)}
+.user-dropdown{ position:absolute;bottom:calc(100% + 4px);left:12px;right:12px; background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur); border:1.5px solid var(--border);border-radius:var(--rm); box-shadow:var(--sh-lg);z-index:200;overflow:hidden; opacity:0;transform:translateY(6px);pointer-events:none; transition:opacity .22s var(--ease),transform .22s var(--ease); }
+.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
+.dd-item{ display:flex;align-items:center;gap:10px;padding:10px 14px; cursor:pointer;transition:background .15s;font-size:.84rem;font-weight:500;color:var(--muted); text-decoration:none; }
+.dd-item:first-child{border-radius:var(--rm) var(--rm) 0 0}
+.dd-item:last-child{border-radius:0 0 var(--rm) var(--rm)}
+.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
+.dd-item.danger{color:var(--danger)}
+.dd-item.danger:hover{background:rgba(239,68,68,.08);color:var(--danger)}
+.dd-divider{height:1px;background:var(--border);margin:4px 0}
+.mob-toggle{ display:none;position:fixed;top:14px;left:14px;z-index:200; width:38px;height:38px;border-radius:var(--r); background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm); border:1.5px solid var(--border);box-shadow:var(--sh); cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem; }
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);transform:translateY(14px)}
+.sidebar{left:calc(-1 * var(--sidebar-w, 260px))}
+.sidebar-overlay.open{display:block}
+.mob-toggle{display:flex}
+.nav-item, .btn, .btn-icon, .stepper-btn, .tab, .mat-btn, .modal-mat-btn, .plan-card, .user-row, .dd-item, .color-preset, .home-card, .action-card, .stat-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.sidebar-nav, .sidebar, .modal, .page { -webkit-overflow-scrolling: touch; }
+.sidebar{ transform: none !important; left: calc(-1 * var(--sidebar-w, 260px)); transition: left .3s cubic-bezier(0.22,1,0.36,1); /* Solid background no mobile — evita o bug backdrop-filter+transform */ background: #e8f1fb !important; }
+.sidebar-overlay{ }
+.sidebar{ z-index: 300 !important; }
+.sidebar-overlay{ z-index: 280 !important; }
+@media(max-width:680px){
+  .mob-toggle{display:flex}
+  .sidebar{left:calc(-1 * var(--sidebar-w));z-index:300;background:#e8f1fb !important}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{left:var(--sidebar-w)}
+}`;
+        document.head.appendChild(st);
+      }
+
       // Inject HTML before this element in the light DOM
       const frag = document.createRange().createContextualFragment(buildHTML(active));
       this.parentNode.insertBefore(frag, this);
