@@ -269,7 +269,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item active" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -325,7 +325,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="storage-item">
               <div class="storage-icon">🎨</div>
               <div class="storage-count" id="statFil">0</div>
-              <div class="storage-lbl">Filamentos</div>
+              <div class="storage-lbl">Materiais</div>
               <div class="storage-size" id="statFilSize">0 KB</div>
             </div>
             <div class="storage-item">
@@ -356,7 +356,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="action-row">
               <div class="action-info">
                 <div class="action-title">📦 Backup completo</div>
-                <div class="action-desc">Filamentos + Pedidos + Despesas num único ficheiro CSV</div>
+                <div class="action-desc">Materiais + Pedidos + Despesas num único ficheiro CSV</div>
                 <div class="action-feedback" id="fbBackup"></div>
               </div>
               <div class="action-btns">
@@ -365,7 +365,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🎨 Filamentos</div>
+                <div class="action-title">🎨 Materiais</div>
                 <div class="action-desc">Exportar apenas os filamentos em CSV</div>
                 <div class="action-feedback" id="fbFil"></div>
               </div>
@@ -454,7 +454,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="danger-grid">
             <div class="danger-item">
               <div class="danger-item-title">🎨 Limpar filamentos</div>
-              <div class="danger-item-desc">Remove todos os filamentos do sistema. O histórico de pedidos não é afectado.</div>
+              <div class="danger-item-desc">Remove todos os materiais do sistema. O histórico de pedidos não é afectado.</div>
               <button class="btn btn-danger btn-sm" onclick="confirmClear('filaments')">🗑️ Limpar</button>
             </div>
             <div class="danger-item">
@@ -640,8 +640,8 @@ function exportFilaments() {
   });
   boDownload(`3DZAAP_filamentos_${date()}.csv`, csv);
   setFb('fbFil',`✓ ${filaments.length} filamentos exportados`);
-  addLog(`Filamentos exportados: ${filaments.length} registos`,'ok');
-  showToast('📥 Filamentos exportados!','ok');
+  addLog(`Materiais exportados: ${filaments.length} registos`,'ok');
+  showToast('📥 Materiais exportados!','ok');
 }
 
 function exportOrders() {
@@ -678,7 +678,7 @@ function exportExpenses() {
 
 function exportAll() {
   const d = date();
-  let csv = `"#SECÇÃO";"Filamentos"\n`;
+  let csv = `"#SECÇÃO";"Materiais"\n`;
   csv += ['ID','Tipo','Variação','Cor','Hexadecimal','Marca','Bobina','Em Uso','Novas','Total','Alerta','Preço/kg','Notas'].join(sep)+'\n';
   filaments.forEach(f=>{
     csv += [f.id||'',f.type||'',f.variation||'',f.colorName||'',f.colorHex||'',
@@ -714,7 +714,7 @@ function triggerImport(type) {
   _importData = null;
   const titles = {
     all:'🔄 Restaurar Backup (CSV)',
-    filaments:'📥 Importar Filamentos (CSV)',
+    filaments:'📥 Importar Materiais (CSV)',
     orders:'📥 Importar Pedidos (CSV)',
     expenses:'📥 Importar Despesas (CSV)'
   };
@@ -920,7 +920,7 @@ async function confirmImport() {
     filaments = mergeArr(filaments, filRecs);
     try {
       await DB.saveAllFilaments(filaments);
-      setFb('fbImportFil',`✓ ${filRecs.length} filamentos importados`);
+      setFb('fbImportFil',`✓ ${filRecs.length} materiais importados`);
     } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
   }
   if(ordRecs !== null) {
@@ -941,7 +941,7 @@ async function confirmImport() {
 
   const label = d.kind==='all'
     ? `Backup restaurado (${merge?'combinado':'substituído'})`
-    : `${d.kind==='filaments'?'Filamentos':d.kind==='orders'?'Pedidos':'Despesas'} importados (${merge?'combinado':'substituído'})`;
+    : `${d.kind==='filaments'?'Materiais':d.kind==='orders'?'Pedidos':'Despesas'} importados (${merge?'combinado':'substituído'})`;
   addLog(label,'ok');
   refreshStats();
   closeImportModal();
@@ -966,7 +966,7 @@ async function clearData(type) {
   if(type==='filaments'){
     const count=filaments.length; filaments=[];
     try{ await DB.saveAllFilaments([]); } catch(e){ console.error(e); }
-    addLog(`Filamentos eliminados: ${count} registos`,'warn');
+    addLog(`Materiais eliminados: ${count} registos`,'warn');
     showToast(`🗑️ ${count} filamentos eliminados`,'');
   } else if(type==='orders'){
     const count=orders.length; orders=[];

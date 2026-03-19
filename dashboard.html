@@ -638,7 +638,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="filaments.html"><span class="nav-icon">🎨</span> Filamentos</a>
+        <a class="nav-item" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -789,10 +789,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="action-desc">Registar pedido de cliente</div>
           <span class="action-lock" id="ordersActionLock" style="display:none">Pro+</span>
         </a>
-        <a class="action-card" href="filaments.html">
+        <a class="action-card" href="materials.html">
           <div class="action-icon">🎨</div>
-          <div class="action-title">Gerir Filamentos</div>
-          <div class="action-desc">Actualizar stock de filamentos</div>
+          <div class="action-title">Gerir Materiais</div>
+          <div class="action-desc">Actualizar stock de materiais</div>
         </a>
         <a class="action-card" id="actionFinancial" onclick="handleFeatureClick('financial','Financeiro','Business')" href="#">
           <div class="action-icon">📊</div>
@@ -833,7 +833,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="card">
           <div class="card-header">
             <div class="card-title">🎨 Alertas de Stock</div>
-            <a class="card-action" href="filaments.html">Gerir →</a>
+            <a class="card-action" href="materials.html">Gerir →</a>
           </div>
           <div class="card-body" id="filamentAlertsBody">
             <div class="empty-state">
@@ -1299,7 +1299,7 @@ function renderRecentOrders() {
 function renderFilamentAlerts() {
   const el = document.getElementById('filamentAlertsBody');
 
-  // Use same status logic as filaments.html
+  // Use same status logic as materials.html
   const alerts = state.filaments
     .filter(f => getFilamentStatus(f) !== 'green')
     .sort((a,b) => {
@@ -1409,7 +1409,7 @@ function closeGate(e) {
 const PAGE_TITLES = {
   dashboard: 'Dashboard',
   calculator: 'Calculadora',
-  filaments: 'Filamentos',
+  filaments: 'Materiais',
   orders: 'Pedidos',
   financial: 'Financeiro',
   backoffice: 'BackOffice',
@@ -1438,7 +1438,7 @@ function navigate(page) {
   const tabMap = { calculator:'calculator', filaments:'filaments', orders:'orders', financial:'financial', backoffice:'backoffice' };
   if (tabMap[page]) {
     // Route to standalone module pages
-    const pageMap = { calculator:'calculator.html', filaments:'filaments.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
+    const pageMap = { calculator:'calculator.html', filaments:'materials.html', orders:'orders.html', financial:'financial.html', backoffice:'backoffice.html' };
     window.location.href = pageMap[page] || '#';
     return false;
   }

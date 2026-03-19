@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Materiais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#3B8FD4;--blue-d:#2a6fb0;--blue-dd:#1a4f80;--blue-lt:#72B8F0;--blue-g:rgba(59,143,212,0.10);
+  --orange:#F5943A;--orange-d:#d4762a;--orange-lt:#FFB870;--orange-g:rgba(245,148,58,0.12);
+  --purple:#8B5CF6;--purple-d:#7C3AED;--purple-g:rgba(139,92,246,0.10);
+  --black:#0D1117;--dark:#1a2332;--muted:#4A5568;--subtle:#94A3B8;
+  --border:rgba(255,255,255,0.28);--bdark:rgba(0,0,0,0.08);
+  --glass:rgba(255,255,255,0.60);--glass-s:rgba(255,255,255,0.92);
+  --blur:blur(22px) saturate(1.8);--blur-sm:blur(14px) saturate(1.6);
+  --sh:0 8px 32px rgba(30,60,120,0.12),0 2px 8px rgba(30,60,120,0.06);
+  --sh-lg:0 24px 64px rgba(30,60,120,0.18),0 4px 16px rgba(30,60,120,0.10);
+  --sh-float:0 32px 80px rgba(30,60,120,0.24),0 8px 24px rgba(30,60,120,0.14);
+  --r:10px;--rm:16px;--rl:24px;--rx:32px;
+  --f:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --success:#22c55e;--danger:#ef4444;--warning:#f59e0b;
+  --sidebar-w:260px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidden;line-height:1.6}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 90% 70% at 5% 5%,rgba(59,143,212,.22) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 95% 15%,rgba(245,148,58,.14) 0%,transparent 50%),
+    radial-gradient(ellipse 70% 60% at 50% 100%,rgba(59,143,212,.18) 0%,transparent 55%),
+    linear-gradient(145deg,#cde0f5 0%,#ddeeff 40%,#eef4ff 65%,#fdf0e8 100%)}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.o1{width:660px;height:660px;background:radial-gradient(circle,rgba(59,143,212,.14) 0%,transparent 70%);top:-200px;right:-160px;animation:o1f 22s ease-in-out infinite}
+.o2{width:480px;height:480px;background:radial-gradient(circle,rgba(245,148,58,.11) 0%,transparent 70%);bottom:-120px;left:-120px;animation:o2f 28s ease-in-out infinite}
+@keyframes o1f{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-50px,70px) scale(1.08)}70%{transform:translate(30px,-30px) scale(.96)}}
+@keyframes o2f{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-60px)}}
+.layout{position:relative;z-index:1;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ────────────────────────── */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:#e8f1fb;border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:250;transition:left .3s var(--ease)}
+.sidebar-logo{padding:20px 22px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo img{height:36px;width:auto;object-fit:contain}
+.sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
+.company-pill{display:flex;align-items:center;gap:9px;background:var(--blue-g);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
+.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
+.nav-section{margin-bottom:6px}
+.nav-section-label{font-size:.66rem;font-weight:800;color:var(--subtle);letter-spacing:.1em;text-transform:uppercase;padding:6px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:background .18s,color .18s;text-decoration:none;color:var(--muted);font-size:.875rem;font-weight:500;position:relative}
+.nav-item:hover{background:rgba(59,143,212,.09);color:var(--dark)}
+.nav-item.active{background:linear-gradient(135deg,rgba(59,143,212,.18),rgba(59,143,212,.08));color:var(--blue);font-weight:700;border:1px solid rgba(59,143,212,.25)}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--blue);border-radius:0 3px 3px 0}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.nav-lock{margin-left:auto;font-size:.65rem;font-weight:700;background:rgba(245,148,58,.12);color:var(--orange);border:1px solid rgba(245,148,58,.3);border-radius:20px;padding:2px 7px;white-space:nowrap}
+.sidebar-footer{padding:10px 12px;border-top:1.5px solid var(--border);position:relative;overflow:visible}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .18s;user-select:none}
+.user-row:hover{background:rgba(59,143,212,.07)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.82rem;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:.70rem;color:var(--subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-chevron{font-size:.65rem;color:var(--subtle);transition:transform .22s var(--ease);flex-shrink:0}
+.user-chevron.up{transform:rotate(180deg)}
+.user-dropdown{position:absolute;bottom:calc(100% + 4px);left:12px;right:12px;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);z-index:300;overflow:hidden;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .22s var(--ease),transform .22s var(--ease)}
+.user-dropdown.open{opacity:1;transform:none;pointer-events:auto}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--muted);text-decoration:none;transition:background .15s}
+.dd-item:hover{background:rgba(59,143,212,.08);color:var(--dark)}
+.dd-item.danger{color:var(--danger)}
+.dd-item.danger:hover{background:rgba(239,68,68,.08)}
+.dd-divider{height:1px;background:var(--border);margin:3px 0}
+
+/* ── MAIN ───────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.72);backdrop-filter:var(--blur-sm);-webkit-backdrop-filter:var(--blur-sm);border-bottom:1.5px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center}
+.topbar-breadcrumb{display:flex;align-items:center;gap:8px}
+.topbar-breadcrumb a{font-size:.82rem;color:var(--muted);text-decoration:none;transition:color .18s}
+.topbar-breadcrumb a:hover{color:var(--blue)}
+.topbar-breadcrumb span{font-size:.82rem;color:var(--subtle)}
+.topbar-breadcrumb strong{font-size:.9rem;font-weight:800;color:var(--dark)}
+.page{padding:28px 28px 48px}
+
+/* ── PAGE HEADER ────────────────────── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;animation:fadeUp .5s var(--ease) both;flex-wrap:wrap;gap:12px}
+.page-header-text h1{font-size:1.45rem;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.page-header-text p{font-size:.88rem;color:var(--muted)}
+.page-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* ── MATERIAL CLASS TOGGLE ──────────── */
+.material-toggle{
+  display:flex;gap:4px;
+  background:rgba(255,255,255,0.5);
+  border:1.5px solid var(--border);
+  border-radius:50px;padding:4px;
+  animation:fadeUp .5s var(--ease) .05s both;
+  margin-bottom:20px;
+  width:fit-content;
+}
+.mat-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 20px;border-radius:40px;
+  border:none;font-family:var(--f);font-size:.86rem;font-weight:700;
+  cursor:pointer;transition:all .25s var(--ease);color:var(--muted);
+  background:transparent;
+}
+.mat-btn.active{
+  background:var(--glass-s);
+  box-shadow:var(--sh);
+}
+.mat-btn.fdm.active{ color:var(--blue); }
+.mat-btn.resin.active{ color:var(--purple); }
+.mat-btn-icon{ font-size:1.1rem; }
+.mat-btn-count{
+  font-family:var(--mono);font-size:.72rem;font-weight:800;
+  background:rgba(0,0,0,.06);border-radius:20px;
+  padding:1px 7px;min-width:22px;text-align:center;
+}
+.mat-btn.active .mat-btn-count{ background:rgba(0,0,0,.08); }
+
+/* ── STATS ROW ──────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;animation:fadeUp .5s var(--ease) .1s both}
+.stat-mini{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:16px 18px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.stat-mini-icon{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.si-blue{background:linear-gradient(135deg,rgba(59,143,212,.28),rgba(59,143,212,.10));border:1.5px solid rgba(59,143,212,.3)}
+.si-green{background:linear-gradient(135deg,rgba(34,197,94,.26),rgba(34,197,94,.08));border:1.5px solid rgba(34,197,94,.28)}
+.si-orange{background:linear-gradient(135deg,rgba(245,148,58,.26),rgba(245,148,58,.08));border:1.5px solid rgba(245,148,58,.28)}
+.si-red{background:linear-gradient(135deg,rgba(239,68,68,.22),rgba(239,68,68,.06));border:1.5px solid rgba(239,68,68,.24)}
+.si-purple{background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(139,92,246,.06));border:1.5px solid rgba(139,92,246,.24)}
+.stat-mini-val{font-family:var(--mono);font-size:1.3rem;font-weight:800;color:var(--dark);line-height:1}
+.stat-mini-lbl{font-size:.72rem;color:var(--muted);font-weight:500;margin-top:2px}
+.stat-has-tip{position:relative;cursor:default}
+.stat-tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);min-width:180px;max-width:240px;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);box-shadow:var(--sh-lg);padding:10px 12px;z-index:400;pointer-events:none;animation:fadeUp .18s var(--ease)}
+.stat-has-tip:hover .stat-tooltip{display:block}
+.tip-row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:.78rem;color:var(--dark)}
+.tip-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.1)}
+.tip-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-weight:500}
+.tip-count{font-family:var(--mono);font-size:.76rem;font-weight:700;color:var(--dark);white-space:nowrap}
+.tip-empty{font-size:.78rem;color:var(--subtle);text-align:center;padding:4px 0}
+.tip-more{font-size:.73rem;color:var(--subtle);text-align:center;padding-top:5px;border-top:1px solid var(--border);margin-top:4px}
+
+/* ── FILTERS BAR ────────────────────── */
+.filters-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 16px;margin-bottom:20px;animation:fadeUp .5s var(--ease) .15s both}
+.filter-search-wrap{position:relative;flex:1;min-width:200px}
+.filter-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.82rem;color:var(--subtle);pointer-events:none}
+.filter-search{width:100%;padding:8px 12px 8px 32px;border-radius:var(--r);background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.85);font-size:.84rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s,box-shadow .18s}
+.filter-search:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
+.filter-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.filter-select{padding:7px 28px 7px 10px;border-radius:var(--r);background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.85);font-size:.82rem;font-family:var(--f);color:var(--dark);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;transition:border-color .18s}
+.filter-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
+.filter-count{font-size:.76rem;color:var(--subtle);font-weight:600;white-space:nowrap}
+
+/* ── TABLE ──────────────────────────── */
+.table-card{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;animation:fadeUp .5s var(--ease) .2s both}
+.table-wrap{overflow-x:auto}
+.fil-table{width:100%;border-collapse:collapse;min-width:700px}
+.fil-table thead tr{background:rgba(255,255,255,.3);border-bottom:1.5px solid var(--border)}
+.fil-table th{padding:11px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+.fil-table th:hover{color:var(--blue)}
+.fil-table th.sorted{color:var(--blue)}
+.th-sort{font-size:.65rem;margin-left:3px;opacity:.5}
+.fil-table th.sorted .th-sort{opacity:1}
+.fil-table tbody tr{border-bottom:1px solid rgba(255,255,255,.5);transition:background .15s}
+.fil-table tbody tr:last-child{border-bottom:none}
+.fil-table tbody tr:hover{background:rgba(59,143,212,.05)}
+.fil-table td{padding:11px 16px;font-size:.84rem;color:var(--dark);vertical-align:middle}
+.cell-color{display:flex;align-items:center;gap:10px}
+.color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.18);border:1.5px solid rgba(255,255,255,.7)}
+.cell-name{font-weight:700}
+.cell-sub{font-size:.74rem;color:var(--muted);font-weight:400}
+.cell-mono{font-family:var(--mono);font-weight:600;font-size:.82rem}
+.cell-actions{text-align:right;white-space:nowrap}
+.btn-icon{width:30px;height:30px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);cursor:pointer;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center;transition:all .18s;margin-left:4px}
+.btn-icon:hover{background:rgba(255,255,255,.95);border-color:rgba(59,143,212,.3)}
+.btn-icon.del:hover{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:var(--danger)}
+
+/* ── STATUS BADGE ───────────────────── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap;position:relative}
+.status-green{background:rgba(34,197,94,.12);color:#15803d;border:1px solid rgba(34,197,94,.28)}
+.status-orange{background:rgba(245,148,58,.13);color:#c2600a;border:1px solid rgba(245,148,58,.32)}
+.status-red{background:rgba(239,68,68,.10);color:#b91c1c;border:1px solid rgba(239,68,68,.24)}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.status-green .status-dot{background:#22c55e}
+.status-orange .status-dot{background:#f59e0b}
+.status-red .status-dot{background:#ef4444}
+.badge-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;font-weight:500;padding:5px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.badge-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(30,30,30,.92)}
+.status-badge:hover .badge-tip{display:block}
+
+/* ── MATERIAL CLASS BADGE ───────────── */
+.mat-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap}
+.mat-fdm{background:rgba(59,143,212,.1);color:var(--blue);border:1px solid rgba(59,143,212,.25)}
+.mat-resin{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.25)}
+
+/* ── STEPPERS ───────────────────────── */
+.cell-stepper{white-space:nowrap;padding:6px 10px !important}
+.stepper{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.85);border-radius:20px;padding:2px 6px;transition:border-color .18s,box-shadow .18s}
+.stepper:hover{border-color:rgba(59,143,212,.35);box-shadow:0 0 0 2px rgba(59,143,212,.08)}
+.stepper-btn{width:22px;height:22px;border-radius:50%;border:none;background:rgba(59,143,212,.12);color:var(--blue);font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .15s,transform .12s;flex-shrink:0;padding:0}
+.stepper-btn:hover{background:rgba(59,143,212,.25);transform:scale(1.12)}
+.stepper-btn:active{transform:scale(.95)}
+.stepper-val{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);min-width:22px;text-align:center;user-select:none}
+
+/* ── EMPTY STATE ────────────────────── */
+.table-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:52px 24px;color:var(--subtle);text-align:center}
+.table-empty-icon{font-size:2.4rem;opacity:.35}
+.table-empty h3{font-size:.95rem;font-weight:700;color:var(--muted)}
+.table-empty p{font-size:.82rem;line-height:1.6;max-width:320px}
+
+/* ── BUTTONS ────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rm);border:none;font-size:.84rem;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .2s var(--ease);white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 4px 14px rgba(59,143,212,.28)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 18px rgba(59,143,212,.32)}
+.btn-primary.resin-mode{background:linear-gradient(135deg,var(--purple),var(--purple-d));box-shadow:0 4px 14px rgba(139,92,246,.28)}
+.btn-primary.resin-mode:hover{box-shadow:0 6px 18px rgba(139,92,246,.32)}
+.btn-ghost{background:rgba(255,255,255,.6);border:1.5px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{background:rgba(255,255,255,.92);color:var(--dark);border-color:rgba(59,143,212,.3)}
+.btn-danger{background:linear-gradient(135deg,var(--danger),#c53030);color:#fff;box-shadow:0 4px 12px rgba(239,68,68,.22)}
+.btn-danger:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── MODAL ──────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:400;background:rgba(13,17,23,.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rx);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-float);animation:modalIn .3s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 26px 18px;border-bottom:1.5px solid var(--border);position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:var(--blur-sm);border-radius:var(--rx) var(--rx) 0 0;z-index:1}
+.modal-title{font-size:1.05rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
+.modal-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.06);cursor:pointer;font-size:.84rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .18s}
+.modal-close:hover{background:rgba(239,68,68,.12);color:var(--danger)}
+.modal-body{padding:22px 26px}
+.modal-footer{padding:16px 26px 22px;border-top:1.5px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:rgba(255,255,255,.85);backdrop-filter:var(--blur-sm);border-radius:0 0 var(--rx) var(--rx)}
+
+/* ── MODAL MATERIAL TOGGLE ──────────── */
+.modal-mat-toggle{display:flex;gap:4px;background:rgba(255,255,255,.5);border:1.5px solid var(--border);border-radius:50px;padding:4px;margin-bottom:20px}
+.modal-mat-btn{flex:1;padding:8px 16px;border-radius:40px;border:none;font-family:var(--f);font-size:.84rem;font-weight:700;cursor:pointer;transition:all .25s var(--ease);color:var(--muted);background:transparent;display:flex;align-items:center;justify-content:center;gap:7px}
+.modal-mat-btn.active{background:var(--glass-s);box-shadow:var(--sh)}
+.modal-mat-btn.fdm.active{color:var(--blue)}
+.modal-mat-btn.resin.active{color:var(--purple)}
+
+/* ── FORM ───────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:.76rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
+.form-label span{font-weight:400;color:var(--subtle)}
+.form-input,.form-select{width:100%;padding:9px 12px;border-radius:var(--r);background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.9);font-size:.86rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s,box-shadow .18s}
+.form-input.mono{font-family:var(--mono);font-weight:600}
+.form-input:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1);background:rgba(255,255,255,.97)}
+.resin-modal .form-input:focus,.resin-modal .form-select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.form-input:hover:not(:focus),.form-select:hover:not(:focus){border-color:rgba(59,143,212,.3)}
+.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer}
+.form-hint{font-size:.70rem;color:var(--subtle);margin-top:2px}
+.form-hint.warn{color:var(--warning)}
+.color-section{margin-bottom:14px}
+.color-section-title{font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:8px}
+.color-presets{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.color-preset{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
+.color-preset:hover{transform:scale(1.18)}
+.color-preset.selected{border-color:var(--blue);transform:scale(1.12);box-shadow:0 0 0 2px rgba(59,143,212,.3)}
+.color-custom-row{display:flex;align-items:center;gap:10px}
+.color-swatch-preview{width:36px;height:36px;border-radius:var(--r);border:1.5px solid var(--border);flex-shrink:0;transition:background .2s}
+input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px solid var(--border);cursor:pointer;padding:2px;background:rgba(255,255,255,.8)}
+.form-section-divider{font-size:.72rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;padding:10px 0 8px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.form-section-divider-icon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.75rem}
+
+/* ── CONFIRM MODAL ──────────────────── */
+.confirm-overlay{position:fixed;inset:0;z-index:500;background:rgba(13,17,23,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+.confirm-overlay.open{display:flex}
+.confirm-modal{background:var(--glass-s);backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);padding:28px;max-width:360px;width:90%;box-shadow:var(--sh-float);animation:modalIn .25s var(--ease);text-align:center}
+.confirm-icon{font-size:2rem;margin-bottom:12px}
+.confirm-title{font-size:1rem;font-weight:800;color:var(--dark);margin-bottom:8px}
+.confirm-msg{font-size:.84rem;color:var(--muted);line-height:1.5;margin-bottom:22px}
+.confirm-btns{display:flex;gap:10px}
+
+/* ── TOAST ──────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:600;background:var(--glass-s);backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:.84rem;font-weight:600;color:var(--dark);box-shadow:var(--sh-lg);opacity:0;transform:translateY(12px);transition:all .3s var(--ease);pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.toast.ok{border-color:rgba(34,197,94,.4);background:rgba(240,255,245,.95)}
+.toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
+
+/* ── MOBILE ─────────────────────────── */
+.mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35);font-size:.72rem;font-weight:700}
+.expiry-ok{color:var(--muted);font-size:.78rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){
+  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}.main{margin-left:0}
+  .mob-toggle{display:flex}.page{padding:16px 16px 40px}
+  .topbar{padding:0 16px 0 56px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .form-row,.form-row.three{grid-template-columns:1fr}
+  .page-header{flex-direction:column}
+  .material-toggle{width:100%}
+}
+
+  /* ── iOS / Safari fixes ─────────────────
+     backdrop-filter dentro de transform contexts
+     bloqueia eventos de toque no iOS.
+     Solução: remover transform dos orbs decorativos,
+     usar apenas opacity. ────────────────── */
+  .o1, .o2, .o3 {
+    animation: none !important;
+    transform: none !important;
+  }
+  /* Eliminar delay de 300ms em elementos clicáveis */
+  a, button, .nav-item, .btn, .btn-icon,
+  .stepper-btn, .tab, .mat-btn, .modal-mat-btn,
+  .plan-card, .user-row, .dd-item, .color-preset,
+  .home-card, .action-card, .stat-card {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Scroll suave na sidebar iOS */
+  .sidebar-nav, .sidebar, .modal, .page {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Garantir que orbs decorativos nunca bloqueiam toque */
+  .bg, .orb, .o1, .o2 {
+    pointer-events: none !important;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* Fix para backdrop-filter em modais no iOS:
+     garantir que o overlay não bloqueia scroll */
+  .modal-overlay.open, .confirm-overlay.open,
+  .gate-overlay.open {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  /* ── iOS Safari fix: substituir transform por left
+     backdrop-filter + transform = bug iOS que bloqueia toque ── */
+  @media(max-width:680px){
+    .sidebar{
+      transform: none !important;
+      left: calc(-1 * var(--sidebar-w, 260px));
+      transition: left .3s cubic-bezier(0.22,1,0.36,1);
+      /* Solid background no mobile — evita o bug backdrop-filter+transform */
+      background: #e8f1fb !important;
+      
+    }
+    .sidebar.open{
+      left: 0 !important;
+    }
+  }
+
+  /* ── iOS: sidebar-overlay sem backdrop-filter ── */
+  .sidebar-overlay{
+    
+  }
+  /* Garantir sidebar acima do overlay em mobile */
+  @media(max-width:680px){
+    .sidebar{ z-index: 300 !important; }
+    .sidebar-overlay{ z-index: 280 !important; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">Print Manager</div>
+    </div>
+    <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Gestão</div>
+        <a class="nav-item active" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
+        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Conta</div>
+        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar">—</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
+        </div>
+        <span class="user-chevron" id="userChevron">▲</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html">Dashboard</a>
+        <span>›</span>
+        <strong id="topbarTitle">🎨 Materiais</strong>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 id="pageTitle">🎨 Materiais</h1>
+          <p id="pageSubtitle">Gere o teu stock de materiais FDM e resinas SLA/MSLA</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
+          <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Novo material</button>
+        </div>
+      </div>
+
+      <!-- Material Class Toggle -->
+      <div class="material-toggle">
+        <button class="mat-btn fdm active" id="toggleFDM" onclick="setView('fdm')">
+          <span class="mat-btn-icon">🧵</span>
+          Filamentos FDM
+          <span class="mat-btn-count" id="countFDM">0</span>
+        </button>
+        <button class="mat-btn resin" id="toggleResin" onclick="setView('resin')">
+          <span class="mat-btn-icon">🧪</span>
+          Resinas SLA/MSLA
+          <span class="mat-btn-count" id="countResin">0</span>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-mini stat-has-tip">
+          <div class="stat-mini-icon si-blue" id="statIcon">🎨</div>
+          <div>
+            <div class="stat-mini-val" id="statTotal">0</div>
+            <div class="stat-mini-lbl">Total · <span id="statUnit">0 kg</span></div>
+          </div>
+          <div class="stat-tooltip" id="tipTotal"></div>
+        </div>
+        <div class="stat-mini stat-has-tip">
+          <div class="stat-mini-icon si-green">✅</div>
+          <div>
+            <div class="stat-mini-val" id="statStock">0</div>
+            <div class="stat-mini-lbl">Em stock</div>
+          </div>
+          <div class="stat-tooltip" id="tipStock"></div>
+        </div>
+        <div class="stat-mini stat-has-tip">
+          <div class="stat-mini-icon si-orange">🟠</div>
+          <div>
+            <div class="stat-mini-val" id="statLow">0</div>
+            <div class="stat-mini-lbl">Stock baixo</div>
+          </div>
+          <div class="stat-tooltip" id="tipLow"></div>
+        </div>
+        <div class="stat-mini stat-has-tip">
+          <div class="stat-mini-icon si-red">❌</div>
+          <div>
+            <div class="stat-mini-val" id="statEmpty">0</div>
+            <div class="stat-mini-lbl" id="statEmptyLbl">Esgotados</div>
+          </div>
+          <div class="stat-tooltip" id="tipEmpty"></div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-icon">🔍</span>
+          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar…" oninput="applyFilters()">
+        </div>
+        <div class="filter-sep"></div>
+        <select id="filterType" class="filter-select" onchange="applyFilters()">
+          <option value="">Todos os tipos</option>
+        </select>
+        <select id="filterBrand" class="filter-select" onchange="applyFilters()">
+          <option value="">Todas as marcas</option>
+        </select>
+        <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+          <option value="">Todos os estados</option>
+          <option value="green">Em stock</option>
+          <option value="orange">Stock baixo</option>
+          <option value="red">Esgotado</option>
+        </select>
+        <span class="filter-count" id="filterCount">0 itens</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-wrap">
+          <div class="table-empty" id="tableEmpty" style="display:flex">
+            <div class="table-empty-icon">🎨</div>
+            <h3>Sem materiais ainda</h3>
+            <p>Adiciona o teu primeiro material clicando em <strong>＋ Novo material</strong> acima.</p>
+          </div>
+          <table class="fil-table" id="filTable" style="display:none">
+            <thead id="tableHead"></thead>
+            <tbody id="filTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD/EDIT MODAL ════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">＋ Novo Material</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Material class toggle (só em modo "novo") -->
+      <div id="modalMatToggleWrap">
+        <div class="modal-mat-toggle">
+          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')">🧵 Filamento FDM</button>
+          <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')">🧪 Resina SLA/MSLA</button>
+        </div>
+      </div>
+
+      <!-- Cor -->
+      <div class="color-section">
+        <div class="color-section-title">🎨 Cor do material</div>
+        <div class="color-presets" id="colorPresets"></div>
+        <div class="color-custom-row">
+          <div class="color-swatch-preview" id="colorSwatchPreview" style="background:#3B8FD4"></div>
+          <input type="color" id="colorPicker" value="#3B8FD4" oninput="onColorPick(this.value)">
+          <input type="text" id="colorName" class="form-input" placeholder="Nome da cor (ex: Cinzento Smoke)">
+        </div>
+      </div>
+
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div>Identificação</div>
+
+      <!-- FDM fields -->
+      <div id="fdmFields">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo de filamento</label>
+            <select id="fType" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Variação</label>
+            <select id="fVariation" class="form-select"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marca</label>
+            <select id="fBrand" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tamanho da bobina</label>
+            <select id="fRollSize" class="form-select"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resin fields -->
+      <div id="resinFields" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo de resina</label>
+            <select id="rType" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Variação</label>
+            <select id="rVariation" class="form-select"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marca</label>
+            <select id="rBrand" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tamanho do frasco</label>
+            <select id="rBottleSize" class="form-select"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data de validade <span>(opcional)</span></label>
+            <input type="date" id="rExpiry" class="form-input">
+            <div class="form-hint">Resinas têm prazo — normalmente 12-24 meses</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Wavelength <span>(nm)</span></label>
+            <select id="rWavelength" class="form-select">
+              <option value="">Não especificado</option>
+              <option value="405">405nm (Standard)</option>
+              <option value="365">365nm (UV)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green">📦</div>Stock</div>
+
+      <!-- FDM Stock -->
+      <div id="fdmStock">
+        <div class="form-row three">
+          <div class="form-group">
+            <label class="form-label">Total de bobinas</label>
+            <input type="number" id="fTotal" class="form-input mono" value="1" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Em uso</label>
+            <input type="number" id="fInUse" class="form-input mono" value="0" min="0" step="1">
+            <div class="form-hint">Bobinas abertas</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Novas (auto)</label>
+            <input type="number" id="fNewRolls" class="form-input mono" value="1" readonly style="opacity:.6;cursor:not-allowed">
+            <div class="form-hint">Total − Em uso</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Alerta mínimo <span>(bobinas)</span></label>
+            <input type="number" id="fAlerta" class="form-input mono" value="0" min="0" step="1">
+            <div class="form-hint">0 = sem alerta</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço por kg <span>(€)</span></label>
+            <input type="number" id="fPrice" class="form-input mono" value="25" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+
+      <!-- Resin Stock -->
+      <div id="resinStock" style="display:none">
+        <div class="form-row three">
+          <div class="form-group">
+            <label class="form-label">Total de frascos</label>
+            <input type="number" id="rTotal" class="form-input mono" value="1" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Em uso</label>
+            <input type="number" id="rInUse" class="form-input mono" value="0" min="0" step="1">
+            <div class="form-hint">Frascos abertos</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Novos (auto)</label>
+            <input type="number" id="rNewBottles" class="form-input mono" value="1" readonly style="opacity:.6;cursor:not-allowed">
+            <div class="form-hint">Total − Em uso</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Alerta mínimo <span>(frascos)</span></label>
+            <input type="number" id="rAlerta" class="form-input mono" value="0" min="0" step="1">
+            <div class="form-hint">0 = sem alerta</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço por litro <span>(€/L)</span></label>
+            <input type="number" id="rPrice" class="form-input mono" value="30" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Notas</div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Notas <span>(opcional)</span></label>
+          <input type="text" id="fNotes" class="form-input" placeholder="Ex: NF disponível, comprado na Amazon…">
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveMaterial()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ═════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+//  CATÁLOGOS
+// ══════════════════════════════════════
+
+// FDM
+const FDM_TYPES      = ['PLA','PETG','ABS','TPU','ASA','Nylon','PC','HIPS','PVA','Wood','Carbon','Metal','PLA+'];
+const FDM_VARIATIONS = ['Basic','Generic','+','PRO','Matte','Silk','Glow','Marble','Galaxy','Sparkle','Dual','High Speed','Hyper'];
+const FDM_ROLL_SIZES = ['1kg','500g','300g','250g','100g'];
+const FDM_BRANDS     = [
+  'Bambu Lab','eSUN','Polymaker','Prusament','Fiberlogy','ColorFabb','Extrudr',
+  'Hatchbox','Inland','SUNLU','Anycubic','Creality','FormFutura','Fillamentum',
+  'iSANMATE','3DXTECH','Devil Design','Das Filament','Eryone','NinjaTek','Generic'
+];
+
+// Resina
+const RESIN_TYPES      = ['Standard','ABS-Like','Water Washable','Castable','Flexible/Elastic','High-Temp','Dental','Engineering','Tough','Transparent'];
+const RESIN_VARIATIONS = ['Standard','Premium','Ultra','Fast','Night','Matte','Glossy'];
+const RESIN_BOTTLE_SIZES = ['500ml','1L','2L','5L'];
+const RESIN_BRANDS     = [
+  'Elegoo','Anycubic','Siraya Tech','Phrozen','3D Systems','Formlabs',
+  'HARZ Labs','Monocure3D','Liqcreate','ApplyLabWork','Resin8','SpotHardener',
+  'iSANMATE','SUNLU','Bambu Lab','Generic'
+];
+
+const COLOR_PRESETS = [
+  {name:'Branco',hex:'#FFFFFF'},{name:'Preto',hex:'#1A1A1A'},{name:'Cinzento',hex:'#9CA3AF'},
+  {name:'Cinzento Escuro',hex:'#4B5563'},{name:'Prateado',hex:'#C0C0C0'},{name:'Vermelho',hex:'#EF4444'},
+  {name:'Vermelho Escuro',hex:'#991B1B'},{name:'Rosa',hex:'#F9A8D4'},{name:'Cor-de-rosa',hex:'#EC4899'},
+  {name:'Roxo',hex:'#8B5CF6'},{name:'Azul Marinho',hex:'#1E3A8A'},{name:'Azul',hex:'#3B8FD4'},
+  {name:'Azul Claro',hex:'#60A5FA'},{name:'Ciano',hex:'#06B6D4'},{name:'Teal',hex:'#0D9488'},
+  {name:'Verde Escuro',hex:'#166534'},{name:'Verde',hex:'#22C55E'},{name:'Verde Lima',hex:'#84CC16'},
+  {name:'Amarelo',hex:'#FBBF24'},{name:'Laranja',hex:'#F97316'},{name:'Castanho',hex:'#92400E'},
+  {name:'Bege',hex:'#D4B896'},{name:'Dourado',hex:'#F59E0B'},{name:'Transparente',hex:'#E0F2FE'},
+];
+
+// ══════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════
+let allMaterials = [];   // todos os registos do Supabase
+let currentView  = 'fdm'; // 'fdm' | 'resin'
+let editingId    = null;
+let modalClass   = 'fdm'; // classe activa no modal
+let sortField    = 'type';
+let sortDir      = 'asc';
+let selectedColor = '#3B8FD4';
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  populateSelects();
+  renderColorPresets();
+  await loadMaterials();
+  applyFeatureGating();
+  // sync new rolls/bottles on input
+  ['fTotal','fInUse'].forEach(id =>
+    document.getElementById(id).addEventListener('input', syncFDMNew));
+  ['rTotal','rInUse'].forEach(id =>
+    document.getElementById(id).addEventListener('input', syncResinNew));
+});
+
+// ══════════════════════════════════════
+//  AUTH / USER
+// ══════════════════════════════════════
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent   = fullName;
+  document.getElementById('userEmail').textContent  = session.email;
+  document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent = session.companyName || '—';
+  if (document.getElementById('companyAvatar'))
+    document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+}
+
+async function applyFeatureGating() {
+  try {
+    const session = await Auth.getSession();
+    const plan = session?.plan || 'trial';
+    if (!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display = '';
+    if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display = '';
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  VIEW TOGGLE (FDM ↔ Resina)
+// ══════════════════════════════════════
+function setView(cls) {
+  currentView = cls;
+  document.getElementById('toggleFDM').classList.toggle('active', cls === 'fdm');
+  document.getElementById('toggleResin').classList.toggle('active', cls === 'resin');
+
+  const isFDM = cls === 'fdm';
+  document.getElementById('pageTitle').textContent    = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+  document.getElementById('pageSubtitle').textContent = isFDM
+    ? 'Gere o teu stock de materiais — tipos, cores, marcas e bobinas'
+    : 'Gere o teu stock de resinas — tipos, frascos e datas de validade';
+  document.getElementById('topbarTitle').textContent  = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+  document.getElementById('statIcon').textContent     = isFDM ? '🎨' : '🧪';
+  document.getElementById('statEmptyLbl').textContent = isFDM ? 'Esgotados' : 'Esgotadas';
+
+  // btn add — cor muda
+  const btnNew = document.getElementById('btnNew');
+  btnNew.textContent = isFDM ? '＋ Novo material' : '＋ Nova resina';
+  btnNew.classList.toggle('resin-mode', !isFDM);
+
+  // rebuild filter selects
+  rebuildFilterSelects();
+  applyFilters();
+}
+
+function rebuildFilterSelects() {
+  const isFDM = currentView === 'fdm';
+  const types  = isFDM ? FDM_TYPES : RESIN_TYPES;
+  const brands = isFDM ? FDM_BRANDS : RESIN_BRANDS;
+
+  const ft = document.getElementById('filterType');
+  ft.innerHTML = '<option value="">Todos os tipos</option>';
+  types.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; ft.appendChild(o); });
+
+  const fb = document.getElementById('filterBrand');
+  fb.innerHTML = '<option value="">Todas as marcas</option>';
+  brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; fb.appendChild(o); });
+}
+
+// ══════════════════════════════════════
+//  POPULAR SELECTS
+// ══════════════════════════════════════
+function populateSelects() {
+  const fill = (id, arr) => {
+    const el = document.getElementById(id);
+    arr.forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+  };
+  fill('fType', FDM_TYPES);
+  fill('fVariation', FDM_VARIATIONS);
+  fill('fBrand', FDM_BRANDS);
+  fill('fRollSize', FDM_ROLL_SIZES);
+  fill('rType', RESIN_TYPES);
+  fill('rVariation', RESIN_VARIATIONS);
+  fill('rBrand', RESIN_BRANDS);
+  fill('rBottleSize', RESIN_BOTTLE_SIZES);
+  rebuildFilterSelects();
+}
+
+// ══════════════════════════════════════
+//  COLOR PRESETS
+// ══════════════════════════════════════
+function renderColorPresets() {
+  const c = document.getElementById('colorPresets');
+  COLOR_PRESETS.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'color-preset';
+    d.style.background = p.hex;
+    d.title = p.name;
+    d.dataset.hex = p.hex;
+    d.dataset.name = p.name;
+    if (p.hex === '#FFFFFF') d.style.border = '2px solid #e2e8f0';
+    d.onclick = () => selectColorPreset(p.hex, p.name, d);
+    c.appendChild(d);
+  });
+}
+
+function selectColorPreset(hex, name, el) {
+  document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedColor = hex;
+  document.getElementById('colorPicker').value = hex;
+  document.getElementById('colorSwatchPreview').style.background = hex;
+  const cn = document.getElementById('colorName');
+  if (!cn.value || COLOR_PRESETS.some(c => c.name === cn.value)) cn.value = name;
+}
+
+function onColorPick(hex) {
+  selectedColor = hex;
+  document.getElementById('colorSwatchPreview').style.background = hex;
+  document.querySelectorAll('.color-preset').forEach(p =>
+    p.classList.toggle('selected', p.dataset.hex.toLowerCase() === hex.toLowerCase()));
+}
+
+// ══════════════════════════════════════
+//  SYNC STOCK COUNTERS
+// ══════════════════════════════════════
+function syncFDMNew() {
+  const t = parseInt(document.getElementById('fTotal').value) || 0;
+  const u = parseInt(document.getElementById('fInUse').value) || 0;
+  document.getElementById('fNewRolls').value = Math.max(0, t - u);
+}
+function syncResinNew() {
+  const t = parseInt(document.getElementById('rTotal').value) || 0;
+  const u = parseInt(document.getElementById('rInUse').value) || 0;
+  document.getElementById('rNewBottles').value = Math.max(0, t - u);
+}
+
+// ══════════════════════════════════════
+//  LOAD DATA
+// ══════════════════════════════════════
+async function loadMaterials() {
+  try {
+    allMaterials = await DB.getFilaments();
+  } catch(e) { allMaterials = []; }
+  updateToggleCounts();
+  applyFilters();
+}
+
+function updateToggleCounts() {
+  const fdm   = allMaterials.filter(m => (m.materialClass || m.material_class || 'fdm') === 'fdm').length;
+  const resin = allMaterials.filter(m => (m.materialClass || m.material_class || 'fdm') === 'resin').length;
+  document.getElementById('countFDM').textContent   = fdm;
+  document.getElementById('countResin').textContent = resin;
+}
+
+// ══════════════════════════════════════
+//  STATUS
+// ══════════════════════════════════════
+function getStatus(m) {
+  const total  = parseInt(m.total)  || 0;
+  const inUse  = parseInt(m.inUse)  || 0;
+  const alerta = parseInt(m.alerta) || 0;
+  const avail  = Math.max(0, total - inUse);
+  if (total === 0)                      return 'red';
+  if (avail === 0)                      return 'orange';
+  if (alerta > 0 && avail <= alerta)    return 'orange';
+  return 'green';
+}
+
+function statusLabel(s) {
+  return {green:'Em stock', orange:'Stock baixo', red:'Esgotado'}[s] || s;
+}
+
+function renderBadge(m) {
+  const s = getStatus(m);
+  return `<span class="status-badge status-${s}"><span class="status-dot"></span>${statusLabel(s)}</span>`;
+}
+
+// Expiry check for resins
+function expiryDisplay(expiry) {
+  if (!expiry) return '<span class="expiry-ok">—</span>';
+  const days = Math.ceil((new Date(expiry) - new Date()) / 86400000);
+  if (days < 0)   return `<span class="expiry-warn">⚠️ Expirado</span>`;
+  if (days < 30)  return `<span class="expiry-warn">⚠️ ${days}d</span>`;
+  if (days < 90)  return `<span style="color:var(--warning);font-size:.78rem;font-weight:700">⚠️ ${days}d</span>`;
+  const d = new Date(expiry);
+  return `<span class="expiry-ok">${d.toLocaleDateString('pt-PT',{month:'short',year:'numeric'})}</span>`;
+}
+
+// ══════════════════════════════════════
+//  RENDER TABLE
+// ══════════════════════════════════════
+function applyFilters() {
+  renderTable();
+  renderStats();
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortField = field; sortDir = 'asc'; }
+  renderTable();
+}
+
+function renderTable() {
+  const q      = (document.getElementById('filterSearch').value || '').toLowerCase().trim();
+  const typeF  = document.getElementById('filterType').value;
+  const brandF = document.getElementById('filterBrand').value;
+  const statusF= document.getElementById('filterStatus').value;
+  const isFDM  = currentView === 'fdm';
+
+  let filtered = allMaterials.filter(m => {
+    const mc = m.materialClass || m.material_class || 'fdm';
+    if (mc !== currentView) return false;
+    if (typeF  && m.type  !== typeF)  return false;
+    if (brandF && m.brand !== brandF) return false;
+    if (statusF && getStatus(m) !== statusF) return false;
+    if (q) {
+      const hay = [m.colorName, m.type, m.variation, m.brand, m.rollSize, m.notes].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    let av = a[sortField] ?? '', bv = b[sortField] ?? '';
+    if (['total','inUse','newRolls','price'].includes(sortField)) {
+      av = parseFloat(av)||0; bv = parseFloat(bv)||0;
+      return sortDir === 'asc' ? av - bv : bv - av;
+    }
+    av = String(av).toLowerCase(); bv = String(bv).toLowerCase();
+    return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+
+  document.getElementById('filterCount').textContent = `${filtered.length} ${isFDM ? 'filamento' : 'resina'}${filtered.length !== 1 ? 's' : ''}`;
+
+  const emptyEl = document.getElementById('tableEmpty');
+  const tableEl = document.getElementById('filTable');
+  const thead   = document.getElementById('tableHead');
+  const tbody   = document.getElementById('filTbody');
+
+  if (!filtered.length) {
+    emptyEl.style.display = 'flex';
+    emptyEl.innerHTML = allMaterials.filter(m=>(m.materialClass||m.material_class||'fdm')===currentView).length
+      ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum material corresponde aos filtros.</p>`
+      : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3>Sem ${isFDM?'filamentos':'resinas'} ainda</h3><p>Clica em <strong>＋ ${isFDM?'Novo filamento':'Nova resina'}</strong> para adicionar.</p>`;
+    tableEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  tableEl.style.display = '';
+
+  // Build headers
+  if (isFDM) {
+    thead.innerHTML = `<tr>
+      <th onclick="sortBy('colorName')" id="th-colorName">Cor <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('type')" id="th-type">Tipo <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('brand')" id="th-brand">Marca <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('rollSize')" id="th-rollSize">Bobina <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('newRolls')" id="th-newRolls">Novas <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price">€/kg <span class="th-sort">↕</span></th>
+      <th>Estado</th><th></th></tr>`;
+  } else {
+    thead.innerHTML = `<tr>
+      <th onclick="sortBy('colorName')" id="th-colorName">Cor <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('type')" id="th-type">Tipo <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('brand')" id="th-brand">Marca <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('rollSize')" id="th-rollSize">Frasco <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('newRolls')" id="th-newRolls">Novos <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price">€/L <span class="th-sort">↕</span></th>
+      <th>Validade</th>
+      <th>Estado</th><th></th></tr>`;
+  }
+
+  tbody.innerHTML = filtered.map(m => {
+    const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
+    const price    = m.price ? fmtEur(m.price) : '—';
+    const expiryCol = !isFDM ? `<td>${expiryDisplay(m.emptyAt)}</td>` : '';
+    return `<tr>
+      <td><div class="cell-color">
+        <div class="color-dot" style="background:${escH(m.colorHex||'#ccc')}"></div>
+        <span class="cell-name">${escH(m.colorName||'—')}</span>
+      </div></td>
+      <td><span class="cell-name">${escH(m.type||'—')}</span><br><span class="cell-sub">${escH(m.variation||'')}</span></td>
+      <td class="cell-mono">${escH(m.brand||'—')}</td>
+      <td class="cell-mono">${escH(m.rollSize||'—')}</td>
+      <td class="cell-stepper"><div class="stepper">
+        <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',-1)">−</button>
+        <span class="stepper-val" id="sv-inUse-${m.id}">${m.inUse||0}</span>
+        <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',1)">+</button>
+      </div></td>
+      <td class="cell-mono">${newUnits}</td>
+      <td class="cell-stepper"><div class="stepper">
+        <button class="stepper-btn" onclick="stepField(event,'${m.id}','total',-1)">−</button>
+        <span class="stepper-val" id="sv-total-${m.id}">${m.total||0}</span>
+        <button class="stepper-btn" onclick="stepField(event,'${m.id}','total',1)">+</button>
+      </div></td>
+      <td class="cell-mono">${price}</td>
+      ${expiryCol}
+      <td>${renderBadge(m)}</td>
+      <td class="cell-actions">
+        <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar">✏️</button>
+        <button class="btn-icon del" onclick="confirmDelete('${m.id}')" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+//  RENDER STATS
+// ══════════════════════════════════════
+function renderStats() {
+  const list  = allMaterials.filter(m => (m.materialClass||m.material_class||'fdm') === currentView);
+  const stock = list.filter(m => getStatus(m) === 'green');
+  const low   = list.filter(m => getStatus(m) === 'orange');
+  const empty = list.filter(m => getStatus(m) === 'red');
+  const isFDM = currentView === 'fdm';
+
+  // Total volume
+  let unitStr;
+  if (isFDM) {
+    const kgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
+    const totalKg = list.reduce((s,m) => s + (parseInt(m.total)||0) * (kgMap[m.rollSize]||1), 0);
+    unitStr = totalKg % 1 === 0 ? totalKg + ' kg' : totalKg.toFixed(2) + ' kg';
+  } else {
+    const mlMap = {'500ml':0.5,'1L':1,'2L':2,'5L':5};
+    const totalL = list.reduce((s,m) => s + (parseInt(m.total)||0) * (mlMap[m.rollSize]||1), 0);
+    unitStr = totalL % 1 === 0 ? totalL + ' L' : totalL.toFixed(2) + ' L';
+  }
+
+  document.getElementById('statTotal').textContent = list.length;
+  document.getElementById('statUnit').textContent  = unitStr;
+  document.getElementById('statStock').textContent = stock.length;
+  document.getElementById('statLow').textContent   = low.length;
+  document.getElementById('statEmpty').textContent = empty.length;
+
+  buildTooltip('tipTotal', list);
+  buildTooltip('tipStock', stock);
+  buildTooltip('tipLow',   low);
+  buildTooltip('tipEmpty', empty);
+}
+
+function buildTooltip(id, list) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!list.length) { el.innerHTML = '<div class="tip-empty">Nenhum</div>'; return; }
+  const groups = {};
+  list.forEach(m => {
+    const key = m.colorName || 'Sem cor';
+    const hex = m.colorHex  || '#ccc';
+    if (!groups[key]) groups[key] = {hex, count:0};
+    groups[key].count += parseInt(m.total)||0;
+  });
+  const sorted = Object.entries(groups).sort((a,b) => b[1].count - a[1].count);
+  el.innerHTML = sorted.slice(0,12).map(([name,g]) =>
+    `<div class="tip-row"><span class="tip-dot" style="background:${escH(g.hex)}"></span><span class="tip-name">${escH(name)}</span><span class="tip-count">${g.count}</span></div>`
+  ).join('') + (sorted.length > 12 ? `<div class="tip-more">+${sorted.length-12} mais</div>` : '');
+}
+
+// ══════════════════════════════════════
+//  MODAL — OPEN / CLOSE
+// ══════════════════════════════════════
+function openModal(id = null) {
+  editingId = id;
+  const isEdit = id !== null;
+
+  if (isEdit) {
+    const m = allMaterials.find(x => x.id === id);
+    if (!m) return;
+    const mc = m.materialClass || m.material_class || 'fdm';
+    modalClass = mc;
+    // Hide the class toggle in edit mode — class cannot change
+    document.getElementById('modalMatToggleWrap').style.display = 'none';
+    document.getElementById('modalTitle').textContent = mc === 'fdm' ? '✏️ Editar Material' : '✏️ Editar Resina';
+
+    // Populate colour
+    selectedColor = m.colorHex || '#3B8FD4';
+    document.getElementById('colorPicker').value = selectedColor;
+    document.getElementById('colorSwatchPreview').style.background = selectedColor;
+    document.getElementById('colorName').value = m.colorName || '';
+    document.querySelectorAll('.color-preset').forEach(p =>
+      p.classList.toggle('selected', p.dataset.hex.toLowerCase() === selectedColor.toLowerCase()));
+
+    document.getElementById('fNotes').value = m.notes || '';
+
+    if (mc === 'fdm') {
+      document.getElementById('fType').value      = m.type || FDM_TYPES[0];
+      document.getElementById('fVariation').value = m.variation || FDM_VARIATIONS[0];
+      document.getElementById('fBrand').value     = m.brand || FDM_BRANDS[0];
+      document.getElementById('fRollSize').value  = m.rollSize || FDM_ROLL_SIZES[0];
+      document.getElementById('fTotal').value     = m.total  || 0;
+      document.getElementById('fInUse').value     = m.inUse  || 0;
+      document.getElementById('fAlerta').value    = m.alerta || 0;
+      document.getElementById('fPrice').value     = m.price  || 25;
+      syncFDMNew();
+    } else {
+      document.getElementById('rType').value       = m.type || RESIN_TYPES[0];
+      document.getElementById('rVariation').value  = m.variation || RESIN_VARIATIONS[0];
+      document.getElementById('rBrand').value      = m.brand || RESIN_BRANDS[0];
+      document.getElementById('rBottleSize').value = m.rollSize || RESIN_BOTTLE_SIZES[0];
+      document.getElementById('rTotal').value      = m.total  || 0;
+      document.getElementById('rInUse').value      = m.inUse  || 0;
+      document.getElementById('rAlerta').value     = m.alerta || 0;
+      document.getElementById('rPrice').value      = m.price  || 30;
+      // expiry is stored in emptyAt for resins
+      document.getElementById('rExpiry').value     = m.emptyAt ? m.emptyAt.split('T')[0] : '';
+      document.getElementById('rWavelength').value = m.notes?.match(/(\d{3})nm/)?.[1] || '';
+      syncResinNew();
+    }
+  } else {
+    // New — show class toggle, default to current view
+    document.getElementById('modalMatToggleWrap').style.display = '';
+    setModalClass(currentView);
+    // Reset all fields
+    selectedColor = '#3B8FD4';
+    document.getElementById('colorPicker').value = '#3B8FD4';
+    document.getElementById('colorSwatchPreview').style.background = '#3B8FD4';
+    document.getElementById('colorName').value = '';
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+    document.getElementById('fType').value      = FDM_TYPES[0];
+    document.getElementById('fVariation').value = FDM_VARIATIONS[0];
+    document.getElementById('fBrand').value     = FDM_BRANDS[0];
+    document.getElementById('fRollSize').value  = FDM_ROLL_SIZES[0];
+    document.getElementById('fTotal').value     = 1;
+    document.getElementById('fInUse').value     = 0;
+    document.getElementById('fAlerta').value    = 0;
+    document.getElementById('fPrice').value     = 25;
+    document.getElementById('rType').value      = RESIN_TYPES[0];
+    document.getElementById('rVariation').value = RESIN_VARIATIONS[0];
+    document.getElementById('rBrand').value     = RESIN_BRANDS[0];
+    document.getElementById('rBottleSize').value= RESIN_BOTTLE_SIZES[0];
+    document.getElementById('rTotal').value     = 1;
+    document.getElementById('rInUse').value     = 0;
+    document.getElementById('rAlerta').value    = 0;
+    document.getElementById('rPrice').value     = 30;
+    document.getElementById('rExpiry').value    = '';
+    document.getElementById('rWavelength').value= '';
+    document.getElementById('fNotes').value     = '';
+    syncFDMNew(); syncResinNew();
+  }
+
+  applyModalClass();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+// Toggle FDM ↔ Resina dentro do modal
+function setModalClass(cls) {
+  modalClass = cls;
+  document.getElementById('mToggleFDM').classList.toggle('active', cls === 'fdm');
+  document.getElementById('mToggleResin').classList.toggle('active', cls === 'resin');
+  document.getElementById('modalTitle').textContent = cls === 'fdm' ? '＋ Novo Material' : '＋ Nova Resina';
+  applyModalClass();
+}
+
+function applyModalClass() {
+  const isFDM = modalClass === 'fdm';
+  document.getElementById('fdmFields').style.display   = isFDM ? '' : 'none';
+  document.getElementById('fdmStock').style.display    = isFDM ? '' : 'none';
+  document.getElementById('resinFields').style.display = isFDM ? 'none' : '';
+  document.getElementById('resinStock').style.display  = isFDM ? 'none' : '';
+  document.getElementById('modalBox').classList.toggle('resin-modal', !isFDM);
+  document.getElementById('btnSave').classList.toggle('resin-mode', !isFDM);
+}
+
+// ══════════════════════════════════════
+//  SAVE
+// ══════════════════════════════════════
+async function saveMaterial() {
+  const isFDM    = modalClass === 'fdm';
+  const colorName = document.getElementById('colorName').value.trim() || 'Sem nome';
+  const notes     = document.getElementById('fNotes').value.trim();
+
+  let record;
+
+  if (isFDM) {
+    const total  = Math.max(0, parseInt(document.getElementById('fTotal').value)  || 0);
+    const inUse  = Math.max(0, parseInt(document.getElementById('fInUse').value)  || 0);
+    if (inUse > total) { showToast('⚠️ "Em uso" não pode ser maior que "Total"', 'err'); return; }
+    record = {
+      materialClass: 'fdm',
+      material_class: 'fdm',
+      colorHex:  selectedColor,
+      colorName,
+      type:      document.getElementById('fType').value,
+      variation: document.getElementById('fVariation').value,
+      brand:     document.getElementById('fBrand').value,
+      rollSize:  document.getElementById('fRollSize').value,
+      total, inUse,
+      newRolls:  Math.max(0, total - inUse),
+      alerta:    Math.max(0, parseInt(document.getElementById('fAlerta').value) || 0),
+      price:     parseFloat(document.getElementById('fPrice').value) || 0,
+      notes,
+    };
+  } else {
+    const total = Math.max(0, parseInt(document.getElementById('rTotal').value) || 0);
+    const inUse = Math.max(0, parseInt(document.getElementById('rInUse').value) || 0);
+    if (inUse > total) { showToast('⚠️ "Em uso" não pode ser maior que "Total"', 'err'); return; }
+    const expiry     = document.getElementById('rExpiry').value || null;
+    const wavelength = document.getElementById('rWavelength').value;
+    const notesStr   = [notes, wavelength ? wavelength + 'nm' : ''].filter(Boolean).join(' · ');
+    record = {
+      materialClass: 'resin',
+      material_class: 'resin',
+      colorHex:  selectedColor,
+      colorName,
+      type:      document.getElementById('rType').value,
+      variation: document.getElementById('rVariation').value,
+      brand:     document.getElementById('rBrand').value,
+      rollSize:  document.getElementById('rBottleSize').value,   // reutiliza campo rollSize
+      total, inUse,
+      newRolls:  Math.max(0, total - inUse),
+      alerta:    Math.max(0, parseInt(document.getElementById('rAlerta').value) || 0),
+      price:     parseFloat(document.getElementById('rPrice').value) || 0,
+      notes:     notesStr,
+      emptyAt:   expiry ? expiry + 'T00:00:00Z' : null,         // reutiliza emptyAt para validade
+    };
+  }
+
+  try {
+    if (editingId !== null) {
+      const prev = allMaterials.find(m => m.id === editingId) || {};
+      const saved = await DB.saveFilament({ ...prev, ...record, id: editingId });
+      const idx = allMaterials.findIndex(m => m.id === editingId);
+      if (idx > -1) allMaterials[idx] = saved;
+      showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} actualizado!`, 'ok');
+    } else {
+      const saved = await DB.saveFilament(record);
+      allMaterials.unshift(saved);
+      showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado!`, 'ok');
+    }
+    updateToggleCounts();
+    applyFilters();
+    closeModal();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
+}
+
+// ══════════════════════════════════════
+//  DELETE
+// ══════════════════════════════════════
+function confirmDelete(id) {
+  const m = allMaterials.find(x => x.id === id);
+  if (!m) return;
+  const mc = m.materialClass || m.material_class || 'fdm';
+  document.getElementById('confirmTitle').textContent = `Eliminar ${mc === 'fdm' ? 'filamento' : 'resina'}?`;
+  document.getElementById('confirmMsg').textContent   = `Vai eliminar "${m.colorName} ${m.type} (${m.brand})" permanentemente.`;
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); deleteMaterial(id); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+async function deleteMaterial(id) {
+  try {
+    await DB.deleteFilament(id);
+    allMaterials = allMaterials.filter(m => m.id !== id);
+    updateToggleCounts();
+    applyFilters();
+    showToast('🗑️ Eliminado', '');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
+}
+
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+// ══════════════════════════════════════
+//  QUICK EDIT (STEPPERS)
+// ══════════════════════════════════════
+function stepField(e, id, field, delta) {
+  e.stopPropagation();
+  const m = allMaterials.find(x => x.id === id);
+  if (!m) return;
+  const current = parseInt(m[field]) || 0;
+  const next    = Math.max(0, current + delta);
+  if (field === 'inUse'  && next > (parseInt(m.total)||0)) return;
+  if (field === 'total'  && next < (parseInt(m.inUse)||0))  return;
+  m[field]   = next;
+  m.newRolls = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
+  if (parseInt(m.total) > 0) m.emptyConfirmed = false;
+  m.updatedAt = new Date().toISOString();
+  DB.saveFilament(m).catch(err => console.error(err));
+  renderTable();
+  renderStats();
+}
+
+// ══════════════════════════════════════
+//  EXPORT CSV
+// ══════════════════════════════════════
+function exportCSV() {
+  const list = allMaterials.filter(m => (m.materialClass||m.material_class||'fdm') === currentView);
+  if (!list.length) { showToast('Sem dados para exportar', 'err'); return; }
+  const isFDM = currentView === 'fdm';
+  const headers = isFDM
+    ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas','€/kg','Estado','Notas']
+    : ['ID','Cor','Hex','Tipo','Variação','Marca','Frasco','Total','Em Uso','Novos','€/L','Validade','Estado','Notas'];
+  const rows = list.map(m => {
+    const base = [m.id, m.colorName, m.colorHex, m.type, m.variation, m.brand,
+      m.rollSize, m.total, m.inUse, Math.max(0,(m.total||0)-(m.inUse||0)),
+      m.price, ];
+    if (isFDM) return [...base, statusLabel(getStatus(m)), m.notes||''];
+    return [...base, m.emptyAt||'', statusLabel(getStatus(m)), m.notes||''];
+  });
+  const csv = [headers,...rows].map(r => r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const ts = new Date().toISOString().slice(0,10);
+  const b  = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a  = Object.assign(document.createElement('a'), {href:URL.createObjectURL(b), download:`${isFDM?'filamentos':'resinas'}_${ts}.csv`, style:'display:none'});
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('📄 CSV exportado!', 'ok');
+}
+
+// ══════════════════════════════════════
+//  USER MENU / SIDEBAR
+// ══════════════════════════════════════
+function toggleUserMenu() {
+  const dd = document.getElementById('userDropdown');
+  const ch = document.getElementById('userChevron');
+  const open = dd.classList.toggle('open');
+  ch.classList.toggle('up', open);
+}
+function closeUserMenu() {
+  document.getElementById('userDropdown').classList.remove('open');
+  const ch = document.getElementById('userChevron');
+  if (ch) ch.classList.remove('up');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
+});
+async function doLogout() {
+  closeUserMenu();
+  showToast('Sessão terminada. Até logo! 👋','ok');
+  setTimeout(() => Auth.logout(), 1000);
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+
+// ══════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════
+function fmtEur(v) { return '€\u00A0' + parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function escH(s)   { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _tt;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>
