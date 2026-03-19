@@ -227,6 +227,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .weight-wrap{position:relative;display:flex;align-items:center}
 .weight-wrap .weight-input{width:100%;padding-right:26px}
 .weight-unit-badge{position:absolute;right:6px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1;text-transform:none}
+/* esconder spinners nativos no campo de peso */
+.weight-input::-webkit-outer-spin-button,
+.weight-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.weight-input{-moz-appearance:textfield;text-align:right;padding-right:28px !important}
 /* forcar minusculas no header independente do pai */
 #weightUnitHeader{text-transform:none !important;font-family:var(--mono);font-size:.7rem;letter-spacing:0}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:rgba(13,17,23,.06);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
