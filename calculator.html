@@ -16,6 +16,18 @@ function toggleSidebar() {
 document.addEventListener('click', e => {
   if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
 });
+
+// ── HELPERS ────────────────────────────────────────
+function pf(id){return parseFloat((document.getElementById(id)||{}).value)||0;}
+function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
+function setSl(id,v,mn,mx){const el=document.getElementById(id);if(el)el.value=Math.min(mx,Math.max(mn,v));}
+function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtEur(v){return '\u20ac\u00A0'+parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function dlCSV(rows,name){const b=new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:name,style:'display:none'});document.body.appendChild(a);a.click();document.body.removeChild(a);}
+let _toast;
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(_toast);_toast=setTimeout(()=>t.classList.remove('show'),3000);}
+
 </script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
