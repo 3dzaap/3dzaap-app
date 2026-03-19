@@ -402,7 +402,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     </nav>
         <div class="sidebar-footer">
       <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
         <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
         <a class="dd-item" href="index.html">🌐 Ver landing page</a>
         <div class="dd-divider"></div>
@@ -1206,8 +1206,14 @@ async function printReceipt(id) {
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
   const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',concluido:'Concluído',entregue:'Entregue',cancelado:'Cancelado'};
-  const signature = userData.signature || null;
+  const signature   = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
+  const cfg         = userData.config || {};
+  const companyEmail   = cfg.email   || '';
+  const companyPhone   = cfg.phone   || '';
+  const companyAddress = cfg.address || '';
+  const companyCity    = cfg.city    || 'Lisboa';
+  const logoUrl        = cfg.logoUrl || '';
   const today = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
 
   const itemRows = its.map((it,i) => `
@@ -1230,7 +1236,7 @@ async function printReceipt(id) {
           ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
           <div class="rcpt-sig-line"></div>
           <div class="rcpt-sig-name">${escH(companyName)}</div>
-          <div class="rcpt-sig-location">Lisboa, ${today}</div>
+          <div class="rcpt-sig-location">\${escH(companyCity)}, \${today}</div>
         </div>
        </div>`
     : `<div class="rcpt-sig-row" style="justify-content:flex-start">
@@ -1240,8 +1246,10 @@ async function printReceipt(id) {
   document.getElementById('receiptContent').innerHTML = `
     <div class="rcpt-header">
       <div class="rcpt-logo">
-        <div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:#F5943A">3D</span>ZAAP</div>
-        <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Print Manager</div>
+        \${logoUrl
+          ? \`<img src="\${logoUrl}" style="height:38px;width:auto;object-fit:contain" alt="\${escH(companyName)}">\`
+          : \`<div><div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:#F5943A">3D</span>ZAAP</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Print Manager</div></div>\`
+        }
       </div>
       <div class="rcpt-header-right">
         <div class="rcpt-title">${isPaid ? 'Recibo de Pagamento' : 'Ordem de Serviço'}</div>
