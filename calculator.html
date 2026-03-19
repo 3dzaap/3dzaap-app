@@ -251,6 +251,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .cost-bar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .5s var(--ease)}
 .results-actions{display:flex;gap:8px}
 .btn-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-size:.76rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f)}
+.btn-action-primary{background:rgba(59,143,212,.12);border-color:rgba(59,143,212,.35);color:var(--blue);flex:2}
+.btn-action-primary:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* Mode toggle */
+.mode-toggle{display:flex;gap:6px;background:rgba(255,255,255,.5);border-radius:10px;padding:4px;border:1.5px solid var(--border)}
+.mode-btn{flex:1;padding:8px 12px;border-radius:7px;border:none;background:transparent;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f);white-space:nowrap}
+.mode-btn.active{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(30,60,120,.1)}
 .btn-action:hover{background:rgba(255,255,255,.9);color:var(--dark);border-color:rgba(59,143,212,.3)}
 .btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
 
@@ -490,13 +496,13 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       </div>
       <div class="nav-section">
         <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('Configurações — em breve','');return false;"><span class="nav-icon">⚙️</span> Configurações</a>
         <a class="nav-item" href="#" onclick="showToast('Assinatura — em breve','');return false;"><span class="nav-icon">💳</span> Assinatura</a>
       </div>
     </nav>
         <div class="sidebar-footer">
       <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('Configurações — em breve','');closeUserMenu();return false;">⚙️ Configurações da conta</a>
         <a class="dd-item" href="#" onclick="showToast('Assinatura — em breve','');closeUserMenu();return false;">💳 Gerir assinatura</a>
         <a class="dd-item" href="index.html">🌐 Ver landing page</a>
         <div class="dd-divider"></div>
@@ -550,20 +556,33 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           </div>
           <div class="form-sections">
 
-            <!-- Nome -->
+            <!-- Modo + Nome + Qty -->
             <div class="form-section">
               <div class="fields-grid">
+                <div class="field full">
+                  <label>Modo de impressão</label>
+                  <div class="mode-toggle" id="modeToggle">
+                    <button class="mode-btn active" id="modeFDM" onclick="setMode('fdm')">🖨️ FDM — Filamento</button>
+                    <button class="mode-btn" id="modeResin" onclick="setMode('resin')">🧪 Resina (SLA/DLP/MSLA)</button>
+                  </div>
+                </div>
                 <div class="field full">
                   <label>Nome da impressão <span class="field-hint">(opcional — identifica no histórico)</span></label>
                   <div class="field-wrap">
                     <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…">
                   </div>
                 </div>
+                <div class="field">
+                  <label>Quantidade de peças</label>
+                  <div class="field-wrap">
+                    <input type="number" id="printQty" value="1" min="1" step="1" oninput="liveCalc()">
+                    <span class="field-unit">un.</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Material & Impressão -->
-            <div class="form-section">
+            <!-- Material & Impressão -->\n            <div class="form-section">
               <div class="section-title">
                 <div class="section-title-icon si-blue">📊</div>
                 Material &amp; Impressão
@@ -600,8 +619,61 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </div>
 
           </div>
-          <!-- Limpar campos — discreto no rodapé -->
-          <div class="card-footer">
+          <!-- Campos Resina (ocultos por defeito) -->
+          <div class="form-sections resin-fields" id="resinFields" style="display:none">
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon si-blue">🧪</div>
+                Material Resina
+              </div>
+              <div class="fields-grid">
+                <div class="field">
+                  <label>Preço da resina</label>
+                  <div class="field-wrap">
+                    <input type="number" id="resinPrice" value="35" step="0.01" min="0" oninput="liveCalc()">
+                    <span class="field-unit">€/L</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Volume da peça</label>
+                  <div class="field-wrap">
+                    <input type="number" id="resinVolume" value="20" step="0.1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">mL</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Densidade da resina</label>
+                  <div class="field-wrap">
+                    <input type="number" id="resinDensity" value="1.1" step="0.01" min="0.5" max="3" oninput="liveCalc()">
+                    <span class="field-unit">g/mL</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Tempo de impressão</label>
+                  <div class="field-wrap">
+                    <input type="number" id="resinPrintTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">h</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Potência UV/ecrã</label>
+                  <div class="field-wrap">
+                    <input type="number" id="uvLampPower" value="60" step="5" min="0" oninput="liveCalc()">
+                    <span class="field-unit">W</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Tempo lavagem+cura</label>
+                  <div class="field-wrap">
+                    <input type="number" id="washCureTime" value="20" step="1" min="0" oninput="liveCalc()">
+                    <span class="field-unit">min</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Limpar campos — discreto no rodapé -->\n          <div class="card-footer">
             <button class="btn-clear" onclick="clearFields()">🗑️ Limpar campos</button>
           </div>
         </div><!-- /inputs card -->
@@ -620,7 +692,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </div>
             <div class="breakdown-list">
               <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo do filamento</span></div>
+                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label" id="rFilamentLabel">Custo do filamento</span></div>
                 <span class="breakdown-value zero" id="rFilament">€ 0,00</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
@@ -659,6 +731,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               <button class="btn-action" onclick="exportCalcCSV()">📄 CSV</button>
               <button class="btn-action" id="copyBtnPanel" onclick="copyResults()">📋 Copiar</button>
               <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
+              <button class="btn-action btn-action-primary" id="btnCriarPedido" onclick="criarPedido()" title="Cria um pedido pré-preenchido com estes dados">📦 Criar Pedido</button>
             </div>
           </div>
         </div><!-- /results card -->
@@ -870,10 +943,48 @@ async function applyFeatureGating(){
 }
 
 // ══════════════════════════════════════
-//  CORE CALCULATION — homologated
+//  CORE CALCULATION — homologated + resina
 // ══════════════════════════════════════
+let _calcMode = 'fdm'; // 'fdm' | 'resin'
+
+function setMode(mode) {
+  _calcMode = mode;
+  document.getElementById('modeFDM').classList.toggle('active', mode === 'fdm');
+  document.getElementById('modeResin').classList.toggle('active', mode === 'resin');
+  // Show/hide relevant field sections
+  const fdmFields = document.querySelector('.form-section:has(#filamentPrice)');
+  const resinFields = document.getElementById('resinFields');
+  if (fdmFields)   fdmFields.style.display   = mode === 'fdm'   ? '' : 'none';
+  if (resinFields) resinFields.style.display = mode === 'resin' ? ''  : 'none';
+  // Update material label
+  const matLabel = document.getElementById('rFilamentLabel');
+  if (matLabel) matLabel.textContent = mode === 'fdm' ? 'Custo do filamento' : 'Custo da resina';
+  liveCalc();
+}
+
 function getInputs(){
-  return{
+  const qty = Math.max(1, parseFloat((document.getElementById('printQty')||{}).value) || 1);
+  if (_calcMode === 'resin') {
+    return {
+      mode: 'resin',
+      qty,
+      resinPrice:      pf('resinPrice'),
+      resinVolume:     pf('resinVolume'),
+      resinDensity:    pf('resinDensity') || 1.1,
+      printTime:       pf('resinPrintTime'),
+      uvLampPower:     pf('uvLampPower'),
+      washCureTime:    pf('washCureTime'),
+      printerPrice:    pf('printerPrice'),
+      printerLife:     pf('printerLife') || 1,
+      electricityPrice:pf('electricityPrice'),
+      failureRate:     pf('failureRate'),
+      indirectCosts:   pf('indirectCosts'),
+      profitMargin:    pf('profitMargin'),
+    };
+  }
+  return {
+    mode: 'fdm',
+    qty,
     filamentPrice:pf('filamentPrice'),partWeight:pf('partWeight'),printTime:pf('printTime'),
     printerPrice:pf('printerPrice'),printerLife:pf('printerLife')||1,
     powerConsumption:pf('powerConsumption'),electricityPrice:pf('electricityPrice'),
@@ -882,15 +993,35 @@ function getInputs(){
 }
 
 function computeResults(i){
-  const filamentCost     =(i.filamentPrice/1000)*i.partWeight;
-  const amortizationCost =(i.printerPrice/i.printerLife)*i.printTime;
-  const electricityCost  =(i.powerConsumption/1000)*i.printTime*i.electricityPrice;
-  const baseCost         =filamentCost+amortizationCost+electricityCost;
-  const failureCost      =baseCost*(i.failureRate/100);
-  const indirectCost     =baseCost*(i.indirectCosts/100);
-  const marginCost       =(baseCost+failureCost+indirectCost)*(i.profitMargin/100);
-  const finalPrice       =baseCost+failureCost+indirectCost+marginCost;
-  return{filamentCost,amortizationCost,electricityCost,baseCost,failureCost,indirectCost,marginCost,finalPrice};
+  const qty = i.qty || 1;
+  let materialCost, amortizationCost, electricityCost;
+  if (i.mode === 'resin') {
+    // Custo resina: preço/litro → preço/mL × volume × densidade
+    materialCost    = (i.resinPrice / 1000) * i.resinVolume * i.resinDensity;
+    amortizationCost= (i.printerPrice / i.printerLife) * i.printTime;
+    // Electricidade: impressão UV + lavagem/cura
+    const printElec = (i.uvLampPower / 1000) * i.printTime * i.electricityPrice;
+    const cureElec  = (i.uvLampPower / 1000) * (i.washCureTime / 60) * i.electricityPrice;
+    electricityCost = printElec + cureElec;
+  } else {
+    materialCost     = (i.filamentPrice / 1000) * i.partWeight;
+    amortizationCost = (i.printerPrice / i.printerLife) * i.printTime;
+    electricityCost  = (i.powerConsumption / 1000) * i.printTime * i.electricityPrice;
+  }
+  // Per unit costs
+  const baseCost    = materialCost + amortizationCost + electricityCost;
+  const failureCost = baseCost * (i.failureRate / 100);
+  const indirectCost= baseCost * (i.indirectCosts / 100);
+  const marginCost  = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const unitPrice   = baseCost + failureCost + indirectCost + marginCost;
+  const finalPrice  = unitPrice * qty;
+  // Aliases for backward compat (filamentCost → materialCost)
+  return {
+    filamentCost: materialCost, materialCost,
+    amortizationCost, electricityCost,
+    baseCost, failureCost, indirectCost, marginCost,
+    unitPrice, finalPrice, qty,
+  };
 }
 
 let _lt;
@@ -911,10 +1042,29 @@ function _render(){
     heroEl.classList.remove('updated');void heroEl.offsetWidth;heroEl.classList.add('updated');
   }
   document.getElementById('rFinalRow').textContent=nv;
+  const subParts = [`Custo base ${fmtEur(r.baseCost)} · Margem ${fmtEur(r.marginCost * r.qty)}`];
+  if (r.qty > 1) subParts.push(`(${r.qty}×${fmtEur(r.unitPrice)} p/un.)`);
   document.getElementById('rFinalSub').textContent=r.finalPrice>0
-    ?`Custo base ${fmtEur(r.baseCost)} · Margem ${fmtEur(r.marginCost)}`
+    ? subParts.join(' ')
     :'Introduz os parâmetros para calcular';
-  setRes('rFilament',r.filamentCost);
+  // Dynamic material label
+  const matLabelEl = document.getElementById('rFilamentLabel');
+  if (matLabelEl) matLabelEl.textContent = _calcMode === 'resin' ? 'Custo da resina' : 'Custo do filamento';
+  setRes('rFilament',r.materialCost);
+  setRes('rAmortization',r.amortizationCost);
+  setRes('rElectricity',r.electricityCost);
+  setRes('rBase',r.baseCost,true);
+  setRes('rFailure',r.failureCost);
+  setRes('rIndirect',r.indirectCost);
+  setRes('rMargin',r.marginCost);
+  const tot=r.finalPrice||1;
+  setBar('barFilament',r.materialCost/tot*100*r.qty);
+  setBar('barAmortization',r.amortizationCost/tot*100*r.qty);
+  setBar('barElectricity',r.electricityCost/tot*100*r.qty);
+  // Show/hide criar pedido btn
+  const cpBtn = document.getElementById('btnCriarPedido');
+  if (cpBtn) cpBtn.style.display = r.finalPrice > 0 ? '' : 'none';
+}
   setRes('rAmortization',r.amortizationCost);
   setRes('rElectricity',r.electricityCost);
   setRes('rBase',r.baseCost,true);
@@ -940,10 +1090,19 @@ function setBar(id,pct){
 
 function clearFields(){
   setV('printName','');
+  setV('printQty', 1);
+  // FDM
   setV('filamentPrice', 0);
   setV('partWeight',    0);
   setV('printTime',     0);
   setSl('printTimeSlider', 0, 0, 48);
+  // Resina
+  setV('resinPrice',     35);
+  setV('resinVolume',    20);
+  setV('resinDensity',   1.1);
+  setV('resinPrintTime', 2);
+  setV('uvLampPower',    60);
+  setV('washCureTime',   20);
   updateSliderLabels();
   liveCalc();
   showToast('🗑️ Campos limpos','');
@@ -997,7 +1156,11 @@ function saveToHistory(){
   const i=getInputs();const r=computeResults(i);
   if(r.finalPrice===0){showToast('Sem valores para guardar','err');return;}
   const name=(document.getElementById('printName').value||'').trim();
-  calcHistory.unshift({id:Date.now(),name,time:new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),inputs:{...i},results:{...r}});
+  calcHistory.unshift({
+    id:Date.now(), name, mode: _calcMode,
+    time:new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}),
+    inputs:{...i}, results:{...r}
+  });
   if(calcHistory.length>50) calcHistory.pop();
   renderHistory();
   showToast('💾 Guardado no histórico!','ok');
@@ -1045,11 +1208,18 @@ function renderHistory(){
     if(!query||!str) return escH(str||'');
     return escH(str).replace(new RegExp('('+escH(raw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark class="hl">$1</mark>');
   }
-  tbody.innerHTML=filtered.map(e=>`
-    <tr onclick="restoreHistory(${e.id})">
-      <td class="td-name">${e.name?hl(e.name):'<span class="no-name">Sem nome</span>'}</td>
-      <td class="td-mono">${e.inputs.partWeight}g</td>
-      <td class="td-mono">${e.inputs.printTime}h</td>
+  tbody.innerHTML=filtered.map(e=>{
+    const modeBadge = e.mode==='resin'
+      ? '<span style="font-size:.65rem;background:rgba(168,85,247,.12);color:#7c3aed;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">Resina</span>'
+      : '';
+    const weightCol = e.mode==='resin'
+      ? `${e.inputs.resinVolume||'—'}mL`
+      : `${e.inputs.partWeight||'—'}g`;
+    const qtyBadge = (e.inputs.qty||1) > 1 ? `<span style="font-size:.65rem;color:var(--muted)"> ×${e.inputs.qty}</span>` : '';
+    return `<tr onclick="restoreHistory(${e.id})">
+      <td class="td-name">${e.name?hl(e.name):'<span class="no-name">Sem nome</span>'}${modeBadge}${qtyBadge}</td>
+      <td class="td-mono">${weightCol}</td>
+      <td class="td-mono">${e.inputs.printTime||e.inputs.resinPrintTime||'—'}h</td>
       <td class="td-mono">${e.inputs.profitMargin}%</td>
       <td class="td-mono">${fmtEur(e.results.baseCost)}</td>
       <td class="td-price">${fmtEur(e.results.finalPrice)}</td>
@@ -1058,23 +1228,37 @@ function renderHistory(){
         <button class="btn-restore" onclick="event.stopPropagation();restoreHistory(${e.id})">↩ Restaurar</button>
         <button class="btn-del" onclick="event.stopPropagation();deleteHistory(${e.id})" title="Remover">✕</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function restoreHistory(id){
   const e=calcHistory.find(h=>h.id===id);if(!e)return;
   const i=e.inputs;
-  setV('printName',e.name||'');
-  setV('filamentPrice',i.filamentPrice);setV('partWeight',i.partWeight);
-  setV('printTime',i.printTime);setV('printerPrice',i.printerPrice);
-  setV('printerLife',i.printerLife);setV('powerConsumption',i.powerConsumption);
-  setV('electricityPrice',i.electricityPrice);setV('failureRate',i.failureRate);
-  setV('indirectCosts',i.indirectCosts);setV('profitMargin',i.profitMargin);
-  setSl('printTimeSlider',i.printTime,0,48);
+  setMode(e.mode || 'fdm');
+  setV('printName', e.name||'');
+  setV('printQty',  i.qty||1);
+  if (e.mode === 'resin') {
+    setV('resinPrice',    i.resinPrice);
+    setV('resinVolume',   i.resinVolume);
+    setV('resinDensity',  i.resinDensity);
+    setV('resinPrintTime',i.printTime);
+    setV('uvLampPower',   i.uvLampPower);
+    setV('washCureTime',  i.washCureTime);
+  } else {
+    setV('filamentPrice',i.filamentPrice); setV('partWeight',i.partWeight);
+    setV('printTime',i.printTime);
+    setSl('printTimeSlider',i.printTime,0,48);
+  }
+  setV('printerPrice',i.printerPrice);   setV('printerLife',i.printerLife);
+  setV('powerConsumption',i.powerConsumption||200);
+  setV('electricityPrice',i.electricityPrice);
+  setV('failureRate',i.failureRate);     setV('indirectCosts',i.indirectCosts);
+  setV('profitMargin',i.profitMargin);
   setSl('failureSlider',i.failureRate,0,50);
   setSl('indirectSlider',i.indirectCosts,0,50);
   setSl('marginSlider',i.profitMargin,0,100);
-  updateSliderLabels();liveCalc();
+  updateSliderLabels(); liveCalc();
   window.scrollTo({top:0,behavior:'smooth'});
   showToast('↩ Cálculo restaurado','ok');
 }
@@ -1100,22 +1284,71 @@ function closeConfirm(){document.getElementById('confirmModal').classList.remove
 function exportCalcCSV(){
   const i=getInputs();const r=computeResults(i);
   const name=document.getElementById('printName').value.trim();
+  let matRows;
+  if (i.mode === 'resin') {
+    matRows = [
+      ['Modo','Resina (SLA/DLP/MSLA)'],
+      ['Preço resina (€/L)',i.resinPrice],['Volume peça (mL)',i.resinVolume],
+      ['Densidade resina (g/mL)',i.resinDensity],['Tempo impressão (h)',i.printTime],
+      ['Potência UV (W)',i.uvLampPower],['Lavagem+cura (min)',i.washCureTime],
+    ];
+  } else {
+    matRows = [
+      ['Modo','FDM — Filamento'],
+      ['Preço filamento (€/kg)',i.filamentPrice],['Peso peça (g)',i.partWeight],
+      ['Tempo impressão (h)',i.printTime],['Consumo elétrico (W)',i.powerConsumption],
+    ];
+  }
   const rows=[
-    ['Campo','Valor'],['Nome',name||'—'],
-    ['Preço filamento (€/kg)',i.filamentPrice],['Peso peça (g)',i.partWeight],
-    ['Tempo impressão (h)',i.printTime],['Preço impressora (€)',i.printerPrice],
-    ['Vida útil (h)',i.printerLife],['Consumo elétrico (W)',i.powerConsumption],
-    ['Preço eletricidade (€/kWh)',i.electricityPrice],['Taxa falhas (%)',i.failureRate],
-    ['Custos indiretos (%)',i.indirectCosts],['Margem lucro (%)',i.profitMargin],
+    ['Campo','Valor'],['Nome',name||'—'],['Quantidade',i.qty||1],
+    ...matRows,
+    ['Preço impressora (€)',i.printerPrice],['Vida útil (h)',i.printerLife],
+    ['Preço eletricidade (€/kWh)',i.electricityPrice],
+    ['Taxa falhas (%)',i.failureRate],['Custos indiretos (%)',i.indirectCosts],
+    ['Margem lucro (%)',i.profitMargin],
     ['---','---'],
-    ['Custo filamento',r.filamentCost.toFixed(4)],['Custo amortização',r.amortizationCost.toFixed(4)],
-    ['Custo eletricidade',r.electricityCost.toFixed(4)],['Custo base',r.baseCost.toFixed(4)],
+    ['Custo material',r.materialCost.toFixed(4)],['Custo amortização',r.amortizationCost.toFixed(4)],
+    ['Custo eletricidade',r.electricityCost.toFixed(4)],['Custo base (p/un.)',r.baseCost.toFixed(4)],
     ['+ Falhas',r.failureCost.toFixed(4)],['+ Indiretos',r.indirectCost.toFixed(4)],
-    ['+ Margem',r.marginCost.toFixed(4)],['PREÇO FINAL',r.finalPrice.toFixed(4)],
+    ['+ Margem',r.marginCost.toFixed(4)],
+    ['PREÇO UNIT.',r.unitPrice.toFixed(4)],['PREÇO FINAL',r.finalPrice.toFixed(4)],
   ];
   const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
   dlCSV(rows.map(r=>r.join(';')).join('\n'),`calculo_${ts}.csv`);
   showToast('📄 CSV exportado!','ok');
+}
+
+// ── CRIAR PEDIDO ───────────────────────
+function criarPedido(){
+  const i=getInputs(); const r=computeResults(i);
+  if(r.finalPrice===0){showToast('Calcula primeiro antes de criar o pedido','err');return;}
+  const name=(document.getElementById('printName').value||'').trim();
+  const modeLabel = i.mode==='resin' ? 'Resina' : 'FDM';
+  // Build description from available fields
+  const desc = name
+    || (i.mode==='resin'
+        ? `Impressão ${modeLabel} — ${i.resinVolume}mL × ${i.qty||1}un.`
+        : `Impressão ${modeLabel} — ${i.partWeight}g × ${i.qty||1}un.`);
+  // Material cost estimate for auto-expense
+  const materialCostTotal = r.materialCost * (i.qty||1);
+  const payload = {
+    description:   desc,
+    unit_price:    parseFloat(r.unitPrice.toFixed(2)),
+    quantity:      i.qty || 1,
+    total:         parseFloat(r.finalPrice.toFixed(2)),
+    // Expense data
+    material_cost: parseFloat(materialCostTotal.toFixed(4)),
+    mode:          i.mode,
+    // FDM extras
+    filament_weight: i.mode==='fdm' ? (i.partWeight * (i.qty||1)) : null,
+    // Resin extras
+    resin_volume:    i.mode==='resin' ? (i.resinVolume * (i.qty||1)) : null,
+    // Source tag
+    _from_calc: true,
+  };
+  sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
+  showToast('📦 A abrir pedido pré-preenchido…','ok');
+  setTimeout(() => { window.location.href = 'orders.html?from=calc'; }, 600);
 }
 
 function copyResults(){

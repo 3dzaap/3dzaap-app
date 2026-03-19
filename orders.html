@@ -631,6 +631,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     icon.addEventListener('mouseenter', () => { document.getElementById('filTipBubble').style.display = 'block'; });
     icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
   }
+  // ── Pre-fill from Calculator ──────────────────────────────
+  if (new URLSearchParams(window.location.search).get('from') === 'calc') {
+    try {
+      const raw = sessionStorage.getItem('3dzaap_calc_prefill');
+      if (raw) {
+        const p = JSON.parse(raw);
+        sessionStorage.removeItem('3dzaap_calc_prefill');
+        applyCalcPrefill(p);
+      }
+    } catch(e) { console.warn('[3DZAAP] calc prefill error:', e); }
+  }
 });
 
 // ── USER DATA ──────────────────────────
@@ -1026,6 +1037,41 @@ function closeModal() {
   editingId = null;
 }
 
+// ── PRE-FILL FROM CALCULATOR ───────────
+function applyCalcPrefill(p) {
+  openModal(null);
+  setTimeout(() => {
+    const firstRow = document.querySelector('#orderItemsList .item-row');
+    if (firstRow) {
+      const inputs = firstRow.querySelectorAll('input.item-input');
+      // Order in row: [0]=descrição [1]=quantidade [2]=peso(g) [3]=preço unit.
+      const id = firstRow.dataset.id;
+      if (inputs[0]) { inputs[0].value = p.description || ''; updateItem(id,'description', inputs[0].value); }
+      if (inputs[1]) { inputs[1].value = p.quantity || 1;     updateItem(id,'quantity',    inputs[1].value); }
+      if (inputs[2] && p.filament_weight) { inputs[2].value = p.filament_weight; updateItem(id,'weightG', inputs[2].value); }
+      if (inputs[3]) { inputs[3].value = p.unit_price || 0;   updateItem(id,'unitPrice',   inputs[3].value); }
+    }
+    recalcTotal();
+
+    // Highlight due date with orange pulse to guide user
+    const dueDateEl = document.getElementById('oDueDate');
+    if (dueDateEl) {
+      dueDateEl.style.transition  = 'border-color .3s, box-shadow .3s';
+      dueDateEl.style.borderColor = 'var(--orange)';
+      dueDateEl.style.boxShadow   = '0 0 0 3px rgba(245,148,58,.18)';
+      dueDateEl.placeholder = '📅 Importante — define o prazo de entrega';
+      setTimeout(() => {
+        dueDateEl.style.borderColor = '';
+        dueDateEl.style.boxShadow   = '';
+      }, 4000);
+    }
+
+    showToast('📦 Pedido pré-preenchido! Adiciona cliente e data de entrega.', 'ok');
+    window._calcMaterialCost = p.material_cost || 0;
+    window._calcMode         = p.mode || 'fdm';
+  }, 80);
+}
+
 // ── ITEMS ──────────────────────────────
 function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,4); }
 
@@ -1137,6 +1183,23 @@ async function saveOrder() {
       const saved = await DB.saveOrder(newOrder);
       orders.unshift(saved);
       showToast('✅ Pedido criado!','ok');
+      // Auto-expense: se veio da calculadora, registar custo de material
+      if (window._calcMaterialCost > 0) {
+        try {
+          const modeLabel = window._calcMode === 'resin' ? 'Resina' : 'Filamento';
+          await DB.saveExpense({
+            date:        base.createdAt || new Date().toISOString().split('T')[0],
+            value:       window._calcMaterialCost,
+            category:    'material',
+            description: `${modeLabel} — ${base.description || saved.orderNumber}`,
+          });
+          showToast(`✅ Pedido criado + despesa de material registada!`, 'ok');
+        } catch(eExp) {
+          console.warn('[3DZAAP] auto-expense falhou:', eExp.message);
+        }
+        window._calcMaterialCost = 0;
+        window._calcMode = null;
+      }
     }
     renderOrders();
     closeModal();
