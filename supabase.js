@@ -217,7 +217,7 @@ const DB = {
       .eq('company_id', _companyId)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    return data.map(_mapFilamentFromDB);
+    return (data || []).map(_mapFilamentFromDB);
   },
 
   async saveFilament(filament) {
@@ -283,12 +283,19 @@ const DB = {
 
   async getOrders() {
     await _ensureCompany();
-    const { data, error } = await _sb
+    // Try ordering by order_numeric; fall back to created_at if column missing
+    let result = await _sb
       .from('orders').select('*')
       .eq('company_id', _companyId)
       .order('order_numeric', { ascending: false });
-    if (error) throw error;
-    return data.map(_mapOrderFromDB);
+    if (result.error && result.error.message.includes('order_numeric')) {
+      result = await _sb
+        .from('orders').select('*')
+        .eq('company_id', _companyId)
+        .order('created_at', { ascending: false });
+    }
+    if (result.error) throw result.error;
+    return (result.data || []).map(_mapOrderFromDB);
   },
 
   async getLastOrderNumber() {

@@ -840,8 +840,19 @@ async function loadState() {
   document.getElementById('planBadgeSidebar').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
 
   // Load data from Supabase
-  try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
-  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders    = []; }
+  try {
+    state.filaments = await DB.getFilaments();
+  } catch(e) {
+    state.filaments = [];
+    console.error('[Dashboard] getFilaments error:', e.message);
+  }
+  try {
+    state.orders = await DB.getOrders();
+  } catch(e) {
+    state.orders = [];
+    console.error('[Dashboard] getOrders error:', e.message);
+    showToast('Erro ao carregar pedidos: ' + e.message, 'err');
+  }
   return true; // signal success to caller
 }
 
