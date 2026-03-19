@@ -261,6 +261,64 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .stat-value.locked{filter:blur(7px);user-select:none}
 .stat-label{font-size:.78rem;color:var(--muted);font-weight:500}
 
+/* ── HEALTH SCORE ───────────────────── */
+.health-card{
+  background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh);
+  padding:24px 28px;margin-bottom:20px;
+  display:grid;grid-template-columns:1fr auto;gap:0 24px;align-items:start;
+  animation:fadeUp .5s var(--ease) both;animation-delay:.1s
+}
+.health-left{min-width:0}
+.health-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.health-score-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.health-score-number{
+  font-family:var(--mono);font-size:3rem;font-weight:700;line-height:1;
+  transition:color .6s ease
+}
+.health-score-max{font-size:1.1rem;color:var(--subtle);font-family:var(--mono);font-weight:500}
+.health-label{font-size:.9rem;font-weight:700;margin-bottom:12px;transition:color .6s ease}
+.health-bar-track{height:8px;background:rgba(0,0,0,.08);border-radius:100px;overflow:hidden;margin-bottom:14px}
+.health-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1),background .6s ease;width:0%}
+.health-insights{display:flex;flex-direction:column;gap:6px}
+.health-insight{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:.8rem;line-height:1.45;color:var(--muted);
+  background:rgba(255,255,255,.4);border-radius:8px;padding:7px 10px;
+  border-left:3px solid transparent
+}
+.health-insight.ok{border-left-color:var(--success);color:#166534}
+.health-insight.warn{border-left-color:var(--warning);color:#92400e}
+.health-insight.bad{border-left-color:var(--danger);color:#991b1b}
+.health-insight-icon{font-size:.9rem;flex-shrink:0;margin-top:1px}
+.health-due-tip{
+  margin-top:10px;font-size:.76rem;color:var(--subtle);
+  background:rgba(59,143,212,.06);border:1px solid rgba(59,143,212,.15);
+  border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:6px
+}
+/* Score colour bands */
+.score-great  {color:#166534}
+.score-ok     {color:#92400e}
+.score-risk   {color:#c2410c}
+.score-crit   {color:#991b1b}
+.bar-great    {background:linear-gradient(90deg,#4ade80,#22c55e)}
+.bar-ok       {background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.bar-risk     {background:linear-gradient(90deg,#fb923c,#f97316)}
+.bar-crit     {background:linear-gradient(90deg,#f87171,#ef4444)}
+
+/* right ring */
+.health-ring-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:4px}
+.health-ring{position:relative;width:96px;height:96px}
+.health-ring svg{width:96px;height:96px;transform:rotate(-90deg)}
+.health-ring-bg{fill:none;stroke:rgba(0,0,0,.07);stroke-width:8}
+.health-ring-fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1),stroke .6s ease}
+.health-ring-label{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:1.3rem;font-weight:700;line-height:1
+}
+.health-ring-sub{font-size:.6rem;font-weight:600;color:var(--subtle);font-family:var(--f);margin-top:2px}
+.health-delta{font-size:.75rem;font-weight:600;color:var(--subtle);text-align:center}
 /* ── CONTENT GRID ───────────────────── */
 .content-grid{
   display:grid;
@@ -650,6 +708,38 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="greeting-date" id="greetingDate"></div>
       </div>
 
+      <!-- Health Score Card -->
+      <div class="health-card" id="healthCard">
+        <div class="health-left">
+          <div class="health-title">⚡ Saúde do Negócio</div>
+          <div class="health-score-row">
+            <span class="health-score-number" id="healthNumber">—</span>
+            <span class="health-score-max">/100</span>
+          </div>
+          <div class="health-label" id="healthLabel">A calcular...</div>
+          <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
+          <div class="health-insights" id="healthInsights"></div>
+          <div class="health-due-tip" id="healthDueTip" style="display:none">
+            <span>💡</span>
+            <span>Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
+          </div>
+        </div>
+        <div class="health-ring-wrap">
+          <div class="health-ring">
+            <svg viewBox="0 0 96 96">
+              <circle class="health-ring-bg" cx="48" cy="48" r="40"/>
+              <circle class="health-ring-fg" id="healthRingFg" cx="48" cy="48" r="40"
+                stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke="#22c55e"/>
+            </svg>
+            <div class="health-ring-label">
+              <span id="healthRingNum">—</span>
+              <span class="health-ring-sub">pontos</span>
+            </div>
+          </div>
+          <div class="health-delta" id="healthDelta"></div>
+        </div>
+      </div>
+
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -800,6 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadState().then(() => {
     renderGreeting();
   renderBanner();
+  calcHealthScore();
   renderStats();
   renderRecentOrders();
   renderFilamentAlerts();
@@ -893,6 +984,190 @@ function dismissBanner() {
   const banner = document.getElementById('subBanner');
   banner.style.opacity='0';banner.style.transform='translateY(-8px)';banner.style.transition='all .3s var(--ease)';
   setTimeout(()=>banner.style.display='none',300);
+}
+
+// ── HEALTH SCORE ───────────────────────
+function calcHealthScore() {
+  const now     = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const prevDate  = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+
+  const orders    = state.orders  || [];
+  const filaments = state.filaments || [];
+  const insights  = [];
+  let   score     = 0;
+  let   missingDueDates = false;
+
+  // ── 1. MARGEM MÉDIA (25 pts) ────────────────────────────────
+  // Estimada via: pedidos concluídos com payment_status=pago este mês
+  // Custo proxy: soma filamentCost estimada (price * peso médio 50g)
+  // Se sem dados suficientes → máximo
+  const doneOrders = orders.filter(o => o.status === 'concluido' || o.status === 'done' || o.status === 'entregue');
+  let   marginScore = 25; // benefício da dúvida
+  if (doneOrders.length >= 2) {
+    const totalRevenue = doneOrders.reduce((s,o) => s + parseFloat(o.total||0), 0);
+    // Custo proxy: usa price do filamento mais barato ou 25€/kg default, 50g/peça
+    const avgFilPrice = filaments.length
+      ? filaments.reduce((s,f) => s + parseFloat(f.price||25), 0) / filaments.length
+      : 25;
+    const estimatedCost = doneOrders.length * (avgFilPrice / 1000) * 50; // 50g por peça estimado
+    const margin = totalRevenue > 0 ? ((totalRevenue - estimatedCost) / totalRevenue) * 100 : null;
+    if (margin !== null) {
+      if (margin >= 30) { marginScore = 25; insights.push({t:'ok',  icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — acima do objetivo de 30%.`}); }
+      else if (margin >= 20) { marginScore = 18; insights.push({t:'warn', icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — considera rever o preço dos materiais.`}); }
+      else if (margin >= 10) { marginScore = 10; insights.push({t:'warn', icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — atenção aos custos de produção.`}); }
+      else                   { marginScore = 0;  insights.push({t:'bad',  icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — revê urgentemente a tua precificação.`}); }
+    }
+  }
+  score += marginScore;
+
+  // ── 2. PEDIDOS EM ATRASO (25 pts) ──────────────────────────
+  const openOrders = orders.filter(o => o.status !== 'concluido' && o.status !== 'done' && o.status !== 'entregue' && o.status !== 'cancelado');
+  const ordersWithDue = openOrders.filter(o => o.dueDate || o.due_date);
+  const ordersWithoutDue = openOrders.filter(o => !o.dueDate && !o.due_date);
+  if (ordersWithoutDue.length > 0) missingDueDates = true;
+
+  let lateScore = 25; // máximo se sem due_date
+  if (ordersWithDue.length > 0) {
+    const late = ordersWithDue.filter(o => {
+      const d = new Date(o.dueDate || o.due_date);
+      return !isNaN(d) && d < now;
+    }).length;
+    // Prazo médio estimado: 7 dias após criação para pedidos sem due_date
+    const avgDays = 7;
+    const lateByAvg = ordersWithoutDue.filter(o => {
+      const created = new Date(o.createdAt || o.created_at);
+      return !isNaN(created) && ((now - created) / 86400000) > avgDays;
+    }).length;
+    const totalLate = late + lateByAvg;
+    if (totalLate === 0)      { lateScore = 25; insights.push({t:'ok',  icon:'📦', msg:'Nenhum pedido em atraso. Óptimo ritmo de entrega!'}); }
+    else if (totalLate === 1) { lateScore = 15; insights.push({t:'warn', icon:'📦', msg:`1 pedido possivelmente em atraso — verifica as datas de entrega.`}); }
+    else if (totalLate === 2) { lateScore = 8;  insights.push({t:'warn', icon:'📦', msg:`${totalLate} pedidos em atraso — os teus clientes podem estar à espera.`}); }
+    else                      { lateScore = 0;  insights.push({t:'bad',  icon:'📦', msg:`${totalLate} pedidos em atraso — risco alto para a reputação do negócio.`}); }
+  } else if (openOrders.length === 0) {
+    insights.push({t:'ok', icon:'📦', msg:'Sem pedidos em aberto. Pronto para novos trabalhos!'});
+  }
+  score += lateScore;
+
+  // ── 3. STOCK CRÍTICO (20 pts) ───────────────────────────────
+  const alertFils  = filaments.filter(f => getFilamentStatus(f) !== 'green');
+  const critFils   = filaments.filter(f => getFilamentStatus(f) === 'red');
+  let   stockScore = 20;
+  if (filaments.length === 0) {
+    stockScore = 20; // sem dados = máximo
+  } else if (alertFils.length === 0) {
+    stockScore = 20; insights.push({t:'ok', icon:'🎨', msg:'Stock de filamentos em boa ordem.'});
+  } else if (alertFils.length <= 2) {
+    stockScore = 12; insights.push({t:'warn', icon:'🎨', msg:`${alertFils.length} filamento(s) com stock baixo — repõe antes de receber novos pedidos.`});
+  } else {
+    stockScore = 0;  insights.push({t:'bad',  icon:'🎨', msg:`${alertFils.length} filamentos em alerta — risco de não conseguires cumprir pedidos.`});
+  }
+  score += stockScore;
+
+  // ── 4. PAGAMENTOS PENDENTES (20 pts) ───────────────────────
+  const monthOrders = orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
+  const totalMonth  = monthOrders.length;
+  const paidMonth   = monthOrders.filter(o => o.paymentStatus === 'pago').length;
+  const pendRate    = totalMonth > 0 ? (totalMonth - paidMonth) / totalMonth : 0;
+  let   payScore    = 20;
+  if (totalMonth === 0) {
+    payScore = 20; // sem dados = máximo
+  } else if (pendRate === 0) {
+    payScore = 20; insights.push({t:'ok',  icon:'✅', msg:'Todos os pedidos deste mês estão pagos.'});
+  } else if (pendRate < 0.2) {
+    payScore = 14; insights.push({t:'ok',  icon:'✅', msg:`${Math.round(pendRate*100)}% dos pedidos pendentes de pagamento — dentro do normal.`});
+  } else if (pendRate < 0.5) {
+    payScore = 6;  insights.push({t:'warn', icon:'💳', msg:`${Math.round(pendRate*100)}% dos pedidos sem pagamento recebido — acompanha os clientes.`});
+  } else {
+    payScore = 0;  insights.push({t:'bad',  icon:'💳', msg:`Mais de metade dos pedidos sem pagamento — cashflow em risco.`});
+  }
+  score += payScore;
+
+  // ── 5. TENDÊNCIA DE RECEITA (10 pts) ───────────────────────
+  const revThis = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  const prevOrd = orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
+  const revPrev = prevOrd.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  let   trendScore = 10;
+  if (revPrev === 0) {
+    trendScore = 10; // sem histórico = máximo
+  } else {
+    const change = (revThis - revPrev) / revPrev;
+    if (change >= 0)    { trendScore = 10; insights.push({t:'ok',  icon:'📈', msg:`Receita ${change>0?'+'+Math.round(change*100)+'%':'estável'} face ao mês anterior.`}); }
+    else if (change > -0.2) { trendScore = 5; insights.push({t:'warn', icon:'📉', msg:`Receita ${Math.round(change*100)}% face ao mês anterior — mês mais fraco.`}); }
+    else                { trendScore = 0; insights.push({t:'bad',  icon:'📉', msg:`Receita ${Math.round(change*100)}% face ao mês anterior — verifica a tua pipeline.`}); }
+  }
+  score += trendScore;
+
+  // ── RENDER ──────────────────────────────────────────────────
+  const bands = [
+    { min:80, label:'Negócio saudável 💚',   cls:'score-great', bar:'bar-great', ring:'#22c55e' },
+    { min:55, label:'Atenção necessária 🟡',  cls:'score-ok',    bar:'bar-ok',    ring:'#f59e0b' },
+    { min:30, label:'Negócio em risco 🟠',    cls:'score-risk',  bar:'bar-risk',  ring:'#f97316' },
+    { min:0,  label:'Situação crítica 🔴',    cls:'score-crit',  bar:'bar-crit',  ring:'#ef4444' },
+  ];
+  const band = bands.find(b => score >= b.min);
+
+  // Retrieve previous score from localStorage for delta
+  const prevScore = parseInt(localStorage.getItem('3dzaap_health_prev') || '-1');
+  localStorage.setItem('3dzaap_health_score', score);
+  if (prevScore < 0) localStorage.setItem('3dzaap_health_prev', score);
+
+  const numEl     = document.getElementById('healthNumber');
+  const labelEl   = document.getElementById('healthLabel');
+  const barEl     = document.getElementById('healthBar');
+  const insightsEl= document.getElementById('healthInsights');
+  const ringFg    = document.getElementById('healthRingFg');
+  const ringNum   = document.getElementById('healthRingNum');
+  const deltaEl   = document.getElementById('healthDelta');
+  const dueTipEl  = document.getElementById('healthDueTip');
+
+  numEl.textContent  = score;
+  numEl.className    = 'health-score-number ' + band.cls;
+  labelEl.textContent= band.label;
+  labelEl.className  = 'health-label ' + band.cls;
+
+  // Animate bar & ring after paint
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      barEl.style.width = score + '%';
+      barEl.className   = 'health-bar-fill ' + band.bar;
+      // Ring: circumference = 2π×40 ≈ 251.2
+      const offset = 251.2 - (251.2 * score / 100);
+      ringFg.style.strokeDashoffset = offset;
+      ringFg.style.stroke = band.ring;
+    }, 80);
+  });
+  ringNum.textContent = score;
+  ringNum.style.color = band.ring;
+
+  // Delta vs yesterday
+  if (prevScore >= 0 && prevScore !== score) {
+    const diff = score - prevScore;
+    deltaEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + diff + ' vs ontem';
+    deltaEl.style.color = diff > 0 ? 'var(--success)' : 'var(--danger)';
+  } else if (prevScore === score) {
+    deltaEl.textContent = '→ igual ao último acesso';
+  }
+
+  // Insights — limit to top 3 most actionable
+  const priority = ['bad','warn','ok'];
+  insights.sort((a,b) => priority.indexOf(a.t) - priority.indexOf(b.t));
+  insightsEl.innerHTML = insights.slice(0,3).map(i =>
+    `<div class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${i.msg}</span></div>`
+  ).join('');
+
+  // Due date tip — show if more than 30% of open orders have no due_date
+  if (missingDueDates && ordersWithoutDue.length > 0) {
+    dueTipEl.style.display = 'flex';
+  }
+
+  // Save prev score once per day
+  const today = new Date().toDateString();
+  if (localStorage.getItem('3dzaap_health_date') !== today) {
+    localStorage.setItem('3dzaap_health_prev', score);
+    localStorage.setItem('3dzaap_health_date', today);
+  }
 }
 
 // ── STATS ──────────────────────────────
