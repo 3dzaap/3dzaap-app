@@ -226,7 +226,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 /* Weight input — unidade inline */
 .weight-wrap{position:relative;display:flex;align-items:center}
 .weight-wrap .weight-input{width:100%;padding-right:26px}
-.weight-unit-badge{position:absolute;right:6px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1}
+.weight-unit-badge{position:absolute;right:6px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1;text-transform:none}
+/* forcar minusculas no header independente do pai */
+#weightUnitHeader{text-transform:none !important;font-family:var(--mono);font-size:.7rem;letter-spacing:0}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:rgba(13,17,23,.06);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
 .grand-total-lbl{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .grand-total-val{font-family:var(--mono);font-size:1rem;font-weight:800;color:var(--dark)}
@@ -1131,10 +1133,9 @@ function _updateWeightUnit(rowId, filamentId) {
   // Actualizar badge e placeholder da linha
   const row = document.querySelector(`.item-row[data-id="${rowId}"]`);
   if (row) {
+    // Apenas o badge é visível — sem placeholder no input number
     const badge = row.querySelector('.weight-unit-badge');
     if (badge) badge.textContent = unit;
-    const inp = row.querySelector('.weight-input');
-    if (inp) inp.placeholder = unit;
   }
 
   // Actualizar header da coluna
@@ -1161,7 +1162,7 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
     <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildMaterialOptions(it.filamentId)}</select>
     <div class="weight-wrap">
-      <input type="number" class="item-input mono weight-input" placeholder="g/ml" min="0" value="${it.weightG||''}"
+      <input type="number" class="item-input mono weight-input" min="0" value="${it.weightG||''}"
         oninput="updateItem('${id}','weightG',this.value)">
       <span class="weight-unit-badge">g/ml</span>
     </div>
