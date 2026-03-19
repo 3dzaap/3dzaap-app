@@ -699,7 +699,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </a>
         <a class="action-card" href="filaments.html">
           <div class="action-icon">🎨</div>
-          <div class="action-title">Gerir Filamentos</div>
+          <div class="action-title">Gerir Materiais</div>
           <div class="action-desc">Actualizar stock de filamentos</div>
         </a>
         <a class="action-card" id="actionFinancial" onclick="handleFeatureClick('financial','Financeiro','Business')" href="#">
@@ -794,16 +794,16 @@ let state = {
 };
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadState().then(() => {
-    renderGreeting();
+document.addEventListener('DOMContentLoaded', async () => {
+  const loaded = await loadState();
+  if (!loaded) return; // auth redirect or no session
+  renderGreeting();
   renderBanner();
   renderStats();
   renderRecentOrders();
   renderFilamentAlerts();
   applyFeatureGating();
   setDate();
-  });
 });
 
 function setDate() {
@@ -841,7 +841,8 @@ async function loadState() {
 
   // Load data from Supabase
   try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
-  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders = []; }
+  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders    = []; }
+  return true; // signal success to caller
 }
 
 // ── GREETING ───────────────────────────
@@ -1137,7 +1138,7 @@ function closeGate(e) {
 const PAGE_TITLES = {
   dashboard: 'Dashboard',
   calculator: 'Calculadora',
-  filaments: 'Filamentos',
+  filaments: 'Materiais',
   orders: 'Pedidos',
   financial: 'Financeiro',
   backoffice: 'BackOffice',

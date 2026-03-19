@@ -434,7 +434,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
       <div class="page-header">
         <div class="page-header-text">
           <h1 id="pageTitle">🎨 Materiais</h1>
-          <p id="pageSubtitle">Gere o teu stock de filamentos FDM e resinas SLA/MSLA</p>
+          <p id="pageSubtitle">Gere o teu stock de materiais — filamentos FDM e resinas SLA/MSLA</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
@@ -446,7 +446,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
       <div class="material-toggle">
         <button class="mat-btn fdm active" id="toggleFDM" onclick="setView('fdm')">
           <span class="mat-btn-icon">🧵</span>
-          Filamentos FDM
+          Materiais FDM
           <span class="mat-btn-count" id="countFDM">0</span>
         </button>
         <button class="mat-btn resin" id="toggleResin" onclick="setView('resin')">
@@ -831,11 +831,11 @@ function setView(cls) {
   document.getElementById('toggleResin').classList.toggle('active', cls === 'resin');
 
   const isFDM = cls === 'fdm';
-  document.getElementById('pageTitle').textContent    = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+  document.getElementById('pageTitle').textContent    = isFDM ? '🧵 Materiais FDM' : '🧪 Resinas SLA/MSLA';
   document.getElementById('pageSubtitle').textContent = isFDM
     ? 'Gere o teu stock de filamentos — tipos, cores, marcas e bobinas'
     : 'Gere o teu stock de resinas — tipos, frascos e datas de validade';
-  document.getElementById('topbarTitle').textContent  = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+  document.getElementById('topbarTitle').textContent  = isFDM ? '🧵 Materiais FDM' : '🧪 Resinas SLA/MSLA';
   document.getElementById('statIcon').textContent     = isFDM ? '🎨' : '🧪';
   document.getElementById('statEmptyLbl').textContent = isFDM ? 'Esgotados' : 'Esgotadas';
 
@@ -1276,7 +1276,8 @@ function applyModalClass() {
 async function saveMaterial() {
   const isFDM    = modalClass === 'fdm';
   const colorName = document.getElementById('colorName').value.trim() || 'Sem nome';
-  const notes     = document.getElementById('fNotes').value.trim();
+  const notes        = document.getElementById('fNotes').value.trim();
+  const purchaseDate = document.getElementById('fPurchaseDate').value || null;
 
   let record;
 
@@ -1337,6 +1338,7 @@ async function saveMaterial() {
       const saved = await DB.saveFilament(record);
       allMaterials.unshift(saved);
       showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado!`, 'ok');
+    }
     // Auto-create expense if purchase date and price are set (new items only)
     if (purchaseDate && record.price > 0) {
       try {
@@ -1354,7 +1356,6 @@ async function saveMaterial() {
       } catch(expErr) {
         console.warn('Auto-expense failed:', expErr.message);
       }
-    }
     }
     updateToggleCounts();
     applyFilters();
