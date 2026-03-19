@@ -845,14 +845,22 @@ async function initPage() {
     : _session.fname || _session.lname
     || _session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
 
-  document.getElementById('userName').textContent    = fullName;
-  document.getElementById('userEmail').textContent   = _session.email;
-  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  var initials = fullName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  var elUserName   = document.getElementById('userNameSidebar');
+  var elUserEmail  = document.getElementById('userEmailSidebar');
+  var elUserAvatar = document.getElementById('userAvatarSidebar');
+  if (elUserName)   elUserName.textContent   = fullName;
+  if (elUserEmail)  elUserEmail.textContent  = _session.email;
+  if (elUserAvatar) elUserAvatar.textContent = initials;
   var cName = _session.companyName || 'Empresa';
-  document.getElementById('companyName').textContent   = cName;
-  document.getElementById('companyAvatar').textContent = cName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  var cInitials = cName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  var elCompanyName   = document.getElementById('companyNameSidebar');
+  var elCompanyAvatar = document.getElementById('companyAvatarSidebar');
+  var elPlanBadge     = document.getElementById('planBadgeSidebar');
+  if (elCompanyName)   elCompanyName.textContent   = cName;
+  if (elCompanyAvatar) elCompanyAvatar.textContent = cInitials;
   var planLabels = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
-  document.getElementById('planBadge').textContent = planLabels[_session.plan] || 'Trial';
+  if (elPlanBadge)     elPlanBadge.textContent = planLabels[_session.plan] || 'Trial';
 
   // Feature gating
   var plan = _session.plan || 'trial';
@@ -1031,8 +1039,8 @@ async function saveEmpresa() {
     await Auth.updateCompany({ name: name, config: cfg });
     _session.companyName = name;
     _session.config = cfg;
-    document.getElementById('companyName').textContent   = name;
-    document.getElementById('companyAvatar').textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+    var _elCNs = document.getElementById('companyNameSidebar'); if(_elCNs) _elCNs.textContent = name;
+    var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
     clearDirty();
     showToast('\u2705 Empresa guardada!', 'ok');
   } catch(e) { showToast('Erro: ' + e.message, 'err'); }
@@ -1081,8 +1089,8 @@ async function saveAll() {
   try {
     await Auth.updateCompany({ name: name, config: cfg, signature: sig });
     if (_session) { _session.companyName = name; _session.config = cfg; _session.signature = sig; }
-    document.getElementById('companyName').textContent   = name;
-    document.getElementById('companyAvatar').textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+    var _elCNs = document.getElementById('companyNameSidebar'); if(_elCNs) _elCNs.textContent = name;
+    var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
     _logoB64 = null; _sigB64 = null;
     clearDirty();
     showToast('\u2705 Tudo guardado!', 'ok');
