@@ -223,14 +223,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .item-total{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);text-align:right;padding-right:4px}
 .item-remove{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;color:var(--subtle);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .item-remove:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--danger)}
-/* Weight input — unidade inline */
-.weight-wrap{position:relative;display:flex;align-items:center}
-.weight-wrap .weight-input{width:100%;padding-right:22px}
-/* Spinner à direita — forçar via direction */
-.weight-input::-webkit-outer-spin-button,
-.weight-input::-webkit-inner-spin-button{opacity:1;position:absolute;right:0}
-.weight-input{direction:rtl;text-align:left;padding-right:20px}
-.weight-unit-badge{position:absolute;right:18px;font-size:.65rem;font-weight:700;pointer-events:none;color:var(--subtle);font-family:var(--mono);line-height:1;text-transform:none}
 /* forcar minusculas no header independente do pai */
 #weightUnitHeader{text-transform:none !important;font-family:var(--mono);font-size:.7rem;letter-spacing:0}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:rgba(13,17,23,.06);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
@@ -1136,11 +1128,7 @@ function _updateWeightUnit(rowId, filamentId) {
 
   // Actualizar badge e placeholder da linha
   const row = document.querySelector(`.item-row[data-id="${rowId}"]`);
-  if (row) {
-    // Apenas o badge é visível — sem placeholder no input number
-    const badge = row.querySelector('.weight-unit-badge');
-    if (badge) badge.textContent = unit;
-  }
+
 
   // Actualizar header da coluna
   const anySet  = _items.some(it => it.filamentId);
@@ -1165,11 +1153,8 @@ function addOrderItem(item = null) {
     <input type="number" class="item-input mono" min="1" value="${it.quantity||1}"
       oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
     <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildMaterialOptions(it.filamentId)}</select>
-    <div class="weight-wrap">
-      <input type="number" class="item-input mono weight-input" min="0" value="${it.weightG||''}"
-        oninput="updateItem('${id}','weightG',this.value)">
-      <span class="weight-unit-badge">g/ml</span>
-    </div>
+    <input type="number" class="item-input mono" min="0" value="${it.weightG||''}"
+      oninput="updateItem('${id}','weightG',this.value)">
     <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice||0}"
       oninput="updateItem('${id}','unitPrice',this.value)">
     <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>`;
