@@ -400,8 +400,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
-<app-sidebar active="calculator"></app-sidebar>
 <div class="layout">
+<app-sidebar active="calculator"></app-sidebar>
 
   <!-- ── SIDEBAR ─────────────────────── -->
   
@@ -705,9 +705,10 @@ async function loadUserData() {
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  document.getElementById('userName').textContent    = fullName;
-  document.getElementById('userEmail').textContent   = session.email;
-  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const _el = id => document.getElementById(id);
+  if (_el('userName'))   _el('userName').textContent    = fullName;
+  if (_el('userEmail'))  _el('userEmail').textContent   = session.email;
+  if (_el('userAvatar')) _el('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   if (document.getElementById('companyName'))
     document.getElementById('companyName').textContent = session.companyName || '—';
   if (document.getElementById('companyAvatar'))

@@ -157,8 +157,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
 
 
-<app-sidebar active="settings"></app-sidebar>
 <div class="layout">
+<app-sidebar active="settings"></app-sidebar>
   
 
   <div class="main">
@@ -467,9 +467,10 @@ async function initPage() {
     : _session.fname || _session.lname
     || _session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
 
-  document.getElementById('userName').textContent    = fullName;
-  document.getElementById('userEmail').textContent   = _session.email;
-  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  const _sel = function(id) { return document.getElementById(id); };
+  if (_sel('userName'))   _sel('userName').textContent   = fullName;
+  if (_sel('userEmail'))  _sel('userEmail').textContent  = _session.email;
+  if (_sel('userAvatar')) _sel('userAvatar').textContent = fullName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
   var cName = _session.companyName || 'Empresa';
   document.getElementById('companyName').textContent   = cName;
   document.getElementById('companyAvatar').textContent = cName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
