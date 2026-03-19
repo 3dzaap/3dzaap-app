@@ -587,12 +587,12 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .toast.err{border-color:rgba(239,68,68,.4);background:rgba(255,240,240,.95)}
 /* MOBILE */
 .mob-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;width:38px;height:38px;border-radius:var(--r);background:rgba(255,255,255,.8);backdrop-filter:var(--blur-sm);border:1.5px solid var(--border);box-shadow:var(--sh);cursor:pointer;align-items:center;justify-content:center;font-size:1.1rem}
-.sidebar-overlay{display:none;position:fixed;inset:0;z-index:90;background:rgba(13,17,23,.35)}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){
   .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
-  .sidebar-overlay.open{display:block}.main{margin-left:0}
+  .main{margin-left:0}
   .mob-toggle{display:flex}.page{padding:16px 16px 40px}
   .topbar{padding:0 16px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}.form-row.three{grid-template-columns:1fr 1fr}
@@ -696,15 +696,15 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   }
 
   /* ── iOS: sidebar-overlay sem backdrop-filter ── */
-  .sidebar-overlay{
-    
-  }
+  
   /* Garantir sidebar acima do overlay em mobile */
   @media(max-width:680px){
     .sidebar{ z-index: 300 !important; }
-    .sidebar-overlay{ z-index: 280 !important; }
+    
   }
-</style>
+
+.sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
+.sidebar-overlay.open{display:block;left:var(--sidebar-w)}</style>
 </head>
 <body>
 
@@ -732,9 +732,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
         <div class="sidebar-company">
       <div class="company-pill">
-        <div class="company-avatar" id="companyAvatarSidebar">—</div>
-        <span class="company-name" id="companyNameSidebar">—</span>
-        <span class="company-plan" id="planBadgeSidebar">—</span>
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
       </div>
     </div>
 
@@ -767,10 +767,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
       </div>
       <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatarSidebar">—</div>
+        <div class="user-avatar" id="userAvatar">—</div>
         <div class="user-info">
-          <div class="user-name" id="userNameSidebar">—</div>
-          <div class="user-email" id="userEmailSidebar">—</div>
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
         </div>
         <span class="user-chevron" id="userChevron">▲</span>
       </div>
