@@ -1938,6 +1938,7 @@ async function initPage() {
   if (!ok) return;
   _session = await Auth.getSession();
   if (!_session) return;
+  loadCfg(_session);
 
   // Sidebar
   var fullName = (_session.fname && _session.lname)
@@ -2003,6 +2004,43 @@ async function initPage() {
 }
 
 // ── TABS ───────────────────────────────────────────────────────
+
+// ── LOGO COMPRESSION ───────────────────────────────────────
+function compressAndSetLogo(file) {
+  var MAX_W = 600, MAX_H = 600, QUALITY = 0.82;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      // Scale down if larger than max dimensions
+      if (w > MAX_W || h > MAX_H) {
+        var ratio = Math.min(MAX_W / w, MAX_H / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      // Use WebP if supported (smaller), fallback to JPEG
+      var mime = 'image/webp';
+      var b64 = canvas.toDataURL(mime, QUALITY);
+      if (b64.length < 50) { // WebP not supported
+        mime = 'image/jpeg';
+        b64 = canvas.toDataURL(mime, QUALITY);
+      }
+      var kb = Math.round(b64.length * 0.75 / 1024);
+      _logoB64 = b64;
+      showLogoPreview(_logoB64);
+      markDirty();
+      showToast('Logo comprimido (' + kb + ' KB)', 'ok');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 function wireEvents() {
   // Tabs
   document.querySelectorAll('.tab-btn').forEach(function(btn) {
@@ -2035,14 +2073,8 @@ function wireEvents() {
   document.getElementById('logoFile').addEventListener('change', function(e){
     var file = e.target.files[0];
     if (!file) return;
-    if (file.size > 512 * 1024) { showToast('Ficheiro demasiado grande (m\u00e1x 512KB)', 'err'); return; }
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      _logoB64 = ev.target.result;
-      showLogoPreview(_logoB64);
-      markDirty();
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 1024 * 1024) { showToast('Ficheiro demasiado grande (máx 1MB)', 'err'); return; }
+    compressAndSetLogo(file);
   });
   document.getElementById('logoUrl').addEventListener('input', function(){
     var url = this.value.trim();
