@@ -251,6 +251,32 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .sidebar-overlay{display:none;position:fixed;top:0;bottom:0;right:0;z-index:280;background:rgba(13,17,23,.45)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+/* ── Mobile order cards ─────────────────────────────── */
+.mob-card-list{display:none;flex-direction:column;gap:8px;padding:12px 12px 16px}
+.mob-ord-card{background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);padding:14px 16px;cursor:pointer;transition:background .15s}
+.mob-ord-card:active{background:rgba(59,143,212,.06)}
+.mob-ord-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.mob-ord-num{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--blue)}
+.mob-ord-total{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--dark)}
+.mob-ord-client{font-size:.88rem;font-weight:700;color:var(--dark);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-ord-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.mob-ord-date{font-size:.72rem;color:var(--muted)}
+.mob-ord-actions{display:flex;align-items:center;gap:4px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.mob-ord-actions button{flex:1;padding:7px 4px;font-size:.78rem;border-radius:var(--r);border:1.5px solid var(--border);background:rgba(255,255,255,.6);cursor:pointer;color:var(--dark)}
+.mob-ord-actions button.del{color:var(--danger);border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)}
+.mob-ord-expand{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.mob-ord-expand.open{display:block}
+.mob-expand-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-bottom:10px}
+.mob-expand-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.mob-expand-val{font-size:.82rem;color:var(--dark)}
+.mob-items-list{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.mob-item-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;padding:8px 10px;font-size:.8rem;border-bottom:1px solid var(--border);align-items:baseline}
+.mob-item-row:last-child{border-bottom:none}
+.mob-item-desc{color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-item-qty{color:var(--muted);font-size:.72rem;text-align:right}
+.mob-item-total{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--dark);text-align:right}
+.mob-grand{display:flex;justify-content:space-between;padding:8px 10px;font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);background:rgba(59,143,212,.05)}
+
 @media(max-width:680px){
   .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
   .sidebar-overlay.open{display:block;left:var(--sidebar-w)}.main{margin-left:0}
@@ -264,7 +290,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
   .page-actions{width:100%;justify-content:flex-end}
   .filter-bar{flex-wrap:wrap;gap:8px}
   .search-input{width:100%}
-  .ord-table td,.ord-table th{padding:9px 10px;font-size:.76rem}
+  .table-card .table-wrap{display:none}
+  .mob-card-list{display:flex}
 }
 @media(max-width:420px){
   .stats-row{grid-template-columns:1fr}
@@ -502,6 +529,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <tbody id="ordTbody"></tbody>
           </table>
         </div>
+        <div class="mob-card-list" id="mobCardList"></div>
       </div>
     </div>
   </div>
@@ -738,12 +766,14 @@ function renderOrders(keepExpandId) {
   const tableEl = document.getElementById('ordTable');
   const tbody = document.getElementById('ordTbody');
 
+  const mobList = document.getElementById('mobCardList');
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = orders.length
       ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum pedido corresponde aos filtros actuais.</p>`
       : `<div class="table-empty-icon">📦</div><h3>Sem pedidos ainda</h3><p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>`;
     tableEl.style.display = 'none';
+    if (mobList) mobList.innerHTML = '';
     return;
   }
 
@@ -814,6 +844,39 @@ function renderOrders(keepExpandId) {
       </tr>`);
   });
   tbody.innerHTML = rows.join('');
+  if (mobList) {
+    mobList.innerHTML = filtered.map(o => {
+      const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
+      const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
+      const itemsHtml = its.map(it=>`<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity}</span><span class="mob-item-total">€ ${fmtN((it.quantity||0)*(it.unitPrice||0))}</span></div>`).join('');
+      return `<div class="mob-ord-card" id="mc-${o.id}">
+        <div class="mob-ord-top">
+          <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
+          <span class="mob-ord-total">€ ${fmtN(grand)}</span>
+        </div>
+        <div class="mob-ord-client">${escH(o.clientName)}</div>
+        <div class="mob-ord-meta">
+          <span class="badge bs-${o.status}"><span class="badge-dot"></span>${STATUS_LABELS[o.status]||o.status}</span>
+          <span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?'✓ Pago':'⏳ Pendente'}</span>
+          ${o.dueDate?`<span class="mob-ord-date">Prazo: ${fmtDate(o.dueDate)}</span>`:''}
+        </div>
+        <div class="mob-ord-expand" id="mce-${o.id}">
+          <div class="mob-expand-grid">
+            <div><div class="mob-expand-lbl">Criado</div><div class="mob-expand-val">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
+            <div><div class="mob-expand-lbl">Prazo</div><div class="mob-expand-val">${o.dueDate?fmtDate(o.dueDate):'—'}</div></div>
+            ${o.clientEmail?`<div><div class="mob-expand-lbl">Email</div><div class="mob-expand-val">${escH(o.clientEmail)}</div></div>`:''}
+            ${o.clientPhone?`<div><div class="mob-expand-lbl">Telefone</div><div class="mob-expand-val">${escH(o.clientPhone)}</div></div>`:''}
+          </div>
+          <div class="mob-items-list">${itemsHtml}<div class="mob-grand"><span>Total</span><span>€ ${fmtN(grand)}</span></div></div>
+        </div>
+        <div class="mob-ord-actions">
+          <button onclick="event.stopPropagation();toggleMobExpand('${o.id}')" id="mcb-${o.id}">▼ Detalhes</button>
+          <button onclick="event.stopPropagation();openModal('${o.id}')">✏️ Editar</button>
+          <button class="del" onclick="event.stopPropagation();confirmDelete('${o.id}')">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
   updateStats();
   // Re-expand the row that was open before re-render
   if (keepExpandId) {
@@ -836,6 +899,16 @@ function toggleExpand(id) {
   document.querySelectorAll('.expand-btn.open').forEach(el => el.classList.remove('open'));
   document.querySelectorAll('.ord-row.expanded-row').forEach(el => el.classList.remove('expanded-row'));
   if (!isOpen) { exp.classList.add('open'); btn.classList.add('open'); row.classList.add('expanded-row'); }
+}
+
+function toggleMobExpand(id) {
+  const exp = document.getElementById('mce-' + id);
+  const btn = document.getElementById('mcb-' + id);
+  if (!exp) return;
+  const isOpen = exp.classList.contains('open');
+  document.querySelectorAll('.mob-ord-expand.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('#mobCardList button').forEach(b => { if (b.id.startsWith('mcb-')) b.textContent = '▼ Detalhes'; });
+  if (!isOpen) { exp.classList.add('open'); if (btn) btn.textContent = '▲ Fechar'; }
 }
 
 // ── STATS ──────────────────────────────

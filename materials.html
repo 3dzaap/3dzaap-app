@@ -293,6 +293,21 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.mob-fil-list{display:none;flex-direction:column;gap:8px;padding:12px 12px 16px}
+.mob-fil-card{background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);padding:13px 14px}
+.mob-fil-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mob-fil-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.6)}
+.mob-fil-name{font-size:.9rem;font-weight:700;color:var(--dark);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-fil-price{font-family:var(--mono);font-size:.78rem;color:var(--muted);flex-shrink:0}
+.mob-fil-meta{font-size:.76rem;color:var(--muted);margin-bottom:10px}
+.mob-fil-steppers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mob-fil-step-group{background:rgba(255,255,255,.5);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.mob-fil-step-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.mob-fil-stepper{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.mob-fil-stepper .stepper-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:rgba(255,255,255,.8);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mob-fil-stepper .stepper-val{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--dark);min-width:24px;text-align:center}
+.mob-fil-bottom{display:flex;align-items:center;justify-content:space-between}
+.mob-fil-actions{display:flex;gap:6px}
 @media(max-width:680px){
   .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
   .sidebar-overlay.open{display:block;left:var(--sidebar-w)}.main{margin-left:0}
@@ -307,6 +322,8 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
   .modal{margin:8px;border-radius:12px}
   .modal-header{padding:16px 18px 14px}.modal-body{padding:16px 18px}.modal-footer{padding:12px 18px 16px}
   .material-toggle{width:100%}
+  .table-card .table-wrap{display:none}
+  .mob-fil-list{display:flex}
 }
 
   /* ── iOS / Safari fixes ─────────────────
@@ -538,6 +555,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
             <tbody id="filTbody"></tbody>
           </table>
         </div>
+        <div class="mob-fil-list" id="mobFilList"></div>
       </div>
     </div>
   </div>
@@ -1048,6 +1066,7 @@ function renderTable() {
       ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum material corresponde aos filtros.</p>`
       : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3>Sem ${isFDM?'filamentos':'resinas'} ainda</h3><p>Clica em <strong>＋ ${isFDM?'Novo filamento':'Nova resina'}</strong> para adicionar.</p>`;
     tableEl.style.display = 'none';
+    const mfc = document.getElementById('mobFilList'); if (mfc) mfc.innerHTML = '';
     return;
   }
 
@@ -1112,6 +1131,47 @@ function renderTable() {
       </td>
     </tr>`;
   }).join('');
+
+  const mobFil = document.getElementById('mobFilList');
+  if (mobFil) {
+    mobFil.innerHTML = filtered.map(m => {
+      const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
+      const price = m.price ? fmtEur(m.price) : '';
+      const unitWord = isFDM ? 'bobinas' : 'frascos';
+      return `<div class="mob-fil-card">
+        <div class="mob-fil-top">
+          <div class="mob-fil-dot" style="background:${escH(m.colorHex||'#ccc')}"></div>
+          <span class="mob-fil-name">${escH(m.colorName||'—')} — ${escH(m.type||'—')}${m.variation?' ('+escH(m.variation)+')':''}</span>
+          ${price ? `<span class="mob-fil-price">${price}</span>` : ''}
+        </div>
+        <div class="mob-fil-meta">${escH(m.brand||'—')} · ${escH(m.rollSize||'—')} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
+        <div class="mob-fil-steppers">
+          <div class="mob-fil-step-group">
+            <div class="mob-fil-step-lbl">Em uso</div>
+            <div class="mob-fil-stepper">
+              <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',-1)">−</button>
+              <span class="stepper-val" id="msv-inUse-${m.id}">${m.inUse||0}</span>
+              <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',1)">+</button>
+            </div>
+          </div>
+          <div class="mob-fil-step-group">
+            <div class="mob-fil-step-lbl">Total ${unitWord}</div>
+            <div class="mob-fil-stepper">
+              <button class="stepper-btn" onclick="stepField(event,'${m.id}','total',-1)">−</button>
+              <span class="stepper-val" id="msv-total-${m.id}">${m.total||0}</span>
+              <button class="stepper-btn" onclick="stepField(event,'${m.id}','total',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="mob-fil-bottom">
+          <div class="mob-fil-actions">
+            <button class="btn-icon" onclick="openModal('${m.id}')">✏️ Editar</button>
+            <button class="btn-icon del" onclick="confirmDelete('${m.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ══════════════════════════════════════
