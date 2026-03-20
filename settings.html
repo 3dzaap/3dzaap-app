@@ -11,7 +11,18 @@
 (function(){
   var pref = localStorage.getItem('3dzaap_theme') || 'system';
   var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-  applyTheme(pref, auto);
+  var isDark;
+  if (auto) {
+    var h = new Date().getHours();
+    isDark = h >= 20 || h < 7;
+  } else if (pref === 'dark') {
+    isDark = true;
+  } else if (pref === 'light') {
+    isDark = false;
+  } else {
+    isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  }
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 })();
 
 function applyTheme(pref, auto) {
@@ -310,7 +321,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .form-label .hint{font-weight:400;color:var(--subtle);margin-left:4px}
 .form-input,.form-select,.form-textarea{width:100%;padding:10px 13px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.86rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s,box-shadow .18s}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1);background:#fff}
-.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer}
+.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:10px 6px;padding-right:30px;cursor:pointer}
 .form-textarea{resize:vertical;min-height:72px;line-height:1.5}
 .form-hint{font-size:.70rem;color:var(--subtle)}
 /* LOGO UPLOAD */
@@ -444,7 +455,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .filter-search{width:100%;padding:8px 12px 8px 32px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.84rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s}
 .filter-search:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
 .filter-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
-.filter-select{padding:7px 28px 7px 10px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.82rem;font-family:var(--f);color:var(--dark);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;transition:border-color .18s}
+.filter-select{padding:7px 28px 7px 10px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.82rem;font-family:var(--f);color:var(--dark);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:10px 6px;transition:border-color .18s}
 .filter-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
 .filter-count{font-size:.76rem;color:var(--subtle);font-weight:600;white-space:nowrap}
 /* TABLE CARD */
@@ -1297,6 +1308,8 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 :is([data-theme="dark"]) .form-select,
 :is([data-theme="dark"]) .filter-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a96b4'/%3E%3C/svg%3E") !important;
+  background-size: 10px 6px !important;
+  background-repeat: no-repeat !important;
 }
 
 /* focus ring visible on dark */
@@ -1322,7 +1335,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   :root:not([data-theme="light"]) .mob-ord-actions button { background: rgba(255,255,255,0.06) !important; border-color: rgba(255,255,255,0.10) !important; color: var(--muted) !important; }
   :root:not([data-theme="light"]) .mob-ord-actions button.del { color: var(--danger) !important; border-color: rgba(239,68,68,0.25) !important; background: rgba(239,68,68,0.08) !important; }
   :root:not([data-theme="light"]) .form-select,
-  :root:not([data-theme="light"]) .filter-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a96b4'/%3E%3C/svg%3E") !important; }
+  :root:not([data-theme="light"]) .filter-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a96b4'/%3E%3C/svg%3E") !important; background-size: 10px 6px !important; background-repeat: no-repeat !important; }
 }
 
 

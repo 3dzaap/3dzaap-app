@@ -414,7 +414,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .form-input:focus,.form-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1);background:rgba(255,255,255,.97)}
 .resin-modal .form-input:focus,.resin-modal .form-select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
 .form-input:hover:not(:focus),.form-select:hover:not(:focus){border-color:rgba(59,143,212,.3)}
-.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer}
+.form-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:10px 6px;padding-right:30px;cursor:pointer}
 .form-hint{font-size:.70rem;color:var(--subtle);margin-top:2px}
 .form-hint.warn{color:var(--warning)}
 .color-section{margin-bottom:14px}
@@ -1179,6 +1179,8 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
 :is([data-theme="dark"]) .form-select,
 :is([data-theme="dark"]) .filter-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a96b4'/%3E%3C/svg%3E") !important;
+  background-size: 10px 6px !important;
+  background-repeat: no-repeat !important;
 }
 
 /* focus ring visible on dark */
