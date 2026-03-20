@@ -101,7 +101,7 @@ function initThemeToggle(){
    Dark mode:  elevation layers (solid dark, depth via lightness)
    ──────────────────────────────────────────────────────────── */
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --black:#e2eaf4;--dark:#c8d8ea;--muted:#7a96b4;--subtle:#4a6e8e;
+  --black:#e2eaf4;--dark:#c8d8ea;--muted:#9ab4cc;--subtle:#7fa8c8;
   --border:rgba(255,255,255,0.07);--bdark:rgba(0,0,0,0.35);
   --glass:rgba(255,255,255,0.04);--glass-s:rgba(20,31,48,0.98);
   --sh:0 2px 8px rgba(0,0,0,0.5),0 1px 3px rgba(0,0,0,0.3);
@@ -122,7 +122,7 @@ function initThemeToggle(){
   --blur:none;--blur-sm:none;
 }}
 :root[data-theme="dark"]{
-  --black:#e2eaf4;--dark:#c8d8ea;--muted:#7a96b4;--subtle:#4a6e8e;
+  --black:#e2eaf4;--dark:#c8d8ea;--muted:#9ab4cc;--subtle:#7fa8c8;
   --border:rgba(255,255,255,0.07);--bdark:rgba(0,0,0,0.35);
   --glass:rgba(255,255,255,0.04);--glass-s:rgba(20,31,48,0.98);
   --sh:0 2px 8px rgba(0,0,0,0.5),0 1px 3px rgba(0,0,0,0.3);
@@ -155,7 +155,7 @@ function initThemeToggle(){
   :root:not([data-theme="light"]){
     --black:#e2eaf4;
     --dark:#d0dff0;
-    --muted:#7a96b4;
+    --muted:#9ab4cc;
     --subtle:#4a6480;
     --border:rgba(255,255,255,0.08);
     --bdark:rgba(0,0,0,0.3);
@@ -1279,6 +1279,168 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   :root:not([data-theme="light"]) .mob-ord-actions button.del { color: var(--danger) !important; border-color: rgba(239,68,68,0.25) !important; background: rgba(239,68,68,0.08) !important; }
   :root:not([data-theme="light"]) .form-select,
   :root:not([data-theme="light"]) .filter-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a96b4'/%3E%3C/svg%3E") !important; }
+}
+
+
+/* ── DARK MODE TEXT CONTRAST FIXES ───────────────────────────
+   Desktop elements that use --subtle / --muted on card surfaces
+   Mobile equivalents already use var(--dark) correctly
+   ─────────────────────────────────────────────────────────── */
+
+/* Table cell secondary text */
+:is([data-theme="dark"]) .ord-date-sub,
+:is([data-theme="dark"]) .cell-sub,
+:is([data-theme="dark"]) .filter-count,
+:is([data-theme="dark"]) .filter-search-icon {
+  color: var(--muted) !important;
+}
+
+/* Form labels & hints */
+:is([data-theme="dark"]) .form-label,
+:is([data-theme="dark"]) .form-label span,
+:is([data-theme="dark"]) .form-hint,
+:is([data-theme="dark"]) .settings-card-title,
+:is([data-theme="dark"]) .form-section-title,
+:is([data-theme="dark"]) .logo-preview-placeholder,
+:is([data-theme="dark"]) .sig-preview-placeholder {
+  color: var(--muted) !important;
+}
+
+/* Detail grid labels */
+:is([data-theme="dark"]) .detail-item-lbl,
+:is([data-theme="dark"]) .detail-item-val,
+:is([data-theme="dark"]) .items-section-title,
+:is([data-theme="dark"]) .items-mini-table th,
+:is([data-theme="dark"]) .items-mini-table td.r {
+  color: var(--muted) !important;
+}
+
+/* Nav / breadcrumb secondary */
+:is([data-theme="dark"]) .topbar-breadcrumb span,
+:is([data-theme="dark"]) .topbar-breadcrumb a {
+  color: var(--muted) !important;
+}
+:is([data-theme="dark"]) .topbar-breadcrumb strong {
+  color: var(--black) !important;
+}
+:is([data-theme="dark"]) .nav-section-label {
+  color: var(--muted) !important;
+}
+
+/* Stat labels */
+:is([data-theme="dark"]) .stat-mini-lbl,
+:is([data-theme="dark"]) .stat-mini-sub {
+  color: var(--muted) !important;
+}
+:is([data-theme="dark"]) .stat-mini-val {
+  color: var(--black) !important;
+}
+
+/* Page header subtitle */
+:is([data-theme="dark"]) .page-header-text p,
+:is([data-theme="dark"]) .page-header-text h1 {
+  color: var(--black) !important;
+}
+
+/* Table body text */
+:is([data-theme="dark"]) .ord-table td,
+:is([data-theme="dark"]) .fil-table td,
+:is([data-theme="dark"]) .fin-orders-table td {
+  color: var(--dark) !important;
+}
+:is([data-theme="dark"]) .ord-number,
+:is([data-theme="dark"]) .ord-client {
+  color: var(--dark) !important;
+}
+:is([data-theme="dark"]) .ord-number { color: var(--blue) !important; }
+
+/* Empty state text */
+:is([data-theme="dark"]) .table-empty {
+  color: var(--muted) !important;
+}
+:is([data-theme="dark"]) .table-empty h3 {
+  color: var(--dark) !important;
+}
+
+/* Calculator-specific */
+:is([data-theme="dark"]) .field-label,
+:is([data-theme="dark"]) .field-unit,
+:is([data-theme="dark"]) .breakdown-label,
+:is([data-theme="dark"]) .breakdown-val,
+:is([data-theme="dark"]) .result-label {
+  color: var(--muted) !important;
+}
+:is([data-theme="dark"]) .result-value,
+:is([data-theme="dark"]) .result-price {
+  color: var(--black) !important;
+}
+
+/* Financial specific */
+:is([data-theme="dark"]) .fin-kpi-label,
+:is([data-theme="dark"]) .fin-kpi-sub,
+:is([data-theme="dark"]) .period-label {
+  color: var(--muted) !important;
+}
+
+/* Dashboard specific */
+:is([data-theme="dark"]) .greeting-date,
+:is([data-theme="dark"]) .greeting-sub,
+:is([data-theme="dark"]) .health-due-time {
+  color: var(--muted) !important;
+}
+:is([data-theme="dark"]) .greeting-title {
+  color: var(--black) !important;
+}
+
+/* Backoffice */
+:is([data-theme="dark"]) .bo-section-title {
+  color: var(--muted) !important;
+}
+
+/* Modal text */
+:is([data-theme="dark"]) .modal-title,
+:is([data-theme="dark"]) .confirm-title {
+  color: var(--black) !important;
+}
+:is([data-theme="dark"]) .confirm-msg {
+  color: var(--muted) !important;
+}
+
+/* Badges (keep semantic colors, just ensure text contrast) */
+:is([data-theme="dark"]) .role-badge,
+:is([data-theme="dark"]) .company-plan {
+  opacity: 0.9;
+}
+
+/* Table header text */
+:is([data-theme="dark"]) .ord-table th,
+:is([data-theme="dark"]) .fil-table th,
+:is([data-theme="dark"]) .fin-orders-table th {
+  color: var(--muted) !important;
+}
+
+/* @media mirror */
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .ord-date-sub,
+  :root:not([data-theme="light"]) .filter-count,
+  :root:not([data-theme="light"]) .form-hint,
+  :root:not([data-theme="light"]) .detail-item-lbl,
+  :root:not([data-theme="light"]) .nav-section-label,
+  :root:not([data-theme="light"]) .topbar-breadcrumb span,
+  :root:not([data-theme="light"]) .stat-mini-lbl,
+  :root:not([data-theme="light"]) .stat-mini-sub
+  { color: var(--muted) !important; }
+  :root:not([data-theme="light"]) .form-label,
+  :root:not([data-theme="light"]) .page-header-text p,
+  :root:not([data-theme="light"]) .table-empty h3,
+  :root:not([data-theme="light"]) .ord-table td,
+  :root:not([data-theme="light"]) .confirm-msg
+  { color: var(--muted) !important; }
+  :root:not([data-theme="light"]) .stat-mini-val,
+  :root:not([data-theme="light"]) .page-header-text h1,
+  :root:not([data-theme="light"]) .modal-title,
+  :root:not([data-theme="light"]) .topbar-breadcrumb strong
+  { color: var(--black) !important; }
 }
 
 </style>
