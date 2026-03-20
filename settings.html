@@ -2203,6 +2203,13 @@ async function saveAll() {
   try {
     await Auth.updateCompany({ name: name, config: cfg, signature: sig });
     if (_session) { _session.companyName = name; _session.config = cfg; _session.signature = sig; }
+    // Sync theme to localStorage immediately so other modules pick it up on navigation
+    if (cfg.theme && cfg.theme !== 'system') localStorage.setItem('3dzaap_theme', cfg.theme);
+    else localStorage.removeItem('3dzaap_theme');
+    if (cfg.themeAuto) localStorage.setItem('3dzaap_theme_auto', '1');
+    else localStorage.removeItem('3dzaap_theme_auto');
+    applyTheme(cfg.theme || 'system', cfg.themeAuto || false);
+    updateThemeToggleBtn();
     var _elCNs = document.getElementById('companyNameSidebar'); if(_elCNs) _elCNs.textContent = name;
     var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
     _logoB64 = null; _sigB64 = null;
