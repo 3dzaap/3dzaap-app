@@ -484,7 +484,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 
 .fin-period-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg-card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:14px 18px;margin-bottom:20px;animation:fadeUp .5s var(--ease) .05s both}
 .fin-period-bar label{font-size:.78rem;font-weight:700;color:var(--muted)}
-input[type=month]{padding:7px 12px;border-radius:var(--r);background:rgba(255,255,255,.75);border:1.5px solid rgba(255,255,255,.85);font-size:.84rem;font-family:var(--f);color:var(--dark);outline:none;cursor:pointer;transition:border-color .18s}
+input[type=month]{padding:7px 12px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.84rem;font-family:var(--f);color:var(--dark);outline:none;cursor:pointer;transition:border-color .18s}
 input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
 .fin-card{background:var(--bg-card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh);padding:22px 24px;animation:fadeUp .5s var(--ease) .15s both}
 .fin-card-title{font-size:.72rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
@@ -1400,6 +1400,40 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
   { color: var(--black) !important; }
 }
 
+
+/* ── FINANCIAL PERIOD BAR ──────────────────────────────────── */
+:is([data-theme="dark"]) .fin-period-bar {
+  background: var(--bg-card) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+:is([data-theme="dark"]) input[type=month],
+:is([data-theme="dark"]) input[type="month"] {
+  background: var(--bg-input) !important;
+  border-color: var(--border-input) !important;
+  color: var(--dark) !important;
+  color-scheme: dark;
+}
+:is([data-theme="dark"]) input[type=month]:focus,
+:is([data-theme="dark"]) input[type="month"]:focus {
+  background: #1e2e47 !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(59,143,212,0.15) !important;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .fin-period-bar {
+    background: var(--bg-card) !important;
+    border-color: rgba(255,255,255,0.07) !important;
+    backdrop-filter: none !important;
+  }
+  :root:not([data-theme="light"]) input[type=month] {
+    background: var(--bg-input) !important;
+    border-color: var(--border-input) !important;
+    color: var(--dark) !important;
+    color-scheme: dark;
+  }
+}
 </style>
 </head>
 <body>
