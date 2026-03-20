@@ -608,9 +608,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </div>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end">
-          <button class="btn btn-primary" id="btnSaveEmpresa">&#128190; Guardar empresa</button>
-        </div>
       </div>
 
       <!-- TAB: MARCA -->
@@ -654,9 +651,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               </div>
             </div>
           </div>
-        </div>
-        <div style="display:flex;justify-content:flex-end">
-          <button class="btn btn-primary" id="btnSaveMarca">&#128190; Guardar marca</button>
         </div>
       </div>
 
@@ -706,9 +700,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               </div>
             </div>
           </div>
-        </div>
-        <div style="display:flex;justify-content:flex-end">
-          <button class="btn btn-primary" id="btnSavePrefs">&#128190; Guardar prefer&ecirc;ncias</button>
         </div>
       </div>
 
@@ -764,9 +755,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </label>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end">
-          <button class="btn btn-primary" id="btnSaveNotifs">&#128190; Guardar notifica&ccedil;&otilde;es</button>
-        </div>
       </div>
 
       <!-- TAB: EQUIPA -->
@@ -790,10 +778,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
     <!-- SAVE BAR (sticky) -->
     <div class="save-bar" id="saveBar">
-      <span class="save-bar-msg">&#128161; Tens altera&ccedil;&otilde;es n&atilde;o guardadas</span>
+      <span class="save-bar-msg" id="saveBarMsg">&#128161; Alterações não guardadas</span>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm" id="btnDiscard">Descartar</button>
-        <button class="btn btn-primary btn-sm" id="btnSaveAll">&#128190; Guardar tudo</button>
+        <button class="btn btn-primary btn-sm" id="btnSaveAll">&#128190; Guardar</button>
       </div>
     </div>
   </div>
@@ -932,10 +920,6 @@ function wireEvents() {
   });
 
   // Save buttons
-  document.getElementById('btnSaveEmpresa').addEventListener('click', saveEmpresa);
-  document.getElementById('btnSaveMarca').addEventListener('click', saveMarca);
-  document.getElementById('btnSavePrefs').addEventListener('click', savePrefs);
-  document.getElementById('btnSaveNotifs').addEventListener('click', saveNotifs);
   document.getElementById('btnSaveAll').addEventListener('click', saveAll);
   document.getElementById('btnDiscard').addEventListener('click', function(){
     window.location.reload();
@@ -1010,7 +994,13 @@ function showSigPreview(src) {
 // ── DIRTY TRACKING ─────────────────────────────────────────────
 function markDirty() {
   _dirty = true;
-  document.getElementById('saveBar').classList.add('visible');
+  var saveBar = document.getElementById('saveBar');
+  saveBar.classList.add('visible');
+  // Show which tab has unsaved changes
+  var activeTab = document.querySelector('.tab-btn.active');
+  var tabName = activeTab ? activeTab.textContent.trim().replace(/^[\s\S]{1,3}\s/, '') : '';
+  var msgEl = document.getElementById('saveBarMsg');
+  if (msgEl && tabName) msgEl.innerHTML = '&#128161; Alterações em <strong>' + escH(tabName) + '</strong> não guardadas';
 }
 function clearDirty() {
   _dirty = false;
@@ -1041,58 +1031,13 @@ function buildConfig() {
   return cfg;
 }
 
-async function saveEmpresa() {
-  var name = document.getElementById('cName').value.trim();
-  if (!name) { showToast('O nome da empresa \u00e9 obrigat\u00f3rio', 'err'); return; }
-  var cfg = buildConfig();
-  try {
-    await Auth.updateCompany({ name: name, config: cfg });
-    _session.companyName = name;
-    _session.config = cfg;
-    var _elCNs = document.getElementById('companyNameSidebar'); if(_elCNs) _elCNs.textContent = name;
-    var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
-    clearDirty();
-    showToast('\u2705 Empresa guardada!', 'ok');
-  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
-}
-
-async function saveMarca() {
-  var cfg = buildConfig();
-  var sig = _sigB64 || (_session && _session.signature) || null;
-  // If user removed signature explicitly
-  if (document.getElementById('sigPreview').querySelector('img') === null) sig = null;
-  try {
-    await Auth.updateCompany({ config: cfg, signature: sig });
-    if (_session) { _session.config = cfg; _session.signature = sig; }
-    _logoB64 = null; _sigB64 = null;
-    clearDirty();
-    showToast('\u2705 Marca guardada!', 'ok');
-  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
-}
-
-async function savePrefs() {
-  var cfg = buildConfig();
-  try {
-    await Auth.updateCompany({ config: cfg });
-    if (_session) _session.config = cfg;
-    clearDirty();
-    showToast('\u2705 Prefer\u00eancias guardadas!', 'ok');
-  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
-}
-
-async function saveNotifs() {
-  var cfg = buildConfig();
-  try {
-    await Auth.updateCompany({ config: cfg });
-    if (_session) _session.config = cfg;
-    clearDirty();
-    showToast('\u2705 Notifica\u00e7\u00f5es guardadas!', 'ok');
-  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
-}
-
 async function saveAll() {
   var name = document.getElementById('cName').value.trim();
-  if (!name) { showToast('O nome da empresa \u00e9 obrigat\u00f3rio', 'err'); return; }
+  if (!name) { showToast('O nome da empresa é obrigatório', 'err'); return; }
+  var btn = document.getElementById('btnSaveAll');
+  var origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ A guardar…';
   var cfg = buildConfig();
   var sig = _sigB64 || (_session && _session.signature) || null;
   if (document.getElementById('sigPreview').querySelector('img') === null) sig = null;
@@ -1103,8 +1048,19 @@ async function saveAll() {
     var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
     _logoB64 = null; _sigB64 = null;
     clearDirty();
-    showToast('\u2705 Tudo guardado!', 'ok');
-  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
+    btn.innerHTML = '✅ Guardado!';
+    btn.style.background = 'linear-gradient(135deg,var(--success),#15803d)';
+    setTimeout(function() {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+      btn.style.background = '';
+    }, 2000);
+    showToast('✅ Configurações guardadas!', 'ok');
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = origText;
+    showToast('Erro: ' + e.message, 'err');
+  }
 }
 
 // ── TEAM ───────────────────────────────────────────────────────
