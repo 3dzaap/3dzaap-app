@@ -75,7 +75,12 @@ function initThemeToggle() {
   // Wire radio buttons
   document.querySelectorAll('input[name="prefTheme"]').forEach(function(r) {
     r.addEventListener('change', function() {
+      if (window._logoCompressing) return;
       updateAutoRowVisibility(r.value);
+      // Preview theme change immediately (only on genuine user click)
+      var auto = document.getElementById('prefThemeAuto');
+      applyTheme(r.value, auto ? auto.checked : false);
+      updateThemeToggleBtn();
       markDirty();
     });
   });
@@ -83,6 +88,7 @@ function initThemeToggle() {
   if (autoChk) autoChk.addEventListener('change', function() { markDirty(); });
   // Listen for system change
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function() {
+    if (window._logoCompressing) return; // ignore during canvas operations
     var p = localStorage.getItem('3dzaap_theme') || 'system';
     var a = localStorage.getItem('3dzaap_theme_auto') === '1';
     if (p === 'system' && !a) applyTheme('system', false);
@@ -2019,6 +2025,8 @@ function compressAndSetLogo(file) {
         w = Math.round(w * ratio);
         h = Math.round(h * ratio);
       }
+      // Suppress theme-change side-effects during canvas operations
+      window._logoCompressing = true;
       var canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
@@ -2033,6 +2041,7 @@ function compressAndSetLogo(file) {
       }
       var kb = Math.round(b64.length * 0.75 / 1024);
       _logoB64 = b64;
+      window._logoCompressing = false;
       showLogoPreview(_logoB64);
       markDirty();
       showToast('Logo comprimido (' + kb + ' KB)', 'ok');
