@@ -1584,7 +1584,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
                   <label>Preço do filamento</label>
                   <div class="field-wrap">
                     <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit" id="labelFilPrice">€/kg</span>
+                    <span class="field-unit" id="labelFilPrice">/kg</span>
                   </div>
                 </div>
                 <div class="field">
@@ -1623,7 +1623,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
                   <label>Preço da resina <span class="field-hint">por litro</span></label>
                   <div class="field-wrap">
                     <input type="number" id="resinPrice" value="35" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit" id="labelResinPrice">€/L</span>
+                    <span class="field-unit" id="labelResinPrice">/L</span>
                   </div>
                 </div>
                 <div class="field">
@@ -1680,44 +1680,44 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
           <div class="results-panel">
             <div class="price-hero">
               <div class="price-hero-label">💰 Preço de venda sugerido</div>
-              <div class="price-hero-value" id="rFinal">€ 0,00</div>
+              <div class="price-hero-value" id="rFinal">—</div>
               <div class="price-hero-sub" id="rFinalSub">Introduz os parâmetros para calcular</div>
             </div>
             <div class="breakdown-list">
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label" id="rFilamentLabel">Custo do filamento</span></div>
-                <span class="breakdown-value zero" id="rFilament">€ 0,00</span>
+                <span class="breakdown-value zero" id="rFilament">—</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Amortização impressora</span></div>
-                <span class="breakdown-value zero" id="rAmortization">€ 0,00</span>
+                <span class="breakdown-value zero" id="rAmortization">—</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barAmortization" style="width:0%"></div></div>
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label">Custo eletricidade</span></div>
-                <span class="breakdown-value zero" id="rElectricity">€ 0,00</span>
+                <span class="breakdown-value zero" id="rElectricity">—</span>
               </div>
               <div class="cost-bar"><div class="cost-bar-fill" id="barElectricity" style="width:0%"></div></div>
               <div class="breakdown-item divider">
                 <div class="breakdown-left"><div class="breakdown-dot green"></div><span class="breakdown-label" style="font-weight:700">Custo base</span></div>
-                <span class="breakdown-value" id="rBase" style="font-weight:800">€ 0,00</span>
+                <span class="breakdown-value" id="rBase" style="font-weight:800">—</span>
               </div>
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Falhas (<span id="rFailurePct">5</span>%)</span></div>
-                <span class="breakdown-value zero" id="rFailure">€ 0,00</span>
+                <span class="breakdown-value zero" id="rFailure">—</span>
               </div>
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label">+ Indiretos (<span id="rIndirectPct">10</span>%)</span></div>
-                <span class="breakdown-value zero" id="rIndirect">€ 0,00</span>
+                <span class="breakdown-value zero" id="rIndirect">—</span>
               </div>
               <div class="breakdown-item">
                 <div class="breakdown-left"><div class="breakdown-dot purple"></div><span class="breakdown-label">+ Margem (<span id="rMarginPct">30</span>%)</span></div>
-                <span class="breakdown-value zero" id="rMargin">€ 0,00</span>
+                <span class="breakdown-value zero" id="rMargin">—</span>
               </div>
               <div class="breakdown-item total-row">
                 <div class="breakdown-left"><span class="breakdown-label">💰 Preço Final</span></div>
-                <span class="breakdown-value" id="rFinalRow">€ 0,00</span>
+                <span class="breakdown-value" id="rFinalRow">—</span>
               </div>
             </div>
             <div class="results-actions">
@@ -1788,7 +1788,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
       <div class="adv-grid">
         <div class="adv-field">
           <label>Preço da impressora</label>
-          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPrinterPrice">€</span></div>
+          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPrinterPrice"></span></div>
         </div>
         <div class="adv-field">
           <label>Vida útil</label>
@@ -1800,7 +1800,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
         </div>
         <div class="adv-field">
           <label>Preço eletricidade</label>
-          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelElecPrice">€/kWh</span></div>
+          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelElecPrice">/kWh</span></div>
         </div>
       </div>
     </div>
@@ -2331,15 +2331,15 @@ function copyResults(){
     name?name:null,
     `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}`,
     '='.repeat(46),
-    `Custo filamento:    €${r.filamentCost.toFixed(2)}`,
-    `Custo amortização:  €${r.amortizationCost.toFixed(2)}`,
-    `Custo eletricidade: €${r.electricityCost.toFixed(2)}`,
-    `Custo base:         €${r.baseCost.toFixed(2)}`,
-    `+ Falhas (${i.failureRate}%):    €${r.failureCost.toFixed(2)}`,
-    `+ Indiretos (${i.indirectCosts}%): €${r.indirectCost.toFixed(2)}`,
-    `+ Margem (${i.profitMargin}%):   €${r.marginCost.toFixed(2)}`,
+    `Custo filamento:    ${(_cfg&&_cfg._currSymbol)||'€'}${r.filamentCost.toFixed(2)}`,
+    `Custo amortização:  ${(_cfg&&_cfg._currSymbol)||'€'}${r.amortizationCost.toFixed(2)}`,
+    `Custo eletricidade: ${(_cfg&&_cfg._currSymbol)||'€'}${r.electricityCost.toFixed(2)}`,
+    `Custo base:         ${(_cfg&&_cfg._currSymbol)||'€'}${r.baseCost.toFixed(2)}`,
+    `+ Falhas (${i.failureRate}%):    ${(_cfg&&_cfg._currSymbol)||'€'}${r.failureCost.toFixed(2)}`,
+    `+ Indiretos (${i.indirectCosts}%): ${(_cfg&&_cfg._currSymbol)||'€'}${r.indirectCost.toFixed(2)}`,
+    `+ Margem (${i.profitMargin}%):   ${(_cfg&&_cfg._currSymbol)||'€'}${r.marginCost.toFixed(2)}`,
     '-'.repeat(46),
-    `💰 PREÇO FINAL:      €${r.finalPrice.toFixed(2)}`,
+    `💰 PREÇO FINAL:      ${(_cfg&&_cfg._currSymbol)||'€'}${r.finalPrice.toFixed(2)}`,
   ].filter(Boolean).join('\n');
   const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
   if(navigator.clipboard&&window.isSecureContext){

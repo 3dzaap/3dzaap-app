@@ -1468,8 +1468,8 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
       <div class="stats-row">
         <div class="stat-mini"><div class="stat-mini-icon si-blue">📦</div><div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl">Total de pedidos</div></div></div>
         <div class="stat-mini"><div class="stat-mini-icon si-purple">⚙️</div><div><div class="stat-mini-val" id="statProgress">0</div><div class="stat-mini-lbl">Em progresso</div></div></div>
-        <div class="stat-mini"><div class="stat-mini-icon si-orange">⏳</div><div><div class="stat-mini-val" id="statPendingVal">€0</div><div class="stat-mini-sub" id="statPendingCount">0 pedidos</div><div class="stat-mini-lbl">Valor pendente</div></div></div>
-        <div class="stat-mini"><div class="stat-mini-icon si-green">✅</div><div><div class="stat-mini-val" id="statPaidVal">€0</div><div class="stat-mini-sub" id="statPaidCount">0 pedidos</div><div class="stat-mini-lbl">Valor recebido</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-orange">⏳</div><div><div class="stat-mini-val" id="statPendingVal">—</div><div class="stat-mini-sub" id="statPendingCount">0 pedidos</div><div class="stat-mini-lbl">Valor pendente</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-green">✅</div><div><div class="stat-mini-val" id="statPaidVal">—</div><div class="stat-mini-sub" id="statPaidCount">0 pedidos</div><div class="stat-mini-lbl">Valor recebido</div></div></div>
       </div>
       <!-- Filters -->
       <div class="filters-bar">
@@ -1559,7 +1559,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
       <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" style="margin-top:6px">＋ Adicionar item</button>
       <div class="grand-total-row" style="margin-top:12px">
         <span class="grand-total-lbl">Total do pedido</span>
-        <span class="grand-total-val" id="oGrandTotal">€ 0,00</span>
+        <span class="grand-total-val" id="oGrandTotal">— 0,00</span>
       </div>
 
       <div class="form-section-divider" style="margin-top:18px">📋 Estado e Datas</div>
@@ -2398,8 +2398,8 @@ async function printReceipt(id) {
     <tr>
       <td>${i+1}. ${escH(it.description||'—')}</td>
       <td class="r">${it.quantity}</td>
-      <td class="r">€${(it.unitPrice||0).toFixed(2)}</td>
-      <td class="bold">€${((it.quantity||0)*(it.unitPrice||0)).toFixed(2)}</td>
+      <td class="r">${((_cfg&&_cfg._currSymbol)||'€')}${(it.unitPrice||0).toFixed(2)}</td>
+      <td class="bold">${((_cfg&&_cfg._currSymbol)||'€')}${((it.quantity||0)*(it.unitPrice||0)).toFixed(2)}</td>
     </tr>`).join('');
 
   const payDateStr = (() => {
@@ -2457,7 +2457,7 @@ async function printReceipt(id) {
       </table>
       <div class="rcpt-grand">
         <span class="rcpt-grand-label">Total</span>
-        <span class="rcpt-grand-value">€${grand.toFixed(2)}</span>
+        <span class="rcpt-grand-value">${((_cfg&&_cfg._currSymbol)||'€')}${grand.toFixed(2)}</span>
       </div>
       <div class="rcpt-meta">
         <div><div class="rcpt-field-label">Data de Criação</div><div class="rcpt-field-value">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
@@ -2533,12 +2533,12 @@ function printReceiptNow() {
 // ── EXPORT CSV ─────────────────────────
 function exportCSV() {
   if (!orders.length) { showToast('Sem pedidos para exportar','err'); return; }
-  const headers = ['Nº','Cliente','Email','Telefone','Estado','Pagamento','Total (€)','Data Criação','Prazo','Data Pagamento','Itens','Observações'];
+  const headers = ['Nº','Cliente','Email','Telefone','Estado','Pagamento',('Total ('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Data Criação','Prazo','Data Pagamento','Itens','Observações'];
   const rows = orders.map(o => [
     o.orderNumber, o.clientName, o.clientEmail||'', o.clientPhone||'',
     STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?'Pago':'Pendente',
     (o.total||0).toFixed(2), o.createdAt||'', o.dueDate||'', o.paymentDate||'',
-    (o.items||[]).map(i=>`${i.description}(${i.quantity}x€${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description}(${i.quantity}x${((_cfg&&_cfg._currSymbol)||'€')}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
     o.notes||'',
   ]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');

@@ -1522,22 +1522,22 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
       <div class="fin-kpi-grid">
         <div class="fin-kpi accent">
           <div class="fin-kpi-lbl">Total Faturado</div>
-          <div class="fin-kpi-val" id="kpiTotal">€ 0,00</div>
+          <div class="fin-kpi-val" id="kpiTotal">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiTotalSub">0 pedidos</div>
         </div>
         <div class="fin-kpi green">
           <div class="fin-kpi-lbl">Recebido</div>
-          <div class="fin-kpi-val" id="kpiPago">€ 0,00</div>
+          <div class="fin-kpi-val" id="kpiPago">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPagoSub">0 pagos</div>
         </div>
         <div class="fin-kpi orange">
           <div class="fin-kpi-lbl">A Receber</div>
-          <div class="fin-kpi-val" id="kpiPendente">€ 0,00</div>
+          <div class="fin-kpi-val" id="kpiPendente">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPendenteSub">0 pendentes</div>
         </div>
         <div class="fin-kpi">
           <div class="fin-kpi-lbl">Valor Médio</div>
-          <div class="fin-kpi-val" id="kpiMedia">€ 0,00</div>
+          <div class="fin-kpi-val" id="kpiMedia">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiMediaSub">por pedido</div>
         </div>
       </div>
@@ -1546,7 +1546,7 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
         <div class="fin-card">
           <div class="fin-card-title">📊 Distribuição por estado</div>
           <table class="fin-status-table">
-            <thead><tr><th>Estado</th><th class="r">Qtd</th><th class="r">Total (€)</th></tr></thead>
+            <thead><tr><th>Estado</th><th class="r">Qtd</th><th class="r" id="finThTotal">Total</th></tr></thead>
             <tbody id="statusTableBody">
               <tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:20px">A carregar…</td></tr>
             </tbody>
@@ -1569,7 +1569,7 @@ input[type=month]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,14
             <thead>
               <tr>
                 <th>Nº</th><th>Cliente</th><th>Estado</th><th>Pagamento</th>
-                <th class="r">Total (€)</th><th>Data</th>
+                <th class="r" id="finThTotal2">Total</th><th>Data</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody"></tbody>
@@ -1628,6 +1628,11 @@ async function loadUserData() {
   const session = await Auth.getSession();
   if (!session) return;
   loadCfg(session);
+  // Update currency headers
+  ['finThTotal','finThTotal2'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.textContent='Total ('+((_cfg&&_cfg._currSymbol)||'€')+')';
+  });
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname

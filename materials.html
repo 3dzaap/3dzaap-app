@@ -1663,7 +1663,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
             <div class="form-hint">0 = sem alerta</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Preço por kg <span>(€)</span></label>
+            <label class="form-label">Preço por kg <span id="matLabelKg">(/kg)</span></label>
             <input type="number" id="fPrice" class="form-input mono" value="25" min="0" step="0.01">
           </div>
         </div>
@@ -1694,7 +1694,7 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
             <div class="form-hint">0 = sem alerta</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Preço por litro <span>(€/L)</span></label>
+            <label class="form-label">Preço por litro <span id="matLabelL">(/L)</span></label>
             <input type="number" id="rPrice" class="form-input mono" value="30" min="0" step="0.01">
           </div>
         </div>
@@ -1825,6 +1825,9 @@ async function loadUserData() {
   const session = await Auth.getSession();
   if (!session) return;
   loadCfg(session);
+  var sym=((_cfg&&_cfg._currSymbol)||'€');
+  var kg=document.getElementById('matLabelKg'); if(kg) kg.textContent='('+sym+'/kg)';
+  var L=document.getElementById('matLabelL');   if(L)  L.textContent='('+sym+'/L)';
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
@@ -2091,7 +2094,7 @@ function renderTable() {
       <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls">Novas <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">€/kg</span> <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/kg</span> <span class="th-sort">↕</span></th>
       <th>Estado</th><th></th></tr>`;
   } else {
     thead.innerHTML = `<tr>
@@ -2102,7 +2105,7 @@ function renderTable() {
       <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls">Novos <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">€/L</span> <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/L</span> <span class="th-sort">↕</span></th>
       <th>Validade</th>
       <th>Estado</th><th></th></tr>`;
   }
@@ -2242,6 +2245,10 @@ function buildTooltip(id, list) {
 function openModal(id = null) {
   editingId = id;
   const isEdit = id !== null;
+  // Update currency labels every time modal opens
+  var _sym = ((_cfg&&_cfg._currSymbol)||'€');
+  var _kg = document.getElementById('matLabelKg'); if(_kg) _kg.textContent='('+_sym+'/kg)';
+  var _L  = document.getElementById('matLabelL');  if(_L)  _L.textContent='('+_sym+'/L)';
 
   if (isEdit) {
     const m = allMaterials.find(x => x.id === id);

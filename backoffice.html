@@ -1653,7 +1653,7 @@ function exportFilaments() {
 
 function exportOrders() {
   if (!orders.length) { showToast('Sem pedidos para exportar','err'); return; }
-  const hdr = ['ID','Número','Cliente','Email','Telefone','Estado','Pagamento','Total(€)','Data Criação','Prazo','Data Pagamento','Itens','Observações'];
+  const hdr = ['ID','Número','Cliente','Email','Telefone','Estado','Pagamento',('Total('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Data Criação','Prazo','Data Pagamento','Itens','Observações'];
   let csv = hdr.join(sep)+'\n';
   orders.forEach(o=>{
     const itens = (o.items||[{description:o.description,quantity:o.quantity,unitPrice:o.unitPrice}])
@@ -1694,7 +1694,7 @@ function exportAll() {
       .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
   });
   csv += '\n"#SECÇÃO";"Pedidos"\n';
-  csv += ['ID','Número','Cliente','Email','Telefone','Estado','Pagamento','Total(€)','Data Criação','Prazo','Data Pagamento','Itens','Observações'].join(sep)+'\n';
+  csv += ['ID','Número','Cliente','Email','Telefone','Estado','Pagamento',('Total('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Data Criação','Prazo','Data Pagamento','Itens','Observações'].join(sep)+'\n';
   orders.forEach(o=>{
     const itens=(o.items||[{description:o.description,quantity:o.quantity,unitPrice:o.unitPrice}])
       .map(i=>`${i.quantity}x ${i.description} @${(i.unitPrice||0).toFixed(2)}${((_cfg&&_cfg._currSymbol)||'€')}`).join(' | ');
@@ -1837,7 +1837,7 @@ function parseOrdersCSV(text) {
   if(!records.length) throw new Error('Nenhum pedido válido encontrado.');
   _importData={kind:'orders',records};
   showPreview(`✅ <strong>${records.length} pedidos</strong> prontos para importar`,
-    records.slice(0,4).map(o=>`• ${o.orderNumber||'—'} — ${o.clientName} | €${o.total.toFixed(2)}`).join('<br>')
+    records.slice(0,4).map(o=>`• ${o.orderNumber||'—'} — ${o.clientName} | ${((_cfg&&_cfg._currSymbol)||'€')}${o.total.toFixed(2)}`).join('<br>')
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
 
@@ -1862,8 +1862,8 @@ function parseExpensesCSV(text) {
   if(!records.length) throw new Error('Nenhuma despesa válida encontrada.');
   _importData={kind:'expenses',records};
   const total=records.reduce((s,e)=>s+(e.value||0),0);
-  showPreview(`✅ <strong>${records.length} despesas</strong> — total €${total.toFixed(2)}`,
-    records.slice(0,4).map(e=>`• ${e.date} — ${e.description} (€${(e.value||0).toFixed(2)})`).join('<br>')
+  showPreview(`✅ <strong>${records.length} despesas</strong> — total ${((_cfg&&_cfg._currSymbol)||'€')}${total.toFixed(2)}`,
+    records.slice(0,4).map(e=>`• ${e.date} — ${e.description} (${((_cfg&&_cfg._currSymbol)||'€')}${(e.value||0).toFixed(2)})`).join('<br>')
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
 
