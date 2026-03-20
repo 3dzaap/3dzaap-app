@@ -1584,7 +1584,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
                   <label>Preço do filamento</label>
                   <div class="field-wrap">
                     <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit">€/kg</span>
+                    <span class="field-unit" id="labelFilPrice">€/kg</span>
                   </div>
                 </div>
                 <div class="field">
@@ -1623,7 +1623,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
                   <label>Preço da resina <span class="field-hint">por litro</span></label>
                   <div class="field-wrap">
                     <input type="number" id="resinPrice" value="35" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit">€/L</span>
+                    <span class="field-unit" id="labelResinPrice">€/L</span>
                   </div>
                 </div>
                 <div class="field">
@@ -1680,7 +1680,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
           <div class="results-panel">
             <div class="price-hero">
               <div class="price-hero-label">💰 Preço de venda sugerido</div>
-              <div class="price-hero-value" id="rFinal">€&nbsp;0,00</div>
+              <div class="price-hero-value" id="rFinal">€ 0,00</div>
               <div class="price-hero-sub" id="rFinalSub">Introduz os parâmetros para calcular</div>
             </div>
             <div class="breakdown-list">
@@ -1788,7 +1788,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
       <div class="adv-grid">
         <div class="adv-field">
           <label>Preço da impressora</label>
-          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">€</span></div>
+          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPrinterPrice">€</span></div>
         </div>
         <div class="adv-field">
           <label>Vida útil</label>
@@ -1800,7 +1800,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
         </div>
         <div class="adv-field">
           <label>Preço eletricidade</label>
-          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit">€/kWh</span></div>
+          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelElecPrice">€/kWh</span></div>
         </div>
       </div>
     </div>
@@ -1903,6 +1903,7 @@ async function loadUserData() {
   const session = await Auth.getSession();
   if (!session) return;
   loadCfg(session);
+  updateCurrencyLabels();
   loadCfg(session);
   loadCfg(session);
   loadCfg(session);
@@ -1947,7 +1948,17 @@ async function loadCompanyDefaults(){
   }catch(e){}
 }
 
+
+function updateCurrencyLabels() {
+  var sym = (_cfg && _cfg._currSymbol) || '€';
+  var el;
+  if ((el = document.getElementById('labelFilPrice')))   el.textContent = sym + '/kg';
+  if ((el = document.getElementById('labelResinPrice'))) el.textContent = sym + '/L';
+  if ((el = document.getElementById('labelPrinterPrice')))el.textContent = sym;
+  if ((el = document.getElementById('labelElecPrice')))  el.textContent = sym + '/kWh';
+}
 function applyDefaultsToForm(){
+  updateCurrencyLabels();
   // Update weight unit labels from config
   var wu = (_cfg && _cfg._weightUnit) || 'g';
   document.querySelectorAll('[id="partWeightUnit"],[id="weightUnitLabel"],[data-unit="weight"]').forEach(function(el){el.textContent=wu;});
@@ -2270,14 +2281,14 @@ function exportCalcCSV(){
   var i=getInputs();var r=computeResults(i);
   var name=document.getElementById('printName').value.trim();
   var matRows=i.mode==='resin'
-    ?[['Modo','Resina'],['Preço resina (€/L)',i.resinPrice],['Volume (mL)',i.resinVolume],
+    ?[['Modo','Resina'],[('Preço resina ('+((_cfg&&_cfg._currSymbol)||'€')+'/L)'),i.resinPrice],['Volume (mL)',i.resinVolume],
       ['Densidade (g/mL)',i.resinDensity],['Tempo (h)',i.printTime],['UV (W)',i.uvLampPower],['Lavagem+cura (min)',i.washCureTime]]
-    :[['Modo','FDM'],['Preço filamento (€/kg)',i.filamentPrice],['Peso (g)',i.partWeight],
+    :[['Modo','FDM'],[('Preço filamento ('+((_cfg&&_cfg._currSymbol)||'€')+'/kg)'),i.filamentPrice],['Peso (g)',i.partWeight],
       ['Tempo (h)',i.printTime],['Consumo (W)',i.powerConsumption]];
   var rows=[['Campo','Valor'],['Nome',name||'—'],['Quantidade',i.qty||1]]
     .concat(matRows)
-    .concat([['Impressora (€)',i.printerPrice],['Vida útil (h)',i.printerLife],
-      ['Eletricidade (€/kWh)',i.electricityPrice],['Falhas (%)',i.failureRate],
+    .concat([[('Impressora ('+((_cfg&&_cfg._currSymbol)||'€')+')'),i.printerPrice],['Vida útil (h)',i.printerLife],
+      [('Eletricidade ('+((_cfg&&_cfg._currSymbol)||'€')+'/kWh)'),i.electricityPrice],['Falhas (%)',i.failureRate],
       ['Indiretos (%)',i.indirectCosts],['Margem (%)',i.profitMargin],['---','---'],
       ['Custo material',r.materialCost.toFixed(4)],['Custo amortização',r.amortizationCost.toFixed(4)],
       ['Custo eletricidade',r.electricityCost.toFixed(4)],['Custo base (p/un.)',r.baseCost.toFixed(4)],
