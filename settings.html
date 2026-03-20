@@ -1988,7 +1988,8 @@ async function initPage() {
   document.getElementById('prefWeightUnit').value = cfg.weightUnit || 'g';
   document.getElementById('prefMargin').value   = cfg.margin      || '30';
   document.getElementById('notifStockOut').checked = cfg.notifStockOut !== false;
-  // Apply saved theme preference
+  // Sync theme preference from Supabase → localStorage (IIFE already applied it at page load)
+  // Never call applyTheme() here — it would override the correct state set by the IIFE
   if (cfg.theme && cfg.theme !== 'system') {
     localStorage.setItem('3dzaap_theme', cfg.theme);
   } else if (cfg.theme === 'system') {
@@ -1999,7 +2000,17 @@ async function initPage() {
   } else {
     localStorage.removeItem('3dzaap_theme_auto');
   }
-  applyTheme(cfg.theme || 'system', cfg.themeAuto || false);
+  // Only re-apply if localStorage was out of sync with Supabase
+  var storedPref = localStorage.getItem('3dzaap_theme') || 'system';
+  var storedAuto = localStorage.getItem('3dzaap_theme_auto') === '1';
+  var currentTheme = document.documentElement.getAttribute('data-theme');
+  var expectedTheme = (function(){
+    if (storedAuto) { var h=new Date().getHours(); return (h>=20||h<7)?'dark':'light'; }
+    if (storedPref==='dark') return 'dark';
+    if (storedPref==='light') return 'light';
+    return window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  })();
+  if (currentTheme !== expectedTheme) applyTheme(storedPref, storedAuto);
   document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
   document.getElementById('notifOverdue').checked  = cfg.notifOverdue  !== false;
   document.getElementById('notifMonthly').checked  = cfg.notifMonthly  === true;
