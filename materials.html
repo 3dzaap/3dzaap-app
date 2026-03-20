@@ -369,6 +369,10 @@ input[type=color]{width:36px;height:36px;border-radius:var(--r);border:1.5px sol
     .sidebar{ z-index: 300 !important; }
     .sidebar-overlay{ z-index: 280 !important; }
   }
+@media(max-width:420px){
+  .stats-row{grid-template-columns:1fr}
+  .fil-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -788,10 +792,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById(id).addEventListener('input', syncFDMNew));
   ['rTotal','rInUse'].forEach(id =>
     document.getElementById(id).addEventListener('input', syncResinNew));
-}
-@media(max-width:420px){
-  .stats-row{grid-template-columns:1fr}
-  .fil-grid{grid-template-columns:1fr}
 }
 );
 
