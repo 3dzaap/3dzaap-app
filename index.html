@@ -216,11 +216,11 @@ section{position:relative;z-index:1}
 .ssub{font-size:.96rem;color:var(--muted);line-height:1.75}
 
 /* ── FEATURES ───────────────────────── */
-.features{padding:76px 0}
+.features{padding:76px 0;position:relative;z-index:1}
 .fhdr{text-align:center;margin-bottom:48px}
 .fhdr .ssub{margin:0 auto;max-width:500px}
 .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.fcard{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.9);border-radius:16px;padding:28px 26px;position:relative;overflow:hidden;transition:all .35s var(--ease);box-shadow:0 4px 20px rgba(30,60,120,.09);display:block}
+.fcard{background:rgba(255,255,255,.96);border:1.5px solid rgba(255,255,255,.9);border-radius:16px;padding:28px 26px;position:relative;overflow:visible;transition:all .35s var(--ease);box-shadow:0 4px 20px rgba(30,60,120,.09);display:block}
 .fcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .35s}
 .fcard:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(30,60,120,.16)}
 .fcard:hover::before{opacity:1}
@@ -240,7 +240,8 @@ section{position:relative;z-index:1}
 .flist{list-style:none;display:flex;flex-direction:column;gap:6px}
 .flist li{display:flex;align-items:flex-start;gap:8px;font-size:.80rem;color:var(--dark);font-weight:500;line-height:1.4}
 /* Health Score card - full width highlight */
-.fcard-hs{grid-column:1/-1;background:linear-gradient(135deg,rgba(255,248,230,.98),rgba(255,253,245,.98));border:1.5px solid rgba(245,158,11,.25)}
+.fcard-hs{grid-column:1/-1;background:linear-gradient(135deg,rgba(255,248,230,.98),rgba(255,253,245,.98));border:1.5px solid rgba(245,158,11,.25);overflow:visible}
+.fgrid .gc{backdrop-filter:none;-webkit-backdrop-filter:none}
 .hs-inner{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
 .hs-score-wrap{display:flex;align-items:center;gap:20px;flex-shrink:0}
 .hs-circle{width:88px;height:88px;border-radius:50%;background:conic-gradient(#f59e0b calc(var(--score,82)*1%),rgba(245,158,11,.12) 0);display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
