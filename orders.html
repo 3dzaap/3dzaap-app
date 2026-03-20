@@ -1672,6 +1672,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ── USER DATA ──────────────────────────
+
+// ── CONFIG GLOBALS ──────────────────────────────────────────
+var _cfg = {};
+function loadCfg(session) {
+  _cfg = (session && session.config) ? session.config : {};
+  // Currency
+  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
+  _cfg._currSymbol = currMap[_cfg.currency] || '€';
+  _cfg._currCode   = _cfg.currency || 'EUR';
+  // Locale for number formatting
+  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
+  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
+  // Date format (DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD)
+  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
+  // Weight unit
+  _cfg._weightUnit = _cfg.weightUnit || 'g';
+  // Margin
+  _cfg._margin = parseFloat(_cfg.margin) || 30;
+}
+
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
@@ -2554,7 +2574,19 @@ function toggleSidebar() {
 
 // ── HELPERS ────────────────────────────
 function fmtN(v){ return parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtDate(s){if(!s)return'—';var c=String(s).slice(0,10);var d=new Date(c+'T12:00:00');return isNaN(d.getTime())?c:d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtDate(s){
+  if(!s)return'—';
+  var c=String(s).slice(0,10);
+  var d=new Date(c+'T12:00:00');
+  if(isNaN(d.getTime()))return c;
+  var fmt=(_cfg&&_cfg._dateFmt)||'DD/MM/YYYY';
+  var dd=String(d.getDate()).padStart(2,'0');
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var yyyy=d.getFullYear();
+  if(fmt==='MM/DD/YYYY')return mm+'/'+dd+'/'+yyyy;
+  if(fmt==='YYYY-MM-DD')return yyyy+'-'+mm+'-'+dd;
+  return dd+'/'+mm+'/'+yyyy;
+}
 function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
 let _tt;

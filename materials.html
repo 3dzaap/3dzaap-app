@@ -1799,6 +1799,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ══════════════════════════════════════
 //  AUTH / USER
 // ══════════════════════════════════════
+
+// ── CONFIG GLOBALS ──────────────────────────────────────────
+var _cfg = {};
+function loadCfg(session) {
+  _cfg = (session && session.config) ? session.config : {};
+  // Currency
+  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
+  _cfg._currSymbol = currMap[_cfg.currency] || '€';
+  _cfg._currCode   = _cfg.currency || 'EUR';
+  // Locale for number formatting
+  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
+  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
+  // Date format (DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD)
+  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
+  // Weight unit
+  _cfg._weightUnit = _cfg.weightUnit || 'g';
+  // Margin
+  _cfg._margin = parseFloat(_cfg.margin) || 30;
+}
+
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
@@ -1976,6 +1996,11 @@ function statusLabel(s) {
 }
 
 function renderBadge(m) {
+  const s = getStatus(m);
+  // Respect notification settings — hide badge if user disabled that alert type
+  if (s === 'red'    && _cfg.notifStockOut === false) return '';
+  if (s === 'orange' && _cfg.notifStockLow === false) return '';
+
   const s = getStatus(m);
   return `<span class="status-badge status-${s}"><span class="status-dot"></span>${statusLabel(s)}</span>`;
 }

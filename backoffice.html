@@ -1538,6 +1538,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ── USER DATA ──────────────────────────
+
+// ── CONFIG GLOBALS ──────────────────────────────────────────
+var _cfg = {};
+function loadCfg(session) {
+  _cfg = (session && session.config) ? session.config : {};
+  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
+  _cfg._currSymbol = currMap[_cfg.currency] || '€';
+  _cfg._currCode   = _cfg.currency || 'EUR';
+  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
+  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
+  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
+  _cfg._weightUnit = _cfg.weightUnit || 'g';
+  _cfg._margin = parseFloat(_cfg.margin) || 30;
+}
+
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
