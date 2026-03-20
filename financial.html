@@ -1627,6 +1627,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  loadCfg(session);
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
@@ -1791,12 +1792,12 @@ function exportCSVFinanceiro() {
   const periodOrders = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo);
   if (!periodOrders.length) { showToast('Sem pedidos neste período','err'); return; }
   const sep = ';';
-  const hdr = ['Nº','Cliente','Estado','Pagamento','Total (€)','Data Criação','Data Pagamento','Itens'];
+  const hdr = ['Nº','Cliente','Estado','Pagamento',('Total ('+(_cfg&&_cfg._currSymbol||'€')+')'),'Data Criação','Data Pagamento','Itens'];
   const rows = periodOrders.map(o => [
     o.orderNumber||'', o.clientName||'',
     STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?'Pago':'Pendente',
     (o.total||0).toFixed(2), o.createdAt||'', o.paymentDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x€${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
   dlCSV(csv, `financeiro_${_periodo}.csv`);
@@ -1807,12 +1808,12 @@ function exportCSVOrcamento() {
   const pendentes = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo && o.paymentStatus === 'pendente');
   if (!pendentes.length) { showToast('Sem orçamentos pendentes neste período','err'); return; }
   const sep = ';';
-  const hdr = ['Nº','Cliente','Estado','Total (€)','Data Criação','Prazo Entrega','Itens','Observações'];
+  const hdr = ['Nº','Cliente','Estado',('Total ('+(_cfg&&_cfg._currSymbol||'€')+')'),'Data Criação','Prazo Entrega','Itens','Observações'];
   const rows = pendentes.map(o => [
     o.orderNumber||'', o.clientName||'',
     STATUS_LABELS[o.status]||o.status, (o.total||0).toFixed(2),
     o.createdAt||'', o.dueDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x€${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
     o.notes||'',
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');

@@ -1824,6 +1824,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  loadCfg(session);
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
@@ -2090,7 +2091,7 @@ function renderTable() {
       <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls">Novas <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price">€/kg <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">€/kg</span> <span class="th-sort">↕</span></th>
       <th>Estado</th><th></th></tr>`;
   } else {
     thead.innerHTML = `<tr>
@@ -2101,11 +2102,14 @@ function renderTable() {
       <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls">Novos <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price">€/L <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">€/L</span> <span class="th-sort">↕</span></th>
       <th>Validade</th>
       <th>Estado</th><th></th></tr>`;
   }
 
+  // Update price column header with currency
+  var thPL = document.getElementById('thPriceLabel');
+  if (thPL) thPL.textContent = ((_cfg&&_cfg._currSymbol)||'€') + (isFDM ? '/kg' : '/L');
   tbody.innerHTML = filtered.map(m => {
     const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
     const price    = m.price ? fmtEur(m.price) : '—';
@@ -2467,8 +2471,8 @@ function exportCSV() {
   if (!list.length) { showToast('Sem dados para exportar', 'err'); return; }
   const isFDM = currentView === 'fdm';
   const headers = isFDM
-    ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas','€/kg','Estado','Notas']
-    : ['ID','Cor','Hex','Tipo','Variação','Marca','Frasco','Total','Em Uso','Novos','€/L','Validade','Estado','Notas'];
+    ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas',(((_cfg&&_cfg._currSymbol)||'€')+'/kg'),'Estado','Notas']
+    : ['ID','Cor','Hex','Tipo','Variação','Marca','Frasco','Total','Em Uso','Novos',(((_cfg&&_cfg._currSymbol)||'€')+'/L'),'Validade','Estado','Notas'];
   const rows = list.map(m => {
     const base = [m.id, m.colorName, m.colorHex, m.type, m.variation, m.brand,
       m.rollSize, m.total, m.inUse, Math.max(0,(m.total||0)-(m.inUse||0)),

@@ -1558,6 +1558,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  loadCfg(session);
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
@@ -1656,7 +1657,7 @@ function exportOrders() {
   let csv = hdr.join(sep)+'\n';
   orders.forEach(o=>{
     const itens = (o.items||[{description:o.description,quantity:o.quantity,unitPrice:o.unitPrice}])
-      .map(i=>`${i.quantity}x ${i.description} @${(i.unitPrice||0).toFixed(2)}€`).join(' | ');
+      .map(i=>`${i.quantity}x ${i.description} @${(i.unitPrice||0).toFixed(2)}${((_cfg&&_cfg._currSymbol)||'€')}`).join(' | ');
     csv += [o.id||'',o.orderNumber||'',o.clientName||'',o.clientEmail||'',o.clientPhone||'',
       o.status||'',o.paymentStatus||'',(o.total||0).toFixed(2),
       o.createdAt||'',o.dueDate||'',o.paymentDate||'',itens,o.notes||'']
@@ -1670,7 +1671,7 @@ function exportOrders() {
 
 function exportExpenses() {
   if (!expenses.length) { showToast('Sem despesas para exportar','err'); return; }
-  const hdr = ['ID','Data','Categoria','Descrição','Valor(€)'];
+  const hdr = ['ID','Data','Categoria','Descrição',('Valor('+((_cfg&&_cfg._currSymbol)||'€')+')')];
   let csv = hdr.join(sep)+'\n';
   expenses.forEach(e=>{
     csv += [e.id||'',e.date||'',e.category||'',e.description||'',(e.value||0).toFixed(2)]
@@ -1696,14 +1697,14 @@ function exportAll() {
   csv += ['ID','Número','Cliente','Email','Telefone','Estado','Pagamento','Total(€)','Data Criação','Prazo','Data Pagamento','Itens','Observações'].join(sep)+'\n';
   orders.forEach(o=>{
     const itens=(o.items||[{description:o.description,quantity:o.quantity,unitPrice:o.unitPrice}])
-      .map(i=>`${i.quantity}x ${i.description} @${(i.unitPrice||0).toFixed(2)}€`).join(' | ');
+      .map(i=>`${i.quantity}x ${i.description} @${(i.unitPrice||0).toFixed(2)}${((_cfg&&_cfg._currSymbol)||'€')}`).join(' | ');
     csv += [o.id||'',o.orderNumber||'',o.clientName||'',o.clientEmail||'',o.clientPhone||'',
       o.status||'',o.paymentStatus||'',(o.total||0).toFixed(2),
       o.createdAt||'',o.dueDate||'',o.paymentDate||'',itens,o.notes||'']
       .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
   });
   csv += '\n"#SECÇÃO";"Despesas"\n';
-  csv += ['ID','Data','Categoria','Descrição','Valor(€)'].join(sep)+'\n';
+  csv += ['ID','Data','Categoria','Descrição',('Valor('+((_cfg&&_cfg._currSymbol)||'€')+')')].join(sep)+'\n';
   expenses.forEach(e=>{
     csv += [e.id||'',e.date||'',e.category||'',e.description||'',(e.value||0).toFixed(2)]
       .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';

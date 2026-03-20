@@ -1697,6 +1697,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  loadCfg(session);
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
@@ -1792,8 +1793,8 @@ function renderOrders(keepExpandId) {
       <tr>
         <td>${idx+1}. ${escH(it.description||'—')}</td>
         <td class="r">${it.quantity}</td>
-        <td class="r">€ ${fmtN(it.unitPrice||0)}</td>
-        <td class="bold">€ ${fmtN((it.quantity||0)*(it.unitPrice||0))}</td>
+        <td class="r">${fmtEur(it.unitPrice||0)}</td>
+        <td class="bold">${fmtEur((it.quantity||0)*(it.unitPrice||0))}</td>
       </tr>`).join('');
 
     const detailGrid = [
@@ -1812,7 +1813,7 @@ function renderOrders(keepExpandId) {
         <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub">${its.length} item(s)</div></td>
         <td><span class="badge bs-${o.status}"><span class="badge-dot"></span>${STATUS_LABELS[o.status]||o.status}</span></td>
         <td><span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?'✓ Pago':'⏳ Pendente'}</span></td>
-        <td class="cell-mono">€ ${fmtN(grand)}</td>
+        <td class="cell-mono">${fmtEur(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -1832,7 +1833,7 @@ function renderOrders(keepExpandId) {
                 ${itemsHtml}
                 <tr class="grand-row">
                   <td colspan="3" style="text-align:right;color:var(--muted);font-size:.78rem">Total</td>
-                  <td class="bold">€ ${fmtN(grand)}</td>
+                  <td class="bold">${fmtEur(grand)}</td>
                 </tr>
               </tbody>
             </table>
@@ -1852,11 +1853,11 @@ function renderOrders(keepExpandId) {
     mobList.innerHTML = filtered.map(o => {
       const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
       const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
-      const itemsHtml = its.map(it=>`<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity}</span><span class="mob-item-total">€ ${fmtN((it.quantity||0)*(it.unitPrice||0))}</span></div>`).join('');
+      const itemsHtml = its.map(it=>`<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity}</span><span class="mob-item-total">${fmtEur((it.quantity||0)*(it.unitPrice||0))}</span></div>`).join('');
       return `<div class="mob-ord-card" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
-          <span class="mob-ord-total">€ ${fmtN(grand)}</span>
+          <span class="mob-ord-total">${fmtEur(grand)}</span>
         </div>
         <div class="mob-ord-client">${escH(o.clientName)}</div>
         <div class="mob-ord-meta">
@@ -1871,7 +1872,7 @@ function renderOrders(keepExpandId) {
             ${o.clientEmail?`<div><div class="mob-expand-lbl">Email</div><div class="mob-expand-val">${escH(o.clientEmail)}</div></div>`:''}
             ${o.clientPhone?`<div><div class="mob-expand-lbl">Telefone</div><div class="mob-expand-val">${escH(o.clientPhone)}</div></div>`:''}
           </div>
-          <div class="mob-items-list">${itemsHtml}<div class="mob-grand"><span>Total</span><span>€ ${fmtN(grand)}</span></div></div>
+          <div class="mob-items-list">${itemsHtml}<div class="mob-grand"><span>Total</span><span>${fmtEur(grand)}</span></div></div>
         </div>
         <div class="mob-ord-actions">
           <button onclick="event.stopPropagation();toggleMobExpand('${o.id}')" id="mcb-${o.id}">▼ Detalhes</button>
@@ -1925,9 +1926,9 @@ function updateStats() {
   const paidVal = paid.reduce((s,o)=>s+(o.total||0),0);
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statProgress').textContent = progress;
-  document.getElementById('statPendingVal').textContent = '€\u00A0' + fmtN(pendingVal);
+  document.getElementById('statPendingVal').textContent = fmtEur(pendingVal);
   document.getElementById('statPendingCount').textContent = pending.length + ' pedido' + (pending.length!==1?'s':'');
-  document.getElementById('statPaidVal').textContent = '€\u00A0' + fmtN(paidVal);
+  document.getElementById('statPaidVal').textContent = fmtEur(paidVal);
   document.getElementById('statPaidCount').textContent = paid.length + ' pedido' + (paid.length!==1?'s':'');
 }
 
@@ -2103,7 +2104,7 @@ function openModal(id = null) {
   // reset weight unit header
   const _lbl = document.getElementById('weightUnitLabel');
   if (_lbl) _lbl.textContent = 'g/ml';
-  document.getElementById('oGrandTotal').textContent = ((_cfg&&_cfg._currSymbol)||'€')+' 0,00';
+  document.getElementById('oGrandTotal').textContent = fmtEur(0);
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
   if (id) {
@@ -2275,7 +2276,7 @@ function removeItem(id) {
 
 function recalcTotal() {
   const total = _items.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
-  document.getElementById('oGrandTotal').textContent = '€\u00A0' + fmtN(total);
+  document.getElementById('oGrandTotal').textContent = fmtEur(total);
 }
 
 function getItemsFromDOM() {
