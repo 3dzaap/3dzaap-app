@@ -1799,13 +1799,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
                 <option value="ml">Mililitros (ml)</option>
               </select>
             </div>
-            <div class="form-group full">
-              <label class="form-label">Margem de lucro padr&atilde;o <span class="hint">(usada na calculadora)</span></label>
-              <div style="display:flex;align-items:center;gap:10px">
-                <input type="number" id="prefMargin" class="form-input" min="0" max="100" step="1" placeholder="30" style="max-width:120px">
-                <span style="font-size:.84rem;color:var(--muted)">%</span>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -1986,7 +1980,6 @@ async function initPage() {
   document.getElementById('prefLang').value     = cfg.lang        || 'pt-PT';
   document.getElementById('prefDateFmt').value  = cfg.dateFmt     || 'DD/MM/YYYY';
   document.getElementById('prefWeightUnit').value = cfg.weightUnit || 'g';
-  document.getElementById('prefMargin').value   = cfg.margin      || '30';
   document.getElementById('notifStockOut').checked = cfg.notifStockOut !== false;
   // Persist theme pref to localStorage (IIFE already applied the correct theme at load time)
   if (cfg.theme && cfg.theme !== 'system') localStorage.setItem('3dzaap_theme', cfg.theme);
@@ -2133,7 +2126,6 @@ function buildConfig() {
   cfg.lang        = document.getElementById('prefLang').value;
   cfg.dateFmt     = document.getElementById('prefDateFmt').value;
   cfg.weightUnit  = document.getElementById('prefWeightUnit').value;
-  cfg.margin      = parseFloat(document.getElementById('prefMargin').value) || 30;
   cfg.notifStockOut = document.getElementById('notifStockOut').checked;
   cfg.notifStockLow = document.getElementById('notifStockLow').checked;
   cfg.notifOverdue  = document.getElementById('notifOverdue').checked;

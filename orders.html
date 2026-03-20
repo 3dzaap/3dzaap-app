@@ -2103,7 +2103,7 @@ function openModal(id = null) {
   // reset weight unit header
   const _lbl = document.getElementById('weightUnitLabel');
   if (_lbl) _lbl.textContent = 'g/ml';
-  document.getElementById('oGrandTotal').textContent = '€ 0,00';
+  document.getElementById('oGrandTotal').textContent = ((_cfg&&_cfg._currSymbol)||'€')+' 0,00';
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
   if (id) {
@@ -2573,7 +2573,8 @@ function toggleSidebar() {
 }
 
 // ── HELPERS ────────────────────────────
-function fmtN(v){ return parseFloat(v||0).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtN(v){ var loc=(_cfg&&_cfg._locale)||'pt-PT'; return parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtEur(v){var sym=(_cfg&&_cfg._currSymbol)||'€';var loc=(_cfg&&_cfg._locale)||'pt-PT';return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtDate(s){
   if(!s)return'—';
   var c=String(s).slice(0,10);
