@@ -7,48 +7,92 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
-// ── DARK MODE ──────────────────────────────────────────────
+// ── THEME SYSTEM ───────────────────────────────────────────
 (function(){
-  var saved=localStorage.getItem('3dzaap_theme');
-  var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
+  var pref = localStorage.getItem('3dzaap_theme') || 'system';
+  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+  applyTheme(pref, auto);
 })();
-function toggleTheme(){
-  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('3dzaap_theme',next);
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=next==='dark'?'☀️':'🌙';
+
+function applyTheme(pref, auto) {
+  var isDark;
+  if (auto) {
+    var h = new Date().getHours();
+    isDark = h >= 20 || h < 7;
+  } else if (pref === 'system') {
+    isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  } else {
+    isDark = pref === 'dark';
+  }
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
-function initThemeToggle(){
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+
+function toggleTheme() {
+  var pref = localStorage.getItem('3dzaap_theme') || 'system';
+  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+  if (auto) {
+    // toggle override from current
+    var curr = document.documentElement.getAttribute('data-theme');
+    var next = curr === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('3dzaap_theme', next);
+    localStorage.setItem('3dzaap_theme_auto', '0');
+  } else {
+    var curr2 = document.documentElement.getAttribute('data-theme');
+    var next2 = curr2 === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next2);
+    localStorage.setItem('3dzaap_theme', next2);
+  }
+  updateThemeToggleBtn();
+}
+
+function updateThemeToggleBtn() {
+  var b = document.getElementById('themeToggle');
+  if (b) b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+}
+
+function initThemeToggle() {
+  updateThemeToggleBtn();
+  // Populate settings UI
+  var pref = localStorage.getItem('3dzaap_theme') || 'system';
+  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+  var radio = document.querySelector('input[name="prefTheme"][value="' + pref + '"]');
+  if (radio) radio.checked = true;
+  var autoChk = document.getElementById('prefThemeAuto');
+  if (autoChk) autoChk.checked = auto;
+  updateAutoRowVisibility(pref);
+  // Wire radio buttons
+  document.querySelectorAll('input[name="prefTheme"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+      updateAutoRowVisibility(r.value);
+      markDirty();
+    });
+  });
+  // Wire auto toggle
+  if (autoChk) autoChk.addEventListener('change', function() { markDirty(); });
+  // Listen for system change
+  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function() {
+    var p = localStorage.getItem('3dzaap_theme') || 'system';
+    var a = localStorage.getItem('3dzaap_theme_auto') === '1';
+    if (p === 'system' && !a) applyTheme('system', false);
+    updateThemeToggleBtn();
+  });
+  // Auto-update every minute (for hour-based switching)
+  setInterval(function() {
+    var p = localStorage.getItem('3dzaap_theme') || 'system';
+    var a = localStorage.getItem('3dzaap_theme_auto') === '1';
+    if (a) { applyTheme(p, true); updateThemeToggleBtn(); }
+  }, 60000);
+}
+
+function updateAutoRowVisibility(pref) {
+  var row = document.getElementById('themeAutoRow');
+  if (row) row.style.display = pref === 'system' ? '' : 'none';
 }
 </script>
 <script>
 
-// ── DARK MODE ──────────────────────────────────────────────────
-(function(){
-  var saved = localStorage.getItem('3dzaap_theme');
-  var sysDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
-  var isDark = saved ? saved === 'dark' : sysDark;
-  if(isDark) document.documentElement.setAttribute('data-theme','dark');
-  else document.documentElement.setAttribute('data-theme','light');
-})();
-function toggleTheme(){
-  var curr = document.documentElement.getAttribute('data-theme');
-  var next = curr === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('3dzaap_theme', next);
-  var btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-function initThemeToggle(){
-  var btn = document.getElementById('themeToggle');
-  if(!btn) return;
-  var curr = document.documentElement.getAttribute('data-theme');
-  btn.textContent = curr === 'dark' ? '☀️' : '🌙';
-}
+
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1443,6 +1487,25 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   { color: var(--black) !important; }
 }
 
+
+/* ── THEME SELECTOR ──────────────────────────────────────── */
+.theme-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.theme-option{position:relative}
+.theme-option input{position:absolute;opacity:0;width:0;height:0}
+.theme-option label{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 10px;border-radius:var(--rm);border:1.5px solid var(--border);background:var(--bg-input);cursor:pointer;transition:all .2s var(--ease);font-size:.8rem;font-weight:600;color:var(--muted);text-align:center}
+.theme-option label:hover{border-color:rgba(59,143,212,.4);color:var(--dark)}
+.theme-option input:checked + label{border-color:var(--blue);background:rgba(59,143,212,.08);color:var(--blue)}
+.theme-preview{width:52px;height:36px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);flex-shrink:0;display:grid;grid-template-columns:30% 70%}
+.tp-sidebar{background:#e8f1fb}
+.tp-main{background:#d0e4f4;display:flex;flex-direction:column;gap:3px;padding:4px}
+.tp-card{border-radius:3px;height:6px}
+.tp-card-l{background:rgba(255,255,255,.7)}
+.tp-card-d{background:#182235}
+.tp-sidebar-d{background:#141f30}
+.tp-main-d{background:#0f1923}
+.theme-auto-row{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.theme-auto-hint{font-size:.75rem;color:var(--subtle);margin-top:4px;line-height:1.5}
+@media(max-width:480px){.theme-options{grid-template-columns:1fr 1fr 1fr;gap:7px}}
 </style>
 </head>
 <body>
@@ -1621,6 +1684,71 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 
       <!-- TAB: PREFERENCIAS -->
       <div class="tab-panel" id="tab-preferencias">
+        <div class="settings-card" style="margin-bottom:20px">
+          <div class="settings-card-title"><span>🌗</span> Aparência</div>
+
+          <label class="form-label" style="margin-bottom:8px;display:block">Tema</label>
+          <div class="theme-options">
+
+            <div class="theme-option">
+              <input type="radio" name="prefTheme" id="themeSystem" value="system">
+              <label for="themeSystem">
+                <div class="theme-preview">
+                  <div class="tp-sidebar" style="background:linear-gradient(#e8f1fb 50%,#141f30 50%)"></div>
+                  <div class="tp-main" style="background:linear-gradient(#d0e4f4 50%,#0f1923 50%);display:flex;flex-direction:column;gap:3px;padding:4px">
+                    <div class="tp-card" style="background:linear-gradient(90deg,rgba(255,255,255,.7) 50%,#182235 50%)"></div>
+                    <div class="tp-card" style="background:linear-gradient(90deg,rgba(255,255,255,.7) 50%,#182235 50%);width:70%"></div>
+                  </div>
+                </div>
+                Seguir sistema
+              </label>
+            </div>
+
+            <div class="theme-option">
+              <input type="radio" name="prefTheme" id="themeLight" value="light">
+              <label for="themeLight">
+                <div class="theme-preview">
+                  <div class="tp-sidebar"></div>
+                  <div class="tp-main" style="display:flex;flex-direction:column;gap:3px;padding:4px">
+                    <div class="tp-card tp-card-l"></div>
+                    <div class="tp-card tp-card-l" style="width:70%"></div>
+                  </div>
+                </div>
+                Claro
+              </label>
+            </div>
+
+            <div class="theme-option">
+              <input type="radio" name="prefTheme" id="themeDark" value="dark">
+              <label for="themeDark">
+                <div class="theme-preview">
+                  <div class="tp-sidebar-d"></div>
+                  <div class="tp-main-d" style="display:flex;flex-direction:column;gap:3px;padding:4px">
+                    <div class="tp-card tp-card-d"></div>
+                    <div class="tp-card tp-card-d" style="width:70%"></div>
+                  </div>
+                </div>
+                Escuro
+              </label>
+            </div>
+
+          </div>
+
+          <div class="theme-auto-row" id="themeAutoRow">
+            <div class="toggle-row" style="padding:0;border:none">
+              <div class="toggle-info">
+                <div class="toggle-label">Mudar automaticamente por hora</div>
+                <div class="toggle-desc theme-auto-hint">Claro das <strong id="autoHourLight">07:00</strong> às <strong id="autoHourDark">20:00</strong>, escuro depois — sobrepõe-se ao sistema</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="prefThemeAuto">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="settings-card">
           <div class="settings-card-title"><span>&#127757;</span> Prefer&ecirc;ncias Regionais</div>
           <div class="form-grid">
@@ -1846,6 +1974,18 @@ async function initPage() {
   document.getElementById('prefWeightUnit').value = cfg.weightUnit || 'g';
   document.getElementById('prefMargin').value   = cfg.margin      || '30';
   document.getElementById('notifStockOut').checked = cfg.notifStockOut !== false;
+  // Apply saved theme preference
+  if (cfg.theme && cfg.theme !== 'system') {
+    localStorage.setItem('3dzaap_theme', cfg.theme);
+  } else if (cfg.theme === 'system') {
+    localStorage.removeItem('3dzaap_theme');
+  }
+  if (cfg.themeAuto) {
+    localStorage.setItem('3dzaap_theme_auto', '1');
+  } else {
+    localStorage.removeItem('3dzaap_theme_auto');
+  }
+  applyTheme(cfg.theme || 'system', cfg.themeAuto || false);
   document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
   document.getElementById('notifOverdue').checked  = cfg.notifOverdue  !== false;
   document.getElementById('notifMonthly').checked  = cfg.notifMonthly  === true;
@@ -1991,6 +2131,10 @@ function buildConfig() {
   cfg.notifStockLow = document.getElementById('notifStockLow').checked;
   cfg.notifOverdue  = document.getElementById('notifOverdue').checked;
   cfg.notifMonthly  = document.getElementById('notifMonthly').checked;
+  // Theme preference
+  var themeRadio = document.querySelector('input[name="prefTheme"]:checked');
+  cfg.theme = themeRadio ? themeRadio.value : 'system';
+  cfg.themeAuto = document.getElementById('prefThemeAuto') ? document.getElementById('prefThemeAuto').checked : false;
   // Logo: prefer uploaded base64, then URL field, then keep existing
   var logoUrl = _logoB64 || document.getElementById('logoUrl').value.trim() || ((_session && _session.config) ? _session.config.logoUrl : '');
   cfg.logoUrl = logoUrl;
