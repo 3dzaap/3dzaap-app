@@ -869,10 +869,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 <script>
 // ── STATE ──────────────────────────────
 const PLAN_FEATURES = {
-  trial:    { calculator:true, filaments:true, orders:true, financial:true, backoffice:true },
-  starter:  { calculator:true, filaments:true, orders:false, financial:false, backoffice:true },
-  pro:      { calculator:true, filaments:true, orders:true, financial:false, backoffice:true },
-  business: { calculator:true, filaments:true, orders:true, financial:true, backoffice:true },
+  trial:    { calculator:true,  filaments:true, orders:true,  financial:true,  backoffice:true, customization:true  },
+  starter:  { calculator:true,  filaments:true, orders:false, financial:false, backoffice:true, customization:false },
+  pro:      { calculator:true,  filaments:true, orders:true,  financial:false, backoffice:true, customization:false },
+  business: { calculator:true,  filaments:true, orders:true,  financial:true,  backoffice:true, customization:true  },
 };
 
 const PLAN_LABELS = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
@@ -886,9 +886,9 @@ let state = {
 };
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadState().then(() => {
-    renderGreeting();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadState();
+  renderGreeting();
   renderBanner();
   calcHealthScore();
   renderStats();
@@ -896,7 +896,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFilamentAlerts();
   applyFeatureGating();
   setDate();
-  });
 });
 
 function setDate() {
@@ -917,13 +916,21 @@ async function loadState() {
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 
-  state.user.email    = session.email;
-  state.user.name     = fullName;
-  state.user.initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  state.company.name    = session.companyName;
-  state.company.initials = session.companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
+  const companyName = session.companyName || 'A minha empresa';
+
+  state.user.email      = session.email;
+  state.user.name       = fullName;
+  state.user.initials   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  state.company.name    = companyName;
+  state.company.initials= companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
   state.company.plan    = session.plan || 'trial';
   state.company.config  = session.config || {};
+
+  // Calcular dias de trial restantes a partir de trial_ends_at
+  if (session.trialEndsAt) {
+    const msLeft = new Date(session.trialEndsAt) - new Date();
+    state.company.trialDaysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
+  }
 
   document.getElementById('userNameSidebar').textContent    = state.user.name;
   document.getElementById('userEmailSidebar').textContent   = state.user.email;
@@ -958,7 +965,7 @@ function renderBanner() {
   if (sessionStorage.getItem('banner_dismissed')) { banner.style.display='none'; return; }
 
   if (plan === 'trial') {
-    const days = state.company.trialDaysLeft;
+    const days = state.company.trialDaysLeft ?? 14;
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
     icon.textContent = days <= 3 ? '🚨' : '⏰';
     title.textContent = `Trial activo — ${days} dia${days!==1?'s':''} restante${days!==1?'s':''}`;
@@ -1426,11 +1433,11 @@ function navigate(page) {
   }
 
   if (page === 'billing') {
-    showToast('Módulo de Billing — a integrar com Stripe','');
+    showToast('Assinatura — brevemente disponível 🚀','');
     return false;
   }
   if (page === 'settings') {
-    showToast('Configurações — em desenvolvimento','');
+    window.location.href = 'settings.html';
     return false;
   }
 
