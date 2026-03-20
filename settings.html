@@ -1192,11 +1192,7 @@ async function doLogout() {
 }
 
 // ── HELPERS ────────────────────────────────────────────────────
-function fmtDate(s) {
-  if (!s) return '\u2014';
-  var clean = s.slice(0, 10);
-  var d = new Date(clean + 'T12:00:00');
-  return isNaN(d.getTime()) ? s : d.toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' });
+function fmtDate(s){if(!s)return'—';var c=String(s).slice(0,10);var d=new Date(c+'T12:00:00');return isNaN(d.getTime())?c:d.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'});});
 }
 function escH(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
