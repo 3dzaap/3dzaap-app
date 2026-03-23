@@ -1806,30 +1806,15 @@ function parseOrdersCSV(text) {
   const ci = name=>h.findIndex(c=>c.includes(name));
   const cCli=ci('cliente');
   if(cCli===-1) throw new Error('Coluna "Cliente" não encontrada.');
-  const cId=ci('id'), cNum=ci('número'), cOrdNum=ci('order_numeric'), cEmail=ci('email'), cTel=ci('telefone');
+  const cNum=ci('número'),cEmail=ci('email'),cTel=ci('telefone');
   const cStat=ci('estado'),cPag=ci('pagamento'),cTot=ci('total');
   const cCria=h.findIndex(c=>c.includes('criação')||(c.includes('data')&&!c.includes('pag')));
   const cPrazo=ci('prazo'),cPDate=h.findIndex(c=>c.includes('data pag')||(c.includes('data')&&c.includes('pag')));
   const cItens=ci('itens'),cNotes=ci('observa');
-
-  const parseOrderNumeric = (explicitValue, orderNumber, fallbackId) => {
-    const explicit = parseInt(String(explicitValue||'').replace(/[^\d-]/g,''),10);
-    if(Number.isFinite(explicit)) return explicit;
-    const byNumber = String(orderNumber||'').match(/(\d+)$/);
-    if(byNumber) return parseInt(byNumber[1], 10);
-    const byId = parseInt(String(fallbackId||'').replace(/[^\d-]/g,''),10);
-    if(Number.isFinite(byId)) return byId;
-    return null;
-  };
-
   const records=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i], cli=boCell(r[cCli]);
     if(!cli||cli.startsWith('#')) continue;
-    const id = cId>=0 ? boCell(r[cId]) : boCell(r[0]);
-    const orderNumber = cNum>=0 ? boCell(r[cNum]) : '';
-    const order_numeric = parseOrderNumeric(cOrdNum>=0 ? boCell(r[cOrdNum]) : '', orderNumber, id||`${Date.now()}_${i}`);
-    if(order_numeric === null) throw new Error(`Pedido sem número válido na linha ${i+1}.`);
     const totStr=boCell(cTot>=0?r[cTot]:'0').replace(/[€$£\s]/g,'').replace(',','.');
     const itensRaw=boCell(cItens>=0?r[cItens]:'');
     const items=itensRaw?itensRaw.split(' | ').map(seg=>{
@@ -1838,9 +1823,8 @@ function parseOrdersCSV(text) {
              :{description:seg,quantity:1,unitPrice:0,filamentId:'',weightG:''};
     }).filter(it=>it.description):[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
     records.push({
-      id:id||`${Date.now()}_${i}`,
-      order_numeric,
-      orderNumber,clientName:cli,
+      id:boCell(r[0])||`${Date.now()}_${i}`,
+      orderNumber:cNum>=0?boCell(r[cNum]):'',clientName:cli,
       clientEmail:cEmail>=0?boCell(r[cEmail]):'',clientPhone:cTel>=0?boCell(r[cTel]):'',
       items, description:items.map(it=>it.description).join('; '),
       quantity:items[0]?.quantity||1, unitPrice:items[0]?.unitPrice||0,
@@ -1948,22 +1932,6 @@ async function confirmImport() {
   }
   if(ordRecs !== null) {
     orders = mergeArr(orders, ordRecs);
-
-    const normalizeOrderNumeric = (o, idx=0) => {
-      const explicit = parseInt(String(o?.order_numeric ?? '').replace(/[^\d-]/g,''),10);
-      if (Number.isFinite(explicit)) return explicit;
-      const byNumber = String(o?.orderNumber || o?.numero || '').match(/(\d+)$/);
-      if (byNumber) return parseInt(byNumber[1],10);
-      const byId = parseInt(String(o?.id || '').replace(/[^\d-]/g,''),10);
-      if (Number.isFinite(byId)) return byId;
-      return idx + 1;
-    };
-
-    orders = orders.map((o, idx) => ({
-      ...o,
-      order_numeric: normalizeOrderNumeric(o, idx)
-    }));
-
     try {
       await DB.saveAllOrders(orders);
       setFb('fbImportOrd',`✓ ${ordRecs.length} pedidos importados`);
