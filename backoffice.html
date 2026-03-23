@@ -1948,6 +1948,22 @@ async function confirmImport() {
   }
   if(ordRecs !== null) {
     orders = mergeArr(orders, ordRecs);
+
+    const normalizeOrderNumeric = (o, idx=0) => {
+      const explicit = parseInt(String(o?.order_numeric ?? '').replace(/[^\d-]/g,''),10);
+      if (Number.isFinite(explicit)) return explicit;
+      const byNumber = String(o?.orderNumber || o?.numero || '').match(/(\d+)$/);
+      if (byNumber) return parseInt(byNumber[1],10);
+      const byId = parseInt(String(o?.id || '').replace(/[^\d-]/g,''),10);
+      if (Number.isFinite(byId)) return byId;
+      return idx + 1;
+    };
+
+    orders = orders.map((o, idx) => ({
+      ...o,
+      order_numeric: normalizeOrderNumeric(o, idx)
+    }));
+
     try {
       await DB.saveAllOrders(orders);
       setFb('fbImportOrd',`✓ ${ordRecs.length} pedidos importados`);
