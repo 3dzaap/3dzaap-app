@@ -2012,11 +2012,11 @@ async function confirmImport() {
     } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
   }
   if(ordRecs !== null) {
-    ordRecs = ordRecs.map(function(o){ return Object.assign({},o,{createdAt:normDate(o.createdAt),dueDate:normDate(o.dueDate),paymentDate:normDate(o.paymentDate),status:normStatus(o.status),paymentStatus:normPayment(o.paymentStatus)}); });
-    orders = mergeArr(orders, ordRecs);
+    const ordNorm = ordRecs.map(function(o){ return Object.assign({},o,{createdAt:normDate(o.createdAt),dueDate:normDate(o.dueDate),paymentDate:normDate(o.paymentDate),status:normStatus(o.status),paymentStatus:normPayment(o.paymentStatus)}); });
+    orders = mergeArr(orders, ordNorm);
     try {
       await DB.saveAllOrders(orders);
-      setFb('fbImportOrd',`✓ ${ordRecs.length} pedidos importados`);
+      setFb('fbImportOrd',`✓ ${ordNorm.length} pedidos importados`);
     } catch(e) { console.error('saveAllOrders',e); setFb('fbImportOrd',`❌ Erro: ${e.message}`,true); }
   }
   if(expRecs !== null) {
