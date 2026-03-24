@@ -1796,16 +1796,18 @@ function parseToISO(s) {
 // ── CSV NORMALISATION HELPERS ──────────────────────────────
 function normStatus(s) {
   if (!s) return 'orcamento';
+  // Normaliza NFD para remover acentos antes do lookup (retro-compat 3DZAAP.html)
+  var key = (s||'').toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   var map = {
-    'orçamento':'orcamento','orcamento':'orcamento','orcamento':'orcamento',
-    'modelagem':'modelagem',
-    'validação':'validacao','validacao':'validacao',
-    'aprovado':'aprovado',
-    'printing':'printing','imprimindo':'printing',
-    'done':'done','concluído':'done','concluido':'done','entregue':'done',
-    'cancelado':'cancelado','cancelled':'cancelado',
+    'orcamento':'orcamento','budget':'orcamento',
+    'modelagem':'modelagem','modeling':'modelagem',
+    'validacao':'validacao','validation':'validacao',
+    'aprovado':'aprovado','approved':'aprovado',
+    'printing':'printing','imprimindo':'printing','a imprimir':'printing',
+    'done':'done','concluido':'done','entregue':'done','completed':'done',
+    'cancelado':'cancelado','cancelled':'cancelado','canceled':'cancelado',
   };
-  var key = (s||'').toLowerCase().trim();
   return map[key] || key || 'orcamento';
 }
 function normPayment(s) {
@@ -1836,11 +1838,12 @@ function parseOrdersCSV(text) {
   if(rows.length<2) throw new Error('Ficheiro sem dados.');
   const h = rows[0].map(c=>boCell(c).toLowerCase());
   const ci = name=>h.findIndex(c=>c.includes(name));
-  // Column detection — compatible with backoffice CSV and 3DZAAP financial CSV
+
+  // Detecção de colunas — compatível com backoffice CSV e 3DZAAP.html CSV
   const cCli   = h.findIndex(c=>c.includes('cliente'));
   if(cCli===-1) throw new Error('Coluna "Cliente" não encontrada.');
-  const cNum   = h.findIndex(c=>c.includes('número')||c.includes('numero')||c==='nº');
-  const cEmail = ci('email'), cTel = ci('telefone');
+  const cNum   = h.findIndex(c=>c.includes('número')||c.includes('numero')||c==='nº'||c.includes('number'));
+  const cEmail = ci('email'),   cTel  = ci('telefone');
   const cStat  = h.findIndex(c=>c==='status'||c.includes('estado'));
   const cPag   = ci('pagamento');
   const cTot   = ci('total');
@@ -1848,22 +1851,28 @@ function parseOrdersCSV(text) {
   const cPrazo = h.findIndex(c=>c.includes('prazo'));
   const cPDate = h.findIndex(c=>c.includes('data')&&c.includes('pag'));
   const cItens = ci('itens');
-  // Financial CSV fallback: Descrição + Quantidade + Preço Unitário
-  const cDesc  = h.findIndex(c=>c==='descrição'||c==='descricao'||c==='descrição');
+  // Fallback 3DZAAP.html: Descrição + Quantidade + Preço Unitário (sem coluna Itens)
+  const cDesc  = h.findIndex(c=>c==='descrição'||c==='descricao'||c.includes('descri'));
   const cQty   = h.findIndex(c=>c.includes('quant'));
   const cPrice = h.findIndex(c=>c.includes('preço unit')||c.includes('preco unit'));
   const cNotes = ci('observa');
+
   const records=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i], cli=boCell(r[cCli]);
     if(!cli||cli.startsWith('#')) continue;
-    const totStr=boCell(cTot>=0?r[cTot]:'0').replace(/[€$£\s]/g,'').replace(',','.');
-    // Items: prefer 'Itens' column, fallback to Descrição+Qtd+Preço (financial CSV)
+
+    // BUG 2 FIX: limpar símbolo de moeda e qualquer caracter não numérico do total
+    const totStr=(boCell(cTot>=0?r[cTot]:'0')||'0')
+      .replace(/[€$£\u20ac\s]/g,'').replace(',','.').replace(/[^0-9.]/g,'');
+
+    // Items: preferir coluna 'Itens'; senão construir de Descrição+Qtd+Preço (retro-compat 3DZAAP.html)
     var items;
     const itensRaw=boCell(cItens>=0?r[cItens]:'');
     if(itensRaw){
+      // BUG 3 FIX: regex apanha tanto @1.50€ como @1.50 (3DZAAP exporta com €, backoffice com símbolo dinâmico)
       items=itensRaw.split(' | ').map(seg=>{
-        const m=seg.match(/^(\d+)x\s(.+?)\s@([\d.]+)[€$£]?$/);
+        const m=seg.match(/^(\d+)x\s(.+?)\s@([\d.]+)[€$£\u20ac]?$/);
         return m?{description:m[2],quantity:parseInt(m[1]),unitPrice:parseFloat(m[3]),filamentId:'',weightG:''}
                :{description:seg,quantity:1,unitPrice:0,filamentId:'',weightG:''};
       }).filter(it=>it.description);
@@ -1877,23 +1886,33 @@ function parseOrdersCSV(text) {
       items=[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
     }
     if(!items.length) items=[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
+
+    // BUG 1 FIX: derivar orderNumeric do orderNumber (ex: "#0023" → 23)
+    const rawNum = cNum>=0?boCell(r[cNum]):'';
+    const numericMatch = rawNum.match(/(\d+)/);
+    const orderNumeric = numericMatch ? parseInt(numericMatch[1]) : 0;
+
     records.push({
-      id:          boCell(r[0])||`${Date.now()}_${i}`,
-      orderNumber: cNum>=0?boCell(r[cNum]):'',
-      clientName:  cli,
-      clientEmail: cEmail>=0?boCell(r[cEmail]):'',
-      clientPhone: cTel>=0?boCell(r[cTel]):'',
+      id:            boCell(r[0])||`${Date.now()}_${i}`,
+      orderNumber:   rawNum,
+      orderNumeric:  orderNumeric,                              // BUG 1 FIX
+      clientName:    cli,
+      clientEmail:   cEmail>=0?boCell(r[cEmail]):'',
+      clientPhone:   cTel>=0?boCell(r[cTel]):'',
       items,
-      description: items.map(it=>it.description).join('; '),
-      quantity:    items[0]?.quantity||1,
-      unitPrice:   items[0]?.unitPrice||0,
-      total:       parseFloat(totStr)||0,
-      status:      normStatus(cStat>=0?boCell(r[cStat]):''),
+      description:   items.map(it=>it.description).join('; '),
+      quantity:      items[0]?.quantity||1,
+      unitPrice:     items[0]?.unitPrice||0,
+      total:         parseFloat(totStr)||0,
+      // BUG 4 FIX: normalizar status/pagamento/datas aqui no parse (não apenas no confirmImport)
+      // garante retro-compatibilidade com 3DZAAP.html que exporta valores acentuados
+      status:        normStatus(cStat>=0?boCell(r[cStat]):''),
       paymentStatus: normPayment(cPag>=0?boCell(r[cPag]):''),
-      createdAt:   normDate(cCria>=0?boCell(r[cCria]):''),
-      dueDate:     normDate(cPrazo>=0?boCell(r[cPrazo]):''),
-      paymentDate: normDate(cPDate>=0?boCell(r[cPDate]):''),
-      notes:       cNotes>=0?boCell(r[cNotes]):'',
+      // BUG 3 FIX: normDate retorna null (não '') quando coluna não existe — evita erro Postgres
+      createdAt:     normDate(cCria>=0?boCell(r[cCria]):''),
+      dueDate:       normDate(cPrazo>=0?boCell(r[cPrazo]):''),
+      paymentDate:   normDate(cPDate>=0?boCell(r[cPDate]):''),
+      notes:         cNotes>=0?boCell(r[cNotes]):'',
     });
   }
   if(!records.length) throw new Error('Nenhum pedido válido encontrado.');
@@ -2012,7 +2031,14 @@ async function confirmImport() {
     } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
   }
   if(ordRecs !== null) {
-    const ordNorm = ordRecs.map(function(o){ return Object.assign({},o,{createdAt:normDate(o.createdAt),dueDate:normDate(o.dueDate),paymentDate:normDate(o.paymentDate),status:normStatus(o.status),paymentStatus:normPayment(o.paymentStatus)}); });
+    // Parse já normalizou status/pagamento/datas; sanitizeOrderForDB garante datas válidas na BD
+    const ordNorm = ordRecs.map(function(o){
+      return sanitizeOrderForDB(Object.assign({}, o, {
+        status:        o.status        || 'orcamento',
+        paymentStatus: o.paymentStatus || 'pendente',
+        orderNumeric:  o.orderNumeric  || 0,
+      }));
+    });
     orders = mergeArr(orders, ordNorm);
     try {
       await DB.saveAllOrders(orders);
