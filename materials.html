@@ -25,32 +25,6 @@ function initThemeToggle(){
   if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
 }
 </script>
-<script>
-
-// ── DARK MODE ──────────────────────────────────────────────────
-(function(){
-  var saved = localStorage.getItem('3dzaap_theme');
-  var sysDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
-  var isDark = saved ? saved === 'dark' : sysDark;
-  if(isDark) document.documentElement.setAttribute('data-theme','dark');
-  else document.documentElement.setAttribute('data-theme','light');
-})();
-function toggleTheme(){
-  var curr = document.documentElement.getAttribute('data-theme');
-  var next = curr === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('3dzaap_theme', next);
-  var btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-function initThemeToggle(){
-  var btn = document.getElementById('themeToggle');
-  if(!btn) return;
-  var curr = document.documentElement.getAttribute('data-theme');
-  btn.textContent = curr === 'dark' ? '☀️' : '🌙';
-}
-
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">

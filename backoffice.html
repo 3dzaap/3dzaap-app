@@ -26,32 +26,6 @@ function initThemeToggle(){
   if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
 }
 </script>
-<script>
-
-// ── DARK MODE ──────────────────────────────────────────────────
-(function(){
-  var saved = localStorage.getItem('3dzaap_theme');
-  var sysDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
-  var isDark = saved ? saved === 'dark' : sysDark;
-  if(isDark) document.documentElement.setAttribute('data-theme','dark');
-  else document.documentElement.setAttribute('data-theme','light');
-})();
-function toggleTheme(){
-  var curr = document.documentElement.getAttribute('data-theme');
-  var next = curr === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('3dzaap_theme', next);
-  var btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
-}
-function initThemeToggle(){
-  var btn = document.getElementById('themeToggle');
-  if(!btn) return;
-  var curr = document.documentElement.getAttribute('data-theme');
-  btn.textContent = curr === 'dark' ? '☀️' : '🌙';
-}
-
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 3DZAAP data layer -->
 <script src="supabase.js"></script>
@@ -1799,39 +1773,127 @@ function parseFilamentsCSV(text) {
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
 
+function parseToISO(s) {
+  if (!s) return null;
+  s = s.trim();
+  if (!s) return null;
+  var iso;
+  // Already ISO: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) { iso = s.slice(0, 10); }
+  else {
+    // DD/MM/YYYY or DD-MM-YYYY (Portuguese format — most common in this app)
+    var m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (m) iso = m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+  }
+  if (!iso) return null;
+  // Validate the date is real (e.g. not 31/02)
+  var d = new Date(iso + 'T12:00:00');
+  if (isNaN(d.getTime())) return null;
+  return iso;
+}
+
+
+// ── CSV NORMALISATION HELPERS ──────────────────────────────
+function normStatus(s) {
+  if (!s) return 'orcamento';
+  var map = {
+    'orçamento':'orcamento','orcamento':'orcamento','orcamento':'orcamento',
+    'modelagem':'modelagem',
+    'validação':'validacao','validacao':'validacao',
+    'aprovado':'aprovado',
+    'printing':'printing','imprimindo':'printing',
+    'done':'done','concluído':'done','concluido':'done','entregue':'done',
+    'cancelado':'cancelado','cancelled':'cancelado',
+  };
+  var key = (s||'').toLowerCase().trim();
+  return map[key] || key || 'orcamento';
+}
+function normPayment(s) {
+  if (!s) return 'pendente';
+  var low = (s||'').toLowerCase().trim();
+  if (low === 'pago' || low === 'paid' || low === 'paga') return 'pago';
+  if (low.includes('aguard') || low.includes('pend') || low === 'pendente') return 'pendente';
+  return 'pendente';
+}
+function normDate(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+    var d = new Date(s.slice(0,10)+'T12:00:00');
+    return isNaN(d.getTime()) ? null : s.slice(0,10);
+  }
+  var m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) {
+    var iso = m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+    var d2 = new Date(iso+'T12:00:00');
+    return isNaN(d2.getTime()) ? null : iso;
+  }
+  return null;
+}
 function parseOrdersCSV(text) {
   const rows = boParseCSV(text).filter(r=>r.some(c=>c.trim()));
   if(rows.length<2) throw new Error('Ficheiro sem dados.');
   const h = rows[0].map(c=>boCell(c).toLowerCase());
   const ci = name=>h.findIndex(c=>c.includes(name));
-  const cCli=ci('cliente');
+  // Column detection — compatible with backoffice CSV and 3DZAAP financial CSV
+  const cCli   = h.findIndex(c=>c.includes('cliente'));
   if(cCli===-1) throw new Error('Coluna "Cliente" não encontrada.');
-  const cNum=ci('número'),cEmail=ci('email'),cTel=ci('telefone');
-  const cStat=ci('estado'),cPag=ci('pagamento'),cTot=ci('total');
-  const cCria=h.findIndex(c=>c.includes('criação')||(c.includes('data')&&!c.includes('pag')));
-  const cPrazo=ci('prazo'),cPDate=h.findIndex(c=>c.includes('data pag')||(c.includes('data')&&c.includes('pag')));
-  const cItens=ci('itens'),cNotes=ci('observa');
+  const cNum   = h.findIndex(c=>c.includes('número')||c.includes('numero')||c==='nº');
+  const cEmail = ci('email'), cTel = ci('telefone');
+  const cStat  = h.findIndex(c=>c==='status'||c.includes('estado'));
+  const cPag   = ci('pagamento');
+  const cTot   = ci('total');
+  const cCria  = h.findIndex(c=>c.includes('cria'));
+  const cPrazo = h.findIndex(c=>c.includes('prazo'));
+  const cPDate = h.findIndex(c=>c.includes('data')&&c.includes('pag'));
+  const cItens = ci('itens');
+  // Financial CSV fallback: Descrição + Quantidade + Preço Unitário
+  const cDesc  = h.findIndex(c=>c==='descrição'||c==='descricao'||c==='descrição');
+  const cQty   = h.findIndex(c=>c.includes('quant'));
+  const cPrice = h.findIndex(c=>c.includes('preço unit')||c.includes('preco unit'));
+  const cNotes = ci('observa');
   const records=[];
   for(let i=1;i<rows.length;i++){
     const r=rows[i], cli=boCell(r[cCli]);
     if(!cli||cli.startsWith('#')) continue;
     const totStr=boCell(cTot>=0?r[cTot]:'0').replace(/[€$£\s]/g,'').replace(',','.');
+    // Items: prefer 'Itens' column, fallback to Descrição+Qtd+Preço (financial CSV)
+    var items;
     const itensRaw=boCell(cItens>=0?r[cItens]:'');
-    const items=itensRaw?itensRaw.split(' | ').map(seg=>{
-      const m=seg.match(/^(\d+)x\s(.+?)\s@([\d.]+)€?$/);
-      return m?{description:m[2],quantity:parseInt(m[1]),unitPrice:parseFloat(m[3]),filamentId:'',weightG:''}
-             :{description:seg,quantity:1,unitPrice:0,filamentId:'',weightG:''};
-    }).filter(it=>it.description):[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
+    if(itensRaw){
+      items=itensRaw.split(' | ').map(seg=>{
+        const m=seg.match(/^(\d+)x\s(.+?)\s@([\d.]+)[€$£]?$/);
+        return m?{description:m[2],quantity:parseInt(m[1]),unitPrice:parseFloat(m[3]),filamentId:'',weightG:''}
+               :{description:seg,quantity:1,unitPrice:0,filamentId:'',weightG:''};
+      }).filter(it=>it.description);
+    } else if(cDesc>=0){
+      const desc=boCell(r[cDesc])||'';
+      const qty=parseInt(boCell(cQty>=0?r[cQty]:'1'))||1;
+      const price=parseFloat((boCell(cPrice>=0?r[cPrice]:'0')||'0').replace(',','.'))||0;
+      items=desc?[{description:desc,quantity:qty,unitPrice:price,filamentId:'',weightG:''}]
+               :[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
+    } else {
+      items=[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
+    }
+    if(!items.length) items=[{description:'',quantity:1,unitPrice:0,filamentId:'',weightG:''}];
     records.push({
-      id:boCell(r[0])||`${Date.now()}_${i}`,
-      orderNumber:cNum>=0?boCell(r[cNum]):'',clientName:cli,
-      clientEmail:cEmail>=0?boCell(r[cEmail]):'',clientPhone:cTel>=0?boCell(r[cTel]):'',
-      items, description:items.map(it=>it.description).join('; '),
-      quantity:items[0]?.quantity||1, unitPrice:items[0]?.unitPrice||0,
-      total:parseFloat(totStr)||0, status:cStat>=0?boCell(r[cStat]):'orcamento',
-      paymentStatus:cPag>=0?boCell(r[cPag]):'pendente',
-      createdAt:cCria>=0?boCell(r[cCria]):'', dueDate:cPrazo>=0?boCell(r[cPrazo]):'',
-      paymentDate:cPDate>=0?boCell(r[cPDate]):'', notes:cNotes>=0?boCell(r[cNotes]):'',
+      id:          boCell(r[0])||`${Date.now()}_${i}`,
+      orderNumber: cNum>=0?boCell(r[cNum]):'',
+      clientName:  cli,
+      clientEmail: cEmail>=0?boCell(r[cEmail]):'',
+      clientPhone: cTel>=0?boCell(r[cTel]):'',
+      items,
+      description: items.map(it=>it.description).join('; '),
+      quantity:    items[0]?.quantity||1,
+      unitPrice:   items[0]?.unitPrice||0,
+      total:       parseFloat(totStr)||0,
+      status:      normStatus(cStat>=0?boCell(r[cStat]):''),
+      paymentStatus: normPayment(cPag>=0?boCell(r[cPag]):''),
+      createdAt:   normDate(cCria>=0?boCell(r[cCria]):''),
+      dueDate:     normDate(cPrazo>=0?boCell(r[cPrazo]):''),
+      paymentDate: normDate(cPDate>=0?boCell(r[cPDate]):''),
+      notes:       cNotes>=0?boCell(r[cNotes]):'',
     });
   }
   if(!records.length) throw new Error('Nenhum pedido válido encontrado.');
@@ -1855,7 +1917,7 @@ function parseExpensesCSV(text) {
     const valStr=boCell(cVal>=0?r[cVal]:'0').replace(/[€$£\s]/g,'').replace(',','.');
     records.push({
       id:boCell(r[0])||`${Date.now()}_${i}`,
-      date:cDate>=0?boCell(r[cDate]):'', category:cCat>=0?boCell(r[cCat]):'outros',
+      date:normDate(cDate>=0?boCell(r[cDate]):''), category:cCat>=0?boCell(r[cCat]):'outros',
       description:desc, value:parseFloat(valStr)||0,
     });
   }
@@ -1904,6 +1966,25 @@ function parseAllCSV(text) {
   );
 }
 
+
+function sanitizeOrderForDB(o) {
+  // Ensure dates are valid ISO strings or null — never DD/MM/YYYY or empty string
+  function validISO(s) {
+    if (!s) return null;
+    // If it somehow slipped through as DD/MM/YYYY, convert it
+    var m = String(s).match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (m) s = m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+    // Validate
+    if (!/^\d{4}-\d{2}-\d{2}/.test(String(s))) return null;
+    var d = new Date(String(s).slice(0,10)+'T12:00:00');
+    return isNaN(d.getTime()) ? null : String(s).slice(0,10);
+  }
+  return Object.assign({}, o, {
+    createdAt:   validISO(o.createdAt),
+    dueDate:     validISO(o.dueDate),
+    paymentDate: validISO(o.paymentDate),
+  });
+}
 async function confirmImport() {
   if(!_importData) return;
   const merge = document.getElementById('mergeCheck').checked;
@@ -1931,6 +2012,7 @@ async function confirmImport() {
     } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
   }
   if(ordRecs !== null) {
+    ordRecs = ordRecs.map(function(o){ return Object.assign({},o,{createdAt:normDate(o.createdAt),dueDate:normDate(o.dueDate),paymentDate:normDate(o.paymentDate),status:normStatus(o.status),paymentStatus:normPayment(o.paymentStatus)}); });
     orders = mergeArr(orders, ordRecs);
     try {
       await DB.saveAllOrders(orders);
