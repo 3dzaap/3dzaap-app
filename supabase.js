@@ -556,8 +556,8 @@ function _mapOrderFromDB(row) {
 
 function _mapOrderToDB(o) {
   const row = {
-    order_number:   o.orderNumber,
-    order_numeric:  o.orderNumeric,
+    order_number:   o.orderNumber || `IMP-${String(o.orderNumeric || 0).padStart(4,'0')}`,
+    order_numeric:  o.orderNumeric || 0,
     client_name:    o.clientName,
     client_email:   o.clientEmail  || null,
     client_phone:   o.clientPhone  || null,

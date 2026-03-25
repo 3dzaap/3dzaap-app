@@ -1890,11 +1890,13 @@ function parseOrdersCSV(text) {
     // BUG 1 FIX: derivar orderNumeric do orderNumber (ex: "#0023" → 23)
     const rawNum = cNum>=0?boCell(r[cNum]):'';
     const numericMatch = rawNum.match(/(\d+)/);
-    const orderNumeric = numericMatch ? parseInt(numericMatch[1]) : 0;
+    const orderNumeric = numericMatch ? parseInt(numericMatch[1]) : i;
+    // Garantir que orderNumber nunca é vazio — DB tem NOT NULL neste campo
+    const orderNumber = rawNum || `IMP-${String(orderNumeric).padStart(4,'0')}`;
 
     records.push({
       id:            boCell(r[0])||`${Date.now()}_${i}`,
-      orderNumber:   rawNum,
+      orderNumber:   orderNumber,                               // nunca vazio (NOT NULL na BD)
       orderNumeric:  orderNumeric,                              // BUG 1 FIX
       clientName:    cli,
       clientEmail:   cEmail>=0?boCell(r[cEmail]):'',
