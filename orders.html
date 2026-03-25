@@ -345,9 +345,14 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .form-textarea{resize:vertical;min-height:72px;line-height:1.5}
 .form-hint{font-size:.70rem;color:var(--subtle);margin-top:2px}
 /* ITEMS LIST */
-.items-header{display:grid;grid-template-columns:1fr 56px 80px 32px;gap:6px;padding:0 4px 5px;font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em}
-.items-header span:nth-child(3),.items-header span:nth-child(4){text-align:right}
-.item-row{display:grid;grid-template-columns:1fr 56px 80px 32px;gap:6px;align-items:start;margin-bottom:8px}
+/* items-header: Descrição | QTD | Preço un. | ×  — matches item-row line 2 */
+.items-header{display:grid;grid-template-columns:1fr 64px 84px 28px;gap:6px;padding:0 4px 5px;font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em}
+.items-header span:nth-child(2){text-align:center}
+.items-header span:nth-child(3){text-align:right}
+/* item-row: two rows inside — Descrição spans all, then QTD | Preço | × */
+.item-row{display:flex;flex-direction:column;gap:6px;padding:10px 10px 8px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;position:relative}
+.item-row-top{display:grid;grid-template-columns:1fr 64px 84px 28px;gap:6px;align-items:center}
+.item-row-top input[type="text"]{grid-column:1}
 .item-input{width:100%;padding:7px 9px;border-radius:8px;background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.82rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s}
 .item-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
 .item-input.mono{font-family:var(--mono);font-weight:600;text-align:right}
@@ -437,22 +442,9 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   .modal-header{padding:14px 16px 12px;flex-shrink:0}.modal-footer{padding:10px 16px 14px;flex-shrink:0}
   /* Items header hidden — labels shown via item-row labels */
   .items-header{display:none}
-  /* Item rows stack on mobile */
-  .item-row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:6px;
-    padding:10px 10px 10px;
-    background:var(--bg-input);
-    border:1.5px solid var(--border-input);
-    border-radius:var(--r);
-    margin-bottom:8px;
-    position:relative;
-  }
-  .item-row > input[type="text"].item-input:first-child{grid-column:1/-1}
-  .item-row > .item-remove{position:absolute;top:8px;right:8px;z-index:2}
-  /* Filament sub-rows stack too */
-  .fil-sub-row{display:grid;grid-template-columns:1fr auto auto;gap:5px;margin-top:4px}
+  /* item-row is flex column — just constrain inner top row on small screens */
+  .item-row-top{grid-template-columns:1fr 56px 72px 28px;gap:4px}
+  .fil-sub-row{grid-template-columns:1fr 60px 28px}
   /* Page header */
   .page-header{flex-direction:column;gap:8px;align-items:flex-start}
   .page-header-actions{width:100%;justify-content:flex-end}
@@ -1560,12 +1552,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
       <div class="form-section-divider" style="margin-top:18px">📦 Itens do Pedido</div>
       <div class="items-header">
         <span>Descrição</span>
-        <span>Qtd</span>
-        <span style="text-align:right">Filamentos
-          <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px">ℹ️
-            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:240px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Podes associar múltiplos filamentos a cada item. A quantidade (g/ml) é descontada do stock quando o pedido for concluído.</span>
-          </span>
-        </span>
+        <span style="text-align:center">Qtd</span>
         <span style="text-align:right">Preço un.</span>
         <span></span>
       </div>
@@ -2172,9 +2159,9 @@ function applyCalcPrefill(p) {
     const firstRow = document.querySelector('#orderItemsList .item-row');
     if (firstRow) {
       const id = firstRow.dataset.id;
-      const descInput  = firstRow.querySelector('input[type="text"].item-input');
-      const qtyInput   = firstRow.querySelectorAll('input[type="number"].item-input')[0];
-      const priceInput = firstRow.querySelectorAll('input[type="number"].item-input')[1];
+      const descInput  = firstRow.querySelector('.item-row-top input[type="text"]');
+      const qtyInput   = firstRow.querySelectorAll('.item-row-top input[type="number"]')[0];
+      const priceInput = firstRow.querySelectorAll('.item-row-top input[type="number"]')[1];
       if (descInput)  { descInput.value  = p.description || ''; updateItem(id,'description', descInput.value); }
       if (qtyInput)   { qtyInput.value   = p.quantity || 1;     updateItem(id,'quantity',    qtyInput.value); }
       if (priceInput) { priceInput.value = p.unit_price || 0;   updateItem(id,'unitPrice',   priceInput.value); }
@@ -2301,23 +2288,16 @@ function addOrderItem(item = null) {
   row.className = 'item-row';
   row.dataset.id = id;
   row.innerHTML = `
-    <div class="item-field-wrap" style="grid-column:1/-1;padding-right:32px">
-      <span class="item-mob-label">Descrição</span>
+    <div class="item-row-top">
       <input type="text" class="item-input" placeholder="Descrição do item…" value="${escAttr(it.description)}"
-        oninput="updateItem('${id}','description',this.value)">
-    </div>
-    <div class="item-field-wrap">
-      <span class="item-mob-label">Quantidade</span>
+        oninput="updateItem('${id}','description',this.value)" style="grid-column:1">
       <input type="number" class="item-input mono" min="1" value="${it.quantity}"
         oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-    </div>
-    <div class="item-field-wrap">
-      <span class="item-mob-label">Preço unitário</span>
       <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice}"
         oninput="updateItem('${id}','unitPrice',this.value)" style="text-align:right">
+      <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>
     </div>
-    <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>
-    <div class="fil-sub-rows" style="grid-column:1/-1" data-item="${id}">
+    <div class="fil-sub-rows" data-item="${id}">
       ${subRowsHtml}
       <button type="button" class="fil-sub-add" onclick="addFilament('${id}')">＋ filamento</button>
     </div>`;
@@ -2392,7 +2372,7 @@ function recalcTotal() {
 function getItemsFromDOM() {
   return _items.map(it => {
     const row = document.querySelector(`.item-row[data-id="${it._id}"]`);
-    if (row) it.description = row.querySelector('input[type="text"].item-input').value.trim();
+    if (row) it.description = row.querySelector('.item-row-top input[type="text"]').value.trim();
     // Build filaments array from DOM (in case user edited after mount)
     const subRows = row ? row.querySelectorAll('.fil-sub-row') : [];
     it.filaments = Array.from(subRows).map(sr => {
