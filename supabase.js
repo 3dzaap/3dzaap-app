@@ -489,8 +489,8 @@ function _mapFilamentFromDB(row) {
     color:          row.color_name || '',   // alias para compatibilidade
     type:           row.type,
     variation:      row.variation  || '',
-    // brand: guardado como string separada por vírgula, exposto como array
-    brand:          row.brand ? row.brand.split(',').map(b => b.trim()).filter(Boolean) : [],
+    // brand: guardado como string, exposto como string (módulos usam string)
+    brand:          row.brand || '',
     rollSize:       row.roll_size  || '1kg',
     total:          parseInt(row.total || 0),
     inUse:          parseInt(row.in_use || 0),
@@ -508,9 +508,9 @@ function _mapFilamentFromDB(row) {
 }
 
 function _mapFilamentToDB(f) {
-  // brand: aceita array ou string
+  // brand: aceita array ou string — normaliza para string
   const brandStr = Array.isArray(f.brand)
-    ? f.brand.join(',')
+    ? f.brand.filter(Boolean).join(', ')
     : (f.brand || '');
 
   return {

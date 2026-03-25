@@ -181,7 +181,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
 .company-pill{display:flex;align-items:center;gap:9px;background:var(--bg-nav-active);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
-.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
 .company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
 .sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
@@ -1813,6 +1813,14 @@ async function loadUserData() {
     document.getElementById('companyName').textContent = session.companyName || '—';
   if (document.getElementById('companyAvatar'))
     document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  // Apply company logo to sidebar avatar if configured
+  const _logoUrl = (_cfg && _cfg.logoUrl) || (session.config && session.config.logoUrl) || '';
+  const _avatarEl = document.getElementById('companyAvatar');
+  if (_avatarEl) {
+    if (_logoUrl) {
+      _avatarEl.innerHTML = `<img src="${_logoUrl}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    }
+  }
   if (document.getElementById('planBadge')) {
     const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
     document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
@@ -2018,10 +2026,10 @@ function renderTable() {
     const mc = m.materialClass || m.material_class || 'fdm';
     if (mc !== currentView) return false;
     if (typeF  && m.type  !== typeF)  return false;
-    if (brandF && m.brand !== brandF) return false;
+    if (brandF && (Array.isArray(m.brand) ? m.brand.join(', ') : m.brand||''  ) !== brandF) return false;
     if (statusF && getStatus(m) !== statusF) return false;
     if (q) {
-      const hay = [m.colorName, m.type, m.variation, m.brand, m.rollSize, m.notes].join(' ').toLowerCase();
+      const hay = [m.colorName, m.type, m.variation, Array.isArray(m.brand)?m.brand.join(' '):(m.brand||''), m.rollSize, m.notes].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -2097,7 +2105,7 @@ function renderTable() {
         <span class="cell-name">${escH(m.colorName||'—')}</span>
       </div></td>
       <td><span class="cell-name">${escH(m.type||'—')}</span><br><span class="cell-sub">${escH(m.variation||'')}</span></td>
-      <td class="cell-mono">${escH(m.brand||'—')}</td>
+      <td class="cell-mono">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))}</td>
       <td class="cell-mono">${escH(m.rollSize||'—')}</td>
       <td class="cell-stepper"><div class="stepper">
         <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',-1)">−</button>
@@ -2132,7 +2140,7 @@ function renderTable() {
           <span class="mob-fil-name">${escH(m.colorName||'—')} — ${escH(m.type||'—')}${m.variation?' ('+escH(m.variation)+')':''}</span>
           ${price ? `<span class="mob-fil-price">${price}</span>` : ''}
         </div>
-        <div class="mob-fil-meta">${escH(m.brand||'—')} · ${escH(m.rollSize||'—')} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
+        <div class="mob-fil-meta">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))} · ${escH(m.rollSize||'—')} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
         <div class="mob-fil-steppers">
           <div class="mob-fil-step-group">
             <div class="mob-fil-step-lbl">Em uso</div>
@@ -2407,7 +2415,7 @@ function confirmDelete(id) {
   if (!m) return;
   const mc = m.materialClass || m.material_class || 'fdm';
   document.getElementById('confirmTitle').textContent = `Eliminar ${mc === 'fdm' ? 'filamento' : 'resina'}?`;
-  document.getElementById('confirmMsg').textContent   = `Vai eliminar "${m.colorName} ${m.type} (${m.brand})" permanentemente.`;
+  document.getElementById('confirmMsg').textContent   = `Vai eliminar "${m.colorName} ${m.type} (${Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'')})" permanentemente.`;
   document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); deleteMaterial(id); };
   document.getElementById('confirmOverlay').classList.add('open');
 }

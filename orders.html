@@ -184,7 +184,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .sidebar-logo-text{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .sidebar-company{padding:14px 18px;border-bottom:1.5px solid var(--border)}
 .company-pill{display:flex;align-items:center;gap:9px;background:var(--bg-nav-active);border:1.5px solid rgba(59,143,212,.22);border-radius:40px;padding:7px 14px}
-.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.company-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
 .company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
 .sidebar-nav{flex:1;padding:14px 12px;overflow-y:auto}
@@ -345,14 +345,9 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .form-textarea{resize:vertical;min-height:72px;line-height:1.5}
 .form-hint{font-size:.70rem;color:var(--subtle);margin-top:2px}
 /* ITEMS LIST */
-/* items-header: Descrição | QTD | Preço un. | ×  — matches item-row line 2 */
-.items-header{display:grid;grid-template-columns:1fr 64px 84px 28px;gap:6px;padding:0 4px 5px;font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em}
-.items-header span:nth-child(2){text-align:center}
-.items-header span:nth-child(3){text-align:right}
-/* item-row: two rows inside — Descrição spans all, then QTD | Preço | × */
-.item-row{display:flex;flex-direction:column;gap:6px;padding:10px 10px 8px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:8px;position:relative}
-.item-row-top{display:grid;grid-template-columns:1fr 64px 84px 28px;gap:6px;align-items:center}
-.item-row-top input[type="text"]{grid-column:1}
+.items-header{display:grid;grid-template-columns:1fr 56px 90px 72px 80px 32px;gap:6px;padding:0 4px 5px;font-size:.68rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em}
+.items-header span:nth-child(3),.items-header span:nth-child(4),.items-header span:nth-child(5){text-align:right}
+.item-row{display:grid;grid-template-columns:1fr 56px 90px 72px 80px 32px;gap:6px;align-items:center;margin-bottom:6px}
 .item-input{width:100%;padding:7px 9px;border-radius:8px;background:var(--bg-input);border:1.5px solid var(--border-input);font-size:.82rem;font-family:var(--f);color:var(--dark);outline:none;transition:border-color .18s}
 .item-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.1)}
 .item-input.mono{font-family:var(--mono);font-weight:600;text-align:right}
@@ -361,21 +356,6 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 .item-total{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);text-align:right;padding-right:4px}
 .item-remove{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;color:var(--subtle);font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .item-remove:hover{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--danger)}
-/* forcar minusculas no header independente do pai */
-/* ── Multi-filament sub-rows ─────────────────────── */
-.fil-sub-rows{margin-top:6px;display:flex;flex-direction:column;gap:5px}
-.fil-sub-row{display:grid;grid-template-columns:1fr 72px 28px;gap:5px;align-items:center}
-.fil-sub-row .item-select{font-size:.76rem}
-.fil-sub-row .item-input{font-size:.78rem}
-.fil-sub-add{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:3px 9px;border-radius:20px;border:1.5px dashed rgba(59,143,212,.4);background:rgba(59,143,212,.04);color:var(--blue);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s}
-.fil-sub-add:hover{background:rgba(59,143,212,.10);border-style:solid}
-/* Mobile inline labels for item-row */
-.item-mob-label{display:none;font-size:.65rem;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
-@media(max-width:680px){
-  .item-mob-label{display:block}
-  .item-field-wrap{display:flex;flex-direction:column}
-  .fil-sub-row{grid-template-columns:1fr 64px 28px}
-}
 /* forcar minusculas no header independente do pai */
 #weightUnitHeader{text-transform:none !important;font-family:var(--mono);font-size:.7rem;letter-spacing:0}
 .grand-total-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-grand-total);border-radius:var(--r);padding:10px 14px;margin-top:10px;border:1.5px solid rgba(255,255,255,.6)}
@@ -436,31 +416,20 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   .mob-toggle{display:flex}.page{padding:16px 12px 40px}
   .topbar{padding:0 12px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}.form-row.three{grid-template-columns:1fr 1fr}
-  /* Modal: scrollable, fits screen */
-  .modal{margin:6px;border-radius:12px;max-height:calc(100dvh - 12px);display:flex;flex-direction:column}
-  .modal-body{overflow-y:auto;flex:1}
-  .modal-header{padding:14px 16px 12px;flex-shrink:0}.modal-footer{padding:10px 16px 14px;flex-shrink:0}
-  /* Items header hidden — labels shown via item-row labels */
-  .items-header{display:none}
-  /* item-row is flex column — just constrain inner top row on small screens */
-  .item-row-top{grid-template-columns:1fr 56px 72px 28px;gap:4px}
-  .fil-sub-row{grid-template-columns:1fr 60px 28px}
-  /* Page header */
+  .modal{margin:8px;border-radius:12px}
+  .modal-header{padding:16px 18px 14px}.modal-body{padding:16px 18px}.modal-footer{padding:12px 18px 16px}
+  .item-row{grid-template-columns:1fr 60px 70px 80px 32px;gap:5px}
   .page-header{flex-direction:column;gap:8px;align-items:flex-start}
-  .page-header-actions{width:100%;justify-content:flex-end}
-  /* Filters: full-width stacked */
-  .filters-bar{flex-direction:column;align-items:stretch;gap:8px;padding:10px 12px}
-  .filter-search-wrap{min-width:unset;width:100%}
-  .filter-sep{display:none}
-  .filter-select{width:100%}
-  .filter-count{text-align:center}
+  .page-actions{width:100%;justify-content:flex-end}
+  .filter-bar{flex-wrap:wrap;gap:8px}
+  .search-input{width:100%}
   .table-card .table-wrap{display:none}
   .mob-card-list{display:flex}
 }
 @media(max-width:420px){
   .stats-row{grid-template-columns:1fr}
+  .item-row{grid-template-columns:1fr 56px 64px 72px 28px}
   .form-row.three{grid-template-columns:1fr}
-  .modal{margin:2px;border-radius:8px}
 }
 
 /* RECEIPT MODAL — fonte de verdade */
@@ -1551,10 +1520,14 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
 
       <div class="form-section-divider" style="margin-top:18px">📦 Itens do Pedido</div>
       <div class="items-header">
-        <span>Descrição</span>
-        <span style="text-align:center">Qtd</span>
-        <span style="text-align:right">Preço un.</span>
-        <span></span>
+        <span>Descrição</span><span>Qtd</span>
+        <span style="text-align:right">Material
+          <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px">ℹ️
+            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
+          </span>
+        </span>
+        <span style="text-align:right;white-space:nowrap" id="weightUnitHeader">Qtd <span id="weightUnitLabel" style="font-family:var(--mono)">g/ml</span></span>
+        <span style="text-align:right">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
       <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" style="margin-top:6px">＋ Adicionar item</button>
@@ -1710,6 +1683,14 @@ async function loadUserData() {
     document.getElementById('companyName').textContent = session.companyName || '—';
   if (document.getElementById('companyAvatar'))
     document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  // Apply company logo to sidebar avatar if configured
+  const _logoUrl = (_cfg && _cfg.logoUrl) || (session.config && session.config.logoUrl) || '';
+  const _avatarEl = document.getElementById('companyAvatar');
+  if (_avatarEl) {
+    if (_logoUrl) {
+      _avatarEl.innerHTML = `<img src="${_logoUrl}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    }
+  }
   if (document.getElementById('planBadge')) {
     const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
     document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
@@ -1956,16 +1937,11 @@ async function applyFilamentConsumption(order) {
   let changed = false;
   const its = order.items || [];
   its.forEach(item => {
-    // Support multi-filament: iterate item.filaments array, fallback to legacy root fields
-    const filEntries = (Array.isArray(item.filaments) && item.filaments.length)
-      ? item.filaments.filter(f => f.filamentId)
-      : (item.filamentId ? [{filamentId: item.filamentId, weightG: item.weightG}] : []);
-    filEntries.forEach(entry => {
     // filamentId stored as string from select value; fil.id is number — use == for loose compare
-    if (!entry.filamentId) return;
-    const weightG = parseFloat(entry.weightG) || 0;
+    if (!item.filamentId) return;
+    const weightG = parseFloat(item.weightG) || 0;
     if (weightG <= 0) return;
-    const fil = filaments.find(f => f.id == entry.filamentId); // == intentional: number vs string
+    const fil = filaments.find(f => f.id == item.filamentId); // == intentional: number vs string
     if (!fil) return;
 
     const rollKgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
@@ -2036,7 +2012,6 @@ async function applyFilamentConsumption(order) {
     fil.updatedAt = new Date().toISOString();
     fil._changed = true;
     changed = true;
-    }); // end filEntries.forEach
   });
   if (changed) {
     for (const fil of filaments) {
@@ -2051,15 +2026,10 @@ async function revertFilamentConsumption(order) {
   const its = order.items || [];
   let changed = false;
   its.forEach(item => {
-    // Support multi-filament
-    const filEntries = (Array.isArray(item.filaments) && item.filaments.length)
-      ? item.filaments.filter(f => f.filamentId)
-      : (item.filamentId ? [{filamentId: item.filamentId, weightG: item.weightG}] : []);
-    filEntries.forEach(entry => {
-    if (!entry.filamentId) return;
-    const weightG = parseFloat(entry.weightG) || 0;
+    if (!item.filamentId) return;
+    const weightG = parseFloat(item.weightG) || 0;
     if (weightG <= 0) return;
-    const fil = filaments.find(f => f.id == entry.filamentId);
+    const fil = filaments.find(f => f.id == item.filamentId);
     if (!fil) return;
 
     const rollKgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
@@ -2087,7 +2057,6 @@ async function revertFilamentConsumption(order) {
     fil.updatedAt = new Date().toISOString();
     fil._changed = true;
     changed = true;
-    }); // end filEntries.forEach
   });
   if (changed) {
     for (const fil of filaments) {
@@ -2158,21 +2127,15 @@ function applyCalcPrefill(p) {
   setTimeout(() => {
     const firstRow = document.querySelector('#orderItemsList .item-row');
     if (firstRow) {
+      const inputs = firstRow.querySelectorAll('input.item-input');
+      // Order in row: [0]=descrição [1]=quantidade [2]=peso(g) [3]=preço unit.
       const id = firstRow.dataset.id;
-      const descInput  = firstRow.querySelector('.item-row-top input[type="text"]');
-      const qtyInput   = firstRow.querySelectorAll('.item-row-top input[type="number"]')[0];
-      const priceInput = firstRow.querySelectorAll('.item-row-top input[type="number"]')[1];
-      if (descInput)  { descInput.value  = p.description || ''; updateItem(id,'description', descInput.value); }
-      if (qtyInput)   { qtyInput.value   = p.quantity || 1;     updateItem(id,'quantity',    qtyInput.value); }
-      if (priceInput) { priceInput.value = p.unit_price || 0;   updateItem(id,'unitPrice',   priceInput.value); }
-      // Weight goes into the first filament sub-row
+      if (inputs[0]) { inputs[0].value = p.description || ''; updateItem(id,'description', inputs[0].value); }
+      if (inputs[1]) { inputs[1].value = p.quantity || 1;     updateItem(id,'quantity',    inputs[1].value); }
+      // weight field: use filament_weight (FDM g) or resin_volume (Resina ml)
       const weightVal = p.mode === 'resin' ? p.resin_volume : p.filament_weight;
-      const firstSubWeight = firstRow.querySelector('.fil-sub-weight');
-      if (firstSubWeight && weightVal) {
-        firstSubWeight.value = weightVal;
-        const sid = firstRow.querySelector('.fil-sub-row')?.dataset.sub;
-        if (sid) updateFilament(id, sid, 'weightG', weightVal);
-      }
+      if (inputs[2] && weightVal) { inputs[2].value = weightVal; updateItem(id,'weightG', inputs[2].value); }
+      if (inputs[3]) { inputs[3].value = p.unit_price || 0;   updateItem(id,'unitPrice',   inputs[3].value); }
     }
     recalcTotal();
 
@@ -2209,7 +2172,7 @@ function buildMaterialOptions(selectedId) {
     const isResin = _isResinMaterial_byObj(f);
     const prefix  = isResin ? '[Resina]' : '[FDM]';
     const unit    = isResin ? 'ml' : 'g';
-    const brand   = f.brand ? ' · ' + escH(f.brand) : '';
+    const brand   = f.brand ? ' · ' + escH(Array.isArray(f.brand) ? f.brand.join(', ') : f.brand) : '';
     const sel     = f.id == selectedId ? 'selected' : '';
     return `<option value="${f.id}" ${sel}>${prefix} ${escH(f.colorName)} — ${escH(f.type)}${brand} (${unit})</option>`;
   }).join('');
@@ -2233,119 +2196,47 @@ function _isResinMaterial(filamentId) {
   return _isResinMaterial_byObj(fil);
 }
 
-// _updateWeightUnit: now handled per sub-row in updateFilament()
-function _updateWeightUnit(rowId, filamentId) { /* no-op — replaced by per-row logic */ }
-
-// ── MULTI-FILAMENT HELPERS ─────────────────────────────────
-// Each _item now has: { _id, description, quantity, unitPrice, filaments:[{filamentId, weightG}] }
-// For backward compat, single-filament items also keep filamentId + weightG at root level.
-
-function _buildFilSubRow(itemId, subId, filamentId, weightG) {
+// Actualiza a unidade de peso da linha e do header
+function _updateWeightUnit(rowId, filamentId) {
   const isResin = _isResinMaterial(filamentId);
-  const unit = filamentId ? (isResin ? 'ml' : 'g') : 'g';
-  return `<div class="fil-sub-row" data-sub="${subId}">
-    <select class="item-select fil-sub-select"
-      onchange="updateFilament('${itemId}','${subId}','filamentId',this.value)">
-      ${buildMaterialOptions(filamentId)}
-    </select>
-    <input type="number" class="item-input mono fil-sub-weight" min="0" step="0.1"
-      placeholder="${unit}" value="${weightG||''}" title="Quantidade consumida (${unit})"
-      oninput="updateFilament('${itemId}','${subId}','weightG',this.value)" style="text-align:right">
-    <button type="button" class="item-remove" style="width:24px;height:24px;font-size:.78rem"
-      onclick="removeFilament('${itemId}','${subId}')">×</button>
-  </div>`;
+  const unit    = filamentId ? (isResin ? 'ml' : 'g') : 'g/ml';
+
+  // Actualizar badge e placeholder da linha
+  const row = document.querySelector(`.item-row[data-id="${rowId}"]`);
+
+
+  // Actualizar header da coluna
+  const anySet  = _items.some(it => it.filamentId);
+  const allResin = anySet && _items.every(it => _isResinMaterial(it.filamentId));
+  const allFDM   = anySet && _items.every(it => !_isResinMaterial(it.filamentId));
+  const lbl = document.getElementById('weightUnitLabel');
+  if (lbl) lbl.textContent = !anySet ? 'g/ml' : allResin ? 'ml' : allFDM ? 'g' : 'g/ml';
 }
 
 function addOrderItem(item = null) {
   const id = _iid();
-  // Normalise filaments array: support legacy {filamentId, weightG} root fields
-  let filaments_arr = [];
-  if (item) {
-    if (Array.isArray(item.filaments) && item.filaments.length) {
-      filaments_arr = item.filaments.map(f => ({...f, _sid: _iid()}));
-    } else if (item.filamentId) {
-      filaments_arr = [{_sid: _iid(), filamentId: item.filamentId, weightG: item.weightG||''}];
-    } else {
-      filaments_arr = [{_sid: _iid(), filamentId:'', weightG:''}];
-    }
-  } else {
-    filaments_arr = [{_sid: _iid(), filamentId:'', weightG:''}];
-  }
-
-  const it = {
-    _id: id,
-    description: item ? (item.description||'') : '',
-    quantity: item ? (item.quantity||1) : 1,
-    unitPrice: item ? (item.unitPrice||0) : 0,
-    filaments: filaments_arr,
-  };
+  const it = item ? {...item, _id:id} : {_id:id, description:'', quantity:1, unitPrice:0, filamentId:'', weightG:''};
   _items.push(it);
-
-  const subRowsHtml = filaments_arr.map(f => _buildFilSubRow(id, f._sid, f.filamentId, f.weightG)).join('');
 
   const list = document.getElementById('orderItemsList');
   const row = document.createElement('div');
   row.className = 'item-row';
   row.dataset.id = id;
   row.innerHTML = `
-    <div class="item-row-top">
-      <input type="text" class="item-input" placeholder="Descrição do item…" value="${escAttr(it.description)}"
-        oninput="updateItem('${id}','description',this.value)" style="grid-column:1">
-      <input type="number" class="item-input mono" min="1" value="${it.quantity}"
-        oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-      <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice}"
-        oninput="updateItem('${id}','unitPrice',this.value)" style="text-align:right">
-      <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>
-    </div>
-    <div class="fil-sub-rows" data-item="${id}">
-      ${subRowsHtml}
-      <button type="button" class="fil-sub-add" onclick="addFilament('${id}')">＋ Material</button>
-    </div>`;
+    <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description||'')}"
+      oninput="updateItem('${id}','description',this.value)">
+    <input type="number" class="item-input mono" min="1" value="${it.quantity||1}"
+      oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
+    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildMaterialOptions(it.filamentId)}</select>
+    <input type="number" class="item-input mono" min="0" value="${it.weightG||''}"
+      oninput="updateItem('${id}','weightG',this.value)">
+    <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice||0}"
+      oninput="updateItem('${id}','unitPrice',this.value)">
+    <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>`;
   list.appendChild(row);
+  // Actualizar unidade após append (DOM já existe)
+  _updateWeightUnit(id, it.filamentId);
   recalcTotal();
-}
-
-function addFilament(itemId) {
-  const it = _items.find(i=>i._id===itemId);
-  if (!it) return;
-  const sid = _iid();
-  it.filaments.push({_sid: sid, filamentId:'', weightG:''});
-  const container = document.querySelector(`.fil-sub-rows[data-item="${itemId}"]`);
-  if (!container) return;
-  const addBtn = container.querySelector('.fil-sub-add');
-  const div = document.createElement('div');
-  div.innerHTML = _buildFilSubRow(itemId, sid, '', '');
-  container.insertBefore(div.firstElementChild, addBtn);
-}
-
-function removeFilament(itemId, subId) {
-  const it = _items.find(i=>i._id===itemId);
-  if (!it) return;
-  if (it.filaments.length <= 1) {
-    // Reset rather than remove last row
-    it.filaments[0] = {_sid: it.filaments[0]._sid, filamentId:'', weightG:''};
-    const row = document.querySelector(`.fil-sub-row[data-sub="${it.filaments[0]._sid}"]`);
-    if (row) { row.querySelector('select').value = ''; row.querySelector('input').value = ''; }
-    return;
-  }
-  it.filaments = it.filaments.filter(f=>f._sid!==subId);
-  const row = document.querySelector(`.fil-sub-row[data-sub="${subId}"]`);
-  if (row) row.remove();
-}
-
-function updateFilament(itemId, subId, field, val) {
-  const it = _items.find(i=>i._id===itemId);
-  if (!it) return;
-  const sub = it.filaments.find(f=>f._sid===subId);
-  if (!sub) return;
-  sub[field] = val;
-  // Update weight placeholder unit when filament changes
-  if (field === 'filamentId') {
-    const isResin = _isResinMaterial(val);
-    const unit = val ? (isResin ? 'ml' : 'g') : 'g';
-    const subRow = document.querySelector(`.fil-sub-row[data-sub="${subId}"]`);
-    if (subRow) subRow.querySelector('input').placeholder = unit;
-  }
 }
 
 function updateItem(id, field, val) {
@@ -2354,6 +2245,7 @@ function updateItem(id, field, val) {
   if (field === 'quantity')        it.quantity   = parseInt(val)||0;
   else if (field === 'unitPrice')  it.unitPrice  = parseFloat(val)||0;
   else                             it[field]     = val;
+  if (field === 'filamentId')      _updateWeightUnit(id, val);
   recalcTotal();
 }
 
@@ -2372,27 +2264,9 @@ function recalcTotal() {
 function getItemsFromDOM() {
   return _items.map(it => {
     const row = document.querySelector(`.item-row[data-id="${it._id}"]`);
-    if (row) it.description = row.querySelector('.item-row-top input[type="text"]').value.trim();
-    // Build filaments array from DOM (in case user edited after mount)
-    const subRows = row ? row.querySelectorAll('.fil-sub-row') : [];
-    it.filaments = Array.from(subRows).map(sr => {
-      const sid = sr.dataset.sub;
-      const existing = (it.filaments||[]).find(f=>f._sid===sid) || {};
-      return {
-        _sid:       sid,
-        filamentId: sr.querySelector('select').value,
-        weightG:    sr.querySelector('input').value,
-      };
-    }).filter(f => f.filamentId); // only keep rows with a filament selected
-    // Backward compat: keep root filamentId/weightG from first filament
-    const first = it.filaments[0];
+    if (row) it.description = row.querySelector('input[type="text"]').value.trim();
     const {_id, ...rest} = it;
-    return {
-      ...rest,
-      filamentId: first?.filamentId || '',
-      weightG:    first?.weightG    || '',
-      filaments:  it.filaments.map(({_sid,...f})=>f),
-    };
+    return rest;
   });
 }
 
@@ -2500,6 +2374,9 @@ async function printReceipt(id) {
   const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',done:'Concluído'};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
+  const cfg = userData.config || _cfg || {};
+  const logoUrl = cfg.logoUrl || '';
+  const city = cfg.city || 'Lisboa';
   const today = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
 
   const itemRows = its.map((it,i) => `
@@ -2522,7 +2399,7 @@ async function printReceipt(id) {
           ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
           <div class="rcpt-sig-line"></div>
           <div class="rcpt-sig-name">${escH(companyName)}</div>
-          <div class="rcpt-sig-location">Lisboa, ${today}</div>
+          <div class="rcpt-sig-location">${escH(city)}, ${today}</div>
         </div>
        </div>`
     : `<div class="rcpt-sig-row" style="justify-content:flex-start">
@@ -2532,8 +2409,10 @@ async function printReceipt(id) {
   document.getElementById('receiptContent').innerHTML = `
     <div class="rcpt-header">
       <div class="rcpt-logo">
-        <div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:#F5943A">3D</span>ZAAP</div>
-        <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">Print Manager</div>
+        ${logoUrl
+          ? `<img src="${logoUrl}" alt="${escH(companyName)}" style="height:38px;width:auto;object-fit:contain;border-radius:4px">`
+          : `<div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:#F5943A">3D</span>ZAAP</div>`}
+        <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${escH(companyName)}</div>
       </div>
       <div class="rcpt-header-right">
         <div class="rcpt-title">${isPaid ? 'Recibo de Pagamento' : 'Ordem de Serviço'}</div>

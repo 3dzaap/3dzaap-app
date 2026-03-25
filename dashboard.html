@@ -219,6 +219,7 @@ body{font-family:var(--f);color:var(--black);background:var(--bg-page);overflow-
   background:linear-gradient(135deg,var(--blue),var(--blue-d));
   display:flex;align-items:center;justify-content:center;
   font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;
+  overflow:hidden;
 }
 .company-name{font-size:.84rem;font-weight:700;color:var(--dark);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .company-plan{font-size:.68rem;font-weight:700;color:var(--blue);background:rgba(59,143,212,.12);border:1px solid rgba(59,143,212,.25);border-radius:20px;padding:2px 8px;white-space:nowrap}
@@ -1922,6 +1923,14 @@ async function loadState() {
   document.getElementById('companyNameSidebar').textContent = state.company.name;
   document.getElementById('userAvatarSidebar').textContent  = state.user.initials;
   document.getElementById('companyAvatarSidebar').textContent = state.company.initials;
+  // Apply company logo to sidebar avatar if configured
+  const _logoUrl = (_cfg && _cfg.logoUrl) || (session.config && session.config.logoUrl) || '';
+  const _avatarEl = document.getElementById('companyAvatarSidebar');
+  if (_avatarEl) {
+    if (_logoUrl) {
+      _avatarEl.innerHTML = `<img src="${_logoUrl}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    }
+  }
   document.getElementById('planBadgeSidebar').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
 
   // Load data from Supabase
@@ -2327,7 +2336,7 @@ function renderFilamentAlerts() {
       <div class="fil-color-dot" style="background:${escHtml(hex)}"></div>
       <div class="fil-info">
         <div class="fil-name">${escHtml(f.type||'?')} ${escHtml(name)}</div>
-        <div class="fil-sub">${escHtml(f.brand||'')} · ${escHtml(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
+        <div class="fil-sub">${escHtml(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escHtml(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
       </div>
       <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
     </div>`;
