@@ -47,12 +47,26 @@ function initThemeToggle(){
 
 /* ── PACK COLOR ROW (inside pack modal) ─────────────────────── */
 .pk-color-row {
-  display:grid;grid-template-columns:36px 1fr 2fr 110px 32px;
-  gap:8px;align-items:center;
   background:var(--bg-input,rgba(255,255,255,.45));
   border:1px solid var(--border);
-  border-radius:10px;padding:8px 10px;
+  border-radius:10px;padding:10px 12px;
+  display:flex;flex-direction:column;gap:8px;
 }
+.pk-color-row-main {
+  display:grid;grid-template-columns:36px 1fr 110px 32px;
+  gap:8px;align-items:center;
+}
+.pk-color-row-overrides {
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;padding-top:6px;
+  border-top:1px dashed var(--border);
+}
+.pk-override-toggle {
+  font-size:.72rem;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;gap:4px;
+  user-select:none;margin-top:-2px;
+}
+.pk-override-toggle:hover{color:var(--blue)}
 .pk-color-swatch {
   width:32px;height:32px;border-radius:8px;
   border:1.5px solid rgba(0,0,0,.12);
@@ -67,6 +81,7 @@ function initThemeToggle(){
   transition:all .2s;flex-shrink:0;
 }
 .pk-remove-btn:hover { background:rgba(239,68,68,.2); }
+.pk-override-label { font-size:.72rem;color:var(--muted);margin-bottom:3px;font-weight:600; }
 
 /* ── PACK MODAL mat-btn override (smaller) ──────────────────── */
 #packBox .mat-btn { padding:7px 16px;font-size:.82rem; }
@@ -460,10 +475,13 @@ function initThemeToggle(){
       <!-- Identificação do pack -->
       <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div>Identificação do Pack</div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Nome / Label do Pack <span style="color:var(--danger)">*</span></label>
-          <input type="text" id="pkName" class="form-input" placeholder="Ex: Bambu Multicolor 10-pack, Prusa Bundle Q1…">
-          <div class="form-hint">Este identificador ficará associado a cada cor do pack</div>
+        <div class="form-group" style="flex:2">
+          <label class="form-label">Label do Pack <span style="color:var(--danger)">*</span></label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="text" id="pkName" class="form-input" placeholder="Gerado automaticamente…" style="flex:1">
+            <button class="btn btn-ghost" type="button" onclick="pkAutoLabel()" title="Regenerar label" style="padding:7px 10px;flex-shrink:0">🔄</button>
+          </div>
+          <div class="form-hint">Gerado a partir da marca, tipo e tamanho — podes editar livremente</div>
         </div>
         <div class="form-group">
           <label class="form-label">Preço total do pack <span style="color:var(--danger)">*</span></label>
@@ -486,15 +504,15 @@ function initThemeToggle(){
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Tipo</label>
-            <select id="pkType" class="form-select"></select>
+            <select id="pkType" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Variação</label>
-            <select id="pkVariation" class="form-select"></select>
+            <select id="pkVariation" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho da bobina</label>
-            <select id="pkRollSize" class="form-select"></select>
+            <select id="pkRollSize" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
         </div>
       </div>
@@ -502,15 +520,15 @@ function initThemeToggle(){
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Tipo</label>
-            <select id="pkRType" class="form-select"></select>
+            <select id="pkRType" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Variação</label>
-            <select id="pkRVariation" class="form-select"></select>
+            <select id="pkRVariation" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho do frasco</label>
-            <select id="pkBottleSize" class="form-select"></select>
+            <select id="pkBottleSize" class="form-select" onchange="pkAutoLabel()"></select>
           </div>
         </div>
       </div>
@@ -1606,7 +1624,9 @@ function openPackModal() {
   _pkClass = currentView || 'fdm';
   _pkColorRows = [];
   // Reset fields
-  document.getElementById('pkName').value = '';
+  const pkNameInput = document.getElementById('pkName');
+  pkNameInput.value = '';
+  pkNameInput.dataset.userEdited = 'auto'; // allow auto-fill
   document.getElementById('pkPrice').value = '';
   document.getElementById('pkBrand').value = '';
   setBrandsArray('pk', []);
@@ -1615,9 +1635,11 @@ function openPackModal() {
   // Populate selects if not yet done
   _pkEnsureSelects();
   // Add 2 starter rows
-  pkAddColorRow();
-  pkAddColorRow();
+  _pkColorRows.push({ hex: '#3B8FD4', name: 'Azul', cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  _pkColorRows.push({ hex: '#22C55E', name: 'Verde', cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
   pkRenderRows();
+  pkRecalcCosts();
+  pkAutoLabel();
   pkUpdateSummary();
   document.getElementById('packOverlay').classList.add('open');
 }
@@ -1637,6 +1659,8 @@ function pkSetClass(cls) {
   sel.innerHTML = '<option value="">Adicionar marca...</option>';
   const brands = cls === 'fdm' ? FDM_BRANDS : RESIN_BRANDS;
   brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+  pkRenderRows(); // re-render to update size/brand selects per class
+  pkAutoLabel();
 }
 
 function _pkEnsureSelects() {
@@ -1669,6 +1693,7 @@ function pkAddBrand() {
     brands.push(chosen);
     setBrandsArray('pk', brands);
     renderBrandTags('pk', brands);
+    pkAutoLabel(); // update label with first brand
   }
   sel.value = '';
 }
@@ -1711,10 +1736,18 @@ function renderBrandTags(type, arr) {
 }
 
 // ── Color rows ──────────────────────────────────────────────
+function _pkColorNameFromHex(hex) {
+  const match = COLOR_PRESETS.find(p => p.hex.toLowerCase() === hex.toLowerCase());
+  return match ? match.name : '';
+}
+
 function pkAddColorRow() {
-  _pkColorRows.push({ hex: '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'), name: '', cost: 0 });
+  const randomHex = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+  const autoName = _pkColorNameFromHex(randomHex);
+  _pkColorRows.push({ hex: randomHex, name: autoName, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
   pkRenderRows();
   pkRecalcCosts();
+  pkAutoLabel();
 }
 
 function pkRemoveColorRow(idx) {
@@ -1726,30 +1759,137 @@ function pkRemoveColorRow(idx) {
 function pkRenderRows() {
   const container = document.getElementById('pkColorList');
   const sym = ((_cfg&&_cfg._currSymbol)||'€');
-  container.innerHTML = _pkColorRows.map((r, i) => `
+  const isFDM = _pkClass === 'fdm';
+  const globalBrands = getBrandsArray('pk');
+  const globalSize = isFDM
+    ? (document.getElementById('pkRollSize')?.value || '')
+    : (document.getElementById('pkBottleSize')?.value || '');
+  const sizeLabel = isFDM ? 'Bobina' : 'Frasco';
+  const brandOptions = (isFDM ? FDM_BRANDS : RESIN_BRANDS)
+    .map(b => `<option value="${escH(b)}">${escH(b)}</option>`).join('');
+  const sizeOptions = (isFDM ? FDM_ROLL_SIZES : RESIN_BOTTLE_SIZES)
+    .map(s => `<option value="${escH(s)}">${escH(s)}</option>`).join('');
+
+  container.innerHTML = _pkColorRows.map((r, i) => {
+    const displayName = r.name || _pkColorNameFromHex(r.hex) || ('Cor ' + (i+1));
+    const showOverride = r.overrideBrand;
+    return `
     <div class="pk-color-row" id="pk-row-${i}">
-      <input type="color" class="pk-color-swatch" value="${r.hex}"
-        oninput="pkUpdateRowHex(${i}, this.value)">
-      <input type="text" class="form-input pk-color-name" placeholder="Nome da cor"
-        value="${escH(r.name)}" oninput="pkUpdateRowName(${i}, this.value)">
-      <div style="font-size:.72rem;color:var(--muted);padding:0 4px">${escH(r.name||'Cor '+(i+1))}</div>
-      <div style="display:flex;align-items:center;gap:4px">
-        <span style="font-size:.8rem;color:var(--muted)">${sym}</span>
-        <input type="number" class="form-input pk-cost-input" value="${r.cost.toFixed(2)}"
-          min="0" step="0.01" oninput="pkUpdateRowCost(${i}, this.value)" style="width:80px">
+      <div class="pk-color-row-main">
+        <input type="color" class="pk-color-swatch" value="${r.hex}"
+          oninput="pkUpdateRowHex(${i}, this.value)">
+        <input type="text" class="form-input pk-color-name" placeholder="Nome da cor"
+          value="${escH(r.name)}" oninput="pkUpdateRowName(${i}, this.value)"
+          placeholder="${escH(displayName)}">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:.8rem;color:var(--muted)">${sym}</span>
+          <input type="number" class="form-input pk-cost-input" value="${r.cost.toFixed(2)}"
+            min="0" step="0.01" oninput="pkUpdateRowCost(${i}, this.value)" style="width:80px">
+        </div>
+        <button class="pk-remove-btn" onclick="pkRemoveColorRow(${i})" title="Remover">✕</button>
       </div>
-      <button class="pk-remove-btn" onclick="pkRemoveColorRow(${i})" title="Remover">✕</button>
-    </div>
-  `).join('');
+      <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
+        <span class="pk-override-toggle" onclick="pkToggleOverride(${i})">
+          ${showOverride ? '🔒' : '🌐'} ${showOverride ? 'Override individual' : 'Herda marca/tamanho do pack'}
+          <span style="font-size:.65rem;opacity:.6">(clica para ${showOverride ? 'remover' : 'personalizar'})</span>
+        </span>
+      </div>
+      ${showOverride ? `
+      <div class="pk-color-row-overrides">
+        <div>
+          <div class="pk-override-label">Marca (esta cor)</div>
+          <select class="form-select" style="font-size:.8rem" onchange="pkUpdateRowBrand(${i}, this.value)">
+            <option value="">— Herdar do pack —</option>
+            ${brandOptions}
+          </select>
+        </div>
+        <div>
+          <div class="pk-override-label">${sizeLabel} (esta cor)</div>
+          <select class="form-select" style="font-size:.8rem" onchange="pkUpdateRowSize(${i}, this.value)">
+            <option value="">— Herdar do pack —</option>
+            ${sizeOptions}
+          </select>
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Re-apply saved override values to selects
+  _pkColorRows.forEach((r, i) => {
+    if (r.overrideBrand) {
+      const row = document.getElementById('pk-row-' + i);
+      if (!row) return;
+      const selects = row.querySelectorAll('select');
+      if (selects[0] && r.brandOverride) selects[0].value = r.brandOverride;
+      if (selects[1] && r.sizeOverride)  selects[1].value = r.sizeOverride;
+    }
+  });
 }
 
-function pkUpdateRowHex(i, val) { _pkColorRows[i].hex = val; }
-function pkUpdateRowName(i, val) { _pkColorRows[i].name = val; pkRenderRows(); }
+function pkUpdateRowHex(i, val) {
+  _pkColorRows[i].hex = val;
+  // Auto-fill name if it's still empty or was a preset name
+  if (!_pkColorRows[i].name || COLOR_PRESETS.some(p => p.name === _pkColorRows[i].name)) {
+    const autoName = _pkColorNameFromHex(val);
+    if (autoName) {
+      _pkColorRows[i].name = autoName;
+      // Update the input directly without full re-render
+      const row = document.getElementById('pk-row-' + i);
+      if (row) {
+        const input = row.querySelector('.pk-color-name');
+        if (input) input.value = autoName;
+      }
+    }
+  }
+}
+function pkUpdateRowName(i, val) { _pkColorRows[i].name = val; pkAutoLabel(); }
 function pkUpdateRowCost(i, val) {
   _pkColorRows[i].cost = parseFloat(val) || 0;
   pkCheckCostBalance();
   pkUpdateSummary();
 }
+function pkToggleOverride(i) {
+  _pkColorRows[i].overrideBrand = !_pkColorRows[i].overrideBrand;
+  pkRenderRows();
+}
+function pkUpdateRowBrand(i, val) { _pkColorRows[i].brandOverride = val; }
+function pkUpdateRowSize(i, val)  { _pkColorRows[i].sizeOverride  = val; }
+
+// ── Auto-generate pack label ─────────────────────────────────
+function pkAutoLabel() {
+  const isFDM = _pkClass === 'fdm';
+  const brands = getBrandsArray('pk');
+  const brandStr = brands.length ? brands[0] : '';
+  const type = isFDM
+    ? (document.getElementById('pkType')?.value || '')
+    : (document.getElementById('pkRType')?.value || '');
+  const size = isFDM
+    ? (document.getElementById('pkRollSize')?.value || '')
+    : (document.getElementById('pkBottleSize')?.value || '');
+  const n = _pkColorRows.length;
+
+  const parts = [brandStr, type, size].filter(Boolean);
+  if (n > 0) parts.push(n + ' cores');
+  const label = parts.join(' · ');
+
+  const input = document.getElementById('pkName');
+  // Only auto-fill if the user hasn't manually typed something different
+  if (input && (!input.dataset.userEdited || input.dataset.userEdited === 'auto')) {
+    input.value = label;
+    input.dataset.userEdited = 'auto';
+  }
+  pkUpdateSummary();
+}
+
+// Mark label as user-edited when user types manually
+document.addEventListener('DOMContentLoaded', () => {
+  const pkNameInput = document.getElementById('pkName');
+  if (pkNameInput) {
+    pkNameInput.addEventListener('input', function() {
+      this.dataset.userEdited = 'manual';
+    });
+  }
+});
 
 function pkRecalcCosts() {
   const total = parseFloat(document.getElementById('pkPrice').value) || 0;
@@ -1815,6 +1955,14 @@ async function savePack() {
 
   try {
     for (const row of validRows) {
+      // Per-row overrides: if the row has individual brand/size, use them; else fall back to pack-level
+      const rowBrands = (row.overrideBrand && row.brandOverride)
+        ? [row.brandOverride]
+        : brands;
+      const rowSize = (row.overrideBrand && row.sizeOverride)
+        ? row.sizeOverride
+        : rollSize;
+
       const record = {
         materialClass:  _pkClass,
         material_class: _pkClass,
@@ -1822,8 +1970,8 @@ async function savePack() {
         colorName:  row.name.trim(),
         type,
         variation,
-        brand:      brands,
-        rollSize,
+        brand:      rowBrands,
+        rollSize:   rowSize,
         total:      1,
         inUse:      0,
         newRolls:   1,
