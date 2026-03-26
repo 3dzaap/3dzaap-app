@@ -427,21 +427,49 @@ function initThemeToggle(){
       <div class="form-section-divider">🖨️ Identificação</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Marca <span>*</span></label>
-          <input type="text" id="pBrand" class="form-input" placeholder="ex: Bambu Lab, Prusa, Anycubic…">
+          <label class="form-label">Fabricante <span>*</span></label>
+          <select id="pBrand" class="form-select" onchange="onBrandChange()">
+            <option value="">— Selecionar fabricante —</option>
+            <option value="Bambu Lab">Bambu Lab</option>
+            <option value="Prusa Research">Prusa Research</option>
+            <option value="Creality">Creality</option>
+            <option value="Anycubic">Anycubic</option>
+            <option value="Elegoo">Elegoo</option>
+            <option value="FlashForge">FlashForge</option>
+            <option value="QIDI Tech">QIDI Tech</option>
+            <option value="Snapmaker">Snapmaker</option>
+            <option value="Voron Design">Voron Design</option>
+            <option value="Raise3D">Raise3D</option>
+            <option value="Ultimaker">Ultimaker</option>
+            <option value="Artillery">Artillery</option>
+            <option value="Sovol">Sovol</option>
+            <option value="Phrozen">Phrozen</option>
+            <option value="Formlabs">Formlabs</option>
+            <option value="Zortrax">Zortrax</option>
+            <option value="BCN3D">BCN3D</option>
+            <option value="Stratasys">Stratasys</option>
+            <option value="MakerBot">MakerBot</option>
+            <option value="Outro">Outro…</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Modelo <span>*</span></label>
-          <input type="text" id="pModel" class="form-input" placeholder="ex: X1 Carbon, MK4, Photon M3…">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Tipo</label>
-          <select id="pType" class="form-select">
+          <label class="form-label">Tipo <span>*</span></label>
+          <select id="pType" class="form-select" onchange="onTypeChange()">
             <option value="fdm">FDM</option>
             <option value="resina">Resina (SLA/DLP/MSLA)</option>
           </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" id="pModelSelectGroup">
+          <label class="form-label">Modelo <span>*</span></label>
+          <select id="pModelSelect" class="form-select" onchange="onModelSelectChange()">
+            <option value="">— Selecionar fabricante primeiro —</option>
+          </select>
+        </div>
+        <div class="form-group" id="pModelCustomGroup" style="display:none">
+          <label class="form-label">Modelo personalizado <span>*</span></label>
+          <input type="text" id="pModelCustom" class="form-input" placeholder="ex: X1 Carbon, MK4…">
         </div>
         <div class="form-group">
           <label class="form-label">Estado</label>
@@ -452,6 +480,8 @@ function initThemeToggle(){
           </select>
         </div>
       </div>
+      <!-- Campo oculto que agrega o modelo final -->
+      <input type="hidden" id="pModel">
 
       <div class="form-section-divider" style="margin-top:18px">💰 Custo e Amortização</div>
       <div class="form-row">
@@ -762,6 +792,154 @@ function updateStats() {
   document.getElementById('statTotalHours').textContent  = totalHours + 'h';
 }
 
+// ── PRINTER CATALOG ────────────────────────────────────────────
+const PRINTER_CATALOG = {
+  'Bambu Lab': {
+    fdm: ['X1 Carbon','X1E','P1S','P1P','A1','A1 Mini','A1 Mini Combo','H2D','H2S','H2C'],
+    resina: []
+  },
+  'Prusa Research': {
+    fdm: ['MK4','MK4S','Mini+','XL','XL Multi-Tool','Core One'],
+    resina: ['SL1S Speed']
+  },
+  'Creality': {
+    fdm: ['Ender-3 V3 SE','Ender-3 V3 KE','Ender-3 V3','Ender-3 V3 Plus','K1','K1 SE','K1C','K1 Max','K2','K2 Plus','Creality Hi'],
+    resina: ['Halot One Plus','Halot Mage','Halot Mage Pro']
+  },
+  'Anycubic': {
+    fdm: ['Kobra 2','Kobra 2 Pro','Kobra 2 Max','Kobra 3','Kobra 3 Max','Kobra S1','Kobra S1 Max','Kobra X'],
+    resina: ['Photon Mono M5s','Photon Mono M7','Photon Mono M7 Pro','Photon Mono M7 Max','Photon P1']
+  },
+  'Elegoo': {
+    fdm: ['Neptune 4','Neptune 4 Pro','Neptune 4 Plus','Neptune 4 Max','Centauri Carbon','OrangeStorm Giga'],
+    resina: ['Saturn 3 Ultra','Saturn 4','Saturn 4 Ultra','Saturn 4 Ultra 16K','Mars 4','Mars 4 Ultra','Mars 5','Mars 5 Ultra']
+  },
+  'FlashForge': {
+    fdm: ['Adventurer 5M','Adventurer 5M Pro','Adventurer 5M Lite','Creator 4S','Creator 5','Creator 5 Pro','Guider 3 Plus'],
+    resina: ['Focus 8.9']
+  },
+  'QIDI Tech': {
+    fdm: ['X-Max 3','X-Plus 3','X-Smart 3','Q1 Pro','Plus4'],
+    resina: []
+  },
+  'Snapmaker': {
+    fdm: ['Snapmaker 2.0 A150','Snapmaker 2.0 A250','Snapmaker 2.0 A350','Artisan','J1s','U1'],
+    resina: []
+  },
+  'Voron Design': {
+    fdm: ['Voron 0.2','Voron Trident','Voron 2.4','Voron Switchwire'],
+    resina: []
+  },
+  'Raise3D': {
+    fdm: ['Pro3','Pro3 Plus','E2','E2CF','N4'],
+    resina: []
+  },
+  'Ultimaker': {
+    fdm: ['S3','S5','S7'],
+    resina: []
+  },
+  'Artillery': {
+    fdm: ['Sidewinder X4 Pro','Genius Pro','Hornet'],
+    resina: []
+  },
+  'Sovol': {
+    fdm: ['SV06','SV06 Plus','SV07','SV08'],
+    resina: []
+  },
+  'Phrozen': {
+    fdm: [],
+    resina: ['Sonic Mini 8K','Sonic Mega 8K','Sonic Mighty 8K','Transform 12K']
+  },
+  'Formlabs': {
+    fdm: [],
+    resina: ['Form 3','Form 3+','Form 3L','Form 4','Form 4L']
+  },
+  'Zortrax': {
+    fdm: ['M200 Plus','M300 Dual','E3'],
+    resina: ['Inkspire 2']
+  },
+  'BCN3D': {
+    fdm: ['Epsilon W27','Epsilon W50','Omega I60'],
+    resina: []
+  },
+  'Stratasys': {
+    fdm: ['F123CR','F370CR','Fortus 380'],
+    resina: ['Origin One']
+  },
+  'MakerBot': {
+    fdm: ['METHOD X','METHOD XL','SKETCH'],
+    resina: []
+  }
+};
+
+function onBrandChange() {
+  const brand = document.getElementById('pBrand').value;
+  // If brand only has one type, auto-select it
+  if (brand && PRINTER_CATALOG[brand]) {
+    const cat = PRINTER_CATALOG[brand];
+    const hasFDM    = cat.fdm.length > 0;
+    const hasResina = cat.resina.length > 0;
+    if (hasFDM && !hasResina)    document.getElementById('pType').value = 'fdm';
+    if (!hasFDM && hasResina)   document.getElementById('pType').value = 'resina';
+  }
+  updateModelSelect();
+}
+
+function onTypeChange() {
+  updateModelSelect();
+}
+
+function updateModelSelect() {
+  const brand   = document.getElementById('pBrand').value;
+  const type    = document.getElementById('pType').value;
+  const sel     = document.getElementById('pModelSelect');
+  const isOther = brand === 'Outro' || brand === '';
+
+  // Show/hide custom input
+  document.getElementById('pModelSelectGroup').style.display = isOther ? 'none' : '';
+  document.getElementById('pModelCustomGroup').style.display = isOther ? '' : 'none';
+
+  if (isOther) return;
+
+  const cat    = PRINTER_CATALOG[brand] || { fdm: [], resina: [] };
+  const models = type === 'resina' ? cat.resina : cat.fdm;
+
+  sel.innerHTML = '';
+  if (!models.length) {
+    sel.innerHTML = `<option value="">— Sem modelos ${type === 'resina' ? 'Resina' : 'FDM'} para este fabricante —</option>`;
+    return;
+  }
+  sel.innerHTML = '<option value="">— Selecionar modelo —</option>' +
+    models.map(m => `<option value="${m}">${m}</option>`).join('') +
+    '<option value="__custom__">Outro (personalizado)…</option>';
+}
+
+function onModelSelectChange() {
+  const val = document.getElementById('pModelSelect').value;
+  const customGroup = document.getElementById('pModelCustomGroup');
+  const customInput = document.getElementById('pModelCustom');
+  if (val === '__custom__') {
+    customGroup.style.display = '';
+    customInput.value = '';
+    customInput.focus();
+    document.getElementById('pModelSelectGroup').style.display = '';
+  } else {
+    customGroup.style.display = 'none';
+  }
+}
+
+function _resolveModel() {
+  const brand = document.getElementById('pBrand').value;
+  if (brand === 'Outro' || brand === '') {
+    return document.getElementById('pModelCustom').value.trim();
+  }
+  const selVal = document.getElementById('pModelSelect').value;
+  if (selVal === '__custom__') {
+    return document.getElementById('pModelCustom').value.trim();
+  }
+  return selVal;
+}
+
 // ── PRINTER MODAL (CREATE / EDIT) ──────
 function openPrinterModal(id = null) {
   // Close detail modal if open
@@ -773,29 +951,60 @@ function openPrinterModal(id = null) {
   if (id) {
     const p = printers.find(x => x.id === id);
     if (!p) return;
-    document.getElementById('pBrand').value             = p.brand || '';
-    document.getElementById('pModel').value             = p.model || '';
-    document.getElementById('pType').value              = p.printerType || 'fdm';
-    document.getElementById('pStatus').value            = p.status || 'operacional';
-    document.getElementById('pPrice').value             = p.price || '';
-    document.getElementById('pLifeHours').value         = p.lifeHours || '';
-    document.getElementById('pPurchaseDate').value      = p.purchaseDate || '';
-    document.getElementById('pWarrantyUntil').value     = p.warrantyUntil || '';
-    document.getElementById('pMaintIntervalHours').value= p.maintIntervalHours || '';
-    document.getElementById('pLastMaintHours').value    = p.lastMaintHours || '';
-    document.getElementById('pNotes').value             = p.notes || '';
+    const brand = p.brand || '';
+    const model = p.model || '';
+    const type  = p.printerType || 'fdm';
+
+    // Set brand & type first
+    const brandSel = document.getElementById('pBrand');
+    const knownBrand = PRINTER_CATALOG[brand] ? brand : 'Outro';
+    brandSel.value = knownBrand;
+    document.getElementById('pType').value = type;
+
+    // Populate model select
+    updateModelSelect();
+
+    // Now set model value
+    if (knownBrand === 'Outro') {
+      document.getElementById('pModelCustom').value = model;
+    } else {
+      const cat    = PRINTER_CATALOG[brand] || { fdm: [], resina: [] };
+      const models = type === 'resina' ? cat.resina : cat.fdm;
+      if (models.includes(model)) {
+        document.getElementById('pModelSelect').value = model;
+      } else {
+        // Model not in catalog — show custom
+        const sel = document.getElementById('pModelSelect');
+        if ([...sel.options].some(o => o.value === '__custom__')) sel.value = '__custom__';
+        document.getElementById('pModelCustomGroup').style.display = '';
+        document.getElementById('pModelCustom').value = model;
+      }
+    }
+
+    document.getElementById('pStatus').value             = p.status || 'operacional';
+    document.getElementById('pPrice').value              = p.price || '';
+    document.getElementById('pLifeHours').value          = p.lifeHours || '';
+    document.getElementById('pPurchaseDate').value       = p.purchaseDate || '';
+    document.getElementById('pWarrantyUntil').value      = p.warrantyUntil || '';
+    document.getElementById('pMaintIntervalHours').value = p.maintIntervalHours || '';
+    document.getElementById('pLastMaintHours').value     = p.lastMaintHours || '';
+    document.getElementById('pNotes').value              = p.notes || '';
   } else {
-    document.getElementById('pBrand').value             = '';
-    document.getElementById('pModel').value             = '';
-    document.getElementById('pType').value              = 'fdm';
-    document.getElementById('pStatus').value            = 'operacional';
-    document.getElementById('pPrice').value             = '';
-    document.getElementById('pLifeHours').value         = '5000';
-    document.getElementById('pPurchaseDate').value      = '';
-    document.getElementById('pWarrantyUntil').value     = '';
-    document.getElementById('pMaintIntervalHours').value= '500';
-    document.getElementById('pLastMaintHours').value    = '0';
-    document.getElementById('pNotes').value             = '';
+    document.getElementById('pBrand').value              = '';
+    document.getElementById('pType').value               = 'fdm';
+    document.getElementById('pStatus').value             = 'operacional';
+    document.getElementById('pPrice').value              = '';
+    document.getElementById('pLifeHours').value          = '5000';
+    document.getElementById('pPurchaseDate').value       = '';
+    document.getElementById('pWarrantyUntil').value      = '';
+    document.getElementById('pMaintIntervalHours').value = '500';
+    document.getElementById('pLastMaintHours').value     = '0';
+    document.getElementById('pNotes').value              = '';
+    // Reset model selects
+    document.getElementById('pModelSelect').innerHTML    = '<option value="">— Selecionar fabricante primeiro —</option>';
+    document.getElementById('pModelSelectGroup').style.display = '';
+    document.getElementById('pModelCustomGroup').style.display = 'none';
+    document.getElementById('pModelCustom').value        = '';
   }
   document.getElementById('printerModalOverlay').classList.add('open');
   document.getElementById('pBrand').focus();
@@ -807,12 +1016,15 @@ function closePrinterModal() {
 }
 
 async function savePrinter() {
-  const brand = document.getElementById('pBrand').value.trim();
-  const model = document.getElementById('pModel').value.trim();
-  if (!brand || !model) { showToast('⚠️ Marca e modelo são obrigatórios', 'err'); return; }
+  const brandSel = document.getElementById('pBrand').value;
+  const brand    = brandSel === 'Outro' ? (document.getElementById('pModelCustom').dataset.brand || 'Outro') : brandSel;
+  const model    = _resolveModel();
+
+  if (!brandSel || brandSel === '') { showToast('⚠️ Seleciona um fabricante', 'err'); return; }
+  if (!model)                        { showToast('⚠️ Seleciona ou escreve um modelo', 'err'); return; }
 
   const data = {
-    brand,
+    brand:              brandSel === 'Outro' ? 'Outro' : brandSel,
     model,
     printerType:        document.getElementById('pType').value,
     status:             document.getElementById('pStatus').value,
