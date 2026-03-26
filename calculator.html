@@ -254,7 +254,7 @@ function initThemeToggle(){
 
 .history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
 
-.history-table-wrap{overflow-x:auto}
+.history-table-wrap{overflow-x:auto;overflow-y:auto;max-height:340px}
 
 .history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.6}
 
@@ -263,6 +263,7 @@ function initThemeToggle(){
 .history-table{width:100%;border-collapse:collapse;min-width:580px}
 
 .history-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border)}
+.history-table thead th{position:sticky;top:0;background:var(--bg-table-head);z-index:2}
 
 .history-table th{padding:10px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
 
@@ -576,11 +577,11 @@ function initThemeToggle(){
 
           </div>
           <!-- Campos Resina (ocultos por defeito) -->
-          <div class="form-sections" id="resinFields" style="display:none">
+          <div class="form-sections" id="resinFields" style="display:none;padding-top:0">
             <div class="form-section">
               <div class="section-title">
-                <div class="section-title-icon si-blue">🧪</div>
-                Material &amp; Impressão — Resina
+                <div class="section-title-icon si-blue">📊</div>
+                Material &amp; Impressão
               </div>
               <div class="fields-grid">
                 <div class="field">
@@ -1254,11 +1255,11 @@ function exportCalcCSV(){
     .concat([[('Impressora ('+((_cfg&&_cfg._currSymbol)||'€')+')'),i.printerPrice],['Vida útil (h)',i.printerLife],
       [('Eletricidade ('+((_cfg&&_cfg._currSymbol)||'€')+'/kWh)'),i.electricityPrice],['Falhas (%)',i.failureRate],
       ['Indiretos (%)',i.indirectCosts],['Margem (%)',i.profitMargin],['---','---'],
-      ['Custo material',r.materialCost.toFixed(4)],['Custo amortização',r.amortizationCost.toFixed(4)],
-      ['Custo eletricidade',r.electricityCost.toFixed(4)],['Custo base (p/un.)',r.baseCost.toFixed(4)],
-      ['+ Falhas',r.failureCost.toFixed(4)],['+ Indiretos',r.indirectCost.toFixed(4)],
-      ['+ Margem',r.marginCost.toFixed(4)],['PREÇO UNIT.',r.unitPrice.toFixed(4)],
-      ['PREÇO FINAL',r.finalPrice.toFixed(4)]]);
+      ['Custo material',r.materialCost.toFixed(2)],['Custo amortização',r.amortizationCost.toFixed(2)],
+      ['Custo eletricidade',r.electricityCost.toFixed(2)],['Custo base (p/un.)',r.baseCost.toFixed(2)],
+      ['+ Falhas',r.failureCost.toFixed(2)],['+ Indiretos',r.indirectCost.toFixed(2)],
+      ['+ Margem',r.marginCost.toFixed(2)],['PREÇO UNIT.',r.unitPrice.toFixed(2)],
+      ['PREÇO FINAL',r.finalPrice.toFixed(2)]]);
   var ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
   dlCSV(rows.map(function(r){return r.join(';');}).join('\n'),'calculo_'+ts+'.csv');
   showToast('📄 CSV exportado!','ok');
@@ -1295,7 +1296,7 @@ function copyResults(){
     name?name:null,
     `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}`,
     '='.repeat(46),
-    `Custo filamento:    ${(_cfg&&_cfg._currSymbol)||'€'}${r.filamentCost.toFixed(2)}`,
+    `Custo material:     ${(_cfg&&_cfg._currSymbol)||'€'}${r.materialCost.toFixed(2)}`,
     `Custo amortização:  ${(_cfg&&_cfg._currSymbol)||'€'}${r.amortizationCost.toFixed(2)}`,
     `Custo eletricidade: ${(_cfg&&_cfg._currSymbol)||'€'}${r.electricityCost.toFixed(2)}`,
     `Custo base:         ${(_cfg&&_cfg._currSymbol)||'€'}${r.baseCost.toFixed(2)}`,
