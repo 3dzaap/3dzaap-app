@@ -367,7 +367,7 @@ function initThemeToggle(){
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
-          <button class="btn btn-secondary" onclick="openPackModal()">＋ Pack</button>
+          <button class="btn btn-ghost" onclick="openPackModal()">＋ Pack</button>
           <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Material</button>
         </div>
       </div>
@@ -475,13 +475,13 @@ function initThemeToggle(){
       <!-- Identificação do pack -->
       <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div>Identificação do Pack</div>
       <div class="form-row">
-        <div class="form-group" style="flex:2">
-          <label class="form-label">Label do Pack <span style="color:var(--danger)">*</span></label>
-          <div style="display:flex;align-items:center;gap:6px">
-            <input type="text" id="pkName" class="form-input" placeholder="Gerado automaticamente…" style="flex:1">
-            <button class="btn btn-ghost" type="button" onclick="pkAutoLabel()" title="Regenerar label" style="padding:7px 10px;flex-shrink:0">🔄</button>
+        <div class="form-group">
+          <label class="form-label">ID do Pack</label>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input)">
+            <span style="font-family:var(--mono);font-size:.92rem;font-weight:700;color:var(--blue)" id="pkIdDisplay">Pack-001</span>
+            <span style="font-size:.74rem;color:var(--subtle)">gerado automaticamente</span>
           </div>
-          <div class="form-hint">Gerado a partir da marca, tipo e tamanho — podes editar livremente</div>
+          <input type="hidden" id="pkName">
         </div>
         <div class="form-group">
           <label class="form-label">Preço total do pack <span style="color:var(--danger)">*</span></label>
@@ -504,15 +504,15 @@ function initThemeToggle(){
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Tipo</label>
-            <select id="pkType" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkType" class="form-select"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Variação</label>
-            <select id="pkVariation" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkVariation" class="form-select"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho da bobina</label>
-            <select id="pkRollSize" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkRollSize" class="form-select"></select>
           </div>
         </div>
       </div>
@@ -520,15 +520,15 @@ function initThemeToggle(){
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Tipo</label>
-            <select id="pkRType" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkRType" class="form-select"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Variação</label>
-            <select id="pkRVariation" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkRVariation" class="form-select"></select>
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho do frasco</label>
-            <select id="pkBottleSize" class="form-select" onchange="pkAutoLabel()"></select>
+            <select id="pkBottleSize" class="form-select"></select>
           </div>
         </div>
       </div>
@@ -1624,12 +1624,8 @@ function openPackModal() {
   _pkClass = currentView || 'fdm';
   _pkColorRows = [];
   _pkPresetIdx = 0;
-  _pkCurrentNum = _pkGetNextNum(); // reserve next number (commit only on save)
+  _pkCurrentNum = _pkGetNextNum();
 
-  // Reset fields
-  const pkNameInput = document.getElementById('pkName');
-  pkNameInput.value = '';
-  pkNameInput.dataset.userEdited = 'auto';
   document.getElementById('pkPrice').value = '';
   document.getElementById('pkBrand').value = '';
   setBrandsArray('pk', []);
@@ -1637,7 +1633,6 @@ function openPackModal() {
   pkSetClass(_pkClass);
   _pkEnsureSelects();
 
-  // 2 starter rows from presets
   const p0 = COLOR_PRESETS[0];
   const p1 = COLOR_PRESETS[1];
   _pkColorRows.push({ hex: p0.hex, name: p0.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
@@ -1666,7 +1661,6 @@ function pkSetClass(cls) {
   const brands = cls === 'fdm' ? FDM_BRANDS : RESIN_BRANDS;
   brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
   pkRenderRows(); // re-render to update size/brand selects per class
-  pkAutoLabel();
 }
 
 function _pkEnsureSelects() {
@@ -1699,7 +1693,6 @@ function pkAddBrand() {
     brands.push(chosen);
     setBrandsArray('pk', brands);
     renderBrandTags('pk', brands);
-    pkAutoLabel(); // update label with first brand
   }
   sel.value = '';
 }
@@ -1826,13 +1819,11 @@ function _pkColorNameFromHex(hex) {
 let _pkPresetIdx = 0;
 
 function pkAddColorRow() {
-  // Cycle through COLOR_PRESETS for nice default colors
   const preset = COLOR_PRESETS[_pkPresetIdx % COLOR_PRESETS.length];
   _pkPresetIdx++;
   _pkColorRows.push({ hex: preset.hex, name: preset.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
   pkRenderRows();
   pkRecalcCosts();
-  pkAutoLabel();
 }
 
 function pkRemoveColorRow(idx) {
@@ -1925,10 +1916,7 @@ function pkUpdateRowHex(i, val) {
 
 function pkUpdateRowName(i, val) {
   _pkColorRows[i].name = val;
-  // Mark as user-edited so color changes stop overwriting it
-  // But if user clears the field, allow auto again
   _pkColorRows[i].nameUserEdited = val.trim() !== '';
-  pkAutoLabel();
 }
 function pkUpdateRowCost(i, val) {
   _pkColorRows[i].cost = parseFloat(val) || 0;
@@ -1944,51 +1932,27 @@ function pkUpdateRowSize(i, val)  { _pkColorRows[i].sizeOverride  = val; }
 
 // ── Auto-generate pack label ─────────────────────────────────
 
-// Pack counter — persiste em localStorage para ser incremental entre sessões
 function _pkGetNextNum() {
-  const n = parseInt(localStorage.getItem('3dzaap_pack_counter') || '0') + 1;
-  return n;
+  return parseInt(localStorage.getItem('3dzaap_pack_counter') || '0') + 1;
 }
 function _pkCommitNum(n) {
   localStorage.setItem('3dzaap_pack_counter', String(n));
 }
 
-let _pkCurrentNum = 0; // número reservado para o pack em edição
+let _pkCurrentNum = 0;
 
 function pkAutoLabel() {
-  const isFDM = _pkClass === 'fdm';
-  const brands = getBrandsArray('pk');
-  const brandStr = brands.length ? brands[0] : '';
-  const type = isFDM
-    ? (document.getElementById('pkType')?.value || '')
-    : (document.getElementById('pkRType')?.value || '');
-  const size = isFDM
-    ? (document.getElementById('pkRollSize')?.value || '')
-    : (document.getElementById('pkBottleSize')?.value || '');
-  const n = _pkColorRows.length;
-
-  const numStr = 'Pack-' + String(_pkCurrentNum).padStart(2, '0');
-  const parts = [numStr, brandStr, type, size].filter(Boolean);
-  if (n > 0) parts.push(n + (n === 1 ? ' cor' : ' cores'));
-  const label = parts.join(' · ');
-
-  const input = document.getElementById('pkName');
-  if (input && (!input.dataset.userEdited || input.dataset.userEdited === 'auto')) {
-    input.value = label;
-    input.dataset.userEdited = 'auto';
-  }
+  const id = 'Pack-' + String(_pkCurrentNum).padStart(3, '0');
+  // Update display
+  const display = document.getElementById('pkIdDisplay');
+  if (display) display.textContent = id;
+  // Update hidden input (used as packName in savePack)
+  const hidden = document.getElementById('pkName');
+  if (hidden) hidden.value = id;
   pkUpdateSummary();
 }
 
-// Mark label as user-edited when user types manually
-document.addEventListener('DOMContentLoaded', () => {
-  const pkNameInput = document.getElementById('pkName');
-  if (pkNameInput) {
-    pkNameInput.addEventListener('input', function() {
-      this.dataset.userEdited = 'manual';
-    });
-  }
-});
+// Mark label as user-edited when user types manually — N/A (label is now auto-only)
 
 function pkRecalcCosts() {
   const total = parseFloat(document.getElementById('pkPrice').value) || 0;
@@ -2025,8 +1989,7 @@ function pkUpdateSummary() {
 
 // ── Save ────────────────────────────────────────────────────
 async function savePack() {
-  const packName = document.getElementById('pkName').value.trim();
-  if (!packName) { showToast('⚠️ Dá um nome ao pack', 'err'); return; }
+  const packName = document.getElementById('pkName').value.trim() || ('Pack-' + String(_pkCurrentNum).padStart(3,'0'));
 
   const totalPrice = parseFloat(document.getElementById('pkPrice').value) || 0;
   const brands     = getBrandsArray('pk');
