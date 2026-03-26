@@ -776,6 +776,7 @@ function initThemeToggle(){
               <div class="results-actions-row">
                 <button class="btn-action" onclick="exportCalcCSV()">📄 CSV</button>
                 <button class="btn-action" id="copyBtnPanel" onclick="copyResults()">📋 Copiar</button>
+                <button class="btn-action" id="copyClientBtn" onclick="copyForClient()">📲 p/ Cliente</button>
                 <button class="btn-action" onclick="saveToHistory()">💾 Guardar</button>
               </div>
               <button class="btn-criar-pedido" id="btnCriarPedido" onclick="criarPedido()">
@@ -1426,6 +1427,55 @@ function copyResults(){
     navigator.clipboard.writeText(txt).then(()=>{showToast('📋 Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
   }else{fbCopy(txt);}
 }
+function copyForClient(){
+  const i=getInputs(); const r=computeResults(i);
+  const name=(document.getElementById('printName').value||'').trim();
+  const sym=(_cfg&&_cfg._currSymbol)||'€';
+  const qty=i.qty||1;
+  const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
+  const date=new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
+
+  const lines=[
+    '╔══════════════════════════════════════╗',
+    '║       3DZAAP — Orçamento Rápido      ║',
+    '╚══════════════════════════════════════╝',
+    '',
+    date,
+    '',
+  ];
+  if(name) lines.push('📐 Peça: '+name,'');
+  lines.push('Tecnologia: '+modeLabel);
+  if(qty>1){
+    lines.push('Quantidade: '+qty+' unidades');
+    lines.push('');
+    lines.push('Preço unitário:  '+sym+r.unitPrice.toFixed(2));
+    lines.push('━'.repeat(38));
+    lines.push('💰 TOTAL:        '+sym+r.finalPrice.toFixed(2));
+  }else{
+    lines.push('');
+    lines.push('━'.repeat(38));
+    lines.push('💰 Preço:        '+sym+r.finalPrice.toFixed(2));
+  }
+  lines.push('');
+  lines.push('Orçamento válido por 7 dias.');
+  lines.push('Para dúvidas ou encomenda, responda a esta mensagem.');
+
+  const txt=lines.join('\n');
+  const flash=()=>{
+    const el=document.getElementById('copyClientBtn');
+    if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
+  };
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(()=>{showToast('📲 Orçamento copiado para o cliente!','ok');flash();}).catch(()=>fbClientCopy(txt));
+  }else{fbClientCopy(txt);}
+}
+function fbClientCopy(t){
+  const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');showToast('📲 Orçamento copiado para o cliente!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  document.body.removeChild(ta);
+}
+
 function fbCopy(t){
   const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
   document.body.appendChild(ta);ta.focus();ta.select();
