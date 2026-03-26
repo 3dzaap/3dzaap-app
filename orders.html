@@ -205,56 +205,7 @@ function initThemeToggle(){
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-        <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatar">—</div>
-        <span class="company-name" id="companyName">—</span>
-        <span class="company-plan" id="planBadge">—</span>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="printers.html"><span class="nav-icon">🖨️</span> Impressoras</a>
-        <a class="nav-item active" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('💳 Assinatura — em breve','');return false;" style="opacity:.6"><span class="nav-icon">💳</span> Assinatura</a>
-      </div>
-    </nav>
-        <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');closeUserMenu();return false;" style="opacity:.6">💳 Gerir assinatura</a>
-        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
-      </div>
-      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatar">—</div>
-        <div class="user-info">
-          <div class="user-name" id="userName">—</div>
-          <div class="user-email" id="userEmail">—</div>
-        </div>
-        <span class="user-chevron" id="userChevron">▲</span>
-      </div>
-    </div>
-  </aside>
+  
   <!-- MAIN -->
   <div class="main">
     <header class="topbar">
@@ -562,6 +513,7 @@ async function loadUserData() {
     const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
     document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
   }
+  Sidebar.setSession(session);
   return session;
 }
 
@@ -1574,7 +1526,10 @@ function printReceiptNow() {
 .theme-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg-btn-ghost);cursor:pointer;font-size:.9rem;transition:all .2s var(--ease);flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .theme-toggle:hover{background:rgba(59,143,212,.12);border-color:rgba(59,143,212,.35)}
-</style></head><body>${content}</body></html>`);
+</style></head><body>${content}
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
+</body></html>`);
   w.document.close();
   w.onload = () => { w.focus(); w.print(); };
 }

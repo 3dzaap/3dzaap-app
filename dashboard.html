@@ -124,7 +124,7 @@ function initThemeToggle(){
 /* ── CONTENT GRID ───────────────────── */
 .content-grid{
   display:grid;
-  grid-template-columns:1fr 300px 300px;
+  grid-template-columns:1fr 1fr 1fr;
   gap:20px;
   margin-bottom:24px;
 }
@@ -186,11 +186,6 @@ function initThemeToggle(){
 
 .fil-low{background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.28);animation:pulse 2s ease-in-out infinite}
 
-.prt-ok     {background:rgba(34,197,94,.1);  color:#16a34a;border:1px solid rgba(34,197,94,.28)}
-.prt-maint  {background:rgba(245,158,11,.12);color:#D97706;border:1px solid rgba(245,158,11,.28)}
-.prt-overdue{background:rgba(239,68,68,.1);  color:#DC2626;border:1px solid rgba(239,68,68,.28);animation:pulse 2s ease-in-out infinite}
-.prt-inativa{background:rgba(148,163,184,.12);color:#64748b;border:1px solid rgba(148,163,184,.28)}
-
 /* ── QUICK ACTIONS ──────────────────── */
 .actions-grid{
   display:grid;grid-template-columns:repeat(3,1fr);
@@ -211,12 +206,8 @@ function initThemeToggle(){
   border-radius:20px;padding:2px 8px;
 }
 
-@media(max-width:1100px){
-  .content-grid{grid-template-columns:1fr 1fr}
-}
 @media(max-width:800px){
   .actions-grid{grid-template-columns:repeat(2,1fr)}
-  .content-grid{grid-template-columns:1fr}
 }
 
 @media(max-width:680px){
@@ -235,7 +226,6 @@ function initThemeToggle(){
   .health-ring-wrap{flex-direction:row;justify-content:flex-start;padding-top:0}
   .health-score-number{font-size:2.4rem}
   .section-header{flex-wrap:wrap;gap:8px}
-  .content-grid{grid-template-columns:1fr}
 }
 
 @media(max-width:420px){
@@ -264,61 +254,7 @@ function initThemeToggle(){
 <div class="layout">
 
   <!-- ── SIDEBAR ─────────────────────── -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div style="display:none;align-items:center;gap:8px">
-        <span style="font-size:1.4rem;font-weight:900;color:var(--blue)">3D</span><span style="font-size:1.4rem;font-weight:900;color:var(--orange)">ZAAP</span>
-      </div>
-      <div class="sidebar-logo-text">Print Manager</div>
-    </div>
-
-        <div class="sidebar-company">
-      <div class="company-pill">
-        <div class="company-avatar" id="companyAvatarSidebar">—</div>
-        <span class="company-name" id="companyNameSidebar">—</span>
-        <span class="company-plan" id="planBadgeSidebar">—</span>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-section-label">Principal</div>
-        <a class="nav-item active" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
-        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Gestão</div>
-        <a class="nav-item" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
-        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
-        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-label">Conta</div>
-        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Configurações</a>
-        <a class="nav-item" href="#" onclick="showToast('💳 Assinatura — em breve','');return false;" style="opacity:.6"><span class="nav-icon">💳</span> Assinatura</a>
-      </div>
-    </nav>
-
-        <div class="sidebar-footer">
-      <div class="user-dropdown" id="userDropdown">
-        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
-        <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');closeUserMenu();return false;" style="opacity:.6">💳 Gerir assinatura</a>
-        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
-        <div class="dd-divider"></div>
-        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
-      </div>
-      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
-        <div class="user-avatar" id="userAvatarSidebar">—</div>
-        <div class="user-info">
-          <div class="user-name" id="userNameSidebar">—</div>
-          <div class="user-email" id="userEmailSidebar">—</div>
-        </div>
-        <span class="user-chevron" id="userChevron">▲</span>
-      </div>
-    </div>
-  </aside>
+  
 
   <!-- ── MAIN CONTENT ─────────────────── -->
   <div class="main">
@@ -393,7 +329,7 @@ function initThemeToggle(){
       </div>
 
       <!-- Stats Grid -->
-      <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+      <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon blue">💰</div>
@@ -426,14 +362,6 @@ function initThemeToggle(){
           <div class="stat-value" id="statStock">0</div>
           <div class="stat-label">Alertas de stock</div>
         </div>
-        <div class="stat-card" id="printerStatCard" style="cursor:pointer" onclick="window.location.href='printers.html'">
-          <div class="stat-header">
-            <div class="stat-icon" id="printerStatIcon" style="background:rgba(34,197,94,.12);color:#16a34a">🖨️</div>
-            <span class="stat-badge" id="printerStatBadge" style="display:none"></span>
-          </div>
-          <div class="stat-value" id="statPrinters">—</div>
-          <div class="stat-label" id="statPrintersLabel">Impressoras operacionais</div>
-        </div>
       </div>
 
       <!-- Quick Actions -->
@@ -459,6 +387,11 @@ function initThemeToggle(){
           <div class="action-title">Relatório Financeiro</div>
           <div class="action-desc">Ver receitas e pagamentos</div>
           <span class="action-lock" id="financialActionLock" style="display:none">Business</span>
+        </a>
+        <a class="action-card" href="printers.html">
+          <div class="action-icon">🖨️</div>
+          <div class="action-title">Impressoras</div>
+          <div class="action-desc">Gerir parque de impressoras</div>
         </a>
         <a class="action-card" href="backoffice.html">
           <div class="action-icon">🗄️</div>
@@ -506,13 +439,13 @@ function initThemeToggle(){
         <!-- Printer Alerts -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🖨️ Estado das Impressoras</div>
+            <div class="card-title">🖨️ Impressoras</div>
             <a class="card-action" href="printers.html">Gerir →</a>
           </div>
           <div class="card-body" id="printerAlertsBody">
             <div class="empty-state">
               <div class="empty-icon">🖨️</div>
-              <div class="empty-text">Sem impressoras registadas.</div>
+              <div class="empty-text">Sem impressoras.<br>Adiciona a tua primeira impressora.</div>
             </div>
           </div>
         </div>
@@ -630,20 +563,7 @@ async function loadState() {
     state.company.trialDaysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
   }
 
-  document.getElementById('userNameSidebar').textContent    = state.user.name;
-  document.getElementById('userEmailSidebar').textContent   = state.user.email;
-  document.getElementById('companyNameSidebar').textContent = state.company.name;
-  document.getElementById('userAvatarSidebar').textContent  = state.user.initials;
-  document.getElementById('companyAvatarSidebar').textContent = state.company.initials;
-  // Apply company logo to sidebar avatar if configured
-  const _logoUrl = (_cfg && _cfg.logoUrl) || (session.config && session.config.logoUrl) || '';
-  const _avatarEl = document.getElementById('companyAvatarSidebar');
-  if (_avatarEl) {
-    if (_logoUrl) {
-      _avatarEl.innerHTML = `<img src="${_logoUrl}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    }
-  }
-  document.getElementById('planBadgeSidebar').textContent   = PLAN_LABELS[state.company.plan] || 'Trial';
+  Sidebar.setSession(session);
 
   // Load data from Supabase
   try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
@@ -821,34 +741,6 @@ function calcHealthScore() {
   score += trendScore;
 
   // ── RENDER ──────────────────────────────────────────────────
-  // ── 6. ESTADO DAS IMPRESSORAS (bonus, até 10 pts) ───────────
-  const printers       = state.printers || [];
-  let   printerScore   = 0;
-  if (printers.length > 0) {
-    const operacional  = printers.filter(p => p.status === 'operacional').length;
-    const manutencao   = printers.filter(p => p.status === 'manutencao').length;
-    const inativas     = printers.filter(p => p.status === 'inativa').length;
-    const overdue      = printers.filter(p => {
-      const interval   = parseInt(p.maintIntervalHours) || 0;
-      if (!interval) return false;
-      const used       = parseInt(p.hoursUsed) || 0;
-      const last       = parseInt(p.lastMaintHours) || 0;
-      return (used - last) >= interval;
-    }).length;
-    if (manutencao > 0 || overdue > 0) {
-      printerScore = 4;
-      insights.push({t:'warn', icon:'🖨️', msg:`${manutencao + overdue} impressora(s) em manutenção ou com manutenção em atraso.`});
-    } else if (inativas === printers.length) {
-      printerScore = 2;
-      insights.push({t:'warn', icon:'🖨️', msg:'Todas as impressoras estão inativas.'});
-    } else {
-      printerScore = 10;
-      if (operacional === printers.length)
-        insights.push({t:'ok', icon:'🖨️', msg:`${operacional} impressora${operacional!==1?'s':''} operacional${operacional!==1?'is':''}. Tudo a funcionar!`});
-    }
-  }
-  score = Math.min(100, score + printerScore);
-
   const bands = [
     { min:80, label:'Negócio saudável 💚',   cls:'score-great', bar:'bar-great', ring:'#22c55e' },
     { min:55, label:'Atenção necessária 🟡',  cls:'score-ok',    bar:'bar-ok',    ring:'#f59e0b' },
@@ -1013,47 +905,6 @@ function renderStats() {
     revBadge.style.display = 'none';
     paidBadge.style.display = 'none';
   }
-
-  // Printer stat card
-  const printers     = state.printers || [];
-  const pTotal       = printers.length;
-  const pOper        = printers.filter(p => p.status === 'operacional').length;
-  const pMaint       = printers.filter(p => p.status === 'manutencao').length;
-  const pOverdue     = printers.filter(p => {
-    const interval = parseInt(p.maintIntervalHours) || 0;
-    if (!interval) return false;
-    return (parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0) >= interval;
-  }).length;
-
-  const printerValEl    = document.getElementById('statPrinters');
-  const printerLblEl   = document.getElementById('statPrintersLabel');
-  const printerIconEl  = document.getElementById('printerStatIcon');
-  const printerBadgeEl = document.getElementById('printerStatBadge');
-
-  if (pTotal === 0) {
-    printerValEl.textContent  = '—';
-    printerLblEl.textContent  = 'Sem impressoras';
-    printerIconEl.style.background = 'rgba(148,163,184,.12)';
-    printerIconEl.style.color      = 'var(--muted)';
-    printerBadgeEl.style.display   = 'none';
-  } else if (pMaint > 0 || pOverdue > 0) {
-    const alertN = pMaint + pOverdue;
-    printerValEl.textContent  = `${pOper}/${pTotal}`;
-    printerLblEl.textContent  = 'Impressoras operacionais';
-    printerIconEl.style.background = 'rgba(245,158,11,.12)';
-    printerIconEl.style.color      = 'var(--warning)';
-    printerBadgeEl.style.display   = '';
-    printerBadgeEl.textContent     = `${alertN} alerta${alertN!==1?'s':''}`;
-    printerBadgeEl.className       = 'stat-badge badge-down';
-  } else {
-    printerValEl.textContent  = `${pOper}/${pTotal}`;
-    printerLblEl.textContent  = 'Impressoras operacionais';
-    printerIconEl.style.background = 'rgba(34,197,94,.12)';
-    printerIconEl.style.color      = '#16a34a';
-    printerBadgeEl.style.display   = pTotal > 0 ? '' : 'none';
-    printerBadgeEl.textContent     = 'Tudo OK ✅';
-    printerBadgeEl.className       = 'stat-badge badge-up';
-  }
 }
 
 // ── RECENT ORDERS ──────────────────────
@@ -1081,6 +932,52 @@ function renderRecentOrders() {
       </div>
       <span class="order-status-badge s-${status}">${statusLabel}</span>
       <span class="order-amount">${fmtEur(o.total||0)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── PRINTER ALERTS ─────────────────────
+function renderPrinterAlerts() {
+  const el = document.getElementById('printerAlertsBody');
+  if (!el) return;
+  const printers = state.printers || [];
+
+  const alerts = printers.filter(p => {
+    // Em manutenção ou inativa
+    if (p.status !== 'operacional') return true;
+    // Manutenção preventiva em atraso ou próxima
+    const interval = parseInt(p.maintIntervalHours) || 0;
+    if (!interval) return false;
+    const hoursSince = (parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0);
+    return hoursSince >= interval * 0.80; // alerta a 80% do intervalo
+  });
+
+  if (!alerts.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">Todas as impressoras OK.<br>Sem alertas de manutenção.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = alerts.map(p => {
+    const interval   = parseInt(p.maintIntervalHours) || 0;
+    const hoursSince = (parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0);
+    const hoursLeft  = interval > 0 ? interval - hoursSince : null;
+    let chipClass, chipLabel;
+    if (p.status === 'manutencao') {
+      chipClass = 'fil-out'; chipLabel = 'Em manutenção';
+    } else if (p.status === 'inativa') {
+      chipClass = 'fil-low'; chipLabel = 'Inativa';
+    } else if (hoursLeft !== null && hoursLeft <= 0) {
+      chipClass = 'fil-out'; chipLabel = 'Manutenção em atraso';
+    } else {
+      chipClass = 'fil-low'; chipLabel = `Manutenção em ${hoursLeft}h`;
+    }
+    return `<div class="fil-item">
+      <div style="font-size:1.2rem;flex-shrink:0">🖨️</div>
+      <div class="fil-info">
+        <div class="fil-name">${escH(p.brand)} ${escH(p.model)}</div>
+        <div class="fil-sub">${p.printerType === 'resina' ? 'Resina' : 'FDM'} · ${p.hoursUsed||0}h usadas</div>
+      </div>
+      <span class="fil-status ${chipClass}">${chipLabel}</span>
     </div>`;
   }).join('');
 }
@@ -1121,73 +1018,6 @@ function renderFilamentAlerts() {
         <div class="fil-sub">${escHtml(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escHtml(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
       </div>
       <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
-    </div>`;
-  }).join('');
-}
-
-// ── PRINTER ALERTS ─────────────────────
-function renderPrinterAlerts() {
-  const el       = document.getElementById('printerAlertsBody');
-  const printers = state.printers || [];
-
-  if (!printers.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">Sem impressoras registadas.<br><a href="printers.html" style="color:var(--blue)">Adicionar impressora →</a></div></div>`;
-    return;
-  }
-
-  // Sort: overdue first, then manutencao, then inativa, then ok
-  const _printerWeight = p => {
-    const interval = parseInt(p.maintIntervalHours) || 0;
-    const isOverdue = interval > 0 && ((parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0)) >= interval;
-    if (isOverdue)              return 0;
-    if (p.status === 'manutencao') return 1;
-    if (p.status === 'inativa')    return 2;
-    // Check if nearing maintenance (< 20% left)
-    if (interval > 0) {
-      const hoursSince = (parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0);
-      const hoursLeft  = interval - hoursSince;
-      if (hoursLeft <= Math.round(interval * 0.20)) return 3;
-    }
-    return 4;
-  };
-
-  const sorted = [...printers].sort((a,b) => _printerWeight(a) - _printerWeight(b));
-
-  el.innerHTML = sorted.map(p => {
-    const interval    = parseInt(p.maintIntervalHours) || 0;
-    const hoursSince  = (parseInt(p.hoursUsed)||0) - (parseInt(p.lastMaintHours)||0);
-    const hoursLeft   = interval > 0 ? interval - hoursSince : null;
-    const isOverdue   = interval > 0 && hoursSince >= interval;
-    const isNearing   = !isOverdue && hoursLeft !== null && hoursLeft <= Math.round(interval * 0.20);
-    const displayName = p.customName || `${p.brand} ${p.model}`;
-    const subName     = p.customName ? `${p.brand} ${p.model}` : '';
-
-    let statusCls, statusLabel;
-    if (isOverdue)                   { statusCls = 'prt-overdue'; statusLabel = `Manutenção ${Math.abs(hoursLeft)}h em atraso`; }
-    else if (p.status === 'manutencao') { statusCls = 'prt-maint';   statusLabel = 'Em manutenção'; }
-    else if (p.status === 'inativa')    { statusCls = 'prt-inativa'; statusLabel = 'Inativa'; }
-    else if (isNearing)              { statusCls = 'prt-maint';   statusLabel = `Manutenção em ${hoursLeft}h`; }
-    else                             { statusCls = 'prt-ok';      statusLabel = 'Operacional'; }
-
-    const pct     = p.lifeHours ? Math.min(100, Math.round(((parseInt(p.hoursUsed)||0) / p.lifeHours) * 100)) : 0;
-    const barCls  = pct >= 90 ? 'crit' : pct >= 70 ? 'warn' : '';
-
-    return `<div class="fil-item" style="flex-direction:column;align-items:stretch;gap:6px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="font-size:1.1rem;flex-shrink:0">🖨️</div>
-        <div class="fil-info">
-          <div class="fil-name">${escHtml(displayName)}</div>
-          ${subName ? `<div class="fil-sub">${escHtml(subName)}</div>` : ''}
-        </div>
-        <span class="fil-status ${statusCls}">${statusLabel}</span>
-      </div>
-      ${p.lifeHours ? `
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;border-radius:99px;background:${pct>=90?'var(--danger)':pct>=70?'var(--warning)':'var(--blue)'}"></div>
-        </div>
-        <span style="font-size:.65rem;color:var(--muted);white-space:nowrap">${parseInt(p.hoursUsed)||0}h / ${p.lifeHours}h</span>
-      </div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1356,5 +1186,8 @@ function showToast(msg,type=''){
   clearTimeout(_toast);_toast=setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
+
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
 </body>
 </html>
