@@ -1743,32 +1743,81 @@ function renderBrandTags(type, arr) {
 function _pkColorNameFromHex(hex) {
   if (!hex || hex.length < 4) return '';
 
-  function hexToRgb(h) {
-    h = h.replace('#', '');
-    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-    const n = parseInt(h, 16);
-    return [(n>>16)&255, (n>>8)&255, n&255];
+  // Normalise hex
+  let h = hex.replace('#','');
+  if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  if (h.length !== 6) return '';
+
+  const r = parseInt(h.slice(0,2),16)/255;
+  const g = parseInt(h.slice(2,4),16)/255;
+  const b = parseInt(h.slice(4,6),16)/255;
+
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const l = (max+min)/2;
+  const d = max-min;
+  const s = d === 0 ? 0 : d/(1-Math.abs(2*l-1));
+  let hue = 0;
+  if (d !== 0) {
+    if (max===r) hue = ((g-b)/d + (g<b?6:0))*60;
+    else if (max===g) hue = ((b-r)/d + 2)*60;
+    else hue = ((r-g)/d + 4)*60;
   }
 
-  // Exact match first
-  const exact = COLOR_PRESETS.find(p => p.hex.toLowerCase() === ('#'+hex.replace('#','')).toLowerCase());
-  if (exact) return exact.name;
+  const L = l*100, S = s*100;
 
-  // Perceptual weighted distance (human eye is more sensitive to green, less to blue)
-  function percDist(r1,g1,b1, r2,g2,b2) {
-    return Math.sqrt(2*(r1-r2)**2 + 4*(g1-g2)**2 + 3*(b1-b2)**2);
+  // Achromatic (low saturation)
+  if (S < 10) {
+    if (L < 10)  return 'Preto';
+    if (L < 25)  return 'Preto';
+    if (L < 40)  return 'Cinzento Escuro';
+    if (L < 55)  return 'Cinzento';
+    if (L < 70)  return 'Cinzento';
+    if (L < 85)  return 'Prateado';
+    return 'Branco';
   }
 
-  const [r1,g1,b1] = hexToRgb(hex);
-  let best = null, bestDist = Infinity;
-  COLOR_PRESETS.forEach(p => {
-    const [r2,g2,b2] = hexToRgb(p.hex);
-    const d = percDist(r1,g1,b1, r2,g2,b2);
-    if (d < bestDist) { bestDist = d; best = p; }
-  });
+  // Metallic/desaturated tones
+  if (S < 25) {
+    if (L < 30)  return 'Preto';
+    if (L < 60)  return 'Cinzento Escuro';
+    return 'Prateado';
+  }
 
-  // Always return the nearest name — the user can override if wrong
-  return best ? best.name : '';
+  // Chromatic — classify by hue
+  if (hue < 15  || hue >= 345) {
+    return L < 35 ? 'Vermelho Escuro' : L < 65 ? 'Vermelho' : 'Rosa';
+  }
+  if (hue < 40) {
+    return L < 40 ? 'Castanho' : L < 60 ? 'Laranja' : 'Bege';
+  }
+  if (hue < 65) {
+    return L < 45 ? 'Dourado' : 'Amarelo';
+  }
+  if (hue < 80) {
+    return 'Verde Lima';
+  }
+  if (hue < 150) {
+    return L < 35 ? 'Verde Escuro' : 'Verde';
+  }
+  if (hue < 180) {
+    return 'Teal';
+  }
+  if (hue < 200) {
+    return 'Ciano';
+  }
+  if (hue < 225) {
+    return 'Azul Claro';
+  }
+  if (hue < 255) {
+    return L < 35 ? 'Azul Marinho' : 'Azul';
+  }
+  if (hue < 285) {
+    return L < 40 ? 'Azul Marinho' : 'Roxo';
+  }
+  if (hue < 320) {
+    return L < 40 ? 'Roxo' : 'Cor-de-rosa';
+  }
+  return L < 50 ? 'Vermelho Escuro' : 'Rosa';
 }
 
 // Which preset index to use next when adding rows
@@ -1982,8 +2031,12 @@ async function savePack() {
   const validRows = _pkColorRows.filter(r => r.name.trim());
   if (!validRows.length) { showToast('⚠️ Adiciona pelo menos uma cor com nome', 'err'); return; }
 
-  // Generate pack ID using the name + timestamp for uniqueness + readability
-  const packId = `${packName}-${Date.now()}`;
+  // packId: slug seguro, max 80 chars
+  const slugName = packName.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+    .slice(0, 50);
+  const packId = `${slugName}-${Date.now()}`;
 
   const btn = document.querySelector('#packBox .btn-primary');
   btn.disabled = true;
@@ -1991,29 +2044,28 @@ async function savePack() {
 
   try {
     for (const row of validRows) {
-      // Per-row overrides: if the row has individual brand/size, use them; else fall back to pack-level
       const rowBrands = (row.overrideBrand && row.brandOverride)
         ? [row.brandOverride]
         : brands;
       const rowSize = (row.overrideBrand && row.sizeOverride)
         ? row.sizeOverride
-        : rollSize;
+        : (rollSize || '1kg');
 
       const record = {
         materialClass:  _pkClass,
         material_class: _pkClass,
-        colorHex:   row.hex,
-        colorName:  row.name.trim(),
-        type,
-        variation,
-        brand:      rowBrands,
-        rollSize:   rowSize,
-        total:      1,
-        inUse:      0,
-        newRolls:   1,
-        alerta:     0,
-        price:      parseFloat((row.cost).toFixed(2)),
-        notes:      '',
+        colorHex:       row.hex   || '#000000',
+        colorName:      row.name.trim(),
+        type:           type,
+        variation:      variation || null,
+        brand:          rowBrands,
+        rollSize:       rowSize,
+        total:          1,
+        inUse:          0,
+        newRolls:       1,
+        alerta:         0,
+        price:          parseFloat((row.cost || 0).toFixed(2)),
+        notes:          '',
         packId,
       };
       const saved = await DB.saveFilament(record);
