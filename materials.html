@@ -367,8 +367,8 @@ function initThemeToggle(){
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
-          <button class="btn btn-secondary" onclick="openPackModal()">📦 Pack</button>
-          <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Novo material</button>
+          <button class="btn btn-secondary" onclick="openPackModal()">＋ Pack</button>
+          <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Material</button>
         </div>
       </div>
 
@@ -910,7 +910,7 @@ function setView(cls) {
 
   // btn add — cor muda
   const btnNew = document.getElementById('btnNew');
-  btnNew.textContent = isFDM ? '＋ Novo material' : '＋ Nova resina';
+  btnNew.textContent = isFDM ? '＋ Material' : '＋ Resina';
   btnNew.classList.toggle('resin-mode', !isFDM);
 
   // rebuild filter selects
@@ -1623,6 +1623,7 @@ let _pkColorRows = []; // [{hex, name, cost}]
 function openPackModal() {
   _pkClass = currentView || 'fdm';
   _pkColorRows = [];
+  _pkPresetIdx = 0;
   // Reset fields
   const pkNameInput = document.getElementById('pkName');
   pkNameInput.value = '';
@@ -1634,9 +1635,12 @@ function openPackModal() {
   pkSetClass(_pkClass);
   // Populate selects if not yet done
   _pkEnsureSelects();
-  // Add 2 starter rows
-  _pkColorRows.push({ hex: '#3B8FD4', name: 'Azul', cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
-  _pkColorRows.push({ hex: '#22C55E', name: 'Verde', cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  // Add 2 starter rows using presets
+  const p0 = COLOR_PRESETS[0]; // Branco
+  const p1 = COLOR_PRESETS[1]; // Preto
+  _pkColorRows.push({ hex: p0.hex, name: p0.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  _pkColorRows.push({ hex: p1.hex, name: p1.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  _pkPresetIdx = 2;
   pkRenderRows();
   pkRecalcCosts();
   pkAutoLabel();
@@ -1737,14 +1741,33 @@ function renderBrandTags(type, arr) {
 
 // ── Color rows ──────────────────────────────────────────────
 function _pkColorNameFromHex(hex) {
-  const match = COLOR_PRESETS.find(p => p.hex.toLowerCase() === hex.toLowerCase());
-  return match ? match.name : '';
+  // Exact match first
+  const exact = COLOR_PRESETS.find(p => p.hex.toLowerCase() === hex.toLowerCase());
+  if (exact) return exact.name;
+  // Nearest color by RGB distance
+  function hexToRgb(h) {
+    const n = parseInt(h.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  const [r1,g1,b1] = hexToRgb(hex);
+  let best = null, bestDist = Infinity;
+  COLOR_PRESETS.forEach(p => {
+    const [r2,g2,b2] = hexToRgb(p.hex);
+    const d = Math.sqrt((r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2);
+    if (d < bestDist) { bestDist = d; best = p; }
+  });
+  // Only return a name if reasonably close (distance < 80)
+  return (best && bestDist < 80) ? best.name : '';
 }
 
+// Which preset index to use next when adding rows
+let _pkPresetIdx = 0;
+
 function pkAddColorRow() {
-  const randomHex = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
-  const autoName = _pkColorNameFromHex(randomHex);
-  _pkColorRows.push({ hex: randomHex, name: autoName, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  // Cycle through COLOR_PRESETS for nice default colors
+  const preset = COLOR_PRESETS[_pkPresetIdx % COLOR_PRESETS.length];
+  _pkPresetIdx++;
+  _pkColorRows.push({ hex: preset.hex, name: preset.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
   pkRenderRows();
   pkRecalcCosts();
   pkAutoLabel();
