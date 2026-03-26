@@ -364,7 +364,7 @@ body {
 .topbar-btn {
   display: flex; align-items: center; gap: 7px;
   padding: 7px 14px; border-radius: var(--r);
-  background: rgba(255,255,255,.6); border: 1.5px solid var(--border);
+  background: var(--bg-card); border: 1.5px solid var(--border);
   font-size: .8rem; font-weight: 600; color: var(--muted); cursor: pointer;
   transition: background .18s, border-color .18s, color .18s; text-decoration: none;
 }
@@ -374,7 +374,7 @@ body {
 
 .topbar-notif {
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,.6); border: 1.5px solid var(--border);
+  background: var(--bg-card); border: 1.5px solid var(--border);
   display: flex; align-items: center; justify-content: center; font-size: 1rem;
   cursor: pointer; transition: background .18s, border-color .18s; position: relative;
 }
@@ -500,7 +500,7 @@ body {
 
 .btn-icon {
   width: 30px; height: 30px; border-radius: var(--r);
-  border: 1.5px solid var(--border); background: rgba(255,255,255,.6);
+  border: 1.5px solid var(--border); background: var(--bg-input);
   cursor: pointer; font-size: .8rem;
   display: inline-flex; align-items: center; justify-content: center;
   transition: all .18s;
@@ -511,7 +511,7 @@ body {
 
 .expand-btn {
   width: 26px; height: 26px; border-radius: 50%;
-  border: 1.5px solid var(--border); background: rgba(255,255,255,.6);
+  border: 1.5px solid var(--border); background: var(--bg-input);
   cursor: pointer; font-size: .7rem;
   display: flex; align-items: center; justify-content: center;
   transition: all .18s; color: var(--muted);
@@ -577,7 +577,7 @@ body {
 .item-total   { font-family: var(--mono); font-size: .82rem; font-weight: 700; color: var(--dark); text-align: right; padding-right: 4px; }
 .item-remove  { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; color: var(--subtle); font-size: .9rem; display: flex; align-items: center; justify-content: center; transition: all .15s; }
 .item-remove:hover { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3); color: var(--danger); }
-.grand-total-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-grand-total); border-radius: var(--r); padding: 10px 14px; margin-top: 10px; border: 1.5px solid rgba(255,255,255,.6); }
+.grand-total-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-grand-total); border-radius: var(--r); padding: 10px 14px; margin-top: 10px; border: 1.5px solid var(--border); }
 .grand-total-lbl { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .grand-total-val { font-family: var(--mono); font-size: 1rem; font-weight: 800; color: var(--dark); }
 
@@ -743,7 +743,7 @@ body {
 .gate-title    { font-size: 1.22rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; text-align: center; }
 .gate-sub      { font-size: .88rem; color: var(--muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
 .gate-plans    { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
-.gate-plan-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: var(--r); border: 1.5px solid var(--border); background: rgba(255,255,255,.5); }
+.gate-plan-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: var(--r); border: 1.5px solid var(--border); background: var(--bg-card); }
 .gate-plan-row.required { border-color: rgba(59,143,212,.35); background: rgba(59,143,212,.06); }
 .gate-plan-name  { font-size: .84rem; font-weight: 800; color: var(--dark); flex: 1; }
 .gate-plan-price { font-family: var(--mono); font-size: .78rem; font-weight: 700; color: var(--blue); }
@@ -751,8 +751,8 @@ body {
 .gate-actions    { display: flex; gap: 10px; }
 .btn-upgrade     { flex: 1; padding: 12px; border-radius: var(--rm); border: none; cursor: pointer; background: linear-gradient(135deg, var(--blue), var(--blue-d)); color: #fff; font-size: .9rem; font-weight: 800; font-family: var(--f); transition: opacity .18s, transform .18s; }
 .btn-upgrade:hover { opacity: .9; transform: translateY(-1px); }
-.btn-cancel      { padding: 12px 20px; border-radius: var(--rm); cursor: pointer; background: rgba(255,255,255,.6); border: 1.5px solid var(--border); font-size: .88rem; font-weight: 600; color: var(--muted); font-family: var(--f); transition: background .18s; }
-.btn-cancel:hover{ background: rgba(255,255,255,.85); }
+.btn-cancel      { padding: 12px 20px; border-radius: var(--rm); cursor: pointer; background: var(--bg-card); border: 1.5px solid var(--border); font-size: .88rem; font-weight: 600; color: var(--muted); font-family: var(--f); transition: background .18s; }
+.btn-cancel:hover{ background: var(--bg-hover-s); }
 
 
 /* ================================================================
