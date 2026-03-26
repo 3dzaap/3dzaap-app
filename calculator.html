@@ -387,77 +387,110 @@ function initThemeToggle(){
 
 .confirm-ok:hover{opacity:.9;transform:translateY(-1px)}
 
-@media(max-width:900px){
-  .calc-layout{grid-template-columns:1fr;gap:14px}
-}
 
-@media(max-width:680px){
-  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}
-  .sidebar.open{left:0}
-  .sidebar-overlay.open{display:block}
-  .main{margin-left:0}
-  .mob-toggle{display:flex}
-  .page{padding:16px 12px 32px}
-  .topbar{padding:0 12px 0 56px}
-  .page-header{flex-direction:column;gap:6px}
-  .page-header h1{font-size:1.3rem}
-
-  /* Calc layout — full width stack */
-  .calc-layout{grid-template-columns:1fr;gap:12px}
-  .glass-card{border-radius:var(--rm)}
-
-  /* Fields */
-  .fields-grid{grid-template-columns:1fr}
-  .form-section{padding:14px 16px}
-  .field label{font-size:.82rem}
-  .section-title{font-size:.72rem}
-
-  /* Mode toggle */
-  .mode-btn{font-size:.73rem;padding:7px 8px}
-
-  /* Results */
-  .results-panel{padding:14px 16px}
-  .price-hero{padding:14px 16px}
-  .price-hero-value{font-size:2rem}
-  .price-hero-label{font-size:.78rem}
-  .breakdown-label{font-size:.8rem}
-  .breakdown-value{font-size:.82rem}
-  .results-actions-row{flex-wrap:wrap;gap:8px}
-  .results-actions-row .btn-action{flex:1;min-width:80px;font-size:.8rem;padding:9px 8px}
-  .btn-criar-pedido{font-size:.88rem;padding:12px 16px}
-
-  /* History */
-  .history-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .history-table{min-width:520px;font-size:.78rem}
-  .history-table th{padding:8px 10px;font-size:.65rem}
-  .history-table td{padding:8px 10px}
-  .history-search{font-size:.82rem}
-
-  /* Adv panel */
-  .adv-panel{right:8px;left:8px;width:auto;top:68px;max-height:80vh}
-  .adv-panel-grid{grid-template-columns:1fr}
-}
-
-@media(max-width:420px){
-  .price-hero-value{font-size:1.7rem}
-  .results-actions-row .btn-action{padding:9px 6px;font-size:.76rem}
-}
 
 .theme-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg-btn-ghost);cursor:pointer;font-size:.9rem;transition:all .2s var(--ease);flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .theme-toggle:hover{background:rgba(59,143,212,.12);border-color:rgba(59,143,212,.35)}
 
-@media(max-width:680px){
-  .card-header{padding:12px 16px}
-  .history-card .card-header{flex-wrap:wrap;gap:8px}
-  .history-count{font-size:.72rem}
-  .history-clear-btn{font-size:.72rem}
-  .history-search-wrap{width:100%}
-  .history-search{width:100%;font-size:.84rem;padding:8px 10px 8px 32px}
-  .history-search-icon{left:10px}
-  .adv-trigger-dot{display:none}
-  .btn-adv-trigger{font-size:.78rem;padding:7px 12px;gap:6px}
+/* ── COLLAPSE / EXPAND (mobile) ─────────────────────────────── */
+.card-header { cursor: default; user-select: none; }
+.card-header.collapsible { cursor: pointer; }
+.card-header.collapsible:active { background: rgba(59,143,212,.06); }
+
+.collapse-chevron {
+  margin-left: auto;
+  font-size: .75rem;
+  color: var(--subtle);
+  transition: transform .25s var(--ease);
+  flex-shrink: 0;
+  display: none; /* hidden on desktop */
 }
+.card-collapsed .collapse-chevron { transform: rotate(-90deg); }
+
+.collapsible-body {
+  transition: none; /* no animation on desktop */
+}
+
+@media(max-width:900px) {
+  /* Layout: single column */
+  .calc-layout { grid-template-columns: 1fr; gap: 12px; }
+}
+
+@media(max-width:680px) {
+  .sidebar{left:calc(-1 * var(--sidebar-w,260px))}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  .main{margin-left:0}
+  .mob-toggle{display:flex}
+  .page{padding:14px 12px 40px}
+  .topbar{padding:0 12px 0 56px}
+  .page-header{flex-direction:column;gap:6px}
+  .page-header h1{font-size:1.25rem}
+  .page-header p{font-size:.82rem}
+
+  /* Cards */
+  .glass-card { border-radius: var(--rm); }
+  .card-header { padding: 14px 16px; }
+  .card-header.collapsible { padding: 14px 16px; }
+  .card-header-title { font-size: .88rem; }
+
+  /* Show chevron on mobile */
+  .collapse-chevron { display: block; }
+
+  /* Collapsed state */
+  .card-collapsed .collapsible-body { display: none; }
+
+  /* Fields */
+  .form-section { padding: 14px 16px; }
+  .fields-grid { grid-template-columns: 1fr; gap: 10px; }
+  .field label { font-size: .83rem; }
+  .section-title { font-size: .72rem; margin-bottom: 10px; }
+  .field-wrap input { font-size: .9rem; padding: 9px 36px 9px 12px; }
+
+  /* Mode toggle */
+  .mode-toggle { gap: 4px; }
+  .mode-btn { font-size: .75rem; padding: 8px 10px; flex: 1; }
+
+  /* Results */
+  .results-panel { padding: 14px 16px; }
+  .price-hero { padding: 16px 16px 12px; }
+  .price-hero-value { font-size: 2.2rem; }
+  .price-hero-label { font-size: .78rem; }
+  .price-hero-sub { font-size: .76rem; }
+  .breakdown-label { font-size: .81rem; }
+  .breakdown-value { font-size: .83rem; }
+  .breakdown-item { padding: 6px 0; }
+  .results-actions { padding: 12px 16px; }
+  .results-actions-row { gap: 8px; }
+  .results-actions-row .btn-action { flex: 1; font-size: .8rem; padding: 10px 6px; }
+  .btn-criar-pedido { font-size: .88rem; padding: 13px 16px; }
+
+  /* History */
+  .history-card { margin-top: 12px !important; }
+  .history-card .card-header { padding: 14px 16px; flex-wrap: wrap; gap: 8px; }
+  .history-search-wrap { order: 10; width: 100%; }
+  .history-search { width: 100%; font-size: .84rem; }
+  .history-count { font-size: .72rem; }
+  .history-clear-btn { font-size: .72rem; }
+  .history-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .history-table { min-width: 480px; }
+  .history-table th { padding: 9px 10px; font-size: .65rem; }
+  .history-table td { padding: 9px 10px; font-size: .79rem; }
+
+  /* Adv panel */
+  .adv-panel { right: 8px; left: 8px; width: auto; top: 68px; max-height: 80vh; }
+  .adv-panel-grid { grid-template-columns: 1fr; }
+  .btn-adv-trigger { font-size: .78rem; padding: 7px 12px; gap: 5px; }
+  .adv-trigger-dot { display: none; }
+}
+
+@media(max-width:420px) {
+  .price-hero-value { font-size: 1.85rem; }
+  .results-actions-row .btn-action { padding: 10px 4px; font-size: .74rem; }
+  .mode-btn { font-size: .7rem; padding: 7px 6px; }
+}
+
 </style>
 </head>
 <body>
@@ -555,10 +588,12 @@ function initThemeToggle(){
 
         <!-- ── INPUTS ───────────────────── -->
         <div class="glass-card">
-          <div class="card-header">
+          <div class="card-header collapsible" onclick="toggleCard(this)" data-target="paramsBody">
             <div class="card-header-title">⚙️ Parâmetros</div>
             <span class="card-header-badge">⚡ Cálculo ao vivo</span>
+            <span class="collapse-chevron">▼</span>
           </div>
+          <div class="collapsible-body" id="paramsBody">
           <div class="form-sections">
 
             <!-- Modo + Nome + Qty -->
@@ -678,6 +713,7 @@ function initThemeToggle(){
             </div>
           </div>
           </div><!-- /form-sections -->
+          </div><!-- /paramsBody -->
 
           <!-- Limpar campos — discreto no rodapé -->
           <div class="card-footer">
@@ -687,10 +723,12 @@ function initThemeToggle(){
 
         <!-- ── RESULTADOS ─────────────── -->
         <div class="glass-card results-col">
-          <div class="card-header">
+          <div class="card-header collapsible" onclick="toggleCard(this)" data-target="resultsBody">
             <div class="card-header-title">📋 Resultados</div>
             <span class="card-header-badge" id="liveIndicator">⚡ Ao vivo</span>
+            <span class="collapse-chevron">▼</span>
           </div>
+          <div class="collapsible-body" id="resultsBody">
           <div class="results-panel">
             <div class="price-hero">
               <div class="price-hero-label">💰 Preço de venda sugerido</div>
@@ -745,6 +783,7 @@ function initThemeToggle(){
               </button>
             </div>
           </div>
+          </div><!-- /resultsBody -->
         </div><!-- /results card -->
 
       </div><!-- /calc-layout -->
@@ -873,9 +912,22 @@ const HARDCODED_DEFAULTS = {
   electricityPrice:0.22,failureRate:5,indirectCosts:10,profitMargin:30,
 };
 let defaults = {...HARDCODED_DEFAULTS};
-let calcHistory = (()=>{try{return JSON.parse(localStorage.getItem('3dzaap_calc_history')||'[]');}catch(e){return [];}})();
+let calcHistory = [];
 let advOpen = false;
-function _persistHistory(){try{localStorage.setItem('3dzaap_calc_history',JSON.stringify(calcHistory));}catch(e){}}
+let _historyPersistTimer = null;
+
+// Debounced Supabase persist — avoids hammering DB on rapid saves
+function _persistHistory() {
+  clearTimeout(_historyPersistTimer);
+  _historyPersistTimer = setTimeout(async () => {
+    try {
+      const cfg = Object.assign({}, defaults, { calc_history: calcHistory });
+      await Auth.updateCompany({ config: cfg });
+    } catch(e) {
+      console.warn('[3DZAAP] calc_history persist:', e.message);
+    }
+  }, 800);
+}
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -886,6 +938,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   liveCalc();
   applyFeatureGating();
   renderHistory();
+  initMobileCollapse();
 });
 
 // ── USER DATA ──────────────────────────
@@ -898,6 +951,11 @@ function loadCfg(session) {
   var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
   _cfg._currSymbol = currMap[_cfg.currency] || '€';
   _cfg._currCode   = _cfg.currency || 'EUR';
+  // Load calc history from config
+  if (Array.isArray(_cfg.calc_history)) {
+    calcHistory = _cfg.calc_history;
+    renderHistory();
+  }
   // Locale for number formatting
   var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
   _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
@@ -1420,6 +1478,34 @@ function showToast(msg,type=''){
   t.textContent=msg;t.className='toast show '+(type||'');
   clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
 }
+
+// ── COLLAPSE / EXPAND ─────────────────────────────────────────
+function toggleCard(header) {
+  // Only active on mobile
+  if (window.innerWidth > 680) return;
+  const card = header.closest('.glass-card');
+  card.classList.toggle('card-collapsed');
+}
+
+function initMobileCollapse() {
+  if (window.innerWidth > 680) return;
+  // On mobile: results starts collapsed, params starts open
+  const resultsCard = document.getElementById('resultsBody')?.closest('.glass-card');
+  if (resultsCard) resultsCard.classList.add('card-collapsed');
+}
+
+// Re-check on resize
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    // When going back to desktop, remove collapsed states
+    if (window.innerWidth > 680) {
+      document.querySelectorAll('.card-collapsed').forEach(c => c.classList.remove('card-collapsed'));
+    }
+  }, 200);
+});
+
 </script>
 </body>
 </html>
