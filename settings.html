@@ -395,6 +395,8 @@ function updateAutoRowVisibility(pref) {
 <button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
 
   <!-- SIDEBAR -->
   
@@ -1211,8 +1213,5 @@ function showToast(msg, type) {
   _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
 }
 </script>
-
-<script src="sidebar.js"></script>
-<script>Sidebar.init();</script>
 </body>
 </html>

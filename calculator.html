@@ -504,6 +504,8 @@ function initThemeToggle(){
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
 <div class="layout">
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
 
   <!-- ── SIDEBAR ─────────────────────── -->
   
@@ -937,17 +939,6 @@ async function loadUserData() {
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  document.getElementById('userName').textContent    = fullName;
-  document.getElementById('userEmail').textContent   = session.email;
-  document.getElementById('userAvatar').textContent  = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  if (document.getElementById('companyName'))
-    document.getElementById('companyName').textContent = session.companyName || '—';
-  if (document.getElementById('companyAvatar'))
-    document.getElementById('companyAvatar').textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  if (document.getElementById('planBadge')) {
-    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
-  }
   Sidebar.setSession(session);
   return session;
 }
@@ -1437,25 +1428,10 @@ function fbCopy(t){
 }
 
 // ── USER MENU ──────────────────────────
-function toggleUserMenu(){
-  const dd=document.getElementById('userDropdown');
-  const ch=document.getElementById('userChevron');
-  const open=dd.classList.toggle('open');
-  ch.classList.toggle('up',open);
-}
-function closeUserMenu(){
-  document.getElementById('userDropdown').classList.remove('open');
-  const ch=document.getElementById('userChevron');if(ch)ch.classList.remove('up');
-}
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#userRow')&&!e.target.closest('#userDropdown')) closeUserMenu();
-});
+function toggleUserMenu() { Sidebar._toggleUserMenu(); }
+function closeUserMenu()  { Sidebar._closeUserMenu(); }
 
-async function doLogout() {
-  closeUserMenu();
-  showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(() => Auth.logout(), 1000);
-}
+async function doLogout() { Sidebar._doLogout(); }
 
 // ── SIDEBAR MOBILE ──────────────────────
 function toggleSidebar(){
@@ -1510,8 +1486,5 @@ window.addEventListener('resize', () => {
 });
 
 </script>
-
-<script src="sidebar.js"></script>
-<script>Sidebar.init();</script>
 </body>
 </html>

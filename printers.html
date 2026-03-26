@@ -306,6 +306,8 @@ function initThemeToggle(){
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
 
   <!-- SIDEBAR -->
   
@@ -578,21 +580,6 @@ async function loadUserData() {
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  document.getElementById('userName').textContent   = fullName;
-  document.getElementById('userEmail').textContent  = session.email;
-  document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  if (document.getElementById('companyName'))
-    document.getElementById('companyName').textContent = session.companyName || '—';
-  if (document.getElementById('companyAvatar')) {
-    const av = document.getElementById('companyAvatar');
-    const logo = (_cfg && _cfg.logoUrl) || '';
-    if (logo) av.innerHTML = `<img src="${logo}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    else av.textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  }
-  if (document.getElementById('planBadge')) {
-    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
-    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
-  }
   Sidebar.setSession(session);
   return session;
 }
@@ -970,22 +957,9 @@ async function deletePrinter(id) {
 }
 
 // ── USER MENU ──────────────────────────
-function toggleUserMenu() {
-  const dd=document.getElementById('userDropdown'), ch=document.getElementById('userChevron');
-  const open=dd.classList.toggle('open'); ch.classList.toggle('up',open);
-}
-function closeUserMenu() {
-  document.getElementById('userDropdown').classList.remove('open');
-  const ch=document.getElementById('userChevron'); if(ch) ch.classList.remove('up');
-}
-document.addEventListener('click', e => {
-  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
-});
-async function doLogout() {
-  closeUserMenu();
-  showToast('Sessão terminada. Até logo! 👋','ok');
-  setTimeout(() => Auth.logout(), 1000);
-}
+function toggleUserMenu() { Sidebar._toggleUserMenu(); }
+function closeUserMenu()  { Sidebar._closeUserMenu(); }
+async function doLogout() { Sidebar._doLogout(); }
 
 // ── SIDEBAR MOBILE ─────────────────────
 function toggleSidebar() {
@@ -1016,8 +990,5 @@ function showToast(msg,type=''){
   clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3200);
 }
 </script>
-
-<script src="sidebar.js"></script>
-<script>Sidebar.init();</script>
 </body>
 </html>
