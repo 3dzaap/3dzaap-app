@@ -1741,23 +1741,34 @@ function renderBrandTags(type, arr) {
 
 // ── Color rows ──────────────────────────────────────────────
 function _pkColorNameFromHex(hex) {
-  // Exact match first
-  const exact = COLOR_PRESETS.find(p => p.hex.toLowerCase() === hex.toLowerCase());
-  if (exact) return exact.name;
-  // Nearest color by RGB distance
+  if (!hex || hex.length < 4) return '';
+
   function hexToRgb(h) {
-    const n = parseInt(h.replace('#',''), 16);
+    h = h.replace('#', '');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    const n = parseInt(h, 16);
     return [(n>>16)&255, (n>>8)&255, n&255];
   }
+
+  // Exact match first
+  const exact = COLOR_PRESETS.find(p => p.hex.toLowerCase() === ('#'+hex.replace('#','')).toLowerCase());
+  if (exact) return exact.name;
+
+  // Perceptual weighted distance (human eye is more sensitive to green, less to blue)
+  function percDist(r1,g1,b1, r2,g2,b2) {
+    return Math.sqrt(2*(r1-r2)**2 + 4*(g1-g2)**2 + 3*(b1-b2)**2);
+  }
+
   const [r1,g1,b1] = hexToRgb(hex);
   let best = null, bestDist = Infinity;
   COLOR_PRESETS.forEach(p => {
     const [r2,g2,b2] = hexToRgb(p.hex);
-    const d = Math.sqrt((r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2);
+    const d = percDist(r1,g1,b1, r2,g2,b2);
     if (d < bestDist) { bestDist = d; best = p; }
   });
-  // Only return a name if reasonably close (distance < 80)
-  return (best && bestDist < 80) ? best.name : '';
+
+  // Always return the nearest name — the user can override if wrong
+  return best ? best.name : '';
 }
 
 // Which preset index to use next when adding rows
@@ -1848,14 +1859,16 @@ function pkRenderRows() {
 function pkUpdateRowHex(i, val) {
   _pkColorRows[i].hex = val;
 
-  // Auto-update name if user hasn't manually edited it for this row
+  // Always auto-update name unless user explicitly typed something
   if (!_pkColorRows[i].nameUserEdited) {
     const autoName = _pkColorNameFromHex(val);
-    const nameToSet = autoName || '';
-    _pkColorRows[i].name = nameToSet;
-    // Update only the name input — no full re-render needed
+    _pkColorRows[i].name = autoName;
     const nameInput = document.getElementById('pk-name-' + i);
-    if (nameInput) nameInput.value = nameToSet;
+    if (nameInput) {
+      nameInput.value = autoName;
+      // Visual hint: dim if auto-filled, normal if user-typed
+      nameInput.style.opacity = autoName ? '1' : '0.5';
+    }
   }
 }
 
