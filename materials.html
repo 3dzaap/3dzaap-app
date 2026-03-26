@@ -1638,8 +1638,8 @@ function openPackModal() {
   // Add 2 starter rows using presets
   const p0 = COLOR_PRESETS[0]; // Branco
   const p1 = COLOR_PRESETS[1]; // Preto
-  _pkColorRows.push({ hex: p0.hex, name: p0.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
-  _pkColorRows.push({ hex: p1.hex, name: p1.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  _pkColorRows.push({ hex: p0.hex, name: p0.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
+  _pkColorRows.push({ hex: p1.hex, name: p1.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
   _pkPresetIdx = 2;
   pkRenderRows();
   pkRecalcCosts();
@@ -1767,7 +1767,7 @@ function pkAddColorRow() {
   // Cycle through COLOR_PRESETS for nice default colors
   const preset = COLOR_PRESETS[_pkPresetIdx % COLOR_PRESETS.length];
   _pkPresetIdx++;
-  _pkColorRows.push({ hex: preset.hex, name: preset.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '' });
+  _pkColorRows.push({ hex: preset.hex, name: preset.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
   pkRenderRows();
   pkRecalcCosts();
   pkAutoLabel();
@@ -1783,10 +1783,6 @@ function pkRenderRows() {
   const container = document.getElementById('pkColorList');
   const sym = ((_cfg&&_cfg._currSymbol)||'€');
   const isFDM = _pkClass === 'fdm';
-  const globalBrands = getBrandsArray('pk');
-  const globalSize = isFDM
-    ? (document.getElementById('pkRollSize')?.value || '')
-    : (document.getElementById('pkBottleSize')?.value || '');
   const sizeLabel = isFDM ? 'Bobina' : 'Frasco';
   const brandOptions = (isFDM ? FDM_BRANDS : RESIN_BRANDS)
     .map(b => `<option value="${escH(b)}">${escH(b)}</option>`).join('');
@@ -1794,16 +1790,16 @@ function pkRenderRows() {
     .map(s => `<option value="${escH(s)}">${escH(s)}</option>`).join('');
 
   container.innerHTML = _pkColorRows.map((r, i) => {
-    const displayName = r.name || _pkColorNameFromHex(r.hex) || ('Cor ' + (i+1));
     const showOverride = r.overrideBrand;
     return `
     <div class="pk-color-row" id="pk-row-${i}">
       <div class="pk-color-row-main">
-        <input type="color" class="pk-color-swatch" value="${r.hex}"
+        <input type="color" class="pk-color-swatch" id="pk-swatch-${i}" value="${r.hex}"
           oninput="pkUpdateRowHex(${i}, this.value)">
-        <input type="text" class="form-input pk-color-name" placeholder="Nome da cor"
-          value="${escH(r.name)}" oninput="pkUpdateRowName(${i}, this.value)"
-          placeholder="${escH(displayName)}">
+        <input type="text" class="form-input pk-color-name" id="pk-name-${i}"
+          placeholder="Nome da cor"
+          value="${escH(r.name)}"
+          oninput="pkUpdateRowName(${i}, this.value)">
         <div style="display:flex;align-items:center;gap:4px">
           <span style="font-size:.8rem;color:var(--muted)">${sym}</span>
           <input type="number" class="form-input pk-cost-input" value="${r.cost.toFixed(2)}"
@@ -1837,7 +1833,7 @@ function pkRenderRows() {
     </div>`;
   }).join('');
 
-  // Re-apply saved override values to selects
+  // Re-apply saved override select values
   _pkColorRows.forEach((r, i) => {
     if (r.overrideBrand) {
       const row = document.getElementById('pk-row-' + i);
@@ -1851,21 +1847,25 @@ function pkRenderRows() {
 
 function pkUpdateRowHex(i, val) {
   _pkColorRows[i].hex = val;
-  // Auto-fill name if it's still empty or was a preset name
-  if (!_pkColorRows[i].name || COLOR_PRESETS.some(p => p.name === _pkColorRows[i].name)) {
+
+  // Auto-update name if user hasn't manually edited it for this row
+  if (!_pkColorRows[i].nameUserEdited) {
     const autoName = _pkColorNameFromHex(val);
-    if (autoName) {
-      _pkColorRows[i].name = autoName;
-      // Update the input directly without full re-render
-      const row = document.getElementById('pk-row-' + i);
-      if (row) {
-        const input = row.querySelector('.pk-color-name');
-        if (input) input.value = autoName;
-      }
-    }
+    const nameToSet = autoName || '';
+    _pkColorRows[i].name = nameToSet;
+    // Update only the name input — no full re-render needed
+    const nameInput = document.getElementById('pk-name-' + i);
+    if (nameInput) nameInput.value = nameToSet;
   }
 }
-function pkUpdateRowName(i, val) { _pkColorRows[i].name = val; pkAutoLabel(); }
+
+function pkUpdateRowName(i, val) {
+  _pkColorRows[i].name = val;
+  // Mark as user-edited so color changes stop overwriting it
+  // But if user clears the field, allow auto again
+  _pkColorRows[i].nameUserEdited = val.trim() !== '';
+  pkAutoLabel();
+}
 function pkUpdateRowCost(i, val) {
   _pkColorRows[i].cost = parseFloat(val) || 0;
   pkCheckCostBalance();
