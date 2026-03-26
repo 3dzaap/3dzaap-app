@@ -477,6 +477,18 @@ const DB = {
 // MAPPERS — alinhados com o formato do 3DZAAP.html
 // ============================================================
 
+// _parseBrand — normaliza qualquer formato legacy para array
+// Suporta: null/'' → []  |  'Anycubic' → ['Anycubic']
+//          'Anycubic||DEEPLEE' → ['Anycubic','DEEPLEE']
+//          'Anycubic, DEEPLEE' → ['Anycubic','DEEPLEE']  (legacy vírgula)
+function _parseBrand(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  // Detecta separador: || tem prioridade, fallback para vírgula
+  const sep = val.includes('||') ? '||' : ',';
+  return val.split(sep).map(s => s.trim()).filter(Boolean);
+}
+
 function _mapFilamentFromDB(row) {
   return {
     id:             row.id,
@@ -489,8 +501,8 @@ function _mapFilamentFromDB(row) {
     color:          row.color_name || '',   // alias para compatibilidade
     type:           row.type,
     variation:      row.variation  || '',
-    // brand: guardado como string, exposto como string (módulos usam string)
-    brand:          row.brand || '',
+    // brand: guardado como string '||'-separada, exposto como array
+    brand:          _parseBrand(row.brand),
     rollSize:       row.roll_size  || '1kg',
     total:          parseInt(row.total || 0),
     inUse:          parseInt(row.in_use || 0),
@@ -508,10 +520,10 @@ function _mapFilamentFromDB(row) {
 }
 
 function _mapFilamentToDB(f) {
-  // brand: aceita array ou string — normaliza para string
+  // brand: aceita array ou string — normaliza para string '||'-separada
   const brandStr = Array.isArray(f.brand)
-    ? f.brand.filter(Boolean).join(', ')
-    : (f.brand || '');
+    ? f.brand.filter(Boolean).join('||')
+    : (typeof f.brand === 'string' ? f.brand.replace(/,\s*/g, '||') : '');
 
   return {
     material_class:  f.materialClass || f.material_class || 'fdm',

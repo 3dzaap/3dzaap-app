@@ -254,6 +254,32 @@ function initThemeToggle(){
 .theme-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg-btn-ghost);cursor:pointer;font-size:.9rem;transition:all .2s var(--ease);flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .theme-toggle:hover{background:rgba(59,143,212,.12);border-color:rgba(59,143,212,.35)}
+
+/* ── MULTI-BRAND TAGS ─────────────────────────────────────── */
+.brand-tag-input-wrapper { display: flex; flex-direction: column; gap: 8px; }
+.brand-tag-select-row { display: flex; gap: 8px; align-items: center; }
+.brand-tag-select-row .form-select { flex: 1; }
+
+.brand-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  min-height: 30px; align-items: center;
+}
+.brand-tags-empty {
+  font-size: .76rem; color: var(--subtle); font-style: italic;
+}
+.brand-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px 3px 12px;
+  background: rgba(59,143,212,.12); border: 1.5px solid rgba(59,143,212,.30);
+  border-radius: 20px; font-size: .80rem; font-weight: 600; color: var(--blue);
+}
+.brand-tag button {
+  background: none; border: none; cursor: pointer;
+  color: rgba(59,143,212,.5); font-size: .95rem; line-height: 1;
+  padding: 0; display: flex; align-items: center; transition: color .15s;
+}
+.brand-tag button:hover { color: var(--danger); }
+
 </style>
 </head>
 <body>
@@ -470,8 +496,18 @@ function initThemeToggle(){
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Marca</label>
-            <select id="fBrand" class="form-select"></select>
+            <label class="form-label">Marca(s)</label>
+            <div class="brand-tag-input-wrapper">
+              <div class="brand-tag-select-row">
+                <select id="fBrandSelect" class="form-select" onchange="addBrandTag('fdm')">
+                  <option value="">Adicionar marca...</option>
+                </select>
+              </div>
+              <div class="brand-tags" id="fBrandTags">
+                <span class="brand-tags-empty" id="fBrandTagsEmpty">Nenhuma marca selecionada</span>
+              </div>
+            </div>
+            <input type="hidden" id="fBrand">
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho da bobina</label>
@@ -494,8 +530,18 @@ function initThemeToggle(){
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Marca</label>
-            <select id="rBrand" class="form-select"></select>
+            <label class="form-label">Marca(s)</label>
+            <div class="brand-tag-input-wrapper">
+              <div class="brand-tag-select-row">
+                <select id="rBrandSelect" class="form-select" onchange="addBrandTag('resin')">
+                  <option value="">Adicionar marca...</option>
+                </select>
+              </div>
+              <div class="brand-tags" id="rBrandTags">
+                <span class="brand-tags-empty" id="rBrandTagsEmpty">Nenhuma marca selecionada</span>
+              </div>
+            </div>
+            <input type="hidden" id="rBrand">
           </div>
           <div class="form-group">
             <label class="form-label">Tamanho do frasco</label>
@@ -796,11 +842,11 @@ function populateSelects() {
   };
   fill('fType', FDM_TYPES);
   fill('fVariation', FDM_VARIATIONS);
-  fill('fBrand', FDM_BRANDS);
+  fill('fBrandSelect', FDM_BRANDS);
   fill('fRollSize', FDM_ROLL_SIZES);
   fill('rType', RESIN_TYPES);
   fill('rVariation', RESIN_VARIATIONS);
-  fill('rBrand', RESIN_BRANDS);
+  fill('rBrandSelect', RESIN_BRANDS);
   fill('rBottleSize', RESIN_BOTTLE_SIZES);
   rebuildFilterSelects();
 }
@@ -935,7 +981,7 @@ function renderTable() {
     const mc = m.materialClass || m.material_class || 'fdm';
     if (mc !== currentView) return false;
     if (typeF  && m.type  !== typeF)  return false;
-    if (brandF && (Array.isArray(m.brand) ? m.brand.join(', ') : m.brand||''  ) !== brandF) return false;
+    if (brandF && !(Array.isArray(m.brand) ? m.brand.includes(brandF) : (m.brand||'').split('||').includes(brandF))) return false;
     if (statusF && getStatus(m) !== statusF) return false;
     if (q) {
       const hay = [m.colorName, m.type, m.variation, Array.isArray(m.brand)?m.brand.join(' '):(m.brand||''), m.rollSize, m.notes].join(' ').toLowerCase();
@@ -1163,7 +1209,9 @@ function openModal(id = null) {
     if (mc === 'fdm') {
       document.getElementById('fType').value      = m.type || FDM_TYPES[0];
       document.getElementById('fVariation').value = m.variation || FDM_VARIATIONS[0];
-      document.getElementById('fBrand').value     = m.brand || FDM_BRANDS[0];
+      const fBrands = Array.isArray(m.brand) ? m.brand : (m.brand ? m.brand.split('||').filter(Boolean) : [FDM_BRANDS[0]]);
+      setBrandsArray('fdm', fBrands);
+      renderBrandTags('fdm', fBrands);
       document.getElementById('fRollSize').value  = m.rollSize || FDM_ROLL_SIZES[0];
       document.getElementById('fTotal').value     = m.total  || 0;
       document.getElementById('fInUse').value     = m.inUse  || 0;
@@ -1173,7 +1221,9 @@ function openModal(id = null) {
     } else {
       document.getElementById('rType').value       = m.type || RESIN_TYPES[0];
       document.getElementById('rVariation').value  = m.variation || RESIN_VARIATIONS[0];
-      document.getElementById('rBrand').value      = m.brand || RESIN_BRANDS[0];
+      const rBrands = Array.isArray(m.brand) ? m.brand : (m.brand ? m.brand.split('||').filter(Boolean) : [RESIN_BRANDS[0]]);
+      setBrandsArray('resin', rBrands);
+      renderBrandTags('resin', rBrands);
       document.getElementById('rBottleSize').value = m.rollSize || RESIN_BOTTLE_SIZES[0];
       document.getElementById('rTotal').value      = m.total  || 0;
       document.getElementById('rInUse').value      = m.inUse  || 0;
@@ -1196,7 +1246,8 @@ function openModal(id = null) {
     document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
     document.getElementById('fType').value      = FDM_TYPES[0];
     document.getElementById('fVariation').value = FDM_VARIATIONS[0];
-    document.getElementById('fBrand').value     = FDM_BRANDS[0];
+    setBrandsArray('fdm', []);
+    renderBrandTags('fdm', []);
     document.getElementById('fRollSize').value  = FDM_ROLL_SIZES[0];
     document.getElementById('fTotal').value     = 1;
     document.getElementById('fInUse').value     = 0;
@@ -1204,7 +1255,8 @@ function openModal(id = null) {
     document.getElementById('fPrice').value     = 25;
     document.getElementById('rType').value      = RESIN_TYPES[0];
     document.getElementById('rVariation').value = RESIN_VARIATIONS[0];
-    document.getElementById('rBrand').value     = RESIN_BRANDS[0];
+    setBrandsArray('resin', []);
+    renderBrandTags('resin', []);
     document.getElementById('rBottleSize').value= RESIN_BOTTLE_SIZES[0];
     document.getElementById('rTotal').value     = 1;
     document.getElementById('rInUse').value     = 0;
@@ -1265,7 +1317,7 @@ async function saveMaterial() {
       colorName,
       type:      document.getElementById('fType').value,
       variation: document.getElementById('fVariation').value,
-      brand:     document.getElementById('fBrand').value,
+      brand:     getBrandsArray('fdm'),
       rollSize:  document.getElementById('fRollSize').value,
       total, inUse,
       newRolls:  Math.max(0, total - inUse),
@@ -1287,7 +1339,7 @@ async function saveMaterial() {
       colorName,
       type:      document.getElementById('rType').value,
       variation: document.getElementById('rVariation').value,
-      brand:     document.getElementById('rBrand').value,
+      brand:     getBrandsArray('resin'),
       rollSize:  document.getElementById('rBottleSize').value,   // reutiliza campo rollSize
       total, inUse,
       newRolls:  Math.max(0, total - inUse),
@@ -1424,6 +1476,57 @@ function showToast(msg, type='') {
   t.textContent = msg; t.className = 'toast show ' + type;
   clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 3200);
 }
+
+// ══════════════════════════════════════
+//  MULTI-BRAND TAG FUNCTIONS
+// ══════════════════════════════════════
+function getBrandsArray(type) {
+  const val = document.getElementById(type === 'fdm' ? 'fBrand' : 'rBrand').value;
+  return val ? val.split('||').filter(Boolean) : [];
+}
+
+function setBrandsArray(type, arr) {
+  document.getElementById(type === 'fdm' ? 'fBrand' : 'rBrand').value = arr.join('||');
+}
+
+function renderBrandTags(type, arr) {
+  const isFDM = type === 'fdm';
+  const container = document.getElementById(isFDM ? 'fBrandTags' : 'rBrandTags');
+  const empty     = document.getElementById(isFDM ? 'fBrandTagsEmpty' : 'rBrandTagsEmpty');
+  [...container.querySelectorAll('.brand-tag')].forEach(t => t.remove());
+  if (arr.length === 0) {
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    arr.forEach(brand => {
+      const tag = document.createElement('span');
+      tag.className = 'brand-tag';
+      tag.innerHTML = escH(brand) + '<button type="button" title="Remover" onclick="removeBrandTag(\''+type+'\',\''+brand.replace(/'/g,"\\'")+'\')">×</button>';
+      container.appendChild(tag);
+    });
+  }
+}
+
+function addBrandTag(type) {
+  const isFDM = type === 'fdm';
+  const select = document.getElementById(isFDM ? 'fBrandSelect' : 'rBrandSelect');
+  const chosen = select.value;
+  if (!chosen) return;
+  const brands = getBrandsArray(type);
+  if (!brands.includes(chosen)) {
+    brands.push(chosen);
+    setBrandsArray(type, brands);
+    renderBrandTags(type, brands);
+  }
+  select.value = '';
+}
+
+function removeBrandTag(type, brand) {
+  const brands = getBrandsArray(type).filter(b => b !== brand);
+  setBrandsArray(type, brands);
+  renderBrandTags(type, brands);
+}
+
 </script>
 </body>
 </html>
