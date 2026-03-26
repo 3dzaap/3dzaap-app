@@ -260,10 +260,10 @@ function initThemeToggle(){
 
 .history-empty-icon{font-size:2rem;opacity:.35}
 
-.history-table{width:100%;border-collapse:collapse;min-width:580px}
+.history-table{width:100%;border-collapse:separate;border-spacing:0;min-width:580px}
 
 .history-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border)}
-.history-table thead th{position:sticky;top:0;background:var(--bg-table-head);z-index:2}
+.history-table thead th{position:sticky;top:0;background:var(--bg-table-head);z-index:2;border-bottom:1.5px solid var(--border);box-shadow:0 1px 0 var(--border)}
 
 .history-table th{padding:10px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
 
@@ -575,9 +575,8 @@ function initThemeToggle(){
               </div>
             </div>
 
-          </div>
           <!-- Campos Resina (ocultos por defeito) -->
-          <div class="form-sections" id="resinFields" style="display:none;padding-top:0">
+          <div id="resinFields" style="display:none">
             <div class="form-section">
               <div class="section-title">
                 <div class="section-title-icon si-blue">📊</div>
@@ -629,6 +628,7 @@ function initThemeToggle(){
               </div>
             </div>
           </div>
+          </div><!-- /form-sections -->
 
           <!-- Limpar campos — discreto no rodapé -->
           <div class="card-footer">
@@ -1292,19 +1292,25 @@ function criarPedido(){
 function copyResults(){
   const i=getInputs();const r=computeResults(i);
   const name=document.getElementById('printName').value.trim();
+  const sym=(_cfg&&_cfg._currSymbol)||'€';
+  const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
+  const W=26; // column width for alignment
+  const row=(lbl,val)=>lbl.padEnd(W)+sym+val;
   const txt=[
-    name?name:null,
+    name?`📐 ${name}`:null,
     `Cálculo de Impressão 3D — ${new Date().toLocaleString('pt-PT')}`,
-    '='.repeat(46),
-    `Custo material:     ${(_cfg&&_cfg._currSymbol)||'€'}${r.materialCost.toFixed(2)}`,
-    `Custo amortização:  ${(_cfg&&_cfg._currSymbol)||'€'}${r.amortizationCost.toFixed(2)}`,
-    `Custo eletricidade: ${(_cfg&&_cfg._currSymbol)||'€'}${r.electricityCost.toFixed(2)}`,
-    `Custo base:         ${(_cfg&&_cfg._currSymbol)||'€'}${r.baseCost.toFixed(2)}`,
-    `+ Falhas (${i.failureRate}%):    ${(_cfg&&_cfg._currSymbol)||'€'}${r.failureCost.toFixed(2)}`,
-    `+ Indiretos (${i.indirectCosts}%): ${(_cfg&&_cfg._currSymbol)||'€'}${r.indirectCost.toFixed(2)}`,
-    `+ Margem (${i.profitMargin}%):   ${(_cfg&&_cfg._currSymbol)||'€'}${r.marginCost.toFixed(2)}`,
-    '-'.repeat(46),
-    `💰 PREÇO FINAL:      ${(_cfg&&_cfg._currSymbol)||'€'}${r.finalPrice.toFixed(2)}`,
+    `Modo: ${modeLabel}`,
+    '─'.repeat(42),
+    row('Custo material:',       r.materialCost.toFixed(2)),
+    row('Custo amortização:',    r.amortizationCost.toFixed(2)),
+    row('Custo eletricidade:',   r.electricityCost.toFixed(2)),
+    row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
+    row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
+    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCost.toFixed(2)),
+    row(`+ Margem (${i.profitMargin}%):`, r.marginCost.toFixed(2)),
+    '─'.repeat(42),
+    row('Preço unitário:',       r.unitPrice.toFixed(2)),
+    row(`💰 PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
   ].filter(Boolean).join('\n');
   const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
   if(navigator.clipboard&&window.isSecureContext){
