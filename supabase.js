@@ -1,7 +1,7 @@
 // ============================================================
-// supabase.js — Camada de dados 3DZAAP  v2.1
-// Correcções: _loadCompany resiliente, mappers alinhados com
-// o formato local do 3DZAAP.html (color, brand[], etc.)
+// supabase.js — Camada de dados 3DZAAP  v2.2 (Merged)
+// Correcções: Suporte a Impressoras, Filamentos (packId/kg),
+// Mappers alinhados e Activity Log completo.
 // ============================================================
 
 const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
@@ -18,7 +18,6 @@ let _companyCache = null;   // objecto completo — evita queries repetidas
 const Auth = {
 
   async register({ fname, lname, email, pass, companyName, slug, plan, config, signature }) {
-    // 1. Criar utilizador no Supabase Auth
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
       options: { data: { fname, lname } }
@@ -32,12 +31,10 @@ const Auth = {
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // 2. Activar sessão se disponível (email confirm OFF)
     if (authData.session) {
       await _sb.auth.setSession(authData.session);
     }
 
-    // 3. Criar empresa via RPC SECURITY DEFINER
     let company = null;
     const { data: rpcData, error: rpcErr } = await _sb
       .rpc('create_company_for_user', {
@@ -52,7 +49,6 @@ const Auth = {
     if (!rpcErr && rpcData?.length) {
       company = rpcData[0];
     } else {
-      // Fallback: inserção directa (funciona se email confirm estiver OFF)
       if (rpcErr) console.warn('[3DZAAP] rpc create_company_for_user:', rpcErr.message);
       const { data: ins, error: insErr } = await _sb
         .from('companies')
@@ -73,7 +69,6 @@ const Auth = {
     _companyId    = company.id;
     _companyCache = company;
 
-    // Indicar se precisa confirmar email
     const needsEmailConfirm = !authData.session;
     return { user: authData.user, company, needsEmailConfirm };
   },
@@ -81,7 +76,6 @@ const Auth = {
   async login(email, pass) {
     const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
-    // Limpar cache para forçar reload com a sessão nova
     _companyId    = null;
     _companyCache = null;
     await Auth._loadCompany();
@@ -95,7 +89,6 @@ const Auth = {
     window.location.href = 'auth-onboarding.html';
   },
 
-  // ── Carregar _companyId — resiliente a memberships inexistente ──────────
   async _loadCompany(forceRefresh = false) {
     if (!forceRefresh && _companyCache) return _companyCache;
 
@@ -105,8 +98,6 @@ const Auth = {
     let company = null;
     let role    = 'owner';
 
-    // 1. Tentativa via memberships (suporta convidados)
-    //    Envolvido em try/catch — se a tabela não existir (42P01) ignora
     try {
       const { data: mem, error: memErr } = await _sb
         .from('memberships')
@@ -115,16 +106,12 @@ const Auth = {
         .limit(1)
         .single();
 
-      // PGRST116 = 0 rows, 42P01 = tabela não existe — ambos são OK para ignorar
       if (!memErr && mem?.companies) {
         company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
         role    = mem.role || 'member';
       }
-    } catch (_) {
-      // Silenciar — fallback abaixo
-    }
+    } catch (_) {}
 
-    // 2. Fallback: owner_id directo
     if (!company) {
       const { data: owned, error: ownedErr } = await _sb
         .from('companies')
@@ -192,14 +179,13 @@ const Auth = {
 };
 
 // ============================================================
-// DB — helper interno para garantir _companyId antes de cada op
+// DB — Helpers e Operações
 // ============================================================
 async function _ensureCompany() {
   if (!_companyId) await Auth._loadCompany();
   if (!_companyId) throw new Error('Empresa não encontrada. Faz login novamente.');
 }
 
-// Detecta ID local (timestamp numérico) vs UUID do Supabase
 function _isLocalId(id) {
   if (!id) return true;
   return typeof id === 'number' || /^\d{10,}$/.test(String(id));
@@ -227,17 +213,14 @@ const DB = {
 
     if (!isNew) {
       const { data, error } = await _sb
-        .from('filaments')
-        .update(row)
-        .eq('id', filament.id)
-        .eq('company_id', _companyId)
+        .from('filaments').update(row)
+        .eq('id', filament.id).eq('company_id', _companyId)
         .select().single();
       if (error) throw error;
       return _mapFilamentFromDB(data);
     } else {
       const { data, error } = await _sb
-        .from('filaments')
-        .insert({ ...row, company_id: _companyId })
+        .from('filaments').insert({ ...row, company_id: _companyId })
         .select().single();
       if (error) throw error;
       return _mapFilamentFromDB(data);
@@ -246,9 +229,7 @@ const DB = {
 
   async deleteFilament(id) {
     await _ensureCompany();
-    const { error } = await _sb
-      .from('filaments').delete()
-      .eq('id', id).eq('company_id', _companyId);
+    const { error } = await _sb.from('filaments').delete().eq('id', id).eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -306,9 +287,7 @@ const DB = {
 
   async deleteOrder(id) {
     await _ensureCompany();
-    const { error } = await _sb
-      .from('orders').delete()
-      .eq('id', id).eq('company_id', _companyId);
+    const { error } = await _sb.from('orders').delete().eq('id', id).eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -356,9 +335,7 @@ const DB = {
 
   async deleteExpense(id) {
     await _ensureCompany();
-    const { error } = await _sb
-      .from('expenses').delete()
-      .eq('id', id).eq('company_id', _companyId);
+    const { error } = await _sb.from('expenses').delete().eq('id', id).eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -376,8 +353,7 @@ const DB = {
   async getPrinters() {
     await _ensureCompany();
     const { data, error } = await _sb
-      .from('printers')
-      .select('*')
+      .from('printers').select('*')
       .eq('company_id', _companyId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -391,17 +367,14 @@ const DB = {
 
     if (!isNew) {
       const { data, error } = await _sb
-        .from('printers')
-        .update(row)
-        .eq('id', printer.id)
-        .eq('company_id', _companyId)
+        .from('printers').update(row)
+        .eq('id', printer.id).eq('company_id', _companyId)
         .select().single();
       if (error) throw error;
       return _mapPrinterFromDB(data);
     } else {
       const { data, error } = await _sb
-        .from('printers')
-        .insert({ ...row, company_id: _companyId })
+        .from('printers').insert({ ...row, company_id: _companyId })
         .select().single();
       if (error) throw error;
       return _mapPrinterFromDB(data);
@@ -410,9 +383,7 @@ const DB = {
 
   async deletePrinter(id) {
     await _ensureCompany();
-    const { error } = await _sb
-      .from('printers').delete()
-      .eq('id', id).eq('company_id', _companyId);
+    const { error } = await _sb.from('printers').delete().eq('id', id).eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -457,28 +428,23 @@ const DB = {
   async updateMemberRole(membershipId, role) {
     await _ensureCompany();
     const { error } = await _sb
-      .from('memberships')
-      .update({ role })
-      .eq('id', membershipId)
-      .eq('company_id', _companyId);
+      .from('memberships').update({ role })
+      .eq('id', membershipId).eq('company_id', _companyId);
     if (error) throw error;
   },
 
   async removeMember(membershipId) {
     await _ensureCompany();
     const { error } = await _sb
-      .from('memberships')
-      .delete()
-      .eq('id', membershipId)
-      .eq('company_id', _companyId);
+      .from('memberships').delete()
+      .eq('id', membershipId).eq('company_id', _companyId);
     if (error) throw error;
   },
 
   async getInvites() {
     await _ensureCompany();
     const { data, error } = await _sb
-      .from('invites')
-      .select('id, email, role, expires_at, accepted_at, created_at')
+      .from('invites').select('id, email, role, expires_at, accepted_at, created_at')
       .eq('company_id', _companyId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -499,11 +465,7 @@ const DB = {
 
   async cancelInvite(inviteId) {
     await _ensureCompany();
-    const { error } = await _sb
-      .from('invites')
-      .delete()
-      .eq('id', inviteId)
-      .eq('company_id', _companyId);
+    const { error } = await _sb.from('invites').delete().eq('id', inviteId).eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -519,17 +481,12 @@ const DB = {
 };
 
 // ============================================================
-// MAPPERS — alinhados com o formato do 3DZAAP.html
+// MAPPERS
 // ============================================================
 
-// _parseBrand — normaliza qualquer formato legacy para array
-// Suporta: null/'' → []  |  'Anycubic' → ['Anycubic']
-//          'Anycubic||DEEPLEE' → ['Anycubic','DEEPLEE']
-//          'Anycubic, DEEPLEE' → ['Anycubic','DEEPLEE']  (legacy vírgula)
 function _parseBrand(val) {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean);
-  // Detecta separador: || tem prioridade, fallback para vírgula
   const sep = val.includes('||') ? '||' : ',';
   return val.split(sep).map(s => s.trim()).filter(Boolean);
 }
@@ -537,16 +494,13 @@ function _parseBrand(val) {
 function _mapFilamentFromDB(row) {
   return {
     id:             row.id,
-    // Classe de material: 'fdm' | 'resin'
     materialClass:  row.material_class || 'fdm',
     material_class: row.material_class || 'fdm',
-    // Campos no formato que o 3DZAAP.html usa internamente
     colorHex:       row.color_hex  || '',
     colorName:      row.color_name || '',
-    color:          row.color_name || '',   // alias para compatibilidade
+    color:          row.color_name || '',
     type:           row.type,
     variation:      row.variation  || '',
-    // brand: guardado como string '||'-separada, exposto como array
     brand:          _parseBrand(row.brand),
     rollSize:       row.roll_size  || '1kg',
     total:          parseInt(row.total || 0),
@@ -555,6 +509,7 @@ function _mapFilamentFromDB(row) {
     price:          parseFloat(row.price || 0),
     alerta:         parseInt(row.alerta || 0),
     notes:          row.notes || '',
+    packId:         row.pack_id || null,
     kgRemaining:    row.kg_remaining  ?? null,
     emptyConfirmed: row.empty_confirmed || false,
     emptyByOrder:   row.empty_by_order || null,
@@ -565,7 +520,6 @@ function _mapFilamentFromDB(row) {
 }
 
 function _mapFilamentToDB(f) {
-  // brand: aceita array ou string — normaliza para string '||'-separada
   const brandStr = Array.isArray(f.brand)
     ? f.brand.filter(Boolean).join('||')
     : (typeof f.brand === 'string' ? f.brand.replace(/,\s*/g, '||') : '');
@@ -583,6 +537,7 @@ function _mapFilamentToDB(f) {
     price:           parseFloat(f.price) || 0,
     alerta:          parseInt(f.alerta)  || 0,
     notes:           f.notes || null,
+    pack_id:         f.packId || f.pack_id || null,
     kg_remaining:    f.kgRemaining ?? f.kg_remaining ?? null,
     empty_confirmed: f.emptyConfirmed ?? f.empty_confirmed ?? false,
     empty_by_order:  f.emptyByOrder  ?? f.empty_by_order  ?? null,
@@ -696,45 +651,8 @@ function _mapPrinterToDB(p) {
 }
 
 // ============================================================
-// SQL — Tabela printers (Supabase)
-// Executar no Supabase SQL Editor:
+// MIGRAÇÃO
 // ============================================================
-/*
-CREATE TABLE printers (
-  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id           UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-  brand                TEXT NOT NULL,
-  model                TEXT NOT NULL,
-  printer_type         TEXT NOT NULL DEFAULT 'fdm',   -- 'fdm' | 'resina'
-  status               TEXT NOT NULL DEFAULT 'operacional', -- 'operacional' | 'manutencao' | 'inativa'
-  price                DECIMAL(10,2),
-  life_hours           INTEGER DEFAULT 5000,
-  hours_used           INTEGER DEFAULT 0,
-  purchase_date        DATE,
-  warranty_until       DATE,
-  maint_interval_hours INTEGER,
-  last_maint_hours     INTEGER DEFAULT 0,
-  maintenances         JSONB DEFAULT '[]',
-  notes                TEXT,
-  created_at           TIMESTAMPTZ DEFAULT NOW(),
-  updated_at           TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE printers ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Company members can manage printers"
-  ON printers FOR ALL
-  USING (
-    company_id IN (
-      SELECT company_id FROM memberships WHERE user_id = auth.uid()
-      UNION
-      SELECT id FROM companies WHERE owner_id = auth.uid()
-    )
-  );
-
-CREATE INDEX idx_printers_company_id ON printers(company_id);
-*/
-
 const Migration = {
 
   async importFromLocalStorage() {
