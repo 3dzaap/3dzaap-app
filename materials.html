@@ -1624,20 +1624,22 @@ function openPackModal() {
   _pkClass = currentView || 'fdm';
   _pkColorRows = [];
   _pkPresetIdx = 0;
+  _pkCurrentNum = _pkGetNextNum(); // reserve next number (commit only on save)
+
   // Reset fields
   const pkNameInput = document.getElementById('pkName');
   pkNameInput.value = '';
-  pkNameInput.dataset.userEdited = 'auto'; // allow auto-fill
+  pkNameInput.dataset.userEdited = 'auto';
   document.getElementById('pkPrice').value = '';
   document.getElementById('pkBrand').value = '';
   setBrandsArray('pk', []);
   renderBrandTags('pk', []);
   pkSetClass(_pkClass);
-  // Populate selects if not yet done
   _pkEnsureSelects();
-  // Add 2 starter rows using presets
-  const p0 = COLOR_PRESETS[0]; // Branco
-  const p1 = COLOR_PRESETS[1]; // Preto
+
+  // 2 starter rows from presets
+  const p0 = COLOR_PRESETS[0];
+  const p1 = COLOR_PRESETS[1];
   _pkColorRows.push({ hex: p0.hex, name: p0.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
   _pkColorRows.push({ hex: p1.hex, name: p1.name, cost: 0, overrideBrand: false, brandOverride: '', sizeOverride: '', nameUserEdited: false });
   _pkPresetIdx = 2;
@@ -1941,6 +1943,18 @@ function pkUpdateRowBrand(i, val) { _pkColorRows[i].brandOverride = val; }
 function pkUpdateRowSize(i, val)  { _pkColorRows[i].sizeOverride  = val; }
 
 // ── Auto-generate pack label ─────────────────────────────────
+
+// Pack counter — persiste em localStorage para ser incremental entre sessões
+function _pkGetNextNum() {
+  const n = parseInt(localStorage.getItem('3dzaap_pack_counter') || '0') + 1;
+  return n;
+}
+function _pkCommitNum(n) {
+  localStorage.setItem('3dzaap_pack_counter', String(n));
+}
+
+let _pkCurrentNum = 0; // número reservado para o pack em edição
+
 function pkAutoLabel() {
   const isFDM = _pkClass === 'fdm';
   const brands = getBrandsArray('pk');
@@ -1953,12 +1967,12 @@ function pkAutoLabel() {
     : (document.getElementById('pkBottleSize')?.value || '');
   const n = _pkColorRows.length;
 
-  const parts = [brandStr, type, size].filter(Boolean);
-  if (n > 0) parts.push(n + ' cores');
+  const numStr = 'Pack-' + String(_pkCurrentNum).padStart(2, '0');
+  const parts = [numStr, brandStr, type, size].filter(Boolean);
+  if (n > 0) parts.push(n + (n === 1 ? ' cor' : ' cores'));
   const label = parts.join(' · ');
 
   const input = document.getElementById('pkName');
-  // Only auto-fill if the user hasn't manually typed something different
   if (input && (!input.dataset.userEdited || input.dataset.userEdited === 'auto')) {
     input.value = label;
     input.dataset.userEdited = 'auto';
@@ -2074,6 +2088,7 @@ async function savePack() {
     updateToggleCounts();
     applyFilters();
     closePackModal();
+    _pkCommitNum(_pkCurrentNum); // only increment counter on successful save
     showToast(`✅ Pack "${packName}" adicionado — ${validRows.length} cor${validRows.length!==1?'es':''} registadas!`, 'ok');
   } catch(e) {
     showToast('Erro ao guardar pack: ' + e.message, 'err');
