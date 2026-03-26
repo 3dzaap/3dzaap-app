@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Impressoras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  var s=localStorage.getItem('3dzaap_theme');
+  var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.setAttribute('data-theme',s||(sys?'dark':'light'));
+})();
+function toggleTheme(){
+  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('3dzaap_theme',next);
+  var b=document.getElementById('themeToggle');
+  if(b)b.textContent=next==='dark'?'☀️':'🌙';
+}
+function initThemeToggle(){
+  var b=document.getElementById('themeToggle');
+  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── Estilos específicos de printers.html ─────────────────── */
+
+/* Printer cards grid */
+.printers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+
+/* Printer card */
+.printer-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 18px 20px 14px;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+  position: relative;
+  overflow: hidden;
+}
+.printer-card:hover {
+  border-color: rgba(59,143,212,.4);
+  box-shadow: 0 4px 20px rgba(59,143,212,.08);
+}
+.printer-card.status-manutencao {
+  border-color: rgba(245,158,11,.4);
+}
+.printer-card.status-inativa {
+  opacity: .6;
+}
+
+/* Status accent line at top of card */
+.printer-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--rm) var(--rm) 0 0;
+}
+.printer-card.status-operacional::before { background: var(--success); }
+.printer-card.status-manutencao::before  { background: var(--warning); }
+.printer-card.status-inativa::before     { background: var(--muted); }
+
+.printer-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.printer-card-title {
+  flex: 1;
+  min-width: 0;
+}
+.printer-brand {
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+.printer-model {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.printer-type-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+}
+.pt-fdm {
+  background: rgba(59,143,212,.12);
+  color: var(--blue);
+  border: 1px solid rgba(59,143,212,.2);
+}
+.pt-resina {
+  background: rgba(139,92,246,.12);
+  color: var(--purple);
+  border: 1px solid rgba(139,92,246,.2);
+}
+
+/* Hours bar */
+.printer-hours-wrap {
+  margin-bottom: 12px;
+}
+.printer-hours-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.printer-hours-used {
+  font-family: var(--mono);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+.printer-hours-total {
+  font-size: .7rem;
+  color: var(--muted);
+}
+.printer-hours-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.printer-hours-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .4s ease;
+  background: var(--blue);
+}
+.printer-hours-fill.warn  { background: var(--warning); }
+.printer-hours-fill.crit  { background: var(--danger); }
+
+/* Card footer stats */
+.printer-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.printer-stat {
+  text-align: center;
+}
+.printer-stat-val {
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--dark);
+  display: block;
+}
+.printer-stat-lbl {
+  font-size: .62rem;
+  color: var(--muted);
+  display: block;
+  margin-top: 1px;
+}
+
+/* Card actions */
+.printer-card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.printer-card-actions .btn-icon {
+  padding: 5px 8px;
+  font-size: .78rem;
+}
+
+/* Maintenance alert chip on card */
+.printer-alert-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.printer-alert-chip.warn {
+  background: rgba(245,158,11,.12);
+  color: #b45309;
+  border: 1px solid rgba(245,158,11,.25);
+}
+.printer-alert-chip.ok {
+  background: rgba(34,197,94,.1);
+  color: #15803d;
+  border: 1px solid rgba(34,197,94,.2);
+}
+
+/* Status badge variants */
+.bs-operacional { background: rgba(34,197,94,.12); color: #16a34a; border-color: rgba(34,197,94,.3); }
+.bs-operacional .badge-dot { background: #22c55e; }
+.bs-manutencao  { background: rgba(245,158,11,.12); color: #b45309; border-color: rgba(245,158,11,.3); }
+.bs-manutencao  .badge-dot { background: #f59e0b; }
+.bs-inativa     { background: rgba(148,163,184,.12); color: #64748b; border-color: rgba(148,163,184,.3); }
+.bs-inativa     .badge-dot { background: #94a3b8; }
+
+/* ── Maintenance history section ────────────────────────── */
+.maint-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.maint-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto auto 32px;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-card-s);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-size: .82rem;
+}
+.maint-row-date { font-family: var(--mono); font-size: .75rem; color: var(--muted); }
+.maint-row-type { font-weight: 600; color: var(--dark); }
+.maint-row-desc { font-size: .78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.maint-row-cost { font-family: var(--mono); font-size: .78rem; font-weight: 700; color: var(--dark); text-align: right; white-space: nowrap; }
+
+/* Empty maintenance state */
+.maint-empty { text-align: center; padding: 24px 0; color: var(--muted); font-size: .85rem; }
+
+/* ── Form section ────────────────────────────────────────── */
+.maint-section-title {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.maint-section-title:first-child { margin-top: 0; }
+
+/* Detail modal layout */
+.detail-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+.detail-field-lbl {
+  font-size: .65rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 2px;
+}
+.detail-field-val {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+.theme-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--r);
+  border: 1.5px solid var(--border); background: var(--bg-btn-ghost);
+  cursor: pointer; font-size: .9rem; transition: all .2s var(--ease);
+  flex-shrink: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover { background: rgba(59,143,212,.12); border-color: rgba(59,143,212,.35); }
+
+@media(max-width:680px){
+  .sidebar{left:calc(-1 * var(--sidebar-w, 260px))}.sidebar.open{left:0}
+  .sidebar-overlay.open{display:block;left:var(--sidebar-w)}.main{margin-left:0}
+  .mob-toggle{display:flex}.page{padding:16px 12px 40px}
+  .topbar{padding:0 12px 0 56px}.stats-row{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .modal{margin:8px;border-radius:12px}
+  .modal-header{padding:16px 18px 14px}.modal-body{padding:16px 18px}.modal-footer{padding:12px 18px 16px}
+  .page-header{flex-direction:column;gap:8px;align-items:flex-start}
+  .page-header-actions{width:100%;justify-content:flex-end}
+  .printers-grid{grid-template-columns:1fr}
+  .maint-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+  .detail-two-col{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png" alt="3DZAAP" onerror="this.style.display='none'">
+      <div class="sidebar-logo-text">Print Manager</div>
+    </div>
+    <div class="sidebar-company">
+      <div class="company-pill">
+        <div class="company-avatar" id="companyAvatar">—</div>
+        <span class="company-name" id="companyName">—</span>
+        <span class="company-plan" id="planBadge">—</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Início</a>
+        <a class="nav-item" href="calculator.html"><span class="nav-icon">📐</span> Calculadora</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Gestão</div>
+        <a class="nav-item" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
+        <a class="nav-item active" href="printers.html"><span class="nav-icon">🖨️</span> Impressoras</a>
+        <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos</a>
+        <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
+        <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Conta</div>
+        <a class="nav-item" href="settings.html"><span class="nav-icon">⚙️</span> Configurações</a>
+        <a class="nav-item" href="#" onclick="showToast('💳 Assinatura — em breve','');return false;" style="opacity:.6"><span class="nav-icon">💳</span> Assinatura</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-dropdown" id="userDropdown">
+        <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
+        <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');closeUserMenu();return false;" style="opacity:.6">💳 Gerir assinatura</a>
+        <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+        <div class="dd-divider"></div>
+        <a class="dd-item danger" onclick="doLogout();return false;">🚪 Sair</a>
+      </div>
+      <div class="user-row" id="userRow" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar">—</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-email" id="userEmail">—</div>
+        </div>
+        <span class="user-chevron" id="userChevron">▲</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html">Dashboard</a><span>›</span><strong>🖨️ Impressoras</strong>
+      </div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Alternar tema">🌙</button>
+    </header>
+
+    <div class="page">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1>🖨️ Impressoras</h1>
+          <p>Gere o parque de impressoras — estado, horas e manutenções</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="openPrinterModal()">＋ Nova impressora</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-mini">
+          <div class="stat-mini-icon si-blue">🖨️</div>
+          <div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl">Total de impressoras</div></div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-icon si-green">✅</div>
+          <div><div class="stat-mini-val" id="statOperacional">0</div><div class="stat-mini-lbl">Operacionais</div></div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-icon si-orange">🔧</div>
+          <div><div class="stat-mini-val" id="statManutencao">0</div><div class="stat-mini-lbl">Em manutenção</div></div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-icon si-purple">⏱️</div>
+          <div><div class="stat-mini-val" id="statTotalHours">0h</div><div class="stat-mini-lbl">Horas totais acumuladas</div></div>
+        </div>
+      </div>
+
+      <!-- Printers grid / empty state -->
+      <div id="printersEmpty" class="table-card" style="display:none">
+        <div class="table-empty">
+          <div class="table-empty-icon">🖨️</div>
+          <h3>Sem impressoras ainda</h3>
+          <p>Adiciona a tua primeira impressora clicando em <strong>＋ Nova impressora</strong> acima.</p>
+        </div>
+      </div>
+      <div class="printers-grid" id="printersGrid"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Criar / Editar Impressora
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="printerModalOverlay" onclick="if(event.target===this)closePrinterModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="printerModalTitle">＋ Nova Impressora</div>
+      <button class="modal-close" onclick="closePrinterModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section-divider">🖨️ Identificação</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Marca <span>*</span></label>
+          <input type="text" id="pBrand" class="form-input" placeholder="ex: Bambu Lab, Prusa, Anycubic…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo <span>*</span></label>
+          <input type="text" id="pModel" class="form-input" placeholder="ex: X1 Carbon, MK4, Photon M3…">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select id="pType" class="form-select">
+            <option value="fdm">FDM</option>
+            <option value="resina">Resina (SLA/DLP/MSLA)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="pStatus" class="form-select">
+            <option value="operacional">Operacional</option>
+            <option value="manutencao">Em manutenção</option>
+            <option value="inativa">Inativa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section-divider" style="margin-top:18px">💰 Custo e Amortização</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Preço de compra (€)</label>
+          <input type="number" id="pPrice" class="form-input" placeholder="600" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vida útil estimada (horas)</label>
+          <input type="number" id="pLifeHours" class="form-input" placeholder="5000" min="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data de compra</label>
+          <input type="date" id="pPurchaseDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Garantia até</label>
+          <input type="date" id="pWarrantyUntil" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-section-divider" style="margin-top:18px">🔧 Manutenção preventiva</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Intervalo de manutenção (horas)</label>
+          <input type="number" id="pMaintIntervalHours" class="form-input" placeholder="500" min="0">
+          <span class="form-hint">Alerta quando faltar menos de 20% do intervalo</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horas na última manutenção</label>
+          <input type="number" id="pLastMaintHours" class="form-input" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-row full" style="margin-bottom:0">
+        <div class="form-group">
+          <label class="form-label">Notas <span>(opcional)</span></label>
+          <textarea id="pNotes" class="form-textarea" placeholder="Configurações especiais, observações…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePrinterModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePrinter()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Detalhe / Manutenções
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="detailModalOverlay" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <div class="modal-title" id="detailModalTitle">🖨️ Impressora</div>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Printer summary -->
+      <div class="detail-two-col" id="detailSummary" style="margin-bottom:14px"></div>
+
+      <!-- Hours bar -->
+      <div class="printer-hours-wrap" id="detailHoursWrap"></div>
+
+      <!-- Maintenance history -->
+      <div class="maint-section-title">🔧 Histórico de manutenções</div>
+      <div id="maintList" class="maint-list"></div>
+
+      <!-- Add maintenance form -->
+      <div class="maint-section-title" style="margin-top:20px">＋ Registar manutenção</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo <span>*</span></label>
+          <select id="mType" class="form-select">
+            <option value="lubrificacao">Lubrificação</option>
+            <option value="limpeza">Limpeza</option>
+            <option value="substituicao_nozzle">Substituição de nozzle</option>
+            <option value="substituicao_belt">Substituição de correia</option>
+            <option value="substituicao_peca">Substituição de peça</option>
+            <option value="calibracao">Calibração</option>
+            <option value="reparacao">Reparação</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" id="mDate" class="form-input">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Custo (€) <span>(opcional)</span></label>
+          <input type="number" id="mCost" class="form-input" placeholder="0,00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horas no contador</label>
+          <input type="number" id="mHoursAtMaint" class="form-input" placeholder="Horas actuais da impressora" min="0">
+        </div>
+      </div>
+      <div class="form-row full" style="margin-bottom:0">
+        <div class="form-group">
+          <label class="form-label">Descrição <span>(opcional)</span></label>
+          <input type="text" id="mDesc" class="form-input" placeholder="O que foi feito…">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetailModal()">Fechar</button>
+      <button class="btn btn-ghost" onclick="openPrinterModal(_detailPrinterId)">✏️ Editar impressora</button>
+      <button class="btn btn-primary" onclick="saveMaintenance()">🔧 Registar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon" id="confirmIcon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+//  DATA & STATE
+// ══════════════════════════════════════
+let printers = [];
+let _editingPrinterId = null;
+let _detailPrinterId  = null;
+var _cfg = {};
+
+const STATUS_LABELS = { operacional:'Operacional', manutencao:'Em manutenção', inativa:'Inativa' };
+const TYPE_LABELS   = { fdm:'FDM', resina:'Resina' };
+const MAINT_LABELS  = {
+  lubrificacao:'Lubrificação', limpeza:'Limpeza',
+  substituicao_nozzle:'Nozzle', substituicao_belt:'Correia',
+  substituicao_peca:'Peça', calibracao:'Calibração',
+  reparacao:'Reparação', outro:'Outro',
+};
+
+// ── INIT ───────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  initThemeToggle();
+  await loadUserData();
+  await loadData();
+});
+
+// ── USER DATA ───────────────────────────
+function loadCfg(session) {
+  _cfg = (session && session.config) ? session.config : {};
+  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
+  _cfg._currSymbol = currMap[_cfg.currency] || '€';
+  _cfg._locale     = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'}[_cfg.currency] || 'pt-PT';
+  _cfg._dateFmt    = _cfg.dateFmt || 'DD/MM/YYYY';
+}
+
+async function loadUserData() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+  const session = await Auth.getSession();
+  if (!session) return;
+  loadCfg(session);
+  const fullName = (session.fname && session.lname)
+    ? session.fname + ' ' + session.lname
+    : session.fname || session.lname
+    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('userName').textContent   = fullName;
+  document.getElementById('userEmail').textContent  = session.email;
+  document.getElementById('userAvatar').textContent = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (document.getElementById('companyName'))
+    document.getElementById('companyName').textContent = session.companyName || '—';
+  if (document.getElementById('companyAvatar')) {
+    const av = document.getElementById('companyAvatar');
+    const logo = (_cfg && _cfg.logoUrl) || '';
+    if (logo) av.innerHTML = `<img src="${logo}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    else av.textContent = (session.companyName||'—').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+  if (document.getElementById('planBadge')) {
+    const L = {trial:'Trial',starter:'Starter',pro:'Pro',business:'Business'};
+    document.getElementById('planBadge').textContent = L[session.plan] || 'Trial';
+  }
+  if (document.getElementById('financialLock')) {
+    const plan = session.plan || 'trial';
+    if (!['trial','business'].includes(plan))
+      document.getElementById('financialLock').style.display = '';
+  }
+}
+
+// ── LOAD DATA ──────────────────────────
+async function loadData() {
+  try {
+    printers = await DB.getPrinters();
+  } catch(e) {
+    console.error('[3DZAAP] printers load error:', e);
+    printers = [];
+  }
+  renderPrinters();
+  updateStats();
+}
+
+// ── RENDER ─────────────────────────────
+function renderPrinters() {
+  const grid  = document.getElementById('printersGrid');
+  const empty = document.getElementById('printersEmpty');
+
+  if (!printers.length) {
+    empty.style.display = '';
+    grid.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = printers.map(p => {
+    const pct     = _hoursPercent(p);
+    const fillCls = pct >= 90 ? 'crit' : pct >= 70 ? 'warn' : '';
+    const alertChip = _maintAlertChip(p);
+    const totalMaintCost = (p.maintenances||[]).reduce((s,m) => s + (parseFloat(m.cost)||0), 0);
+
+    return `
+    <div class="printer-card status-${p.status}" onclick="openDetailModal('${p.id}')">
+      <div class="printer-card-header">
+        <div class="printer-card-title">
+          <div class="printer-brand">${escH(p.brand)}</div>
+          <div class="printer-model">${escH(p.model)}</div>
+        </div>
+        <span class="printer-type-badge pt-${p.printerType}">${TYPE_LABELS[p.printerType]||p.printerType}</span>
+      </div>
+
+      ${alertChip}
+
+      <div class="printer-hours-wrap">
+        <div class="printer-hours-labels">
+          <span class="printer-hours-used">${p.hoursUsed||0}h usadas</span>
+          <span class="printer-hours-total">de ${p.lifeHours||5000}h estimadas</span>
+        </div>
+        <div class="printer-hours-bar">
+          <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
+        </div>
+      </div>
+
+      <div class="printer-card-stats">
+        <div class="printer-stat">
+          <span class="printer-stat-val">${p.price ? fmtEur(p.price) : '—'}</span>
+          <span class="printer-stat-lbl">Custo</span>
+        </div>
+        <div class="printer-stat">
+          <span class="printer-stat-val">${(p.maintenances||[]).length}</span>
+          <span class="printer-stat-lbl">Manutenções</span>
+        </div>
+        <div class="printer-stat">
+          <span class="printer-stat-val">${totalMaintCost > 0 ? fmtEur(totalMaintCost) : '—'}</span>
+          <span class="printer-stat-lbl">Custo total mant.</span>
+        </div>
+      </div>
+
+      <div class="printer-card-actions" onclick="event.stopPropagation()">
+        <span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span>
+        <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar">✏️</button>
+        <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Returns HTML chip for maintenance alert
+function _maintAlertChip(p) {
+  const interval = parseInt(p.maintIntervalHours) || 0;
+  if (!interval) return '';
+  const lastMaint = parseInt(p.lastMaintHours) || 0;
+  const used      = parseInt(p.hoursUsed)      || 0;
+  const hoursSinceLastMaint = used - lastMaint;
+  const hoursUntilNext = interval - hoursSinceLastMaint;
+  const threshold = Math.round(interval * 0.20); // alert at 20%
+
+  if (hoursUntilNext <= 0) {
+    return `<div class="printer-alert-chip warn">⚠️ Manutenção em atraso (${Math.abs(hoursUntilNext)}h)</div>`;
+  }
+  if (hoursUntilNext <= threshold) {
+    return `<div class="printer-alert-chip warn">🔧 Manutenção em ${hoursUntilNext}h</div>`;
+  }
+  return `<div class="printer-alert-chip ok">✅ Próxima manutenção em ${hoursUntilNext}h</div>`;
+}
+
+function _hoursPercent(p) {
+  const life = parseInt(p.lifeHours) || 5000;
+  const used = parseInt(p.hoursUsed) || 0;
+  return life > 0 ? Math.round((used / life) * 100) : 0;
+}
+
+// ── STATS ──────────────────────────────
+function updateStats() {
+  const total       = printers.length;
+  const operacional = printers.filter(p => p.status === 'operacional').length;
+  const manutencao  = printers.filter(p => p.status === 'manutencao').length;
+  const totalHours  = printers.reduce((s,p) => s + (parseInt(p.hoursUsed)||0), 0);
+  document.getElementById('statTotal').textContent       = total;
+  document.getElementById('statOperacional').textContent = operacional;
+  document.getElementById('statManutencao').textContent  = manutencao;
+  document.getElementById('statTotalHours').textContent  = totalHours + 'h';
+}
+
+// ── PRINTER MODAL (CREATE / EDIT) ──────
+function openPrinterModal(id = null) {
+  // Close detail modal if open
+  document.getElementById('detailModalOverlay').classList.remove('open');
+
+  _editingPrinterId = id;
+  document.getElementById('printerModalTitle').textContent = id ? '✏️ Editar Impressora' : '＋ Nova Impressora';
+
+  if (id) {
+    const p = printers.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('pBrand').value             = p.brand || '';
+    document.getElementById('pModel').value             = p.model || '';
+    document.getElementById('pType').value              = p.printerType || 'fdm';
+    document.getElementById('pStatus').value            = p.status || 'operacional';
+    document.getElementById('pPrice').value             = p.price || '';
+    document.getElementById('pLifeHours').value         = p.lifeHours || '';
+    document.getElementById('pPurchaseDate').value      = p.purchaseDate || '';
+    document.getElementById('pWarrantyUntil').value     = p.warrantyUntil || '';
+    document.getElementById('pMaintIntervalHours').value= p.maintIntervalHours || '';
+    document.getElementById('pLastMaintHours').value    = p.lastMaintHours || '';
+    document.getElementById('pNotes').value             = p.notes || '';
+  } else {
+    document.getElementById('pBrand').value             = '';
+    document.getElementById('pModel').value             = '';
+    document.getElementById('pType').value              = 'fdm';
+    document.getElementById('pStatus').value            = 'operacional';
+    document.getElementById('pPrice').value             = '';
+    document.getElementById('pLifeHours').value         = '5000';
+    document.getElementById('pPurchaseDate').value      = '';
+    document.getElementById('pWarrantyUntil').value     = '';
+    document.getElementById('pMaintIntervalHours').value= '500';
+    document.getElementById('pLastMaintHours').value    = '0';
+    document.getElementById('pNotes').value             = '';
+  }
+  document.getElementById('printerModalOverlay').classList.add('open');
+  document.getElementById('pBrand').focus();
+}
+
+function closePrinterModal() {
+  document.getElementById('printerModalOverlay').classList.remove('open');
+  _editingPrinterId = null;
+}
+
+async function savePrinter() {
+  const brand = document.getElementById('pBrand').value.trim();
+  const model = document.getElementById('pModel').value.trim();
+  if (!brand || !model) { showToast('⚠️ Marca e modelo são obrigatórios', 'err'); return; }
+
+  const data = {
+    brand,
+    model,
+    printerType:        document.getElementById('pType').value,
+    status:             document.getElementById('pStatus').value,
+    price:              parseFloat(document.getElementById('pPrice').value) || null,
+    lifeHours:          parseInt(document.getElementById('pLifeHours').value) || 5000,
+    purchaseDate:       document.getElementById('pPurchaseDate').value || null,
+    warrantyUntil:      document.getElementById('pWarrantyUntil').value || null,
+    maintIntervalHours: parseInt(document.getElementById('pMaintIntervalHours').value) || null,
+    lastMaintHours:     parseInt(document.getElementById('pLastMaintHours').value) || 0,
+    notes:              document.getElementById('pNotes').value.trim() || null,
+  };
+
+  try {
+    if (_editingPrinterId) {
+      const prev = printers.find(p => p.id === _editingPrinterId);
+      const merged = { ...prev, ...data };
+      const saved = await DB.savePrinter(merged);
+      const idx = printers.findIndex(p => p.id === _editingPrinterId);
+      if (idx > -1) printers[idx] = saved;
+      showToast('✅ Impressora actualizada!', 'ok');
+    } else {
+      const saved = await DB.savePrinter({ ...data, hoursUsed: 0, maintenances: [] });
+      printers.unshift(saved);
+      showToast('✅ Impressora criada!', 'ok');
+    }
+    closePrinterModal();
+    renderPrinters();
+    updateStats();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
+}
+
+// ── DETAIL MODAL (VIEW + MANUTENÇÕES) ──
+function openDetailModal(id) {
+  _detailPrinterId = id;
+  const p = printers.find(x => x.id === id);
+  if (!p) return;
+
+  document.getElementById('detailModalTitle').textContent = `🖨️ ${p.brand} ${p.model}`;
+
+  // Summary fields
+  const pct = _hoursPercent(p);
+  const fillCls = pct >= 90 ? 'crit' : pct >= 70 ? 'warn' : '';
+  const warrantyHtml = p.warrantyUntil
+    ? `<div><div class="detail-field-lbl">Garantia até</div><div class="detail-field-val">${fmtDate(p.warrantyUntil)} ${_warrantyBadge(p.warrantyUntil)}</div></div>`
+    : '';
+
+  document.getElementById('detailSummary').innerHTML = `
+    <div><div class="detail-field-lbl">Tipo</div><div class="detail-field-val">${TYPE_LABELS[p.printerType]||p.printerType}</div></div>
+    <div><div class="detail-field-lbl">Estado</div><div class="detail-field-val"><span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
+    <div><div class="detail-field-lbl">Preço de compra</div><div class="detail-field-val">${p.price ? fmtEur(p.price) : '—'}</div></div>
+    <div><div class="detail-field-lbl">Data de compra</div><div class="detail-field-val">${p.purchaseDate ? fmtDate(p.purchaseDate) : '—'}</div></div>
+    ${warrantyHtml}
+    <div><div class="detail-field-lbl">Intervalo manutenção</div><div class="detail-field-val">${p.maintIntervalHours ? p.maintIntervalHours + 'h' : '—'}</div></div>
+    ${p.notes ? `<div style="grid-column:1/-1"><div class="detail-field-lbl">Notas</div><div class="detail-field-val">${escH(p.notes)}</div></div>` : ''}
+  `;
+
+  // Hours bar
+  document.getElementById('detailHoursWrap').innerHTML = `
+    <div class="printer-hours-labels">
+      <span class="printer-hours-used">${p.hoursUsed||0}h usadas</span>
+      <span class="printer-hours-total">de ${p.lifeHours||5000}h estimadas (${pct}%)</span>
+    </div>
+    <div class="printer-hours-bar" style="height:8px;margin-bottom:4px">
+      <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
+    </div>
+    ${_maintAlertChip(p)}
+  `;
+
+  // Maintenance history
+  _renderMaintList(p);
+
+  // Pre-fill maintenance form
+  document.getElementById('mDate').value        = new Date().toISOString().split('T')[0];
+  document.getElementById('mCost').value        = '';
+  document.getElementById('mDesc').value        = '';
+  document.getElementById('mType').value        = 'lubrificacao';
+  document.getElementById('mHoursAtMaint').value = p.hoursUsed || 0;
+
+  document.getElementById('detailModalOverlay').classList.add('open');
+}
+
+function _warrantyBadge(dateStr) {
+  if (!dateStr) return '';
+  const diff = new Date(dateStr) - new Date();
+  const days = Math.round(diff / 86400000);
+  if (days < 0)  return `<span class="badge" style="background:rgba(239,68,68,.1);color:#dc2626;border-color:rgba(239,68,68,.3);font-size:.62rem">expirada</span>`;
+  if (days <= 30) return `<span class="badge" style="background:rgba(245,158,11,.1);color:#b45309;border-color:rgba(245,158,11,.3);font-size:.62rem">${days}d restantes</span>`;
+  return '';
+}
+
+function _renderMaintList(p) {
+  const list = document.getElementById('maintList');
+  const maints = (p.maintenances || []).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
+  if (!maints.length) {
+    list.innerHTML = `<div class="maint-empty">Sem manutenções registadas ainda.</div>`;
+    return;
+  }
+  list.innerHTML = maints.map((m, idx) => `
+    <div class="maint-row">
+      <span class="maint-row-date">${fmtDate(m.date)}</span>
+      <span class="maint-row-type">${MAINT_LABELS[m.type]||m.type}</span>
+      <span class="maint-row-desc">${escH(m.description||'')}</span>
+      <span class="maint-row-cost">${m.cost ? fmtEur(m.cost) : '—'}</span>
+      <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="Eliminar">🗑️</button>
+    </div>`).join('');
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModalOverlay').classList.remove('open');
+  _detailPrinterId = null;
+}
+
+// ── SAVE MAINTENANCE ────────────────────
+async function saveMaintenance() {
+  const p = printers.find(x => x.id === _detailPrinterId);
+  if (!p) return;
+
+  const type = document.getElementById('mType').value;
+  const date = document.getElementById('mDate').value;
+  if (!date) { showToast('⚠️ Data é obrigatória', 'err'); return; }
+
+  const cost         = parseFloat(document.getElementById('mCost').value) || null;
+  const description  = document.getElementById('mDesc').value.trim() || null;
+  const hoursAtMaint = parseInt(document.getElementById('mHoursAtMaint').value) || 0;
+
+  const newMaint = { type, date, cost, description, hoursAtMaint };
+
+  // Add to printer's maintenance list
+  if (!p.maintenances) p.maintenances = [];
+  p.maintenances.push(newMaint);
+
+  // Update lastMaintHours to the hours recorded at this maintenance
+  p.lastMaintHours = hoursAtMaint;
+
+  try {
+    const saved = await DB.savePrinter(p);
+    const idx = printers.findIndex(x => x.id === p.id);
+    if (idx > -1) printers[idx] = saved;
+
+    // Auto-register as financial expense if cost > 0
+    if (cost && cost > 0) {
+      try {
+        await DB.saveExpense({
+          date:        date,
+          value:       cost,
+          category:    'manutencao',
+          description: `Manutenção ${TYPE_LABELS[p.printerType]||''} ${p.brand} ${p.model} — ${MAINT_LABELS[type]||type}`,
+        });
+        showToast('🔧 Manutenção registada + despesa lançada no Financeiro!', 'ok');
+      } catch(e) {
+        showToast('🔧 Manutenção registada (despesa não lançada: ' + e.message + ')', 'ok');
+      }
+    } else {
+      showToast('🔧 Manutenção registada!', 'ok');
+    }
+
+    // Re-open detail modal with fresh data
+    openDetailModal(p.id);
+    renderPrinters();
+    updateStats();
+  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
+}
+
+async function deleteMaintenance(printerId, maintIdx) {
+  const p = printers.find(x => x.id === printerId);
+  if (!p || !p.maintenances) return;
+  // Sort descending (same order as displayed) then remove by index
+  const sorted = p.maintenances.slice().sort((a,b) => new Date(b.date) - new Date(a.date));
+  const toRemove = sorted[maintIdx];
+  p.maintenances = p.maintenances.filter(m => m !== toRemove);
+  try {
+    const saved = await DB.savePrinter(p);
+    const idx = printers.findIndex(x => x.id === printerId);
+    if (idx > -1) printers[idx] = saved;
+    openDetailModal(printerId);
+    renderPrinters();
+    showToast('🗑️ Manutenção eliminada', '');
+  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
+}
+
+// ── DELETE PRINTER ─────────────────────
+function confirmDeletePrinter(id) {
+  const p = printers.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('confirmTitle').textContent = 'Eliminar impressora?';
+  document.getElementById('confirmMsg').textContent   = `Vai eliminar "${p.brand} ${p.model}" e todo o histórico de manutenções permanentemente.`;
+  document.getElementById('confirmOkBtn').onclick     = () => { closeConfirm(); deletePrinter(id); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+async function deletePrinter(id) {
+  try {
+    await DB.deletePrinter(id);
+    printers = printers.filter(p => p.id !== id);
+    renderPrinters();
+    updateStats();
+    showToast('🗑️ Impressora eliminada', '');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
+}
+
+// ── USER MENU ──────────────────────────
+function toggleUserMenu() {
+  const dd=document.getElementById('userDropdown'), ch=document.getElementById('userChevron');
+  const open=dd.classList.toggle('open'); ch.classList.toggle('up',open);
+}
+function closeUserMenu() {
+  document.getElementById('userDropdown').classList.remove('open');
+  const ch=document.getElementById('userChevron'); if(ch) ch.classList.remove('up');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown')) closeUserMenu();
+});
+async function doLogout() {
+  closeUserMenu();
+  showToast('Sessão terminada. Até logo! 👋','ok');
+  setTimeout(() => Auth.logout(), 1000);
+}
+
+// ── SIDEBAR MOBILE ─────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+
+// ── HELPERS ────────────────────────────
+function fmtEur(v){ var sym=(_cfg&&_cfg._currSymbol)||'€'; var loc=(_cfg&&_cfg._locale)||'pt-PT'; return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(s){
+  if(!s)return'—';
+  var c=String(s).slice(0,10);
+  var d=new Date(c+'T12:00:00');
+  if(isNaN(d.getTime()))return c;
+  var fmt=(_cfg&&_cfg._dateFmt)||'DD/MM/YYYY';
+  var dd=String(d.getDate()).padStart(2,'0');
+  var mm=String(d.getMonth()+1).padStart(2,'0');
+  var yyyy=d.getFullYear();
+  if(fmt==='MM/DD/YYYY')return mm+'/'+dd+'/'+yyyy;
+  if(fmt==='YYYY-MM-DD')return yyyy+'-'+mm+'-'+dd;
+  return dd+'/'+mm+'/'+yyyy;
+}
+function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _tt;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type||'');
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>

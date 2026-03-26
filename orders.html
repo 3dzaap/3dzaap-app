@@ -441,6 +441,35 @@ function initThemeToggle(){
   </div>
 </div>
 
+<!-- PRINTING MODAL -->
+<div class="modal-overlay" id="printingModalOverlay" onclick="if(event.target===this)closePrintingModal()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">🖨️ Iniciar impressão</div>
+      <button class="modal-close" onclick="closePrintingModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.85rem;color:var(--muted);margin:0 0 16px">Antes de avançar para <strong>Printing</strong>, indica qual a impressora e o tempo estimado de impressão.</p>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Impressora <span>(opcional)</span></label>
+        <select id="ptPrinterId" class="form-select">
+          <option value="">— não atribuir impressora —</option>
+        </select>
+        <span class="form-hint">Só aparecem impressoras operacionais. <a href="printers.html" style="color:var(--blue)">Gerir impressoras →</a></span>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Tempo estimado de impressão (horas) <span>(opcional)</span></label>
+        <input type="number" id="ptEstHours" class="form-input" placeholder="ex: 4.5" min="0" step="0.5">
+        <span class="form-hint">Será acumulado automaticamente no contador da impressora quando o pedido for concluído.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePrintingModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmPrinting()">🖨️ Avançar para Printing</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -449,6 +478,7 @@ function initThemeToggle(){
 // ══════════════════════════════════════
 let orders = [];
 let filaments = [];
+let printers = [];
 let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
@@ -545,14 +575,15 @@ async function applyFeatureGating() {
 // ── LOAD / SAVE DATA ───────────────────
 async function loadData() {
   try {
-    [orders, filaments, lastOrderNumber] = await Promise.all([
+    [orders, filaments, lastOrderNumber, printers] = await Promise.all([
       DB.getOrders(),
       DB.getFilaments(),
       DB.getLastOrderNumber(),
+      DB.getPrinters().catch(() => []),
     ]);
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
-    orders = []; filaments = []; lastOrderNumber = 0;
+    orders = []; filaments = []; lastOrderNumber = 0; printers = [];
   }
   renderOrders();
   updateStats();
@@ -620,6 +651,8 @@ function renderOrders(keepExpandId) {
       {lbl:'Telefone',val:o.clientPhone||'—'},
       {lbl:'Data criação',val:o.createdAt?fmtDate(o.createdAt):'—'},
       {lbl:'Prazo entrega',val:o.dueDate?fmtDate(o.dueDate):'—'},
+      ...(o.printerId ? [{lbl:'Impressora',val:_printerLabel(o.printerId)}] : []),
+      ...(o.estPrintHours ? [{lbl:'Tempo estimado',val:o.estPrintHours+'h'}] : []),
     ].map(d=>`<div><div class="detail-item-lbl">${d.lbl}</div><div class="detail-item-val">${escH(d.val)}</div></div>`).join('');
 
     const nextStatus = STATUS_NEXT[o.status];
@@ -756,16 +789,83 @@ async function advanceStatus(id) {
   if (!o) return;
   const next = STATUS_NEXT[o.status];
   if (!next) return;
+
+  // Intercept transition to 'printing' — show printer selection modal
+  if (next === 'printing') {
+    openPrintingModal(id);
+    return;
+  }
+
   o.status = next;
   o.updatedAt = new Date().toISOString();
-  // OPÇÃO A: when done, discount filament stock
   if (next === 'done') {
     applyFilamentConsumption(o);
+    await _accumulatePrinterHours(o);
   }
   if (o.status === 'done') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
   await DB.saveOrder(o);
-  renderOrders(id); // pass id to keep row expanded
+  renderOrders(id);
   showToast(`📦 ${o.orderNumber} → ${STATUS_LABELS[next]}`, 'ok');
+}
+
+// ── PRINTING MODAL ─────────────────────
+let _printingOrderId = null;
+
+function openPrintingModal(orderId) {
+  _printingOrderId = orderId;
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  // Build printer options (operacionais only)
+  const operacionais = printers.filter(p => p.status === 'operacional');
+  const printerOpts = operacionais.length
+    ? operacionais.map(p => `<option value="${p.id}">${escH(p.brand)} ${escH(p.model)} (${p.hoursUsed||0}h usadas)</option>`).join('')
+    : `<option value="">— sem impressoras operacionais —</option>`;
+
+  // Pre-fill estimated hours from order notes / description hint
+  document.getElementById('ptPrinterId').innerHTML = `<option value="">— não atribuir impressora —</option>` + printerOpts;
+  document.getElementById('ptEstHours').value = '';
+  document.getElementById('printingModalOverlay').classList.add('open');
+  document.getElementById('ptEstHours').focus();
+}
+
+function closePrintingModal() {
+  document.getElementById('printingModalOverlay').classList.remove('open');
+  _printingOrderId = null;
+}
+
+async function confirmPrinting() {
+  const o = orders.find(x => x.id === _printingOrderId);
+  if (!o) return;
+
+  const printerId = document.getElementById('ptPrinterId').value;
+  const estHours  = parseFloat(document.getElementById('ptEstHours').value) || null;
+
+  // Save printer assignment on the order
+  o.printerId    = printerId || null;
+  o.estPrintHours = estHours;
+  o.status       = 'printing';
+  o.updatedAt    = new Date().toISOString();
+
+  try {
+    await DB.saveOrder(o);
+    closePrintingModal();
+    renderOrders(_printingOrderId);
+    showToast(`🖨️ ${o.orderNumber} → Printing${printerId ? ' (impressora atribuída)' : ''}`, 'ok');
+  } catch(e) { showToast('Erro: ' + e.message, 'err'); }
+}
+
+// Accumulate hours on the printer when order is marked done
+async function _accumulatePrinterHours(order) {
+  if (!order.printerId || !order.estPrintHours) return;
+  const p = printers.find(x => x.id === order.printerId);
+  if (!p) return;
+  p.hoursUsed = (parseInt(p.hoursUsed)||0) + parseFloat(order.estPrintHours);
+  try {
+    const saved = await DB.savePrinter(p);
+    const idx = printers.findIndex(x => x.id === p.id);
+    if (idx > -1) printers[idx] = saved;
+  } catch(e) { console.warn('[3DZAAP] printer hours update failed:', e); }
 }
 
 // ── OPÇÃO A: filament auto-discount ────
@@ -1522,6 +1622,11 @@ function toggleSidebar() {
 }
 
 // ── HELPERS ────────────────────────────
+function _printerLabel(printerId) {
+  if (!printerId) return '—';
+  const p = printers.find(x => x.id === printerId);
+  return p ? `${p.brand} ${p.model}` : '—';
+}
 function fmtN(v){ var loc=(_cfg&&_cfg._locale)||'pt-PT'; return parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtEur(v){var sym=(_cfg&&_cfg._currSymbol)||'€';var loc=(_cfg&&_cfg._locale)||'pt-PT';return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtDate(s){

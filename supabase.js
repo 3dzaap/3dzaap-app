@@ -371,6 +371,51 @@ const DB = {
     if (error) throw error;
   },
 
+  // ── PRINTERS ────────────────────────────────────────────────
+
+  async getPrinters() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('printers')
+      .select('*')
+      .eq('company_id', _companyId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data.map(_mapPrinterFromDB);
+  },
+
+  async savePrinter(printer) {
+    await _ensureCompany();
+    const row   = _mapPrinterToDB(printer);
+    const isNew = !printer.id || _isLocalId(printer.id);
+
+    if (!isNew) {
+      const { data, error } = await _sb
+        .from('printers')
+        .update(row)
+        .eq('id', printer.id)
+        .eq('company_id', _companyId)
+        .select().single();
+      if (error) throw error;
+      return _mapPrinterFromDB(data);
+    } else {
+      const { data, error } = await _sb
+        .from('printers')
+        .insert({ ...row, company_id: _companyId })
+        .select().single();
+      if (error) throw error;
+      return _mapPrinterFromDB(data);
+    }
+  },
+
+  async deletePrinter(id) {
+    await _ensureCompany();
+    const { error } = await _sb
+      .from('printers').delete()
+      .eq('id', id).eq('company_id', _companyId);
+    if (error) throw error;
+  },
+
   // ── ACTIVITY LOG ────────────────────────────────────────────
 
   async getLog() {
@@ -562,25 +607,29 @@ function _mapOrderFromDB(row) {
     dueDate:       row.due_date      || '',
     paymentDate:   row.payment_date  || '',
     notes:         row.notes         || '',
+    printerId:     row.printer_id    || null,
+    estPrintHours: row.est_print_hours ? parseFloat(row.est_print_hours) : null,
     updatedAt:     row.updated_at,
   };
 }
 
 function _mapOrderToDB(o) {
   const row = {
-    order_number:   o.orderNumber || `IMP-${String(o.orderNumeric || 0).padStart(4,'0')}`,
-    order_numeric:  o.orderNumeric || 0,
-    client_name:    o.clientName,
-    client_email:   o.clientEmail  || null,
-    client_phone:   o.clientPhone  || null,
-    items:          o.items        || [],
-    description:    o.description  || '',
-    total:          parseFloat(o.total) || 0,
-    status:         o.status,
-    payment_status: o.paymentStatus,
-    due_date:       o.dueDate      || null,
-    payment_date:   o.paymentDate  || null,
-    notes:          o.notes        || null,
+    order_number:    o.orderNumber || `IMP-${String(o.orderNumeric || 0).padStart(4,'0')}`,
+    order_numeric:   o.orderNumeric || 0,
+    client_name:     o.clientName,
+    client_email:    o.clientEmail  || null,
+    client_phone:    o.clientPhone  || null,
+    items:           o.items        || [],
+    description:     o.description  || '',
+    total:           parseFloat(o.total) || 0,
+    status:          o.status,
+    payment_status:  o.paymentStatus,
+    due_date:        o.dueDate      || null,
+    payment_date:    o.paymentDate  || null,
+    notes:           o.notes        || null,
+    printer_id:      o.printerId    || null,
+    est_print_hours: o.estPrintHours || null,
   };
   if (o.createdAt) row.created_at = o.createdAt;
   return row;
@@ -607,9 +656,85 @@ function _mapExpenseToDB(e) {
   };
 }
 
+function _mapPrinterFromDB(row) {
+  return {
+    id:                 row.id,
+    brand:              row.brand || '',
+    model:              row.model || '',
+    printerType:        row.printer_type || 'fdm',
+    status:             row.status || 'operacional',
+    price:              parseFloat(row.price || 0) || null,
+    lifeHours:          parseInt(row.life_hours || 5000),
+    hoursUsed:          parseInt(row.hours_used || 0),
+    purchaseDate:       row.purchase_date  || null,
+    warrantyUntil:      row.warranty_until || null,
+    maintIntervalHours: parseInt(row.maint_interval_hours || 0) || null,
+    lastMaintHours:     parseInt(row.last_maint_hours || 0),
+    maintenances:       Array.isArray(row.maintenances) ? row.maintenances : [],
+    notes:              row.notes || null,
+    createdAt:          row.created_at,
+    updatedAt:          row.updated_at,
+  };
+}
+
+function _mapPrinterToDB(p) {
+  return {
+    brand:                p.brand,
+    model:                p.model,
+    printer_type:         p.printerType         || 'fdm',
+    status:               p.status              || 'operacional',
+    price:                p.price               || null,
+    life_hours:           parseInt(p.lifeHours) || 5000,
+    hours_used:           parseInt(p.hoursUsed) || 0,
+    purchase_date:        p.purchaseDate        || null,
+    warranty_until:       p.warrantyUntil       || null,
+    maint_interval_hours: p.maintIntervalHours  || null,
+    last_maint_hours:     parseInt(p.lastMaintHours) || 0,
+    maintenances:         Array.isArray(p.maintenances) ? p.maintenances : [],
+    notes:                p.notes               || null,
+  };
+}
+
 // ============================================================
-// MIGRAÇÃO — importar dados locais do 3DZAAP.html para Supabase
+// SQL — Tabela printers (Supabase)
+// Executar no Supabase SQL Editor:
 // ============================================================
+/*
+CREATE TABLE printers (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id           UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  brand                TEXT NOT NULL,
+  model                TEXT NOT NULL,
+  printer_type         TEXT NOT NULL DEFAULT 'fdm',   -- 'fdm' | 'resina'
+  status               TEXT NOT NULL DEFAULT 'operacional', -- 'operacional' | 'manutencao' | 'inativa'
+  price                DECIMAL(10,2),
+  life_hours           INTEGER DEFAULT 5000,
+  hours_used           INTEGER DEFAULT 0,
+  purchase_date        DATE,
+  warranty_until       DATE,
+  maint_interval_hours INTEGER,
+  last_maint_hours     INTEGER DEFAULT 0,
+  maintenances         JSONB DEFAULT '[]',
+  notes                TEXT,
+  created_at           TIMESTAMPTZ DEFAULT NOW(),
+  updated_at           TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE printers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Company members can manage printers"
+  ON printers FOR ALL
+  USING (
+    company_id IN (
+      SELECT company_id FROM memberships WHERE user_id = auth.uid()
+      UNION
+      SELECT id FROM companies WHERE owner_id = auth.uid()
+    )
+  );
+
+CREATE INDEX idx_printers_company_id ON printers(company_id);
+*/
+
 const Migration = {
 
   async importFromLocalStorage() {
