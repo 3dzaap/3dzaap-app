@@ -204,22 +204,40 @@ function initThemeToggle(){
 }
 .printer-alert-chip.warn {
   background: rgba(245,158,11,.12);
-  color: #b45309;
+  color: var(--chip-warn-text, #b45309);
   border: 1px solid rgba(245,158,11,.25);
 }
 .printer-alert-chip.ok {
   background: rgba(34,197,94,.1);
-  color: #15803d;
+  color: var(--chip-ok-text, #15803d);
   border: 1px solid rgba(34,197,94,.2);
 }
 
 /* Status badge variants */
-.bs-operacional { background: rgba(34,197,94,.12); color: #16a34a; border-color: rgba(34,197,94,.3); }
+.bs-operacional { background: rgba(34,197,94,.12); color: var(--bs-op-text, #16a34a); border-color: rgba(34,197,94,.3); }
 .bs-operacional .badge-dot { background: #22c55e; }
-.bs-manutencao  { background: rgba(245,158,11,.12); color: #b45309; border-color: rgba(245,158,11,.3); }
+.bs-manutencao  { background: rgba(245,158,11,.12); color: var(--bs-maint-text, #b45309); border-color: rgba(245,158,11,.3); }
 .bs-manutencao  .badge-dot { background: #f59e0b; }
-.bs-inativa     { background: rgba(148,163,184,.12); color: #64748b; border-color: rgba(148,163,184,.3); }
+.bs-inativa     { background: rgba(148,163,184,.12); color: var(--bs-inact-text, #64748b); border-color: rgba(148,163,184,.3); }
 .bs-inativa     .badge-dot { background: #94a3b8; }
+
+/* Dark mode overrides for hardcoded semantic colors */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --chip-warn-text: #fbbf24;
+    --chip-ok-text:   #4ade80;
+    --bs-op-text:     #4ade80;
+    --bs-maint-text:  #fbbf24;
+    --bs-inact-text:  #94a3b8;
+  }
+}
+:root[data-theme="dark"] {
+  --chip-warn-text: #fbbf24;
+  --chip-ok-text:   #4ade80;
+  --bs-op-text:     #4ade80;
+  --bs-maint-text:  #fbbf24;
+  --bs-inact-text:  #94a3b8;
+}
 
 /* ── Maintenance history section ────────────────────────── */
 .maint-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
@@ -483,6 +501,14 @@ function initThemeToggle(){
       <!-- Campo oculto que agrega o modelo final -->
       <input type="hidden" id="pModel">
 
+      <div class="form-row full">
+        <div class="form-group">
+          <label class="form-label">Nome personalizado <span>(opcional)</span></label>
+          <input type="text" id="pCustomName" class="form-input" placeholder="Ex: Bambu da Sala, Resina Pequena, Ender da Garagem…">
+          <span class="form-hint">Se preenchido, substitui a exibição do modelo em toda a aplicação. Útil quando tens várias impressoras do mesmo modelo.</span>
+        </div>
+      </div>
+
       <div class="form-section-divider" style="margin-top:18px">🎨 Sistema Multi-Material</div>
       <div class="form-row">
         <div class="form-group">
@@ -728,8 +754,9 @@ function renderPrinters() {
     <div class="printer-card status-${p.status}" onclick="openDetailModal('${p.id}')">
       <div class="printer-card-header">
         <div class="printer-card-title">
-          <div class="printer-brand">${escH(p.brand)}</div>
-          <div class="printer-model">${escH(p.model)}</div>
+          <div class="printer-brand">${escH(p.brand)}${p.customName ? ` <span style="color:var(--blue);font-weight:800">· ${escH(p.customName)}</span>` : ''}</div>
+          <div class="printer-model">${escH(p.customName || p.model)}</div>
+          ${p.customName ? `<div style="font-size:.68rem;color:var(--muted);margin-top:1px">${escH(p.model)}</div>` : ''}
         </div>
         <span class="printer-type-badge pt-${p.printerType}">${TYPE_LABELS[p.printerType]||p.printerType}</span>
       </div>
@@ -1107,6 +1134,7 @@ function openPrinterModal(id = null) {
     }
 
     document.getElementById('pStatus').value             = p.status || 'operacional';
+    document.getElementById('pCustomName').value         = p.customName || '';
     document.getElementById('pPrice').value              = p.price || '';
     document.getElementById('pLifeHours').value          = p.lifeHours || '';
     document.getElementById('pPurchaseDate').value       = p.purchaseDate || '';
@@ -1127,6 +1155,7 @@ function openPrinterModal(id = null) {
     document.getElementById('pBrand').value              = '';
     document.getElementById('pType').value               = 'fdm';
     document.getElementById('pStatus').value             = 'operacional';
+    document.getElementById('pCustomName').value         = '';
     document.getElementById('pPrice').value              = '';
     document.getElementById('pLifeHours').value          = '5000';
     document.getElementById('pPurchaseDate').value       = '';
@@ -1166,6 +1195,7 @@ async function savePrinter() {
   const data = {
     brand:              brandSel === 'Outro' ? 'Outro' : brandSel,
     model,
+    customName:         document.getElementById('pCustomName').value.trim() || null,
     printerType:        document.getElementById('pType').value,
     status:             document.getElementById('pStatus').value,
     price:              parseFloat(document.getElementById('pPrice').value) || null,
@@ -1204,7 +1234,7 @@ function openDetailModal(id) {
   const p = printers.find(x => x.id === id);
   if (!p) return;
 
-  document.getElementById('detailModalTitle').textContent = `🖨️ ${p.brand} ${p.model}`;
+  document.getElementById('detailModalTitle').textContent = `🖨️ ${p.customName ? p.customName + ' (' + p.brand + ' ' + p.model + ')' : p.brand + ' ' + p.model}`;
 
   // Summary fields
   const pct = _hoursPercent(p);
@@ -1214,6 +1244,7 @@ function openDetailModal(id) {
     : '';
 
   document.getElementById('detailSummary').innerHTML = `
+    ${p.customName ? `<div style="grid-column:1/-1"><div class="detail-field-lbl">Nome personalizado</div><div class="detail-field-val" style="color:var(--blue)">${escH(p.customName)}</div></div>` : ''}
     <div><div class="detail-field-lbl">Tipo</div><div class="detail-field-val">${TYPE_LABELS[p.printerType]||p.printerType}</div></div>
     <div><div class="detail-field-lbl">Estado</div><div class="detail-field-val"><span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
     <div><div class="detail-field-lbl">Preço de compra</div><div class="detail-field-val">${p.price ? fmtEur(p.price) : '—'}</div></div>

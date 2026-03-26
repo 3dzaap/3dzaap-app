@@ -29,7 +29,47 @@ function initThemeToggle(){
 <script src="supabase.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
-/* ── Estilos específicos desta página ─────────────────────── */
+/* ── PACK BADGE ─────────────────────────────────────────────── */
+.pack-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;
+  font-size:.68rem;font-weight:700;letter-spacing:.3px;
+  background:rgba(168,85,247,.10);
+  color:#9333ea;
+  border:1.5px solid rgba(168,85,247,.3);
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+  user-select:none;
+}
+.pack-badge:hover {
+  background:rgba(168,85,247,.2);
+  border-color:rgba(168,85,247,.55);
+}
+
+/* ── PACK COLOR ROW (inside pack modal) ─────────────────────── */
+.pk-color-row {
+  display:grid;grid-template-columns:36px 1fr 2fr 110px 32px;
+  gap:8px;align-items:center;
+  background:var(--bg-input,rgba(255,255,255,.45));
+  border:1px solid var(--border);
+  border-radius:10px;padding:8px 10px;
+}
+.pk-color-swatch {
+  width:32px;height:32px;border-radius:8px;
+  border:1.5px solid rgba(0,0,0,.12);
+  cursor:pointer;flex-shrink:0;
+}
+.pk-color-name { font-size:.85rem; }
+.pk-cost-input { font-family:var(--f-mono,monospace);font-size:.85rem; }
+.pk-remove-btn {
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:6px;cursor:pointer;color:var(--danger,#ef4444);font-size:.9rem;
+  transition:all .2s;flex-shrink:0;
+}
+.pk-remove-btn:hover { background:rgba(239,68,68,.2); }
+
+/* ── PACK MODAL mat-btn override (smaller) ──────────────────── */
+#packBox .mat-btn { padding:7px 16px;font-size:.82rem; }
 /* ── MATERIAL CLASS TOGGLE ──────────── */
 .material-toggle{
   display:flex;gap:4px;
@@ -311,7 +351,6 @@ function initThemeToggle(){
       <div class="nav-section">
         <div class="nav-section-label">Gestão</div>
         <a class="nav-item active" href="materials.html"><span class="nav-icon">🎨</span> Materiais</a>
-        <a class="nav-item" href="printers.html"><span class="nav-icon">🖨️</span> Impressoras</a>
         <a class="nav-item" href="orders.html"><span class="nav-icon">📦</span> Pedidos<span class="nav-lock" id="ordersLock" style="display:none">Pro+</span></a>
         <a class="nav-item" href="financial.html"><span class="nav-icon">💰</span> Financeiro<span class="nav-lock" id="financialLock" style="display:none">Business</span></a>
         <a class="nav-item" href="backoffice.html"><span class="nav-icon">🗄️</span> BackOffice</a>
@@ -358,6 +397,7 @@ function initThemeToggle(){
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
+          <button class="btn btn-secondary" onclick="openPackModal()">📦 Pack</button>
           <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Novo material</button>
         </div>
       </div>
@@ -451,6 +491,113 @@ function initThemeToggle(){
       </div>
     </div>
   </div>
+</div>
+
+<!-- ══ PACK MODAL ═════════════════════════ -->
+<div class="modal-overlay" id="packOverlay" onclick="if(event.target===this)closePackModal()">
+  <div class="modal" id="packBox" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title">📦 Adicionar Pack de Materiais</div>
+      <button class="modal-close" onclick="closePackModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Identificação do pack -->
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div>Identificação do Pack</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome / Label do Pack <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="pkName" class="form-input" placeholder="Ex: Bambu Multicolor 10-pack, Prusa Bundle Q1…">
+          <div class="form-hint">Este identificador ficará associado a cada cor do pack</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço total do pack <span style="color:var(--danger)">*</span></label>
+          <input type="number" id="pkPrice" class="form-input mono" value="0" min="0" step="0.01" oninput="pkRecalcCosts()">
+        </div>
+      </div>
+
+      <!-- Tipo de material -->
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div>Material (igual para todas as cores)</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Classe</label>
+          <div class="material-toggle" style="margin-bottom:0">
+            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')">🧵 Filamento</button>
+            <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')">🧪 Resina</button>
+          </div>
+        </div>
+      </div>
+      <div id="pkFdmFields">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select id="pkType" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Variação</label>
+            <select id="pkVariation" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tamanho da bobina</label>
+            <select id="pkRollSize" class="form-select"></select>
+          </div>
+        </div>
+      </div>
+      <div id="pkResinFields" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select id="pkRType" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Variação</label>
+            <select id="pkRVariation" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tamanho do frasco</label>
+            <select id="pkBottleSize" class="form-select"></select>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Marca(s)</label>
+          <div class="brand-tag-input-wrapper">
+            <div class="brand-tag-select-row">
+              <select id="pkBrandSelect" class="form-select" onchange="pkAddBrand()">
+                <option value="">Adicionar marca...</option>
+              </select>
+            </div>
+            <div class="brand-tags" id="pkBrandTags">
+              <span class="brand-tags-empty" id="pkBrandTagsEmpty">Nenhuma marca selecionada</span>
+            </div>
+          </div>
+          <input type="hidden" id="pkBrand">
+        </div>
+      </div>
+
+      <!-- Lista de cores -->
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green">🎨</div>Cores do Pack</div>
+      <div id="pkColorList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()">＋ Adicionar cor</button>
+      <div id="pkCostWarning" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(245,148,58,0.1);border:1px solid rgba(245,148,58,0.35);border-radius:8px;font-size:.8rem;color:var(--orange)"></div>
+
+    </div>
+    <div class="modal-footer">
+      <div style="font-size:.8rem;color:var(--muted)" id="pkSummary"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closePackModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="savePack()">💾 Guardar Pack</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PACK SIBLINGS POPOVER ══════════════ -->
+<div id="packPopover" style="display:none;position:fixed;z-index:9999;background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:220px;max-width:300px">
+  <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px" id="packPopoverTitle"></div>
+  <div id="packPopoverList" style="display:flex;flex-direction:column;gap:6px"></div>
+  <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;font-size:.72rem;color:var(--muted)" id="packPopoverMeta"></div>
 </div>
 
 <!-- ══ ADD/EDIT MODAL ════════════════════ -->
@@ -1029,6 +1176,7 @@ function renderTable() {
       <th onclick="sortBy('newRolls')" id="th-newRolls">Novas <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
       <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/kg</span> <span class="th-sort">↕</span></th>
+      <th>Pack</th>
       <th>Estado</th><th></th></tr>`;
   } else {
     thead.innerHTML = `<tr>
@@ -1041,6 +1189,7 @@ function renderTable() {
       <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
       <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/L</span> <span class="th-sort">↕</span></th>
       <th>Validade</th>
+      <th>Pack</th>
       <th>Estado</th><th></th></tr>`;
   }
 
@@ -1072,6 +1221,7 @@ function renderTable() {
       </div></td>
       <td class="cell-mono">${price}</td>
       ${expiryCol}
+      <td>${m.packId ? `<span class="pack-badge" onclick="showPackSiblings(event,'${escH(m.packId)}')" title="${escH(m.packId.replace(/-\d{10,}$/, ''))}">🏷️ ${escH(m.packId.replace(/-\d{10,}$/, ''))}</span>` : '<span style="color:var(--muted);font-size:.75rem">—</span>'}</td>
       <td>${renderBadge(m)}</td>
       <td class="cell-actions">
         <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar">✏️</button>
@@ -1522,6 +1672,296 @@ function removeBrandTag(type, brand) {
   const brands = getBrandsArray(type).filter(b => b !== brand);
   setBrandsArray(type, brands);
   renderBrandTags(type, brands);
+}
+// ══════════════════════════════════════════════════════════════
+//  PACK MODAL
+// ══════════════════════════════════════════════════════════════
+
+let _pkClass = 'fdm';
+let _pkColorRows = []; // [{hex, name, cost}]
+
+function openPackModal() {
+  _pkClass = currentView || 'fdm';
+  _pkColorRows = [];
+  // Reset fields
+  document.getElementById('pkName').value = '';
+  document.getElementById('pkPrice').value = '';
+  document.getElementById('pkBrand').value = '';
+  setBrandsArray('pk', []);
+  renderBrandTags('pk', []);
+  pkSetClass(_pkClass);
+  // Populate selects if not yet done
+  _pkEnsureSelects();
+  // Add 2 starter rows
+  pkAddColorRow();
+  pkAddColorRow();
+  pkRenderRows();
+  pkUpdateSummary();
+  document.getElementById('packOverlay').classList.add('open');
+}
+
+function closePackModal() {
+  document.getElementById('packOverlay').classList.remove('open');
+}
+
+function pkSetClass(cls) {
+  _pkClass = cls;
+  document.getElementById('pkToggleFDM').classList.toggle('active', cls === 'fdm');
+  document.getElementById('pkToggleResin').classList.toggle('active', cls === 'resin');
+  document.getElementById('pkFdmFields').style.display  = cls === 'fdm' ? '' : 'none';
+  document.getElementById('pkResinFields').style.display = cls === 'resin' ? '' : 'none';
+  // Swap brand select options
+  const sel = document.getElementById('pkBrandSelect');
+  sel.innerHTML = '<option value="">Adicionar marca...</option>';
+  const brands = cls === 'fdm' ? FDM_BRANDS : RESIN_BRANDS;
+  brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+}
+
+function _pkEnsureSelects() {
+  const fill = (id, arr) => {
+    const el = document.getElementById(id);
+    if (!el || el.options.length > 1) return;
+    arr.forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+  };
+  fill('pkType',       FDM_TYPES);
+  fill('pkVariation',  FDM_VARIATIONS);
+  fill('pkRollSize',   FDM_ROLL_SIZES);
+  fill('pkRType',      RESIN_TYPES);
+  fill('pkRVariation', RESIN_VARIATIONS);
+  fill('pkBottleSize', RESIN_BOTTLE_SIZES);
+  // brand select
+  const sel = document.getElementById('pkBrandSelect');
+  if (sel.options.length <= 1) {
+    const brands = _pkClass === 'fdm' ? FDM_BRANDS : RESIN_BRANDS;
+    brands.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; sel.appendChild(o); });
+  }
+}
+
+// Brand tag helpers for pack modal (reuse existing pattern with 'pk' prefix)
+function pkAddBrand() {
+  const sel = document.getElementById('pkBrandSelect');
+  const chosen = sel.value;
+  if (!chosen) return;
+  const brands = getBrandsArray('pk');
+  if (!brands.includes(chosen)) {
+    brands.push(chosen);
+    setBrandsArray('pk', brands);
+    renderBrandTags('pk', brands);
+  }
+  sel.value = '';
+}
+
+// Override getBrandsArray/setBrandsArray/renderBrandTags to support 'pk' type
+const _origGetBrandsArray = getBrandsArray;
+const _origSetBrandsArray = setBrandsArray;
+const _origRenderBrandTags = renderBrandTags;
+
+function getBrandsArray(type) {
+  if (type === 'pk') {
+    const v = document.getElementById('pkBrand').value;
+    return v ? v.split('||') : [];
+  }
+  return _origGetBrandsArray(type);
+}
+function setBrandsArray(type, arr) {
+  if (type === 'pk') {
+    document.getElementById('pkBrand').value = arr.join('||');
+    return;
+  }
+  _origSetBrandsArray(type, arr);
+}
+function renderBrandTags(type, arr) {
+  if (type === 'pk') {
+    const container = document.getElementById('pkBrandTags');
+    const empty     = document.getElementById('pkBrandTagsEmpty');
+    [...container.querySelectorAll('.brand-tag')].forEach(t => t.remove());
+    if (!arr.length) { empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    arr.forEach(brand => {
+      const tag = document.createElement('span');
+      tag.className = 'brand-tag';
+      tag.innerHTML = `${escH(brand)}<button type="button" onclick="removeBrandTag('pk','${brand.replace(/'/g,"\\'")}')">×</button>`;
+      container.appendChild(tag);
+    });
+    return;
+  }
+  _origRenderBrandTags(type, arr);
+}
+
+// ── Color rows ──────────────────────────────────────────────
+function pkAddColorRow() {
+  _pkColorRows.push({ hex: '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'), name: '', cost: 0 });
+  pkRenderRows();
+  pkRecalcCosts();
+}
+
+function pkRemoveColorRow(idx) {
+  _pkColorRows.splice(idx, 1);
+  pkRenderRows();
+  pkRecalcCosts();
+}
+
+function pkRenderRows() {
+  const container = document.getElementById('pkColorList');
+  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  container.innerHTML = _pkColorRows.map((r, i) => `
+    <div class="pk-color-row" id="pk-row-${i}">
+      <input type="color" class="pk-color-swatch" value="${r.hex}"
+        oninput="pkUpdateRowHex(${i}, this.value)">
+      <input type="text" class="form-input pk-color-name" placeholder="Nome da cor"
+        value="${escH(r.name)}" oninput="pkUpdateRowName(${i}, this.value)">
+      <div style="font-size:.72rem;color:var(--muted);padding:0 4px">${escH(r.name||'Cor '+(i+1))}</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:.8rem;color:var(--muted)">${sym}</span>
+        <input type="number" class="form-input pk-cost-input" value="${r.cost.toFixed(2)}"
+          min="0" step="0.01" oninput="pkUpdateRowCost(${i}, this.value)" style="width:80px">
+      </div>
+      <button class="pk-remove-btn" onclick="pkRemoveColorRow(${i})" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function pkUpdateRowHex(i, val) { _pkColorRows[i].hex = val; }
+function pkUpdateRowName(i, val) { _pkColorRows[i].name = val; pkRenderRows(); }
+function pkUpdateRowCost(i, val) {
+  _pkColorRows[i].cost = parseFloat(val) || 0;
+  pkCheckCostBalance();
+  pkUpdateSummary();
+}
+
+function pkRecalcCosts() {
+  const total = parseFloat(document.getElementById('pkPrice').value) || 0;
+  const n = _pkColorRows.length;
+  if (!n) return;
+  const perItem = total / n;
+  _pkColorRows.forEach((r, i) => { r.cost = parseFloat(perItem.toFixed(2)); });
+  pkRenderRows();
+  pkCheckCostBalance();
+  pkUpdateSummary();
+}
+
+function pkCheckCostBalance() {
+  const total = parseFloat(document.getElementById('pkPrice').value) || 0;
+  const sumCosts = _pkColorRows.reduce((s, r) => s + (r.cost||0), 0);
+  const warn = document.getElementById('pkCostWarning');
+  if (total > 0 && Math.abs(sumCosts - total) > 0.02) {
+    warn.style.display = '';
+    const sym = ((_cfg&&_cfg._currSymbol)||'€');
+    warn.textContent = `⚠️ A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function pkUpdateSummary() {
+  const n = _pkColorRows.length;
+  const total = parseFloat(document.getElementById('pkPrice').value) || 0;
+  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  document.getElementById('pkSummary').textContent =
+    `${n} cor${n !== 1 ? 'es' : ''} · Total: ${sym}${total.toFixed(2)}` +
+    (n > 0 ? ` · ${sym}${(total/n).toFixed(2)}/cor` : '');
+}
+
+// ── Save ────────────────────────────────────────────────────
+async function savePack() {
+  const packName = document.getElementById('pkName').value.trim();
+  if (!packName) { showToast('⚠️ Dá um nome ao pack', 'err'); return; }
+
+  const totalPrice = parseFloat(document.getElementById('pkPrice').value) || 0;
+  const brands     = getBrandsArray('pk');
+  const isFDM      = _pkClass === 'fdm';
+
+  const type      = isFDM ? document.getElementById('pkType').value
+                          : document.getElementById('pkRType').value;
+  const variation = isFDM ? document.getElementById('pkVariation').value
+                          : document.getElementById('pkRVariation').value;
+  const rollSize  = isFDM ? document.getElementById('pkRollSize').value
+                          : document.getElementById('pkBottleSize').value;
+
+  if (!type)           { showToast('⚠️ Seleciona o tipo de material', 'err'); return; }
+  if (!brands.length)  { showToast('⚠️ Adiciona pelo menos uma marca', 'err'); return; }
+
+  const validRows = _pkColorRows.filter(r => r.name.trim());
+  if (!validRows.length) { showToast('⚠️ Adiciona pelo menos uma cor com nome', 'err'); return; }
+
+  // Generate pack ID using the name + timestamp for uniqueness + readability
+  const packId = `${packName}-${Date.now()}`;
+
+  const btn = document.querySelector('#packBox .btn-primary');
+  btn.disabled = true;
+  btn.textContent = '⏳ A guardar…';
+
+  try {
+    for (const row of validRows) {
+      const record = {
+        materialClass:  _pkClass,
+        material_class: _pkClass,
+        colorHex:   row.hex,
+        colorName:  row.name.trim(),
+        type,
+        variation,
+        brand:      brands,
+        rollSize,
+        total:      1,
+        inUse:      0,
+        newRolls:   1,
+        alerta:     0,
+        price:      parseFloat((row.cost).toFixed(2)),
+        notes:      '',
+        packId,
+      };
+      const saved = await DB.saveFilament(record);
+      allMaterials.unshift(saved);
+    }
+    updateToggleCounts();
+    applyFilters();
+    closePackModal();
+    showToast(`✅ Pack "${packName}" adicionado — ${validRows.length} cor${validRows.length!==1?'es':''} registadas!`, 'ok');
+  } catch(e) {
+    showToast('Erro ao guardar pack: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar Pack';
+  }
+}
+
+// ── Pack siblings popover ───────────────────────────────────
+let _popoverCloseHandler = null;
+
+function showPackSiblings(event, packId) {
+  event.stopPropagation();
+  const popover = document.getElementById('packPopover');
+  const siblings = allMaterials.filter(m => m.packId === packId);
+
+  const cleanName = packId.replace(/-\d{10,}$/, '');
+  document.getElementById('packPopoverTitle').textContent = `🏷️ ${cleanName}`;
+
+  document.getElementById('packPopoverList').innerHTML = siblings.map(m => `
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:14px;height:14px;border-radius:4px;background:${escH(m.colorHex||'#ccc')};flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></div>
+      <span style="font-size:.82rem;font-weight:600;flex:1">${escH(m.colorName||'—')}</span>
+      <span style="font-size:.75rem;color:var(--muted);font-family:var(--f-mono,monospace)">${m.price ? fmtEur(m.price) : '—'}</span>
+    </div>
+  `).join('');
+
+  const totalCost = siblings.reduce((s,m) => s+(m.price||0), 0);
+  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  document.getElementById('packPopoverMeta').textContent =
+    `${siblings.length} cor${siblings.length!==1?'es':''} · Total: ${sym}${totalCost.toFixed(2)}`;
+
+  // Position near click
+  const rect = event.target.getBoundingClientRect();
+  const pw = 280;
+  let left = rect.left;
+  if (left + pw > window.innerWidth - 16) left = window.innerWidth - pw - 16;
+  popover.style.left = left + 'px';
+  popover.style.top  = (rect.bottom + 8) + 'px';
+  popover.style.display = '';
+
+  // Close on next click anywhere
+  if (_popoverCloseHandler) document.removeEventListener('click', _popoverCloseHandler);
+  _popoverCloseHandler = () => { popover.style.display = 'none'; };
+  setTimeout(() => document.addEventListener('click', _popoverCloseHandler, { once: true }), 10);
 }
 
 </script>

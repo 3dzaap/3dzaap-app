@@ -616,6 +616,7 @@ function _mapPrinterFromDB(row) {
     id:                 row.id,
     brand:              row.brand || '',
     model:              row.model || '',
+    customName:         row.custom_name || null,
     printerType:        row.printer_type || 'fdm',
     status:             row.status || 'operacional',
     price:              parseFloat(row.price || 0) || null,
@@ -626,6 +627,8 @@ function _mapPrinterFromDB(row) {
     maintIntervalHours: parseInt(row.maint_interval_hours || 0) || null,
     lastMaintHours:     parseInt(row.last_maint_hours || 0),
     maintenances:       Array.isArray(row.maintenances) ? row.maintenances : [],
+    mmsSystem:          row.mms_system || null,
+    mmsQty:             parseInt(row.mms_qty || 1),
     notes:              row.notes || null,
     createdAt:          row.created_at,
     updatedAt:          row.updated_at,
@@ -636,6 +639,7 @@ function _mapPrinterToDB(p) {
   return {
     brand:                p.brand,
     model:                p.model,
+    custom_name:          p.customName          || null,
     printer_type:         p.printerType         || 'fdm',
     status:               p.status              || 'operacional',
     price:                p.price               || null,
@@ -646,6 +650,8 @@ function _mapPrinterToDB(p) {
     maint_interval_hours: p.maintIntervalHours  || null,
     last_maint_hours:     parseInt(p.lastMaintHours) || 0,
     maintenances:         Array.isArray(p.maintenances) ? p.maintenances : [],
+    mms_system:           p.mmsSystem           || null,
+    mms_qty:              p.mmsQty              || null,
     notes:                p.notes               || null,
   };
 }
