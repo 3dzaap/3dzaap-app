@@ -580,14 +580,13 @@ async function loadUserData() {
     ? session.fname + ' ' + session.lname
     : session.fname || session.lname
     || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  Sidebar.setSession(session);
-  return session;
-}
   if (document.getElementById('financialLock')) {
     const plan = session.plan || 'trial';
     if (!['trial','business'].includes(plan))
       document.getElementById('financialLock').style.display = '';
   }
+  Sidebar.setSession(session);
+  return session;
 }
 
 // ── LOAD DATA ──────────────────────────
