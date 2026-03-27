@@ -81,9 +81,9 @@
   .item-row{grid-template-columns:1fr 60px 70px 80px 32px;gap:5px}
   .page-header{flex-direction:column;gap:8px;align-items:flex-start}
   .page-actions{width:100%;justify-content:flex-end}
-  .filter-bar{flex-wrap:wrap;gap:8px}
-  .search-input{width:100%}
-  .table-card .table-wrap{display:none}
+  
+  
+  .glass-table-card .gtc-wrap{display:none}
   .mob-card-list{display:flex}
 }
 
@@ -216,38 +216,39 @@
         <div class="stat-mini"><div class="stat-mini-icon si-orange">⏳</div><div><div class="stat-mini-val" id="statPendingVal">—</div><div class="stat-mini-sub" id="statPendingCount">0 pedidos</div><div class="stat-mini-lbl">Valor pendente</div></div></div>
         <div class="stat-mini"><div class="stat-mini-icon si-green">✅</div><div><div class="stat-mini-val" id="statPaidVal">—</div><div class="stat-mini-sub" id="statPaidCount">0 pedidos</div><div class="stat-mini-lbl">Valor recebido</div></div></div>
       </div>
-      <!-- Filters -->
-      <div class="filters-bar">
-        <div class="filter-search-wrap">
-          <span class="filter-search-icon">🔍</span>
-          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar por nº, cliente, descrição…" oninput="renderOrders()">
+      <!-- Glass Table Card -->
+      <div class="glass-table-card">
+        <div class="gtc-header">
+          <div class="gtc-title">📦 Pedidos</div>
+          <div class="gtc-controls">
+            <div class="gtc-search-wrap">
+              <span class="gtc-search-icon">🔍</span>
+              <input type="text" id="filterSearch" class="gtc-search" placeholder="Pesquisar por nº, cliente, descrição…" oninput="renderOrders()">
+            </div>
+            <select id="filterStatus" class="filter-select" onchange="renderOrders()">
+              <option value="">Todos os estados</option>
+              <option value="orcamento">Orçamento</option>
+              <option value="modelagem">Modelagem</option>
+              <option value="validacao">Validação</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="printing">Printing</option>
+              <option value="done">Concluído</option>
+            </select>
+            <select id="filterPayment" class="filter-select" onchange="renderOrders()">
+              <option value="">Todos os pagamentos</option>
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+            </select>
+            <span class="gtc-count" id="filterCount">0 pedidos</span>
+          </div>
         </div>
-        <div class="filter-sep"></div>
-        <select id="filterStatus" class="filter-select" onchange="renderOrders()">
-          <option value="">Todos os estados</option>
-          <option value="orcamento">Orçamento</option>
-          <option value="modelagem">Modelagem</option>
-          <option value="validacao">Validação</option>
-          <option value="aprovado">Aprovado</option>
-          <option value="printing">Printing</option>
-          <option value="done">Concluído</option>
-        </select>
-        <select id="filterPayment" class="filter-select" onchange="renderOrders()">
-          <option value="">Todos os pagamentos</option>
-          <option value="pendente">Pendente</option>
-          <option value="pago">Pago</option>
-        </select>
-        <span class="filter-count" id="filterCount">0 pedidos</span>
-      </div>
-      <!-- Table -->
-      <div class="table-card">
-        <div class="table-wrap">
-          <div class="table-empty" id="tableEmpty">
-            <div class="table-empty-icon">📦</div>
+        <div class="gtc-wrap">
+          <div class="gtc-empty" id="tableEmpty">
+            <div class="gtc-empty-icon">📦</div>
             <h3>Sem pedidos ainda</h3>
             <p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>
           </div>
-          <table class="ord-table" id="ordTable" style="display:none">
+          <table class="gtc-table" id="ordTable" style="display:none">
             <thead>
               <tr>
                 <th>Nº</th><th>Cliente</th><th>Estado</th><th>Pagamento</th>
@@ -536,8 +537,8 @@ function renderOrders(keepExpandId) {
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = orders.length
-      ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum pedido corresponde aos filtros actuais.</p>`
-      : `<div class="table-empty-icon">📦</div><h3>Sem pedidos ainda</h3><p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>`;
+      ? `<div class="gtc-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum pedido corresponde aos filtros actuais.</p>`
+      : `<div class="gtc-empty-icon">📦</div><h3>Sem pedidos ainda</h3><p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>`;
     tableEl.style.display = 'none';
     if (mobList) mobList.innerHTML = '';
     return;
@@ -1380,9 +1381,9 @@ function printReceiptNow() {
   .item-row{grid-template-columns:1fr 60px 70px 80px 32px;gap:5px}
   .page-header{flex-direction:column;gap:8px;align-items:flex-start}
   .page-actions{width:100%;justify-content:flex-end}
-  .filter-bar{flex-wrap:wrap;gap:8px}
-  .search-input{width:100%}
-  .table-card .table-wrap{display:none}
+  
+  
+  .glass-table-card .gtc-wrap{display:none}
   .mob-card-list{display:flex}
 }
 

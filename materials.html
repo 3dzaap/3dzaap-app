@@ -130,27 +130,7 @@
 
 .tip-more{font-size:.73rem;color:var(--subtle);text-align:center;padding-top:5px;border-top:1px solid var(--border);margin-top:4px}
 
-.fil-table{width:100%;border-collapse:collapse;min-width:700px}
 
-.fil-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border)}
-
-.fil-table th{padding:11px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
-
-.fil-table th:hover{color:var(--blue)}
-
-.fil-table th.sorted{color:var(--blue)}
-
-.th-sort{font-size:.65rem;margin-left:3px;opacity:.5}
-
-.fil-table th.sorted .th-sort{opacity:1}
-
-.fil-table tbody tr{border-bottom:1px solid var(--bg-table-row-border);transition:background .15s}
-
-.fil-table tbody tr:last-child{border-bottom:none}
-
-.fil-table tbody tr:hover{background:rgba(59,143,212,.05)}
-
-.fil-table td{padding:11px 16px;font-size:.84rem;color:var(--dark);vertical-align:middle}
 
 .cell-color{display:flex;align-items:center;gap:10px}
 
@@ -277,12 +257,12 @@
   .form-row,.form-row.three{grid-template-columns:1fr}
   .page-header{flex-direction:column;align-items:flex-start;gap:10px}
   .page-actions{width:100%;justify-content:flex-end}
-  .filter-bar{flex-wrap:wrap;gap:8px}
-  .search-input{width:100%}
+  
+  
   .modal{margin:8px;border-radius:12px}
   .modal-header{padding:16px 18px 14px}.modal-body{padding:16px 18px}.modal-footer{padding:12px 18px 16px}
   .material-toggle{width:100%}
-  .table-card .table-wrap{display:none}
+  .glass-table-card .gtc-wrap{display:none}
   .mob-fil-list{display:flex}
 }
 
@@ -412,37 +392,37 @@
         </div>
       </div>
 
-      <!-- Filters -->
-      <div class="filters-bar">
-        <div class="filter-search-wrap">
-          <span class="filter-search-icon">🔍</span>
-          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar…" oninput="applyFilters()">
-        </div>
-        <div class="filter-sep"></div>
-        <select id="filterType" class="filter-select" onchange="applyFilters()">
-          <option value="">Todos os tipos</option>
-        </select>
-        <select id="filterBrand" class="filter-select" onchange="applyFilters()">
-          <option value="">Todas as marcas</option>
-        </select>
-        <select id="filterStatus" class="filter-select" onchange="applyFilters()">
-          <option value="">Todos os estados</option>
-          <option value="green">Em stock</option>
-          <option value="orange">Stock baixo</option>
-          <option value="red">Esgotado</option>
-        </select>
-        <span class="filter-count" id="filterCount">0 itens</span>
-      </div>
-
-      <!-- Table -->
-      <div class="table-card">
-        <div class="table-wrap">
-          <div class="table-empty" id="tableEmpty" style="display:flex">
-            <div class="table-empty-icon">🎨</div>
-            <h3>Sem materiais ainda</h3>
-            <p>Adiciona o teu primeiro material clicando em <strong>＋ Novo material</strong> acima.</p>
+      <!-- Glass Table Card -->
+      <div class="glass-table-card">
+        <div class="gtc-header">
+          <div class="gtc-title" id="tableCardTitle">🧵 Filamentos</div>
+          <div class="gtc-controls">
+            <div class="gtc-search-wrap">
+              <span class="gtc-search-icon">🔍</span>
+              <input type="text" id="filterSearch" class="gtc-search" placeholder="Pesquisar…" oninput="applyFilters()">
+            </div>
+            <select id="filterType" class="filter-select" onchange="applyFilters()">
+              <option value="">Todos os tipos</option>
+            </select>
+            <select id="filterBrand" class="filter-select" onchange="applyFilters()">
+              <option value="">Todas as marcas</option>
+            </select>
+            <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+              <option value="">Todos os estados</option>
+              <option value="green">Em stock</option>
+              <option value="orange">Stock baixo</option>
+              <option value="red">Esgotado</option>
+            </select>
+            <span class="gtc-count" id="filterCount">0 itens</span>
           </div>
-          <table class="fil-table" id="filTable" style="display:none">
+        </div>
+        <div class="gtc-wrap">
+          <div class="gtc-empty" id="tableEmpty" style="display:flex">
+            <div class="gtc-empty-icon">🎨</div>
+            <h3>Sem materiais ainda</h3>
+            <p>Adiciona o teu primeiro material clicando em <strong>＋ Material</strong> acima.</p>
+          </div>
+          <table class="gtc-table" id="filTable" style="display:none">
             <thead id="tableHead"></thead>
             <tbody id="filTbody"></tbody>
           </table>
@@ -880,6 +860,10 @@ function setView(cls) {
   document.getElementById('statIcon').textContent     = isFDM ? '🎨' : '🧪';
   document.getElementById('statEmptyLbl').textContent = isFDM ? 'Esgotados' : 'Esgotadas';
 
+  // update card title
+  const cardTitle = document.getElementById('tableCardTitle');
+  if (cardTitle) cardTitle.textContent = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+
   // btn add — cor muda
   const btnNew = document.getElementById('btnNew');
   btnNew.textContent = isFDM ? '＋ Material' : '＋ Resina';
@@ -1083,8 +1067,8 @@ function renderTable() {
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = allMaterials.filter(m=>(m.materialClass||m.material_class||'fdm')===currentView).length
-      ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum material corresponde aos filtros.</p>`
-      : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3>Sem ${isFDM?'filamentos':'resinas'} ainda</h3><p>Clica em <strong>＋ ${isFDM?'Novo filamento':'Nova resina'}</strong> para adicionar.</p>`;
+      ? `<div class="gtc-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum material corresponde aos filtros.</p>`
+      : `<div class="gtc-empty-icon">${isFDM?'🧵':'🧪'}</div><h3>Sem ${isFDM?'filamentos':'resinas'} ainda</h3><p>Clica em <strong>＋ ${isFDM?'Novo filamento':'Nova resina'}</strong> para adicionar.</p>`;
     tableEl.style.display = 'none';
     const mfc = document.getElementById('mobFilList'); if (mfc) mfc.innerHTML = '';
     return;
