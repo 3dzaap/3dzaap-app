@@ -1194,7 +1194,8 @@ async function loadBroadcasts() {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    if (error || !data || !data.length) return;
+    if (error) return; // 403 / tabela inexistente / sem RLS — silent fail
+    if (!data || !data.length) return;
 
     // Filtrar pelo target (all, trial, past_due, pro, business)
     const relevant = data.filter(b => {
