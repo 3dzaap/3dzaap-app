@@ -387,6 +387,17 @@ const DB = {
     if (error) throw error;
   },
 
+  async saveAllPrinters(printersList) {
+    await _ensureCompany();
+    const { error: delErr } = await _sb.from('printers').delete().eq('company_id', _companyId);
+    if (delErr) throw delErr;
+    if (!printersList.length) return [];
+    const rows = printersList.map(p => ({ ..._mapPrinterToDB(p), company_id: _companyId }));
+    const { data, error } = await _sb.from('printers').insert(rows).select();
+    if (error) throw error;
+    return data.map(_mapPrinterFromDB);
+  },
+
   // ── ACTIVITY LOG ────────────────────────────────────────────
 
   async getLog() {

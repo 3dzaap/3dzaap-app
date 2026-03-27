@@ -14,17 +14,6 @@
   var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
 })();
-function toggleTheme(){
-  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('3dzaap_theme',next);
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=next==='dark'?'☀️':'🌙';
-}
-function initThemeToggle(){
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 3DZAAP data layer -->
@@ -47,7 +36,7 @@ function initThemeToggle(){
 .bo-card-body{padding:20px}
 
 /* STAT ROW (storage) */
-.storage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.storage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 
 .storage-item{background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--rm);padding:14px 16px;text-align:center}
 
@@ -142,6 +131,7 @@ function initThemeToggle(){
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
   
@@ -188,6 +178,12 @@ function initThemeToggle(){
               <div class="storage-lbl">Despesas</div>
               <div class="storage-size" id="statExpSize">0 KB</div>
             </div>
+            <div class="storage-item">
+              <div class="storage-icon">🖨️</div>
+              <div class="storage-count" id="statPrt">0</div>
+              <div class="storage-lbl">Impressoras</div>
+              <div class="storage-size" id="statPrtSize">0 KB</div>
+            </div>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-card);border-radius:var(--r);border:1.5px solid var(--border)">
             <div style="font-size:.80rem;font-weight:600;color:var(--muted)">Armazenamento total estimado</div>
@@ -204,7 +200,7 @@ function initThemeToggle(){
             <div class="action-row">
               <div class="action-info">
                 <div class="action-title">📦 Backup completo</div>
-                <div class="action-desc">Materiais + Pedidos + Despesas num único ficheiro CSV</div>
+                <div class="action-desc">Materiais + Pedidos + Despesas + Impressoras num único ficheiro CSV</div>
                 <div class="action-feedback" id="fbBackup"></div>
               </div>
               <div class="action-btns">
@@ -239,6 +235,16 @@ function initThemeToggle(){
               </div>
               <div class="action-btns">
                 <button class="btn btn-ghost btn-sm" onclick="exportExpenses()">⬇️ Exportar</button>
+              </div>
+            </div>
+            <div class="action-row">
+              <div class="action-info">
+                <div class="action-title">🖨️ Impressoras</div>
+                <div class="action-desc">Exportar apenas as impressoras em CSV</div>
+                <div class="action-feedback" id="fbPrt"></div>
+              </div>
+              <div class="action-btns">
+                <button class="btn btn-ghost btn-sm" onclick="exportPrinters()">⬇️ Exportar</button>
               </div>
             </div>
           </div>
@@ -315,6 +321,11 @@ function initThemeToggle(){
               <div class="danger-item-desc">Remove todas as despesas registadas. Os pedidos e filamentos não são afectados.</div>
               <button class="btn btn-danger btn-sm" onclick="confirmClear('expenses')">🗑️ Limpar</button>
             </div>
+            <div class="danger-item">
+              <div class="danger-item-title">🖨️ Limpar impressoras</div>
+              <div class="danger-item-desc">Remove todas as impressoras e o seu histórico de manutenções.</div>
+              <button class="btn btn-danger btn-sm" onclick="confirmClear('printers')">🗑️ Limpar</button>
+            </div>
           </div>
         </div>
       </div>
@@ -382,6 +393,7 @@ function initThemeToggle(){
 let filaments = [];
 let orders    = [];
 let expenses  = [];
+let printers  = [];
 let activityLog = [];
 let _importType = null;
 let _importData = null;
@@ -398,19 +410,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ── USER DATA ──────────────────────────
 
 // ── CONFIG GLOBALS ──────────────────────────────────────────
-var _cfg = {};
-function loadCfg(session) {
-  _cfg = (session && session.config) ? session.config : {};
-  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._currCode   = _cfg.currency || 'EUR';
-  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
-  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
-  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
-  _cfg._weightUnit = _cfg.weightUnit || 'g';
-  _cfg._margin = parseFloat(_cfg.margin) || 30;
-}
-
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
@@ -428,14 +427,15 @@ async function loadUserData() {
 // ── LOAD DATA ──────────────────────────
 async function loadData() {
   try {
-    [filaments, orders, expenses] = await Promise.all([
+    [filaments, orders, expenses, printers] = await Promise.all([
       DB.getFilaments(),
       DB.getOrders(),
       DB.getExpenses(),
+      DB.getPrinters(),
     ]);
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
-    filaments = []; orders = []; expenses = [];
+    filaments = []; orders = []; expenses = []; printers = [];
   }
   refreshStats();
 }
@@ -446,10 +446,12 @@ function refreshStats() {
   document.getElementById('statFil').textContent = filaments.length;
   document.getElementById('statOrd').textContent = orders.length;
   document.getElementById('statExp').textContent = expenses.length;
+  document.getElementById('statPrt').textContent = printers.length;
   document.getElementById('statFilSize').textContent = kb(filaments);
   document.getElementById('statOrdSize').textContent = kb(orders);
   document.getElementById('statExpSize').textContent = kb(expenses);
-  const total = (JSON.stringify(filaments).length + JSON.stringify(orders).length + JSON.stringify(expenses).length) / 1024;
+  document.getElementById('statPrtSize').textContent = kb(printers);
+  const total = (JSON.stringify(filaments).length + JSON.stringify(orders).length + JSON.stringify(expenses).length + JSON.stringify(printers).length) / 1024;
   document.getElementById('statTotal').textContent = total.toFixed(1) + ' KB';
 }
 
@@ -531,6 +533,24 @@ function exportExpenses() {
   showToast('📥 Despesas exportadas!','ok');
 }
 
+
+function exportPrinters() {
+  if (!printers.length) { showToast('Sem impressoras para exportar','err'); return; }
+  const hdr = ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado','Preço(€)','Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'];
+  let csv = hdr.join(sep)+'\n';
+  printers.forEach(p=>{
+    csv += [p.id||'',p.brand||'',p.model||'',p.customName||'',p.printerType||'',p.status||'',
+      (p.price||0).toFixed(2),p.hoursUsed||0,p.lifeHours||5000,
+      p.purchaseDate||'',p.warrantyUntil||'',p.mmsSystem||'',p.mmsQty||'',
+      p.maintIntervalHours||'',p.lastMaintHours||0,p.notes||'']
+      .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
+  });
+  boDownload(`3DZAAP_impressoras_${date()}.csv`, csv);
+  setFb('fbPrt',`✓ ${printers.length} impressoras exportadas`);
+  addLog(`Impressoras exportadas: ${printers.length} registos`,'ok');
+  showToast('📥 Impressoras exportadas!','ok');
+}
+
 function exportAll() {
   const d = date();
   let csv = `"#SECÇÃO";"Materiais"\n`;
@@ -557,9 +577,18 @@ function exportAll() {
     csv += [e.id||'',e.date||'',e.category||'',e.description||'',(e.value||0).toFixed(2)]
       .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
   });
+  csv += '\n"#SECÇÃO";"Impressoras"\n';
+  csv += ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado','Preço(€)','Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'].join(sep)+'\n';
+  printers.forEach(p=>{
+    csv += [p.id||'',p.brand||'',p.model||'',p.customName||'',p.printerType||'',p.status||'',
+      (p.price||0).toFixed(2),p.hoursUsed||0,p.lifeHours||5000,
+      p.purchaseDate||'',p.warrantyUntil||'',p.mmsSystem||'',p.mmsQty||'',
+      p.maintIntervalHours||'',p.lastMaintHours||0,p.notes||'']
+      .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
+  });
   boDownload(`3DZAAP_backup_${d}.csv`, csv);
-  setFb('fbBackup',`✓ ${filaments.length} fil. + ${orders.length} ped. + ${expenses.length} desp.`);
-  addLog(`Backup completo exportado: ${filaments.length} filamentos, ${orders.length} pedidos, ${expenses.length} despesas`,'ok');
+  setFb('fbBackup',`✓ ${filaments.length} fil. + ${orders.length} ped. + ${expenses.length} desp. + ${printers.length} imp.`);
+  addLog(`Backup completo exportado: ${filaments.length} filamentos, ${orders.length} pedidos, ${expenses.length} despesas, ${printers.length} impressoras`,'ok');
   showToast('💾 Backup exportado!','ok');
 }
 
@@ -826,9 +855,9 @@ function parseAllCSV(text) {
   // Cada secção termina onde começa a próxima (ou no fim do ficheiro)
   const filEnd = ordStart>=0 ? ordStart : (expStart>=0 ? expStart : rows.length);
   const ordEnd = expStart>=0 ? expStart : rows.length;
-  if(filStart>=0){ const sub=rows.slice(filStart, filEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseFilamentsCSV(t);parsedFil=_importData?.records||[];}catch(e){console.warn('parse fil:',e);} _importData=null; }
-  if(ordStart>=0){ const sub=rows.slice(ordStart, ordEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseOrdersCSV(t);parsedOrd=_importData?.records||[];}catch(e){console.warn('parse ord:',e);} _importData=null; }
-  if(expStart>=0){ const sub=rows.slice(expStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseExpensesCSV(t);parsedExp=_importData?.records||[];}catch(e){console.warn('parse exp:',e);} _importData=null; }
+  if(filStart>=0){ const sub=rows.slice(filStart, filEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseFilamentsCSV(t);parsedFil=_importData?.records||[];}catch(e){} _importData=null; }
+  if(ordStart>=0){ const sub=rows.slice(ordStart, ordEnd);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseOrdersCSV(t);parsedOrd=_importData?.records||[];}catch(e){} _importData=null; }
+  if(expStart>=0){ const sub=rows.slice(expStart);const t=sub.map(r=>r.map(c=>`"${boEsc(boCell(c))}"`).join(sep)).join('\n'); try{parseExpensesCSV(t);parsedExp=_importData?.records||[];}catch(e){} _importData=null; }
 
   if(!parsedFil.length&&!parsedOrd.length&&!parsedExp.length) throw new Error('Nenhum dado encontrado no ficheiro de backup.');
   _importData={kind:'all',filaments:parsedFil,orders:parsedOrd,expenses:parsedExp};
@@ -913,8 +942,8 @@ async function confirmImport() {
 
 // ── CLEAR DATA ─────────────────────────
 function confirmClear(type) {
-  const labels = {filaments:'filamentos',orders:'pedidos',expenses:'despesas'};
-  const counts = {filaments:filaments.length,orders:orders.length,expenses:expenses.length};
+  const labels = {filaments:'filamentos',orders:'pedidos',expenses:'despesas',printers:'impressoras'};
+  const counts = {filaments:filaments.length,orders:orders.length,expenses:expenses.length,printers:printers.length};
   document.getElementById('confirmTitle').textContent = `Limpar ${labels[type]}?`;
   document.getElementById('confirmMsg').textContent =
     `Vais eliminar permanentemente ${counts[type]} ${labels[type]}. Esta acção é irreversível.\n\nFaz um backup primeiro se quiseres guardar os dados.`;
@@ -928,19 +957,24 @@ function closeConfirm() { document.getElementById('confirmOverlay').classList.re
 async function clearData(type) {
   if(type==='filaments'){
     const count=filaments.length; filaments=[];
-    try{ await DB.saveAllFilaments([]); } catch(e){ console.error(e); }
+    try{ await DB.saveAllFilaments([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Materiais eliminados: ${count} registos`,'warn');
     showToast(`🗑️ ${count} filamentos eliminados`,'');
   } else if(type==='orders'){
     const count=orders.length; orders=[];
-    try{ await DB.saveAllOrders([]); } catch(e){ console.error(e); }
+    try{ await DB.saveAllOrders([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Pedidos eliminados: ${count} registos`,'warn');
     showToast(`🗑️ ${count} pedidos eliminados`,'');
   } else if(type==='expenses'){
     const count=expenses.length; expenses=[];
-    try{ await DB.saveAllExpenses([]); } catch(e){ console.error(e); }
+    try{ await DB.saveAllExpenses([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Despesas eliminadas: ${count} registos`,'warn');
     showToast(`🗑️ ${count} despesas eliminadas`,'');
+  } else if(type==='printers'){
+    const count=printers.length; printers=[];
+    try{ await DB.saveAllPrinters([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
+    addLog(`Impressoras eliminadas: ${count} registos`,'warn');
+    showToast(`🗑️ ${count} impressoras eliminadas`,'');
   }
   refreshStats();
 }
@@ -963,7 +997,7 @@ async function addLog(msg, type='inf') {
   activityLog.unshift({ ts, msg, type });
   if(activityLog.length > 100) activityLog = activityLog.slice(0, 100);
   renderLog();
-  try { await DB.addLog(msg, type); } catch(e) { console.warn('addLog DB error', e); }
+  try { await DB.addLog(msg, type); } catch(e) {}
 }
 
 function renderLog() {
@@ -981,7 +1015,7 @@ function renderLog() {
 
 async function clearLog() {
   activityLog = [];
-  try { await DB.clearLog(); } catch(e) { console.warn('clearLog DB error', e); }
+  try { await DB.clearLog(); } catch(e) {}
   renderLog();
   showToast('🗑️ Log limpo','');
 }
@@ -1000,13 +1034,6 @@ function setFb(id, msg, isErr=false) {
   const el=document.getElementById(id); if(!el) return;
   el.textContent=msg; el.className='action-feedback'+(isErr?' err':'');
   setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; },8000);
-}
-function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-let _tt;
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show '+(type||'');
-  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3200);
 }
 </script>
 </body>

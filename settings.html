@@ -38,17 +38,7 @@ function applyTheme(pref, auto) {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
-function toggleTheme() {
-  var pref = localStorage.getItem('3dzaap_theme') || 'system';
-  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-  if (auto) {
-    // toggle override from current
-    var curr = document.documentElement.getAttribute('data-theme');
-    var next = curr === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('3dzaap_theme', next);
-    localStorage.setItem('3dzaap_theme_auto', '0');
-  } else {
+else {
     var curr2 = document.documentElement.getAttribute('data-theme');
     var next2 = curr2 === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next2);
@@ -62,27 +52,7 @@ function updateThemeToggleBtn() {
   if (b) b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
 }
 
-function initThemeToggle() {
-  updateThemeToggleBtn();
-  // Populate settings UI
-  var pref = localStorage.getItem('3dzaap_theme') || 'system';
-  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-  var radio = document.querySelector('input[name="prefTheme"][value="' + pref + '"]');
-  if (radio) radio.checked = true;
-  var autoChk = document.getElementById('prefThemeAuto');
-  if (autoChk) autoChk.checked = auto;
-  updateAutoRowVisibility(pref);
-  // Wire radio buttons
-  document.querySelectorAll('input[name="prefTheme"]').forEach(function(r) {
-    r.addEventListener('change', function() {
-      if (window._logoCompressing) return;
-      updateAutoRowVisibility(r.value);
-      // Preview theme change immediately (only on genuine user click)
-      var auto = document.getElementById('prefThemeAuto');
-      applyTheme(r.value, auto ? auto.checked : false);
-      updateThemeToggleBtn();
-      markDirty();
-    });
+);
   });
   // Wire auto toggle
   if (autoChk) autoChk.addEventListener('change', function() { markDirty(); });
@@ -395,6 +365,7 @@ function updateAutoRowVisibility(pref) {
 <button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 
@@ -1042,24 +1013,6 @@ async function saveAll() {
 // ── TEAM ───────────────────────────────────────────────────────
 
 // ── CONFIG GLOBALS ──────────────────────────────────────────
-var _cfg = {};
-function loadCfg(session) {
-  _cfg = (session && session.config) ? session.config : {};
-  // Currency
-  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._currCode   = _cfg.currency || 'EUR';
-  // Locale for number formatting
-  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
-  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
-  // Date format (DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD)
-  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
-  // Weight unit
-  _cfg._weightUnit = _cfg.weightUnit || 'g';
-  // Margin
-  _cfg._margin = parseFloat(_cfg.margin) || 30;
-}
-
 async function loadTeam() {
   var listEl    = document.getElementById('membersList');
   var invCard   = document.getElementById('invitesCard');
@@ -1114,7 +1067,7 @@ async function loadTeam() {
     }
   } catch(e) {
     listEl.innerHTML = '<div style="color:var(--subtle);font-size:.84rem;padding:12px 0">Erro ao carregar equipa.</div>';
-    console.error('[Settings] loadTeam:', e.message);
+    
   }
 }
 
@@ -1156,7 +1109,7 @@ async function sendInvite() {
     showToast('\u2705 Convite enviado para ' + email, 'ok');
     // Show invite link (copy)
     var link = window.location.origin + '/auth-onboarding.html?invite=' + inv.token;
-    console.log('[3DZAAP] Invite link:', link);
+    /* invite link generated */
     await loadTeam();
   } catch(e) { showToast('Erro: ' + e.message, 'err'); }
 }
@@ -1188,29 +1141,7 @@ async function doLogout() {
 }
 
 // ── HELPERS ────────────────────────────────────────────────────
-function fmtDate(s){
-  if(!s)return'—';
-  var c=String(s).slice(0,10);
-  var d=new Date(c+'T12:00:00');
-  if(isNaN(d.getTime()))return c;
-  var fmt=(_cfg&&_cfg._dateFmt)||'DD/MM/YYYY';
-  var dd=String(d.getDate()).padStart(2,'0');
-  var mm=String(d.getMonth()+1).padStart(2,'0');
-  var yyyy=d.getFullYear();
-  if(fmt==='MM/DD/YYYY')return mm+'/'+dd+'/'+yyyy;
-  if(fmt==='YYYY-MM-DD')return yyyy+'-'+mm+'-'+dd;
-  return dd+'/'+mm+'/'+yyyy;
-}
-function escH(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-var _toastTimer;
-function showToast(msg, type) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (type || '');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+, 3200);
 }
 </script>
 </body>

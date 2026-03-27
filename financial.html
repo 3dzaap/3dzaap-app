@@ -13,17 +13,6 @@
   var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
 })();
-function toggleTheme(){
-  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('3dzaap_theme',next);
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=next==='dark'?'☀️':'🌙';
-}
-function initThemeToggle(){
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
@@ -238,6 +227,7 @@ function initThemeToggle(){
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
   
@@ -353,24 +343,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 // ── CONFIG GLOBALS ──────────────────────────────────────────
-var _cfg = {};
-function loadCfg(session) {
-  _cfg = (session && session.config) ? session.config : {};
-  // Currency
-  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._currCode   = _cfg.currency || 'EUR';
-  // Locale for number formatting
-  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
-  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
-  // Date format (DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD)
-  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
-  // Weight unit
-  _cfg._weightUnit = _cfg.weightUnit || 'g';
-  // Margin
-  _cfg._margin = parseFloat(_cfg.margin) || 30;
-}
-
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
@@ -394,10 +366,22 @@ async function applyFeatureGating() {
   try {
     const session = await Auth.getSession();
     const plan = session?.plan || 'trial';
+    // Gate: only trial and business can access financial
+    const FIN_PLANS = ['trial','business'];
+    if (!FIN_PLANS.includes(plan)) {
+      document.body.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;font-family:var(--font,sans-serif);text-align:center;padding:24px">
+          <div style="font-size:3rem">🔒</div>
+          <div style="font-size:1.2rem;font-weight:800;color:var(--dark,#1e293b)">Módulo Financeiro — Plano Business</div>
+          <div style="font-size:.9rem;color:var(--muted,#64748b);max-width:360px">O teu plano <strong>${plan}</strong> não inclui este módulo. Faz upgrade para Business para aceder ao financeiro.</div>
+          <a href="dashboard.html" style="margin-top:8px;padding:10px 24px;background:#3b8fd4;color:#fff;border-radius:8px;text-decoration:none;font-weight:700">← Voltar ao Dashboard</a>
+        </div>`;
+      return;
+    }
     const oLock = document.getElementById('ordersLock');
     const fLock = document.getElementById('financialLock');
     if (oLock && !['trial','pro','business'].includes(plan)) oLock.style.display = '';
-    if (fLock && !['trial','business'].includes(plan)) fLock.style.display = '';
+    if (fLock) fLock.style.display = 'none';
   } catch(e) {}
 }
 
@@ -574,32 +558,13 @@ function toggleSidebar() {
   document.getElementById('sideOverlay').classList.toggle('open');
 }
 
-function fmtEur(v){var sym=(_cfg&&_cfg._currSymbol)||'€';var loc=(_cfg&&_cfg._locale)||'pt-PT';return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtDate(s){
-  if(!s)return'—';
-  var c=String(s).slice(0,10);
-  var d=new Date(c+'T12:00:00');
-  if(isNaN(d.getTime()))return c;
-  var fmt=(_cfg&&_cfg._dateFmt)||'DD/MM/YYYY';
-  var dd=String(d.getDate()).padStart(2,'0');
-  var mm=String(d.getMonth()+1).padStart(2,'0');
-  var yyyy=d.getFullYear();
-  if(fmt==='MM/DD/YYYY')return mm+'/'+dd+'/'+yyyy;
-  if(fmt==='YYYY-MM-DD')return yyyy+'-'+mm+'-'+dd;
-  return dd+'/'+mm+'/'+yyyy;
-}
-function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+); }
 function dlCSV(csv, fn) {
   const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-let _tt;
-function showToast(msg,type='') {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show '+(type||'');
-  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3200);
-}
+
 
 </script>
 </body>

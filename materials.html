@@ -13,17 +13,6 @@
   var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
 })();
-function toggleTheme(){
-  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('3dzaap_theme',next);
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=next==='dark'?'☀️':'🌙';
-}
-function initThemeToggle(){
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
@@ -345,6 +334,7 @@ function initThemeToggle(){
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
+<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
   
@@ -847,24 +837,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ══════════════════════════════════════
 
 // ── CONFIG GLOBALS ──────────────────────────────────────────
-var _cfg = {};
-function loadCfg(session) {
-  _cfg = (session && session.config) ? session.config : {};
-  // Currency
-  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._currCode   = _cfg.currency || 'EUR';
-  // Locale for number formatting
-  var locMap = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'};
-  _cfg._locale = locMap[_cfg.currency] || 'pt-PT';
-  // Date format (DD/MM/YYYY | MM/DD/YYYY | YYYY-MM-DD)
-  _cfg._dateFmt = _cfg.dateFmt || 'DD/MM/YYYY';
-  // Weight unit
-  _cfg._weightUnit = _cfg.weightUnit || 'g';
-  // Margin
-  _cfg._margin = parseFloat(_cfg.margin) || 30;
-}
-
 async function loadUserData() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
@@ -1555,14 +1527,8 @@ function toggleSidebar() {
 // ══════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════
-function fmtEur(v){var sym=(_cfg&&_cfg._currSymbol)||'€';var loc=(_cfg&&_cfg._locale)||'pt-PT';return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function escH(s)   { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-let _tt;
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove('show'), 3200);
-}
+); }
+
 
 // ══════════════════════════════════════
 //  MULTI-BRAND TAG FUNCTIONS

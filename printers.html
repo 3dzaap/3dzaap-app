@@ -12,17 +12,6 @@
   var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',s||(sys?'dark':'light'));
 })();
-function toggleTheme(){
-  var next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('3dzaap_theme',next);
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=next==='dark'?'☀️':'🌙';
-}
-function initThemeToggle(){
-  var b=document.getElementById('themeToggle');
-  if(b)b.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
@@ -231,13 +220,7 @@ function initThemeToggle(){
     --bs-inact-text:  #94a3b8;
   }
 }
-:root[data-theme="dark"] {
-  --chip-warn-text: #fbbf24;
-  --chip-ok-text:   #4ade80;
-  --bs-op-text:     #4ade80;
-  --bs-maint-text:  #fbbf24;
-  --bs-inact-text:  #94a3b8;
-}
+
 
 /* ── Maintenance history section ────────────────────────── */
 .maint-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
@@ -324,6 +307,7 @@ function initThemeToggle(){
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
+<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 
@@ -614,8 +598,6 @@ function initThemeToggle(){
 let printers = [];
 let _editingPrinterId = null;
 let _detailPrinterId  = null;
-var _cfg = {};
-
 const STATUS_LABELS = { operacional:'Operacional', manutencao:'Em manutenção', inativa:'Inativa' };
 const TYPE_LABELS   = { fdm:'FDM', resina:'Resina' };
 const MAINT_LABELS  = {
@@ -633,13 +615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ── USER DATA ───────────────────────────
-function loadCfg(session) {
-  _cfg = (session && session.config) ? session.config : {};
-  var currMap = {'EUR':'€','BRL':'R$','USD':'$','GBP':'£'};
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._locale     = {'EUR':'pt-PT','BRL':'pt-BR','USD':'en-US','GBP':'en-GB'}[_cfg.currency] || 'pt-PT';
-  _cfg._dateFmt    = _cfg.dateFmt || 'DD/MM/YYYY';
-}
+
 
 async function loadUserData() {
   const ok = await Auth.requireAuth();
@@ -1352,27 +1328,7 @@ function toggleSidebar() {
 }
 
 // ── HELPERS ────────────────────────────
-function fmtEur(v){ var sym=(_cfg&&_cfg._currSymbol)||'€'; var loc=(_cfg&&_cfg._locale)||'pt-PT'; return sym+' '+parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtDate(s){
-  if(!s)return'—';
-  var c=String(s).slice(0,10);
-  var d=new Date(c+'T12:00:00');
-  if(isNaN(d.getTime()))return c;
-  var fmt=(_cfg&&_cfg._dateFmt)||'DD/MM/YYYY';
-  var dd=String(d.getDate()).padStart(2,'0');
-  var mm=String(d.getMonth()+1).padStart(2,'0');
-  var yyyy=d.getFullYear();
-  if(fmt==='MM/DD/YYYY')return mm+'/'+dd+'/'+yyyy;
-  if(fmt==='YYYY-MM-DD')return yyyy+'-'+mm+'-'+dd;
-  return dd+'/'+mm+'/'+yyyy;
-}
-function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-let _tt;
-function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show '+(type||'');
-  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3200);
-}
+); }
 </script>
 </body>
 </html>
