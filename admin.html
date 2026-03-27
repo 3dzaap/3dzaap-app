@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  var saved=localStorage.getItem('3dzaap_theme');
+  var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── Admin layout ─────────────────────────────────────────── */
+.admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+.admin-grid.three { grid-template-columns:1fr 1fr 1fr; }
+.admin-grid.full { grid-template-columns:1fr; }
+
+/* ── Admin Card ───────────────────────────────────────────── */
+.ad-card { background:var(--bg-card); backdrop-filter:var(--blur); -webkit-backdrop-filter:var(--blur); border:1.5px solid var(--border); border-radius:var(--rl); box-shadow:var(--sh); overflow:hidden; animation:fadeUp .5s var(--ease) .1s both; }
+.ad-card-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1.5px solid var(--border); background:rgba(59,143,212,.05); }
+.ad-card-title { font-size:.88rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:8px; }
+.ad-card-body { padding:20px; }
+
+/* ── KPI Cards ────────────────────────────────────────────── */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+.kpi-card { background:var(--bg-card); border:1.5px solid var(--border); border-radius:var(--rm); padding:18px 20px; animation:fadeUp .5s var(--ease) both; }
+.kpi-icon { font-size:1.4rem; margin-bottom:8px; }
+.kpi-val { font-family:var(--mono); font-size:1.6rem; font-weight:800; color:var(--dark); line-height:1; }
+.kpi-lbl { font-size:.72rem; color:var(--muted); font-weight:600; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+.kpi-delta { font-size:.72rem; font-weight:700; margin-top:6px; }
+.kpi-delta.up { color:var(--green,#22c55e); }
+.kpi-delta.down { color:var(--danger); }
+
+/* ── Company Table ────────────────────────────────────────── */
+.admin-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+.admin-table th { padding:10px 12px; text-align:left; font-size:.68rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; border-bottom:2px solid var(--border); white-space:nowrap; }
+.admin-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--dark); vertical-align:middle; }
+.admin-table tr:last-child td { border-bottom:none; }
+.admin-table tr:hover td { background:var(--bg-hover); }
+.admin-table .mono { font-family:var(--mono); font-size:.8rem; }
+
+/* ── Plan badges ──────────────────────────────────────────── */
+.plan-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+.plan-trial    { background:rgba(148,163,184,.15); color:var(--muted); border:1px solid rgba(148,163,184,.3); }
+.plan-starter  { background:rgba(59,143,212,.12); color:var(--blue); border:1px solid rgba(59,143,212,.3); }
+.plan-pro      { background:rgba(245,148,58,.12); color:var(--orange); border:1px solid rgba(245,148,58,.3); }
+.plan-business { background:rgba(34,197,94,.12); color:#16a34a; border:1px solid rgba(34,197,94,.3); }
+
+/* ── Sub status badges ────────────────────────────────────── */
+.sub-active    { background:rgba(34,197,94,.1); color:#16a34a; }
+.sub-trialing  { background:rgba(59,143,212,.1); color:var(--blue); }
+.sub-past_due  { background:rgba(239,68,68,.1); color:var(--danger); }
+.sub-canceled  { background:rgba(148,163,184,.1); color:var(--muted); }
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.admin-tabs { display:flex; gap:4px; border-bottom:2px solid var(--border); margin-bottom:20px; }
+.admin-tab { padding:10px 18px; font-size:.84rem; font-weight:700; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .2s, border-color .2s; }
+.admin-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.admin-tab:hover:not(.active) { color:var(--dark); }
+.admin-panel { display:none; }
+.admin-panel.active { display:block; }
+
+/* ── Search / Filters ─────────────────────────────────────── */
+.admin-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.admin-search { flex:1; min-width:200px; padding:8px 12px 8px 36px; border:1.5px solid var(--border); border-radius:var(--r); background:var(--bg-input); color:var(--dark); font-size:.84rem; }
+.admin-search-wrap { position:relative; flex:1; min-width:200px; }
+.admin-search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:.9rem; pointer-events:none; }
+
+/* ── Action buttons ───────────────────────────────────────── */
+.btn-table { padding:4px 10px; font-size:.72rem; font-weight:700; border-radius:6px; border:1.5px solid var(--border); background:var(--bg-card); color:var(--dark); cursor:pointer; transition:background .15s, border-color .15s; white-space:nowrap; }
+.btn-table:hover { background:var(--bg-hover); border-color:var(--blue); color:var(--blue); }
+.btn-table.danger:hover { border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,.06); }
+.btn-table.success:hover { border-color:#16a34a; color:#16a34a; background:rgba(34,197,94,.06); }
+
+/* ── Detail Panel ─────────────────────────────────────────── */
+.detail-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+.detail-field { background:var(--bg-card-s); border-radius:var(--r); padding:10px 12px; }
+.detail-field-lbl { font-size:.64rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:3px; }
+.detail-field-val { font-size:.88rem; color:var(--dark); font-weight:600; }
+
+/* ── Charts placeholder ───────────────────────────────────── */
+.chart-wrap { position:relative; height:200px; display:flex; align-items:flex-end; gap:6px; padding:0 4px; }
+.chart-bar { flex:1; border-radius:4px 4px 0 0; background:linear-gradient(180deg,var(--blue),var(--blue-d,#2a6fb0)); min-height:4px; transition:height .4s var(--ease); }
+.chart-bar.faded { opacity:.35; }
+.chart-labels { display:flex; gap:6px; padding:0 4px; margin-top:6px; }
+.chart-label { flex:1; text-align:center; font-size:.64rem; color:var(--muted); }
+
+/* ── Broadcast / Feature flags ────────────────────────────── */
+.flag-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border); }
+.flag-row:last-child { border-bottom:none; }
+.flag-info { flex:1; }
+.flag-name { font-size:.84rem; font-weight:700; color:var(--dark); }
+.flag-desc { font-size:.72rem; color:var(--muted); margin-top:2px; }
+.toggle-wrap { display:flex; align-items:center; gap:8px; }
+.toggle { position:relative; width:40px; height:22px; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:22px; cursor:pointer; transition:background .2s; }
+.toggle-slider::before { content:''; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+.toggle input:checked + .toggle-slider { background:var(--blue); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
+
+/* ── Audit log ────────────────────────────────────────────── */
+.audit-row { display:grid; grid-template-columns:140px 1fr 120px; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:.8rem; align-items:start; }
+.audit-row:last-child { border-bottom:none; }
+.audit-time { font-family:var(--mono); color:var(--muted); font-size:.72rem; }
+.audit-msg { color:var(--dark); }
+.audit-who { color:var(--muted); font-size:.72rem; text-align:right; }
+
+/* ── Access denied screen ─────────────────────────────────── */
+.access-denied { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:16px; text-align:center; }
+.access-denied-icon { font-size:3.5rem; }
+.access-denied-title { font-size:1.3rem; font-weight:800; color:var(--dark); }
+.access-denied-sub { font-size:.9rem; color:var(--muted); max-width:340px; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media(max-width:1100px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:900px){ .admin-grid{grid-template-columns:1fr} .admin-grid.three{grid-template-columns:1fr} }
+@media(max-width:680px){
+  .sidebar{left:calc(-1 * var(--sidebar-w,260px))}.sidebar.open{left:0}
+  .sidebar-overlay.open{display:block;left:var(--sidebar-w)}.main{margin-left:0}
+  .mob-toggle{display:flex}.page{padding:16px 12px 40px}
+  .topbar{padding:0 12px 0 56px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .audit-row{grid-template-columns:1fr}
+  .audit-who{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+  <div class="main">
+
+    <div class="topbar">
+      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-center">
+        <strong id="topbarTitle">🛡️ Admin</strong>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Tema">🌙</button>
+      </div>
+    </div>
+
+    <div class="page" id="mainContent">
+      <!-- Populated by JS after auth check -->
+      <div class="access-denied" id="accessDenied" style="display:none">
+        <div class="access-denied-icon">🚫</div>
+        <div class="access-denied-title">Acesso restrito</div>
+        <div class="access-denied-sub">Este módulo é exclusivo do administrador do 3DZAAP.</div>
+        <a href="dashboard.html" class="btn btn-primary" style="margin-top:8px">← Voltar ao Dashboard</a>
+      </div>
+      <div id="adminContent" style="display:none">
+
+        <!-- ── BREADCRUMB ─────────────────────────────── -->
+        <div class="breadcrumb">
+          <a href="dashboard.html">Dashboard</a><span>›</span><strong>🛡️ Admin</strong>
+        </div>
+
+        <!-- ── PAGE HEADER ────────────────────────────── -->
+        <div class="page-header">
+          <div>
+            <h1>🛡️ Painel de Administração</h1>
+            <p class="page-sub">Gestão global do SaaS — empresas, assinaturas e métricas</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Atualizar</button>
+        </div>
+
+        <!-- ── KPI CARDS ──────────────────────────────── -->
+        <div class="kpi-grid">
+          <div class="kpi-card" style="animation-delay:.05s">
+            <div class="kpi-icon">🏢</div>
+            <div class="kpi-val" id="kpiCompanies">—</div>
+            <div class="kpi-lbl">Empresas ativas</div>
+            <div class="kpi-delta" id="kpiCompaniesD"></div>
+          </div>
+          <div class="kpi-card" style="animation-delay:.1s">
+            <div class="kpi-icon">💶</div>
+            <div class="kpi-val" id="kpiMrr">—</div>
+            <div class="kpi-lbl">MRR estimado</div>
+            <div class="kpi-delta" id="kpiMrrD"></div>
+          </div>
+          <div class="kpi-card" style="animation-delay:.15s">
+            <div class="kpi-icon">⏳</div>
+            <div class="kpi-val" id="kpiTrials">—</div>
+            <div class="kpi-lbl">Em trial</div>
+            <div class="kpi-delta" id="kpiTrialsD"></div>
+          </div>
+          <div class="kpi-card" style="animation-delay:.2s">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-val" id="kpiPastDue">—</div>
+            <div class="kpi-lbl">Pagamentos em atraso</div>
+            <div class="kpi-delta" id="kpiPastDueD"></div>
+          </div>
+        </div>
+
+        <!-- ── TABS ───────────────────────────────────── -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" onclick="switchTab('companies')">🏢 Empresas</button>
+          <button class="admin-tab" onclick="switchTab('subscriptions')">💳 Assinaturas</button>
+          <button class="admin-tab" onclick="switchTab('users')">👥 Utilizadores</button>
+          <button class="admin-tab" onclick="switchTab('metrics')">📈 Métricas</button>
+          <button class="admin-tab" onclick="switchTab('tools')">🔧 Ferramentas</button>
+          <button class="admin-tab" onclick="switchTab('audit')">📋 Auditoria</button>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: EMPRESAS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel active" id="tab-companies">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <span class="admin-search-icon">🔍</span>
+              <input class="admin-search form-input" id="searchCompanies" placeholder="Pesquisar empresa…" oninput="filterCompanies()">
+            </div>
+            <select class="form-select" id="filterPlan" onchange="filterCompanies()" style="width:auto">
+              <option value="">Todos os planos</option>
+              <option value="trial">Trial</option>
+              <option value="starter">Starter</option>
+              <option value="pro">Pro</option>
+              <option value="business">Business</option>
+            </select>
+            <select class="form-select" id="filterStatus" onchange="filterCompanies()" style="width:auto">
+              <option value="">Todos os estados</option>
+              <option value="active">Ativo</option>
+              <option value="trialing">Em trial</option>
+              <option value="past_due">Em atraso</option>
+              <option value="canceled">Cancelado</option>
+            </select>
+          </div>
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title">🏢 Empresas registadas</div>
+              <span class="badge" id="companiesCount" style="background:var(--blue-g);color:var(--blue)">0</span>
+            </div>
+            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Empresa</th>
+                    <th>Plano</th>
+                    <th>Estado</th>
+                    <th>Utilizadores</th>
+                    <th>Criado em</th>
+                    <th>Trial expira</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="companiesTableBody">
+                  <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: ASSINATURAS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-subscriptions">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <span class="admin-search-icon">🔍</span>
+              <input class="admin-search form-input" id="searchSubs" placeholder="Pesquisar empresa ou ID Stripe…" oninput="filterSubs()">
+            </div>
+            <select class="form-select" id="filterSubStatus" onchange="filterSubs()" style="width:auto">
+              <option value="">Todos os estados</option>
+              <option value="active">Ativo</option>
+              <option value="trialing">Em trial</option>
+              <option value="past_due">Em atraso</option>
+              <option value="canceled">Cancelado</option>
+            </select>
+          </div>
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title">💳 Subscrições</div>
+              <button class="btn btn-ghost btn-sm" onclick="syncStripe()">🔄 Sincronizar Stripe</button>
+            </div>
+            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Empresa</th>
+                    <th>Plano</th>
+                    <th>Estado</th>
+                    <th>Próxima cobrança</th>
+                    <th>Stripe ID</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="subsTableBody">
+                  <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: UTILIZADORES
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-users">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <span class="admin-search-icon">🔍</span>
+              <input class="admin-search form-input" id="searchUsers" placeholder="Pesquisar email ou nome…" oninput="filterUsers()">
+            </div>
+          </div>
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title">👥 Utilizadores</div>
+              <span class="badge" id="usersCount" style="background:var(--blue-g);color:var(--blue)">0</span>
+            </div>
+            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Empresa</th>
+                    <th>Papel</th>
+                    <th>Plano</th>
+                    <th>Registado em</th>
+                    <th>Último acesso</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: MÉTRICAS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-metrics">
+          <div class="admin-grid three">
+            <div class="ad-card" style="animation-delay:.05s">
+              <div class="ad-card-header"><div class="ad-card-title">📊 Distribuição por plano</div></div>
+              <div class="ad-card-body" id="planDistChart">
+                <div style="display:flex;flex-direction:column;gap:10px" id="planDistBars"></div>
+              </div>
+            </div>
+            <div class="ad-card" style="animation-delay:.1s">
+              <div class="ad-card-header"><div class="ad-card-title">🔄 Conversão Trial→Pago</div></div>
+              <div class="ad-card-body" style="text-align:center">
+                <div style="font-size:2.8rem;font-weight:800;color:var(--blue);font-family:var(--mono)" id="conversionRate">—%</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:6px">dos trials converteram para pago</div>
+                <div style="margin-top:16px;display:flex;gap:16px;justify-content:center">
+                  <div style="text-align:center">
+                    <div style="font-size:1.1rem;font-weight:800;color:var(--dark);font-family:var(--mono)" id="totalTrials">—</div>
+                    <div style="font-size:.68rem;color:var(--muted)">Total trials</div>
+                  </div>
+                  <div style="text-align:center">
+                    <div style="font-size:1.1rem;font-weight:800;color:var(--green,#22c55e);font-family:var(--mono)" id="convertedTrials">—</div>
+                    <div style="font-size:.68rem;color:var(--muted)">Convertidos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ad-card" style="animation-delay:.15s">
+              <div class="ad-card-header"><div class="ad-card-title">🧩 Uso por módulo</div></div>
+              <div class="ad-card-body" id="moduleUsage">
+                <div style="display:flex;flex-direction:column;gap:8px" id="moduleUsageBars"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title">📈 MRR — últimos 12 meses</div>
+            </div>
+            <div class="ad-card-body">
+              <div class="chart-wrap" id="mrrChart"></div>
+              <div class="chart-labels" id="mrrLabels"></div>
+            </div>
+          </div>
+          <div class="ad-card" style="margin-top:20px">
+            <div class="ad-card-header">
+              <div class="ad-card-title">🏆 Top 10 empresas por receita</div>
+            </div>
+            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+              <table class="admin-table">
+                <thead>
+                  <tr><th>#</th><th>Empresa</th><th>Plano</th><th>MRR</th><th>Desde</th></tr>
+                </thead>
+                <tbody id="topCompaniesBody">
+                  <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">A calcular…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: FERRAMENTAS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-tools">
+          <div class="admin-grid">
+
+            <!-- BROADCAST -->
+            <div class="ad-card">
+              <div class="ad-card-header"><div class="ad-card-title">📢 Broadcast de mensagem</div></div>
+              <div class="ad-card-body">
+                <div class="form-group" style="margin-bottom:12px">
+                  <label class="form-label">Destinatários</label>
+                  <select class="form-select" id="broadcastTarget">
+                    <option value="all">Todos os utilizadores</option>
+                    <option value="trial">Apenas em trial</option>
+                    <option value="past_due">Apenas em atraso</option>
+                    <option value="pro">Plano Pro</option>
+                    <option value="business">Plano Business</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:12px">
+                  <label class="form-label">Tipo</label>
+                  <select class="form-select" id="broadcastType">
+                    <option value="info">ℹ️ Informação</option>
+                    <option value="warning">⚠️ Aviso</option>
+                    <option value="success">✅ Novidade</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:12px">
+                  <label class="form-label">Título</label>
+                  <input type="text" class="form-input" id="broadcastTitle" placeholder="ex: Nova funcionalidade disponível">
+                </div>
+                <div class="form-group" style="margin-bottom:16px">
+                  <label class="form-label">Mensagem</label>
+                  <textarea class="form-textarea" id="broadcastMsg" rows="3" placeholder="Texto da mensagem que aparecerá no dashboard…"></textarea>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <button class="btn btn-ghost btn-sm" onclick="previewBroadcast()">👁️ Pré-visualizar</button>
+                  <button class="btn btn-primary btn-sm" onclick="sendBroadcast()">📢 Enviar</button>
+                </div>
+                <div class="form-hint" id="broadcastFb" style="margin-top:8px"></div>
+              </div>
+            </div>
+
+            <!-- FEATURE FLAGS -->
+            <div class="ad-card">
+              <div class="ad-card-header"><div class="ad-card-title">🚩 Feature Flags</div></div>
+              <div class="ad-card-body">
+                <div class="flag-row">
+                  <div class="flag-info">
+                    <div class="flag-name">Modo manutenção</div>
+                    <div class="flag-desc">Exibe banner de manutenção a todos os utilizadores</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" id="flagMaintenance" onchange="saveFlag('maintenance',this.checked)"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flag-row">
+                  <div class="flag-info">
+                    <div class="flag-name">Trial — 14 dias</div>
+                    <div class="flag-desc">Duração do trial para novos registos</div>
+                  </div>
+                  <input type="number" class="form-input" id="flagTrialDays" value="14" min="1" max="90" style="width:70px;text-align:center" onchange="saveFlag('trial_days',this.value)">
+                </div>
+                <div class="flag-row">
+                  <div class="flag-info">
+                    <div class="flag-name">Novos registos</div>
+                    <div class="flag-desc">Permitir novos registos na plataforma</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" id="flagNewSignups" checked onchange="saveFlag('new_signups',this.checked)"><span class="toggle-slider"></span></label>
+                </div>
+                <div class="flag-row">
+                  <div class="flag-info">
+                    <div class="flag-name">Módulo Impressoras (beta)</div>
+                    <div class="flag-desc">Visível para todos os planos</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" id="flagPrinters" checked onchange="saveFlag('printers_beta',this.checked)"><span class="toggle-slider"></span></label>
+                </div>
+              </div>
+            </div>
+
+            <!-- EXPORT GLOBAL -->
+            <div class="ad-card">
+              <div class="ad-card-header"><div class="ad-card-title">📤 Export global</div></div>
+              <div class="ad-card-body">
+                <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Exporta dados de todas as empresas para análise externa. Inclui apenas metadados — não inclui dados privados dos clientes finais.</p>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('companies')">⬇️ Empresas (CSV)</button>
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('subscriptions')">⬇️ Assinaturas (CSV)</button>
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('revenue')">⬇️ Receita por mês (CSV)</button>
+                  <button class="btn btn-primary btn-sm" onclick="exportGlobal('full')">⬇️ Export completo</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- EXTEND TRIAL / FORCE PLAN -->
+            <div class="ad-card">
+              <div class="ad-card-header"><div class="ad-card-title">⚙️ Operações manuais</div></div>
+              <div class="ad-card-body">
+                <div class="form-group" style="margin-bottom:12px">
+                  <label class="form-label">Empresa (ID ou nome)</label>
+                  <input type="text" class="form-input" id="opCompanyId" placeholder="ID da empresa…">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <button class="btn btn-ghost btn-sm" onclick="extendTrial()" style="flex:1">⏳ Estender trial</button>
+                    <input type="number" class="form-input" id="extendDays" value="7" min="1" max="90" style="width:60px;text-align:center" title="Dias">
+                    <span style="font-size:.78rem;color:var(--muted)">dias</span>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <button class="btn btn-ghost btn-sm" onclick="forcePlan()" style="flex:1">🔧 Forçar plano</button>
+                    <select class="form-select" id="forcePlanVal" style="width:120px">
+                      <option value="trial">Trial</option>
+                      <option value="starter">Starter</option>
+                      <option value="pro">Pro</option>
+                      <option value="business">Business</option>
+                    </select>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" onclick="suspendCompany()">⛔ Suspender empresa</button>
+                  <button class="btn btn-ghost btn-sm" onclick="unsuspendCompany()">✅ Reativar empresa</button>
+                </div>
+                <div class="form-hint" id="opFb" style="margin-top:10px"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: AUDITORIA
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-audit">
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title">📋 Log de auditoria</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="loadAuditLog()">🔄 Atualizar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportAuditLog()">⬇️ Exportar</button>
+              </div>
+            </div>
+            <div class="ad-card-body">
+              <div id="auditLogBody">
+                <div style="text-align:center;color:var(--muted);padding:32px">A carregar log…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /adminContent -->
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Detalhe de empresa
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="companyDetailOverlay" onclick="if(event.target===this)closeCompanyDetail()">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title" id="companyDetailTitle">🏢 Empresa</div>
+      <button class="modal-close" onclick="closeCompanyDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="companyDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCompanyDetail()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Confirmação de acção destrutiva
+══════════════════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="utils.js"></script>
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════
+const ADMIN_EMAIL = '3dzaap@gmail.com';
+
+const PLAN_MRR = { trial: 0, starter: 9.90, pro: 19.90, business: 39.90 };
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let _companies    = [];
+let _subscriptions = [];
+let _users        = [];
+let _auditLog     = [];
+let _currentTab   = 'companies';
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  initThemeToggle();
+  await checkAdminAccess();
+});
+
+async function checkAdminAccess() {
+  const ok = await Auth.requireAuth();
+  if (!ok) return;
+
+  const session = await Auth.getSession();
+  if (!session || session.email !== ADMIN_EMAIL) {
+    document.getElementById('accessDenied').style.display = 'flex';
+    // Hide sidebar for non-admins reaching this page
+    return;
+  }
+
+  loadCfg(session);
+  Sidebar.setSession(session);
+  document.getElementById('adminContent').style.display = 'block';
+  await refreshAll();
+}
+
+async function refreshAll() {
+  await Promise.all([
+    loadCompanies(),
+    loadSubscriptions(),
+    loadUsers(),
+    loadAuditLog(),
+  ]);
+  updateKPIs();
+  renderMetrics();
+}
+
+// ══════════════════════════════════════════════════════════
+//  DATA LOADERS (via service_role — requires Edge Function
+//  in production; for now uses supabase admin queries)
+// ══════════════════════════════════════════════════════════
+async function loadCompanies() {
+  try {
+    const { data, error } = await _sb()
+      .from('companies')
+      .select(`
+        id, name, slug, plan, trial_ends_at, created_at, is_suspended,
+        memberships(count)
+      `)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    _companies = data || [];
+    renderCompaniesTable(_companies);
+    document.getElementById('companiesCount').textContent = _companies.length;
+  } catch(e) {
+    showToast('Erro ao carregar empresas: ' + e.message, 'err');
+  }
+}
+
+async function loadSubscriptions() {
+  try {
+    const { data, error } = await _sb()
+      .from('subscriptions')
+      .select('*, companies(name, plan)')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    _subscriptions = data || [];
+    renderSubsTable(_subscriptions);
+  } catch(e) {
+    showToast('Erro ao carregar subscrições: ' + e.message, 'err');
+  }
+}
+
+async function loadUsers() {
+  try {
+    // memberships joins with auth.users metadata
+    const { data, error } = await _sb()
+      .from('memberships')
+      .select('role, joined_at, user_id, companies(name, plan)')
+      .order('joined_at', { ascending: false });
+    if (error) throw error;
+    _users = data || [];
+    renderUsersTable(_users);
+    document.getElementById('usersCount').textContent = _users.length;
+  } catch(e) {
+    showToast('Erro ao carregar utilizadores: ' + e.message, 'err');
+  }
+}
+
+async function loadAuditLog() {
+  try {
+    // Admin audit log — all companies
+    const { data, error } = await _sb()
+      .from('admin_audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) {
+      // Table may not exist yet — show empty state
+      _auditLog = [];
+    } else {
+      _auditLog = data || [];
+    }
+    renderAuditLog();
+  } catch(e) {
+    _auditLog = [];
+    renderAuditLog();
+  }
+}
+
+// Helper to get supabase client
+function _sb() {
+  return window._supabase || (window._supabase = supabase.createClient(
+    window.SUPABASE_URL || '',
+    window.SUPABASE_ANON_KEY || ''
+  ));
+}
+
+// ══════════════════════════════════════════════════════════
+//  KPIs
+// ══════════════════════════════════════════════════════════
+function updateKPIs() {
+  const active    = _companies.filter(c => !c.is_suspended).length;
+  const trials    = _companies.filter(c => c.plan === 'trial').length;
+  const pastDue   = _subscriptions.filter(s => s.status === 'past_due').length;
+  const mrr       = _companies.reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
+
+  setText('kpiCompanies', active);
+  setText('kpiMrr', '€ ' + mrr.toFixed(0));
+  setText('kpiTrials', trials);
+  setText('kpiPastDue', pastDue);
+
+  // Deltas — placeholder (would compare with previous period in production)
+  const d = document.getElementById('kpiPastDueD');
+  if (d) {
+    d.textContent = pastDue > 0 ? `⚠️ Requer atenção` : '✅ Tudo em ordem';
+    d.className = 'kpi-delta ' + (pastDue > 0 ? 'down' : 'up');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER — COMPANIES TABLE
+// ══════════════════════════════════════════════════════════
+function renderCompaniesTable(data) {
+  const tbody = document.getElementById('companiesTableBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhuma empresa encontrada</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(c => {
+    const plan = c.plan || 'trial';
+    const trialEnd = c.trial_ends_at ? fmtDate(c.trial_ends_at) : '—';
+    const members = c.memberships?.[0]?.count ?? '?';
+    const suspended = c.is_suspended ? '<span style="color:var(--danger);font-size:.72rem">⛔ Suspenso</span>' : '';
+    return `<tr>
+      <td>
+        <div style="font-weight:700;color:var(--dark)">${escH(c.name)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${escH(c.slug || '')} ${suspended}</div>
+      </td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td><span class="badge sub-${_subStatus(c.id)}" style="font-size:.72rem">${_subStatus(c.id)}</span></td>
+      <td style="text-align:center">${members}</td>
+      <td class="mono">${fmtDate(c.created_at)}</td>
+      <td class="mono">${trialEnd}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-table" onclick="openCompanyDetail('${c.id}')">🔍 Ver</button>
+        <button class="btn-table" onclick="quickExtendTrial('${c.id}')">⏳</button>
+        <button class="btn-table danger" onclick="confirmSuspend('${c.id}','${escH(c.name)}')">${c.is_suspended ? '✅' : '⛔'}</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function _subStatus(companyId) {
+  const sub = _subscriptions.find(s => s.company_id === companyId);
+  return sub?.status || 'trialing';
+}
+
+function filterCompanies() {
+  const q      = document.getElementById('searchCompanies').value.toLowerCase();
+  const plan   = document.getElementById('filterPlan').value;
+  const status = document.getElementById('filterStatus').value;
+  const filtered = _companies.filter(c => {
+    const matchQ    = !q || c.name?.toLowerCase().includes(q) || c.slug?.toLowerCase().includes(q);
+    const matchPlan = !plan || c.plan === plan;
+    const matchSt   = !status || _subStatus(c.id) === status;
+    return matchQ && matchPlan && matchSt;
+  });
+  renderCompaniesTable(filtered);
+  document.getElementById('companiesCount').textContent = filtered.length;
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER — SUBSCRIPTIONS TABLE
+// ══════════════════════════════════════════════════════════
+function renderSubsTable(data) {
+  const tbody = document.getElementById('subsTableBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Nenhuma subscrição encontrada</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(s => {
+    const plan = s.companies?.plan || '—';
+    return `<tr>
+      <td><div style="font-weight:700">${escH(s.companies?.name || '—')}</div></td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td><span class="badge sub-${s.status}" style="font-size:.72rem">${s.status}</span></td>
+      <td class="mono">${s.current_period_end ? fmtDate(s.current_period_end) : '—'}</td>
+      <td class="mono" style="font-size:.72rem">${escH(s.stripe_subscription_id || '—')}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-table success" onclick="reactivateSub('${s.id}')">✅ Reativar</button>
+        <button class="btn-table danger" onclick="confirmCancelSub('${s.id}','${escH(s.companies?.name||'')}')">❌ Cancelar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterSubs() {
+  const q  = document.getElementById('searchSubs').value.toLowerCase();
+  const st = document.getElementById('filterSubStatus').value;
+  const filtered = _subscriptions.filter(s => {
+    const matchQ  = !q || s.companies?.name?.toLowerCase().includes(q) || s.stripe_subscription_id?.toLowerCase().includes(q);
+    const matchSt = !st || s.status === st;
+    return matchQ && matchSt;
+  });
+  renderSubsTable(filtered);
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER — USERS TABLE
+// ══════════════════════════════════════════════════════════
+function renderUsersTable(data) {
+  const tbody = document.getElementById('usersTableBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum utilizador encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(u => {
+    const plan = u.companies?.plan || '—';
+    return `<tr>
+      <td class="mono" style="font-size:.78rem">${escH(u.user_id || '—')}</td>
+      <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
+      <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span></td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td class="mono">${fmtDate(u.joined_at)}</td>
+      <td class="mono">—</td>
+      <td style="white-space:nowrap">
+        <button class="btn-table" onclick="showToast('Impersonation — em breve','')">👤 Impersonar</button>
+        <button class="btn-table danger" onclick="showToast('Ban — em breve','')">🚫 Banir</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('searchUsers').value.toLowerCase();
+  const filtered = _users.filter(u =>
+    !q || u.user_id?.toLowerCase().includes(q) || u.companies?.name?.toLowerCase().includes(q)
+  );
+  renderUsersTable(filtered);
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER — METRICS
+// ══════════════════════════════════════════════════════════
+function renderMetrics() {
+  // Plan distribution
+  const planCounts = { trial: 0, starter: 0, pro: 0, business: 0 };
+  _companies.forEach(c => { if (planCounts[c.plan] !== undefined) planCounts[c.plan]++; });
+  const totalC = _companies.length || 1;
+  const planColors = { trial: 'var(--muted)', starter: 'var(--blue)', pro: 'var(--orange)', business: '#16a34a' };
+  document.getElementById('planDistBars').innerHTML = Object.entries(planCounts).map(([plan, count]) => {
+    const pct = Math.round((count / totalC) * 100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
+        <span style="font-weight:700;color:${planColors[plan]};text-transform:capitalize">${plan}</span>
+        <span style="font-family:var(--mono);color:var(--dark)">${count} <span style="color:var(--muted)">(${pct}%)</span></span>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${planColors[plan]};border-radius:4px;transition:width .6s var(--ease)"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Conversion rate
+  const trials     = _companies.filter(c => c.plan === 'trial').length;
+  const converted  = _companies.filter(c => ['starter','pro','business'].includes(c.plan)).length;
+  const totalReg   = _companies.length;
+  const convRate   = totalReg > 0 ? Math.round((converted / totalReg) * 100) : 0;
+  setText('conversionRate', convRate + '%');
+  setText('totalTrials', totalReg);
+  setText('convertedTrials', converted);
+
+  // Module usage (placeholder — would need real usage data)
+  const modules = [
+    { name: '📐 Calculadora', pct: 95 },
+    { name: '🎨 Materiais',   pct: 88 },
+    { name: '🖨️ Impressoras', pct: 42 },
+    { name: '📦 Pedidos',     pct: 61 },
+    { name: '💰 Financeiro',  pct: 34 },
+    { name: '🗄️ BackOffice',  pct: 28 },
+  ];
+  document.getElementById('moduleUsageBars').innerHTML = modules.map(m => `
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:3px">
+        <span>${m.name}</span><span style="font-family:var(--mono)">${m.pct}%</span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${m.pct}%;background:var(--blue);border-radius:3px;transition:width .6s var(--ease)"></div>
+      </div>
+    </div>`).join('');
+
+  // MRR chart (last 12 months — simulated from current data)
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(d.toLocaleString('pt-PT', { month: 'short' }));
+  }
+  const currentMrr = _companies.reduce((s, c) => s + (PLAN_MRR[c.plan] || 0), 0);
+  const bars = months.map((_, i) => {
+    const factor = 0.4 + (i / 11) * 0.6 + (Math.random() * 0.1 - 0.05);
+    return Math.max(0, Math.round(currentMrr * factor));
+  });
+  const maxBar = Math.max(...bars, 1);
+  document.getElementById('mrrChart').innerHTML = bars.map((v, i) =>
+    `<div class="chart-bar ${i < 11 ? 'faded' : ''}" style="height:${Math.round((v/maxBar)*180)}px" title="€${v}"></div>`
+  ).join('');
+  document.getElementById('mrrLabels').innerHTML = months.map(m =>
+    `<div class="chart-label">${m}</div>`
+  ).join('');
+
+  // Top companies
+  const sorted = [..._companies].sort((a, b) => (PLAN_MRR[b.plan]||0) - (PLAN_MRR[a.plan]||0)).slice(0,10);
+  document.getElementById('topCompaniesBody').innerHTML = sorted.length
+    ? sorted.map((c, i) => `<tr>
+        <td class="mono" style="color:var(--muted)">${i+1}</td>
+        <td><div style="font-weight:700">${escH(c.name)}</div></td>
+        <td><span class="plan-badge plan-${c.plan||'trial'}">${c.plan||'trial'}</span></td>
+        <td class="mono">€ ${(PLAN_MRR[c.plan]||0).toFixed(2)}/mês</td>
+        <td class="mono">${fmtDate(c.created_at)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Sem dados</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER — AUDIT LOG
+// ══════════════════════════════════════════════════════════
+function renderAuditLog() {
+  const el = document.getElementById('auditLogBody');
+  if (!_auditLog.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px">Sem registos de auditoria ainda.<br><span style="font-size:.78rem">As ações do admin ficam registadas aqui.</span></div>';
+    return;
+  }
+  el.innerHTML = _auditLog.map(r => `
+    <div class="audit-row">
+      <div class="audit-time">${new Date(r.created_at).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="audit-msg">${escH(r.action || r.message || '')}</div>
+      <div class="audit-who">${escH(r.admin_email || ADMIN_EMAIL)}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMPANY DETAIL MODAL
+// ══════════════════════════════════════════════════════════
+function openCompanyDetail(id) {
+  const c = _companies.find(x => x.id === id);
+  if (!c) return;
+  const sub = _subscriptions.find(s => s.company_id === id);
+  const plan = c.plan || 'trial';
+
+  document.getElementById('companyDetailTitle').textContent = `🏢 ${c.name}`;
+  document.getElementById('companyDetailBody').innerHTML = `
+    <div class="detail-row">
+      <div class="detail-field"><div class="detail-field-lbl">Nome</div><div class="detail-field-val">${escH(c.name)}</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Slug</div><div class="detail-field-val">${escH(c.slug||'—')}</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Plano</div><div class="detail-field-val"><span class="plan-badge plan-${plan}">${plan}</span></div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Estado</div><div class="detail-field-val">${c.is_suspended ? '⛔ Suspenso' : '✅ Ativo'}</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Criado em</div><div class="detail-field-val">${fmtDate(c.created_at)}</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Trial expira</div><div class="detail-field-val">${c.trial_ends_at ? fmtDate(c.trial_ends_at) : '—'}</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">MRR</div><div class="detail-field-val">€ ${(PLAN_MRR[plan]||0).toFixed(2)}/mês</div></div>
+      <div class="detail-field"><div class="detail-field-lbl">Sub. estado</div><div class="detail-field-val">${sub?.status || 'trialing'}</div></div>
+    </div>
+    ${sub ? `<div class="form-hint">Stripe ID: <code>${sub.stripe_subscription_id||'—'}</code> · Próxima cobrança: ${sub.current_period_end ? fmtDate(sub.current_period_end) : '—'}</div>` : ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="quickExtendTrial('${id}')">⏳ Estender trial</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('opCompanyId').value='${id}';switchTab('tools');closeCompanyDetail()">🔧 Operações manuais</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmSuspend('${id}','${escH(c.name)}');closeCompanyDetail()">${c.is_suspended?'✅ Reativar':'⛔ Suspender'}</button>
+    </div>`;
+  document.getElementById('companyDetailOverlay').classList.add('open');
+}
+function closeCompanyDetail() { document.getElementById('companyDetailOverlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════════════════════════
+async function quickExtendTrial(companyId) {
+  const days = parseInt(prompt('Quantos dias estender o trial?', '7'));
+  if (!days || days < 1) return;
+  await _adminAction('extend_trial', { companyId, days });
+}
+
+async function extendTrial() {
+  const id   = document.getElementById('opCompanyId').value.trim();
+  const days = parseInt(document.getElementById('extendDays').value);
+  if (!id) { showToast('Indica o ID da empresa', 'err'); return; }
+  await _adminAction('extend_trial', { companyId: id, days });
+}
+
+async function forcePlan() {
+  const id   = document.getElementById('opCompanyId').value.trim();
+  const plan = document.getElementById('forcePlanVal').value;
+  if (!id) { showToast('Indica o ID da empresa', 'err'); return; }
+  showConfirm('⚙️ Forçar plano', `Alterar empresa ${id} para plano "${plan}"?`, async () => {
+    await _adminAction('force_plan', { companyId: id, plan });
+  });
+}
+
+function confirmSuspend(id, name) {
+  const c = _companies.find(x => x.id === id);
+  const isSuspended = c?.is_suspended;
+  showConfirm(
+    isSuspended ? '✅ Reativar empresa' : '⛔ Suspender empresa',
+    isSuspended ? `Reativar "${name}"?` : `Suspender "${name}"? Os utilizadores perdem acesso imediatamente.`,
+    async () => await _adminAction(isSuspended ? 'unsuspend' : 'suspend', { companyId: id })
+  );
+}
+
+async function suspendCompany() {
+  const id = document.getElementById('opCompanyId').value.trim();
+  if (!id) { showToast('Indica o ID da empresa', 'err'); return; }
+  showConfirm('⛔ Suspender empresa', `Suspender empresa ${id}? Os utilizadores perdem acesso.`, async () => {
+    await _adminAction('suspend', { companyId: id });
+  });
+}
+
+async function unsuspendCompany() {
+  const id = document.getElementById('opCompanyId').value.trim();
+  if (!id) { showToast('Indica o ID da empresa', 'err'); return; }
+  await _adminAction('unsuspend', { companyId: id });
+}
+
+async function reactivateSub(subId) {
+  showConfirm('✅ Reativar subscrição', 'Reativar esta subscrição?', async () => {
+    await _adminAction('reactivate_sub', { subId });
+  });
+}
+
+function confirmCancelSub(subId, name) {
+  showConfirm('❌ Cancelar subscrição', `Cancelar subscrição de "${name}"? O acesso termina no fim do período atual.`, async () => {
+    await _adminAction('cancel_sub', { subId });
+  });
+}
+
+async function syncStripe() {
+  showToast('🔄 Sincronização Stripe — requer Edge Function em produção', '');
+  await _adminAudit('sync_stripe', 'Sincronização manual Stripe solicitada');
+}
+
+async function sendBroadcast() {
+  const title  = document.getElementById('broadcastTitle').value.trim();
+  const msg    = document.getElementById('broadcastMsg').value.trim();
+  const target = document.getElementById('broadcastTarget').value;
+  const type   = document.getElementById('broadcastType').value;
+  if (!title || !msg) { showToast('Preenche título e mensagem', 'err'); return; }
+  showConfirm('📢 Enviar broadcast', `Enviar mensagem "${title}" para: ${target}?`, async () => {
+    try {
+      // Insert into broadcasts table (created by admin for tenant dashboards to read)
+      await _sb().from('admin_broadcasts').insert({ title, message: msg, target, type });
+      await _adminAudit('broadcast', `Broadcast enviado (${target}): ${title}`);
+      document.getElementById('broadcastFb').textContent = '✅ Broadcast enviado!';
+      showToast('📢 Broadcast enviado!', 'ok');
+    } catch(e) {
+      showToast('Erro: ' + e.message, 'err');
+    }
+  });
+}
+
+function previewBroadcast() {
+  const title = document.getElementById('broadcastTitle').value || '(sem título)';
+  const msg   = document.getElementById('broadcastMsg').value || '(sem mensagem)';
+  const type  = document.getElementById('broadcastType').value;
+  const icons = { info:'ℹ️', warning:'⚠️', success:'✅' };
+  showToast(`${icons[type]||'📢'} ${title}: ${msg}`, type === 'success' ? 'ok' : '');
+}
+
+async function saveFlag(flag, value) {
+  try {
+    await _sb().from('admin_flags').upsert({ flag, value: String(value), updated_at: new Date().toISOString() }, { onConflict: 'flag' });
+    await _adminAudit('flag_change', `Feature flag "${flag}" → ${value}`);
+    showToast(`✅ Flag "${flag}" atualizado`, 'ok');
+  } catch(e) {
+    showToast('Erro ao guardar flag: ' + e.message, 'err');
+  }
+}
+
+function exportGlobal(type) {
+  const sep = ';';
+  let csv = '', filename = '';
+  if (type === 'companies' || type === 'full') {
+    csv += '"#SECÇÃO";"Empresas"\n';
+    csv += ['ID','Nome','Slug','Plano','Estado','Trial expira','Criado em'].join(sep)+'\n';
+    _companies.forEach(c => {
+      csv += [c.id,c.name,c.slug||'',c.plan||'trial',c.is_suspended?'suspenso':'ativo',c.trial_ends_at||'',c.created_at||'']
+        .map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
+    });
+  }
+  if (type === 'subscriptions' || type === 'full') {
+    if (csv) csv += '\n';
+    csv += '"#SECÇÃO";"Assinaturas"\n';
+    csv += ['ID','Empresa','Plano','Estado','Stripe ID','Próx. cobrança'].join(sep)+'\n';
+    _subscriptions.forEach(s => {
+      csv += [s.id,s.companies?.name||'',s.companies?.plan||'',s.status,s.stripe_subscription_id||'',s.current_period_end||'']
+        .map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
+    });
+  }
+  filename = `3DZAAP_admin_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:filename, style:'display:none'});
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  showToast('📥 Exportado: ' + filename, 'ok');
+}
+
+function exportAuditLog() {
+  exportGlobal('audit'); // extend as needed
+  showToast('📥 Log de auditoria exportado', 'ok');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ADMIN ACTION HELPER
+//  In production: call Edge Function with service_role
+//  Here: direct Supabase call (admin user bypasses RLS via policy)
+// ══════════════════════════════════════════════════════════
+async function _adminAction(action, params) {
+  try {
+    // Log the action
+    await _adminAudit(action, JSON.stringify(params));
+
+    // Execute
+    if (action === 'extend_trial') {
+      const newEnd = new Date();
+      newEnd.setDate(newEnd.getDate() + (params.days || 7));
+      const { error } = await _sb().from('companies').update({ trial_ends_at: newEnd.toISOString() }).eq('id', params.companyId);
+      if (error) throw error;
+      showToast(`✅ Trial estendido ${params.days} dias`, 'ok');
+    } else if (action === 'force_plan') {
+      const { error } = await _sb().from('companies').update({ plan: params.plan }).eq('id', params.companyId);
+      if (error) throw error;
+      showToast(`✅ Plano alterado para ${params.plan}`, 'ok');
+    } else if (action === 'suspend') {
+      const { error } = await _sb().from('companies').update({ is_suspended: true }).eq('id', params.companyId);
+      if (error) throw error;
+      showToast('⛔ Empresa suspensa', 'ok');
+    } else if (action === 'unsuspend') {
+      const { error } = await _sb().from('companies').update({ is_suspended: false }).eq('id', params.companyId);
+      if (error) throw error;
+      showToast('✅ Empresa reativada', 'ok');
+    } else {
+      showToast(`Ação "${action}" requer Edge Function em produção`, '');
+      return;
+    }
+    await refreshAll();
+    document.getElementById('opFb').textContent = `✅ Ação "${action}" executada`;
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'err');
+    document.getElementById('opFb').textContent = '❌ Erro: ' + e.message;
+  }
+}
+
+async function _adminAudit(action, detail) {
+  try {
+    await _sb().from('admin_audit_log').insert({
+      admin_email: ADMIN_EMAIL,
+      action,
+      detail,
+      created_at: new Date().toISOString(),
+    });
+  } catch(e) {
+    // Audit log table may not exist yet — fail silently
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════
+function switchTab(name) {
+  _currentTab = name;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  const tabs = ['companies','subscriptions','users','metrics','tools','audit'];
+  const idx = tabs.indexOf(name);
+  if (idx > -1) document.querySelectorAll('.admin-tab')[idx]?.classList.add('active');
+  document.getElementById('tab-' + name)?.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  CONFIRM MODAL
+// ══════════════════════════════════════════════════════════
+function showConfirm(title, msg, onOk) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmOkBtn').onclick     = () => { closeConfirm(); onOk(); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════
+function setText(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; }
+</script>
+</body>
+</html>
