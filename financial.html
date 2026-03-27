@@ -550,7 +550,6 @@ function toggleSidebar() {
   document.getElementById('sideOverlay').classList.toggle('open');
 }
 
-); }
 function dlCSV(csv, fn) {
   const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
