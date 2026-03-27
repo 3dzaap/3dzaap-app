@@ -7,44 +7,25 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
-// ── THEME SYSTEM ───────────────────────────────────────────
-(function(){
-  var pref = localStorage.getItem('3dzaap_theme') || 'system';
-  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-  var isDark;
+// ── THEME SYSTEM (settings) ─────────────────────────────────
+function _computeIsDark(pref, auto) {
   if (auto) {
     var h = new Date().getHours();
-    isDark = h >= 20 || h < 7;
-  } else if (pref === 'dark') {
-    isDark = true;
-  } else if (pref === 'light') {
-    isDark = false;
-  } else {
-    isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+    return h >= 20 || h < 7;
   }
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  if (pref === 'system') return window.matchMedia('(prefers-color-scheme:dark)').matches;
+  return pref === 'dark';
+}
+
+// Apply ASAP to avoid flash
+(function() {
+  var pref = localStorage.getItem('3dzaap_theme') || 'system';
+  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+  document.documentElement.setAttribute('data-theme', _computeIsDark(pref, auto) ? 'dark' : 'light');
 })();
 
 function applyTheme(pref, auto) {
-  var isDark;
-  if (auto) {
-    var h = new Date().getHours();
-    isDark = h >= 20 || h < 7;
-  } else if (pref === 'system') {
-    isDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
-  } else {
-    isDark = pref === 'dark';
-  }
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-}
-
-else {
-    var curr2 = document.documentElement.getAttribute('data-theme');
-    var next2 = curr2 === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next2);
-    localStorage.setItem('3dzaap_theme', next2);
-  }
-  updateThemeToggleBtn();
+  document.documentElement.setAttribute('data-theme', _computeIsDark(pref, auto) ? 'dark' : 'light');
 }
 
 function updateThemeToggleBtn() {
@@ -52,30 +33,84 @@ function updateThemeToggleBtn() {
   if (b) b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
 }
 
-);
-  });
-  // Wire auto toggle
-  if (autoChk) autoChk.addEventListener('change', function() { markDirty(); });
-  // Listen for system change
-  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function() {
-    if (window._logoCompressing) return; // ignore during canvas operations
-    var p = localStorage.getItem('3dzaap_theme') || 'system';
-    var a = localStorage.getItem('3dzaap_theme_auto') === '1';
-    if (p === 'system' && !a) applyTheme('system', false);
-    updateThemeToggleBtn();
-  });
-  // Auto-update every minute (for hour-based switching)
-  setInterval(function() {
-    var p = localStorage.getItem('3dzaap_theme') || 'system';
-    var a = localStorage.getItem('3dzaap_theme_auto') === '1';
-    if (a) { applyTheme(p, true); updateThemeToggleBtn(); }
-  }, 60000);
-}
-
 function updateAutoRowVisibility(pref) {
   var row = document.getElementById('themeAutoRow');
   if (row) row.style.display = pref === 'system' ? '' : 'none';
 }
+
+function toggleTheme() {
+  var curr = document.documentElement.getAttribute('data-theme') || 'light';
+  var next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('3dzaap_theme', next);
+  localStorage.removeItem('3dzaap_theme_auto');
+
+  var autoChk = document.getElementById('prefThemeAuto');
+  if (autoChk) autoChk.checked = false;
+  var radio = document.querySelector('input[name="prefTheme"][value="' + next + '"]');
+  if (radio) radio.checked = true;
+  updateAutoRowVisibility(next);
+  updateThemeToggleBtn();
+  if (typeof markDirty === 'function') markDirty();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var autoChk = document.getElementById('prefThemeAuto');
+  var radios  = document.querySelectorAll('input[name="prefTheme"]');
+
+  function getPref() {
+    var r = document.querySelector('input[name="prefTheme"]:checked');
+    return r ? r.value : (localStorage.getItem('3dzaap_theme') || 'system');
+  }
+
+  // Initial sync
+  updateAutoRowVisibility(getPref());
+  updateThemeToggleBtn();
+
+  radios.forEach(function(r) {
+    r.addEventListener('change', function() {
+      var pref = getPref();
+      var auto = !!(autoChk && autoChk.checked);
+      localStorage.setItem('3dzaap_theme', pref);
+      if (auto) localStorage.setItem('3dzaap_theme_auto', '1');
+      else localStorage.removeItem('3dzaap_theme_auto');
+      applyTheme(pref, auto);
+      updateAutoRowVisibility(pref);
+      updateThemeToggleBtn();
+      if (typeof markDirty === 'function') markDirty();
+    });
+  });
+
+  if (autoChk) {
+    autoChk.addEventListener('change', function() {
+      var pref = getPref();
+      var auto = !!autoChk.checked;
+      if (auto) localStorage.setItem('3dzaap_theme_auto', '1');
+      else localStorage.removeItem('3dzaap_theme_auto');
+      applyTheme(pref, auto);
+      updateThemeToggleBtn();
+      if (typeof markDirty === 'function') markDirty();
+    });
+  }
+
+  // Listen for system changes
+  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function() {
+    var pref = localStorage.getItem('3dzaap_theme') || 'system';
+    var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+    if (pref === 'system' && !auto) applyTheme(pref, false);
+    updateThemeToggleBtn();
+  });
+
+  // Auto-update every minute (hour-based switching)
+  setInterval(function() {
+    var pref = localStorage.getItem('3dzaap_theme') || 'system';
+    var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
+    if (auto) {
+      applyTheme(pref, true);
+      updateThemeToggleBtn();
+    }
+  }, 60000);
+});
 </script>
 <script>
 
