@@ -49,7 +49,7 @@
   .fin-kpi-grid{grid-template-columns:1fr 1fr}
   .period-bar{flex-wrap:wrap;gap:8px}
   .filter-bar{flex-wrap:wrap;gap:8px}
-  .glass-table-card .gtc-wrap{display:none}
+  .fin-card .table-wrap{display:none}
   .mob-fin-list{display:flex}
 }
 
@@ -185,13 +185,25 @@
 
 .fin-status-table tbody tr:last-child td{border-bottom:none}
 
+.fin-orders-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:500px}
 
+.fin-orders-table th{padding:9px 12px;text-align:left;font-size:.68rem;font-weight:800;color:var(--subtle);text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--border);white-space:nowrap}
 
-.gtc-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:36px 24px;color:var(--subtle);text-align:center}
+.fin-orders-table th.r{text-align:right}
 
-.gtc-empty-icon{font-size:2rem;opacity:.3}
+.fin-orders-table td{padding:9px 12px;border-bottom:1px solid rgba(59,143,212,.18);color:var(--dark);vertical-align:middle}
 
-.gtc-empty p{font-size:.82rem}
+.fin-orders-table td.r{text-align:right;font-family:var(--mono);font-size:.78rem}
+
+.fin-orders-table tbody tr:last-child td{border-bottom:none}
+
+.fin-orders-table tbody tr:hover{background:rgba(59,143,212,.04)}
+
+.fin-empty{display:flex;flex-direction:column;align-items:center;gap:10px;padding:36px 24px;color:var(--subtle);text-align:center}
+
+.fin-empty-icon{font-size:2rem;opacity:.3}
+
+.fin-empty p{font-size:.82rem}
 
 @media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -277,19 +289,14 @@
         </div>
       </div>
 
-      <div class="glass-table-card" style="margin-top:0">
-        <div class="gtc-header">
-          <div class="gtc-title">📋 Todos os pedidos do período</div>
-          <div class="gtc-controls">
-            <span class="gtc-count" id="finOrderCount"></span>
+      <div class="fin-card">
+        <div class="fin-card-title">📋 Todos os pedidos do período</div>
+        <div class="table-wrap">
+          <div id="ordersEmpty" class="fin-empty" style="display:none">
+            <div class="fin-empty-icon">📋</div>
+            <p>Sem pedidos neste período.</p>
           </div>
-        </div>
-        <div class="gtc-wrap">
-          <div class="gtc-empty" id="ordersEmpty" style="display:none">
-            <div class="gtc-empty-icon">📋</div>
-            <h3>Sem pedidos neste período</h3>
-          </div>
-          <table class="gtc-table" id="ordersTable" style="display:none">
+          <table class="fin-orders-table" id="ordersTable" style="display:none">
             <thead>
               <tr>
                 <th>Nº</th><th>Cliente</th><th>Estado</th><th>Pagamento</th>
@@ -459,8 +466,6 @@ function renderAll() {
   const tableEl = document.getElementById('ordersTable');
   const emptyEl = document.getElementById('ordersEmpty');
   const ordBody = document.getElementById('ordersTableBody');
-  const countEl = document.getElementById('finOrderCount');
-  if (countEl) countEl.textContent = `${periodOrders.length} pedido${periodOrders.length !== 1 ? 's' : ''}`;
   if (!periodOrders.length) {
     tableEl.style.display = 'none';
     emptyEl.style.display = 'flex';
