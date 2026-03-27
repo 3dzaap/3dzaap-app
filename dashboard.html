@@ -228,6 +228,29 @@
 .theme-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg-btn-ghost);cursor:pointer;font-size:.9rem;transition:all .2s var(--ease);flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
 .theme-toggle:hover{background:rgba(59,143,212,.12);border-color:rgba(59,143,212,.35)}
+
+/* ── BROADCAST BANNERS (admin → tenants) ──────────────── */
+.broadcast-stack{display:flex;flex-direction:column;gap:8px;margin:0 0 16px}
+.broadcast-banner{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 16px;border-radius:var(--rm);
+  border-left:4px solid transparent;animation:fadeUp .4s var(--ease) both;
+  position:relative;
+}
+.broadcast-banner.bc-info    {background:rgba(59,143,212,.10);border-left-color:var(--blue);color:var(--dark)}
+.broadcast-banner.bc-warning {background:rgba(245,158,11,.10); border-left-color:#f59e0b;color:var(--dark)}
+.broadcast-banner.bc-success {background:rgba(34,197,94,.10);  border-left-color:#22c55e;color:var(--dark)}
+.broadcast-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.broadcast-body{flex:1;min-width:0}
+.broadcast-title{font-size:.84rem;font-weight:800;margin-bottom:2px}
+.broadcast-msg  {font-size:.78rem;color:var(--muted);line-height:1.45}
+.broadcast-close{
+  position:absolute;top:8px;right:10px;
+  background:none;border:none;cursor:pointer;
+  font-size:.75rem;color:var(--muted);padding:2px 5px;border-radius:4px;
+  transition:background .15s;
+}
+.broadcast-close:hover{background:var(--bg-hover);color:var(--dark)}
 </style>
 </head>
 <body>
@@ -280,6 +303,9 @@
 
     <!-- Page Content -->
     <div class="page-content">
+
+      <!-- Admin Broadcasts -->
+      <div class="broadcast-stack" id="broadcastStack" style="display:none"></div>
 
       <!-- Greeting -->
       <div class="greeting">
@@ -498,6 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderPrinterAlerts();
   applyFeatureGating();
   setDate();
+  loadBroadcasts();  // async — não bloqueia o render principal
 });
 
 function setDate() {
@@ -1149,6 +1176,79 @@ async function doLogout() {
 }
 
 // ── HELPERS ────────────────────────────
+
+// ══════════════════════════════════════════════════════════
+//  ADMIN BROADCASTS — lê admin_broadcasts e exibe banners
+// ══════════════════════════════════════════════════════════
+async function loadBroadcasts() {
+  try {
+    const plan = state.company.plan || 'trial';
+    const now  = new Date().toISOString();
+
+    // Fetch broadcasts active e não expiradas
+    const { data, error } = await _sb
+      .from('admin_broadcasts')
+      .select('id, title, message, type, target, expires_at')
+      .eq('active', true)
+      .or(`expires_at.is.null,expires_at.gte.${now}`)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error || !data || !data.length) return;
+
+    // Filtrar pelo target (all, trial, past_due, pro, business)
+    const relevant = data.filter(b => {
+      if (b.target === 'all') return true;
+      if (b.target === plan)  return true;
+      // past_due: não temos info de subscription no dashboard — skip para não mostrar errado
+      return false;
+    });
+
+    if (!relevant.length) return;
+
+    // Verificar quais já foram dispensados nesta sessão
+    const dismissed = JSON.parse(sessionStorage.getItem('bc_dismissed') || '[]');
+    const toShow = relevant.filter(b => !dismissed.includes(b.id));
+    if (!toShow.length) return;
+
+    const stack = document.getElementById('broadcastStack');
+    if (!stack) return;
+    stack.style.display = 'flex';
+
+    const icons = { info: 'ℹ️', warning: '⚠️', success: '✅' };
+
+    stack.innerHTML = toShow.map(b => `
+      <div class="broadcast-banner bc-${b.type || 'info'}" id="bc-${b.id}">
+        <span class="broadcast-icon">${icons[b.type] || '📢'}</span>
+        <div class="broadcast-body">
+          <div class="broadcast-title">${escH(b.title)}</div>
+          <div class="broadcast-msg">${escH(b.message)}</div>
+        </div>
+        <button class="broadcast-close" onclick="dismissBroadcast('${b.id}')" title="Fechar">✕</button>
+      </div>`).join('');
+
+  } catch(e) {
+    // Tabela pode não existir ainda — silent fail
+  }
+}
+
+function dismissBroadcast(id) {
+  const el = document.getElementById('bc-' + id);
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-4px)';
+    el.style.transition = 'all .25s ease';
+    setTimeout(() => {
+      el.remove();
+      const stack = document.getElementById('broadcastStack');
+      if (stack && !stack.children.length) stack.style.display = 'none';
+    }, 250);
+  }
+  // Guardar em sessionStorage para não mostrar de novo nesta sessão
+  const dismissed = JSON.parse(sessionStorage.getItem('bc_dismissed') || '[]');
+  if (!dismissed.includes(id)) dismissed.push(id);
+  sessionStorage.setItem('bc_dismissed', JSON.stringify(dismissed));
+}
 </script>
 </body>
 </html>
