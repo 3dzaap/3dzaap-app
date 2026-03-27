@@ -928,7 +928,7 @@ function renderRecentOrders() {
     return `<div class="order-row" onclick="navigate('orders')">
       <span class="order-num">${o.orderNumber || o.order_number || 'PED-?'}</span>
       <div class="order-client">
-        <div class="order-client-name">${escHtml(o.clientName || o.client_name || 'Cliente')}</div>
+        <div class="order-client-name">${escH(o.clientName || o.client_name || 'Cliente')}</div>
         <div class="order-client-date">${dateStr}</div>
       </div>
       <span class="order-status-badge s-${status}">${statusLabel}</span>
@@ -1013,10 +1013,10 @@ function renderFilamentAlerts() {
     const hex      = f.colorHex || '#999';
     const name     = f.colorName || f.color || '';
     return `<div class="fil-item">
-      <div class="fil-color-dot" style="background:${escHtml(hex)}"></div>
+      <div class="fil-color-dot" style="background:${escH(hex)}"></div>
       <div class="fil-info">
-        <div class="fil-name">${escHtml(f.type||'?')} ${escHtml(name)}</div>
-        <div class="fil-sub">${escHtml(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escHtml(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
+        <div class="fil-name">${escH(f.type||'?')} ${escH(name)}</div>
+        <div class="fil-sub">${escH(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escH(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
       </div>
       <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
     </div>`;
