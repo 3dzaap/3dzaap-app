@@ -1020,27 +1020,33 @@ function renderMetrics() {
   setText('totalTrials', totalReg);
   setText('convertedTrials', converted);
 
-  // ── Module usage (real — derived from plan gates & user counts) ──
-  // Logic: a module is "used" if a company has the plan that unlocks it AND has at least 1 user.
-  // For modules available on all plans (calculator, materials, printers, backoffice),
-  // 100% of active companies are potential users. For gated modules we use plan data.
-  const active = _companies.filter(c => !c.is_suspended);
-  const activeCount = active.length || 1;
+  // ── Module usage — fonte de verdade: lógica de planos acordada ──
+  // Trial/Business: todos os módulos
+  // Starter: Calculadora, Materiais (max 10), Impressoras (max 1)
+  // Pro: Calculadora, Materiais, Impressoras, Pedidos, BackOffice
+  const active         = _companies.filter(c => !c.is_suspended);
+  const activeCount    = active.length || 1;
   const ordersUsers    = active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
   const financialUsers = active.filter(c => ['trial','business'].includes(c.plan)).length;
+  const backofficeUsers= active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
+  const settingsUsers  = active.filter(c => ['trial','business'].includes(c.plan)).length;
+  const dashboardUsers = active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
   const moduleUsage = [
-    { name: '📐 Calculadora', count: activeCount,    total: activeCount },
-    { name: '🎨 Materiais',   count: activeCount,    total: activeCount },
-    { name: '🖨️ Impressoras', count: activeCount,    total: activeCount },
-    { name: '📦 Pedidos',     count: ordersUsers,    total: activeCount },
-    { name: '💰 Financeiro',  count: financialUsers, total: activeCount },
-    { name: '🗄️ BackOffice',  count: activeCount,    total: activeCount },
+    { name: '📐 Calculadora',   count: activeCount,    total: activeCount, gate: null },
+    { name: '🎨 Materiais',     count: activeCount,    total: activeCount, gate: 'Starter: max 10' },
+    { name: '🖨️ Impressoras',  count: activeCount,    total: activeCount, gate: 'Starter: max 1' },
+    { name: '📦 Pedidos',       count: ordersUsers,    total: activeCount, gate: 'Pro+' },
+    { name: '💰 Financeiro',    count: financialUsers, total: activeCount, gate: 'Business' },
+    { name: '🗄️ BackOffice',   count: backofficeUsers, total: activeCount, gate: 'Pro+' },
+    { name: '⚙️ Configurações', count: settingsUsers,  total: activeCount, gate: 'Business' },
+    { name: '🏠 Dashboard',     count: dashboardUsers, total: activeCount, gate: 'Pro+' },
   ];
   document.getElementById('moduleUsageBars').innerHTML = moduleUsage.map(m => {
     const pct = Math.round((m.count / m.total) * 100);
+    const gateTag = m.gate ? `<span style="font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:8px;background:rgba(59,143,212,.12);color:var(--blue);margin-left:5px">${m.gate}</span>` : '';
     return `<div>
-      <div style="display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:3px">
-        <span>${m.name}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.76rem;margin-bottom:3px">
+        <span>${m.name}${gateTag}</span>
         <span style="font-family:var(--mono)">${m.count}/${m.total} <span style="color:var(--muted)">(${pct}%)</span></span>
       </div>
       <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">

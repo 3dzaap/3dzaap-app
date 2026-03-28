@@ -492,10 +492,10 @@
 <script>
 // ── STATE ──────────────────────────────
 const PLAN_FEATURES = {
-  trial:    { calculator:true,  filaments:true, orders:true,  financial:true,  backoffice:true, customization:true  },
-  starter:  { calculator:true,  filaments:true, orders:false, financial:false, backoffice:true, customization:false },
-  pro:      { calculator:true,  filaments:true, orders:true,  financial:false, backoffice:true, customization:false },
-  business: { calculator:true,  filaments:true, orders:true,  financial:true,  backoffice:true, customization:true  },
+  trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true  },
+  starter:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
+  pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
+  business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
 };
 
 const PLAN_LABELS = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
@@ -1029,16 +1029,26 @@ function canAccess(feature) {
 function applyFeatureGating() {
   const plan = state.company.plan;
 
-  // Nav badges
-  if (!canAccess('orders')) {
-    document.getElementById('ordersLock').style.display = '';
-    document.getElementById('ordersActionLock').style.display = '';
-    document.getElementById('actionOrders').classList.add('locked-card');
-  }
-  if (!canAccess('financial')) {
-    document.getElementById('financialLock').style.display = '';
-    document.getElementById('financialActionLock').style.display = '';
-    document.getElementById('actionFinancial').classList.add('locked-card');
+  const locks = {
+    orders:     { navId: 'navLockOrders',     actionId: 'ordersActionLock',     cardId: 'actionOrders'    },
+    financial:  { navId: 'navLockFinancial',  actionId: 'financialActionLock',  cardId: 'actionFinancial' },
+    backoffice: { navId: 'navLockBackoffice', actionId: null, cardId: null },
+    settings:   { navId: 'navLockSettings',   actionId: null, cardId: null },
+    dashboard:  { navId: 'navLockDashboard',  actionId: null, cardId: null },
+  };
+
+  Object.entries(locks).forEach(([feature, ids]) => {
+    if (!canAccess(feature)) {
+      if (ids.navId)    { const el = document.getElementById(ids.navId);    if (el) el.style.display = ''; }
+      if (ids.actionId) { const el = document.getElementById(ids.actionId); if (el) el.style.display = ''; }
+      if (ids.cardId)   { const el = document.getElementById(ids.cardId);   if (el) el.classList.add('locked-card'); }
+    }
+  });
+
+  // Starter: redirecionar para calculadora se tentar aceder ao dashboard
+  if (plan === 'starter') {
+    const banner = document.getElementById('starterBanner');
+    if (banner) banner.style.display = '';
   }
 }
 
@@ -1054,15 +1064,23 @@ function handleFeatureClick(feature, featureName, requiredPlan) {
 // ── GATE MODAL ─────────────────────────
 const GATE_CONFIG = {
   orders: {
-    icon: '📦',
-    title: 'Módulo Pedidos',
+    icon: '📦', title: 'Módulo Pedidos',
     sub: 'Gere pedidos de clientes, acompanha o pipeline de produção e gera ordens de serviço. Disponível no plano Pro ou superior.',
     plans: ['pro','business']
   },
   financial: {
-    icon: '💰',
-    title: 'Módulo Financeiro',
+    icon: '💰', title: 'Módulo Financeiro',
     sub: 'Análise de receitas, relatórios mensais e exportação financeira. Exclusivo do plano Business.',
+    plans: ['business']
+  },
+  backoffice: {
+    icon: '🗄️', title: 'BackOffice',
+    sub: 'Importa e exporta dados, gere backups e acede a ferramentas avançadas de gestão. Disponível no plano Pro ou superior.',
+    plans: ['pro','business']
+  },
+  settings: {
+    icon: '⚙️', title: 'Configurações',
+    sub: 'Personaliza a tua empresa, faturação, moeda e preferências da plataforma. Disponível no plano Business.',
     plans: ['business']
   },
 };

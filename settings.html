@@ -719,33 +719,19 @@ async function initPage() {
   if (!_session) return;
   loadCfg(_session);
 
-  // Sidebar
-  var fullName = (_session.fname && _session.lname)
-    ? _session.fname + ' ' + _session.lname
-    : _session.fname || _session.lname
-    || _session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
-
-  var initials = fullName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
-  var elUserName   = document.getElementById('userNameSidebar');
-  var elUserEmail  = document.getElementById('userEmailSidebar');
-  var elUserAvatar = document.getElementById('userAvatarSidebar');
-  if (elUserName)   elUserName.textContent   = fullName;
-  if (elUserEmail)  elUserEmail.textContent  = _session.email;
-  if (elUserAvatar) elUserAvatar.textContent = initials;
-  var cName = _session.companyName || 'Empresa';
-  var cInitials = cName.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
-  var elCompanyName   = document.getElementById('companyNameSidebar');
-  var elCompanyAvatar = document.getElementById('companyAvatarSidebar');
-  var elPlanBadge     = document.getElementById('planBadgeSidebar');
-  if (elCompanyName)   elCompanyName.textContent   = cName;
-  if (elCompanyAvatar) elCompanyAvatar.textContent = cInitials;
-  var planLabels = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
-  if (elPlanBadge)     elPlanBadge.textContent = planLabels[_session.plan] || 'Trial';
-
-  // Feature gating
+  // Feature gating — bloquear acesso à página para Starter e Pro
   var plan = _session.plan || 'trial';
-  if (!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display = '';
-  if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display = '';
+  var features = (Sidebar.PLAN_FEATURES || {})[plan] || {};
+  if (features.settings === false) {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;font-family:var(--font,sans-serif);text-align:center;padding:24px">
+        <div style="font-size:3rem">🔒</div>
+        <div style="font-size:1.2rem;font-weight:800;color:var(--dark,#1e293b)">Configurações — Plano Business</div>
+        <div style="font-size:.9rem;color:var(--muted,#64748b);max-width:360px">O teu plano <strong>${plan}</strong> não inclui acesso às Configurações. Faz upgrade para Business.</div>
+        <a href="calculator.html" style="margin-top:8px;padding:10px 24px;background:#3b8fd4;color:#fff;border-radius:8px;text-decoration:none;font-weight:700">← Voltar à Calculadora</a>
+      </div>`;
+    return;
+  }
 
   // Populate fields from config
   var cfg = _session.config || {};

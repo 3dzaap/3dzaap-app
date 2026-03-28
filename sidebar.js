@@ -25,10 +25,10 @@ const Sidebar = (() => {
     {
       section: 'Principal',
       items: [
-        { id: 'dashboard',   href: 'dashboard.html',   icon: '🏠', label: 'Início' },
+        { id: 'dashboard',   href: 'dashboard.html',   icon: '🏠', label: 'Início',        lockId: 'navLockDashboard' },
         { id: 'calculator',  href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
-        { id: 'orders',      href: 'orders.html',      icon: '📦', label: 'Pedidos',    lockId: 'navLockOrders' },
-        { id: 'financial',   href: 'financial.html',   icon: '💰', label: 'Financeiro', lockId: 'navLockFinancial' },
+        { id: 'orders',      href: 'orders.html',      icon: '📦', label: 'Pedidos',       lockId: 'navLockOrders' },
+        { id: 'financial',   href: 'financial.html',   icon: '💰', label: 'Financeiro',    lockId: 'navLockFinancial' },
       ]
     },
     {
@@ -36,13 +36,13 @@ const Sidebar = (() => {
       items: [
         { id: 'materials',   href: 'materials.html',   icon: '🎨', label: 'Materiais' },
         { id: 'printers',    href: 'printers.html',    icon: '🖨️', label: 'Impressoras' },
-        { id: 'backoffice',  href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice' },
+        { id: 'backoffice',  href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice',   lockId: 'navLockBackoffice' },
       ]
     },
     {
       section: 'Conta',
       items: [
-        { id: 'settings',    href: 'settings.html',    icon: '⚙️', label: 'Configurações' },
+        { id: 'settings',    href: 'settings.html',    icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
         { id: 'billing',     href: '#',                icon: '💳', label: 'Assinatura', muted: true,
           onclick: "showToast('💳 Assinatura — em breve','');return false;" },
         { id: 'admin',       href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
@@ -186,14 +186,27 @@ const Sidebar = (() => {
   }
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
+  // Fonte de verdade — lógica de planos acordada:
+  // Trial    : todos os módulos
+  // Starter  : Calculadora, Materiais (max 10), Impressoras (max 1)
+  // Pro      : Calculadora, Materiais, Impressoras, Pedidos, BackOffice, Configurações, Dashboard
+  // Business : todos os módulos
   const PLAN_FEATURES = {
-    trial:    { orders: true,  financial: true  },
-    starter:  { orders: false, financial: false },
-    pro:      { orders: true,  financial: false },
-    business: { orders: true,  financial: true  },
+    trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true },
+    starter:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
+    pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true, settings:false },
+    business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true },
   };
 
-  const LOCK_LABELS = { orders: 'Pro+', financial: 'Business' };
+  // Limites de registos por plano (null = sem limite)
+  const PLAN_LIMITS = {
+    trial:    { materials: null, printers: null },
+    starter:  { materials: 10,  printers: 1    },
+    pro:      { materials: null, printers: null },
+    business: { materials: null, printers: null },
+  };
+
+  const LOCK_LABELS = { orders: 'Pro+', financial: 'Business', backoffice: 'Pro+', settings: 'Pro+', dashboard: 'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
@@ -252,7 +265,7 @@ const Sidebar = (() => {
   }
 
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, _toggleUserMenu, _closeUserMenu, _doLogout };
+  return { init, setSession, toggle, close, _toggleUserMenu, _closeUserMenu, _doLogout, PLAN_FEATURES, PLAN_LIMITS };
 
 })();
 

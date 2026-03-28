@@ -856,8 +856,18 @@ async function applyFeatureGating() {
   try {
     const session = await Auth.getSession();
     const plan = session?.plan || 'trial';
-    if (!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display = '';
-    if (!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display = '';
+    const features = Sidebar.PLAN_FEATURES[plan] || Sidebar.PLAN_FEATURES.trial;
+    const limits   = Sidebar.PLAN_LIMITS[plan]   || Sidebar.PLAN_LIMITS.trial;
+
+    // Sidebar nav locks
+    if (!features.orders)    { const el = document.getElementById('navLockOrders');    if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
+    if (!features.financial) { const el = document.getElementById('navLockFinancial'); if (el) { el.textContent = 'Business'; el.style.display = ''; } }
+    if (!features.backoffice){ const el = document.getElementById('navLockBackoffice');if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
+    if (!features.settings)  { const el = document.getElementById('navLockSettings');  if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
+    if (!features.dashboard) { const el = document.getElementById('navLockDashboard'); if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
+
+    // Guardar limite para uso em saveMaterial
+    window._materialLimit = limits.materials;
   } catch(e) {}
 }
 
@@ -1373,6 +1383,14 @@ function applyModalClass() {
 //  SAVE
 // ══════════════════════════════════════
 async function saveMaterial() {
+  // Verificar limite de plano (apenas para novos registos)
+  if (editingId === null && window._materialLimit !== null && window._materialLimit !== undefined) {
+    if (allMaterials.length >= window._materialLimit) {
+      showUpgradeNotice('materials');
+      return;
+    }
+  }
+
   const isFDM    = modalClass === 'fdm';
   const colorName = document.getElementById('colorName').value.trim() || 'Sem nome';
   const notes     = document.getElementById('fNotes').value.trim();
@@ -1514,6 +1532,33 @@ function exportCSV() {
 // ══════════════════════════════════════
 //  USER MENU / SIDEBAR
 // ══════════════════════════════════════
+function showUpgradeNotice(module) {
+  const msgs = {
+    materials: `⚠️ Limite do plano Starter atingido (${window._materialLimit} materiais).\nFaz upgrade para Pro para registos ilimitados.`,
+    printers:  `⚠️ Limite do plano Starter atingido (${window._printerLimit} impressora).\nFaz upgrade para Pro para impressoras ilimitadas.`,
+  };
+  const msg = msgs[module] || '⚠️ Limite do teu plano atingido. Faz upgrade para continuar.';
+  showToast(msg, 'err');
+  // Banner persistente de upgrade
+  let banner = document.getElementById('upgradeBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'upgradeBanner';
+    banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-card);border:1.5px solid var(--orange);border-radius:var(--rm);padding:14px 20px;box-shadow:var(--sh-float);display:flex;align-items:center;gap:14px;max-width:420px;width:90%;animation:fadeUp .3s var(--ease)';
+    banner.innerHTML = `
+      <div style="font-size:1.4rem">🔒</div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:.88rem;color:var(--dark)">Limite do plano Starter</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Faz upgrade para <strong>Pro</strong> e remove todos os limites.</div>
+      </div>
+      <a href="billing.html" style="padding:8px 14px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap">Ver planos</a>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px">✕</button>
+    `;
+    document.body.appendChild(banner);
+    setTimeout(() => banner?.remove(), 8000);
+  }
+}
+
 function toggleUserMenu() { Sidebar._toggleUserMenu(); }
 function closeUserMenu()  { Sidebar._closeUserMenu(); }
 async function doLogout() { Sidebar._doLogout(); }
