@@ -8,9 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
 (function(){
-  var s=localStorage.getItem('3dzaap_theme');
-  var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  document.documentElement.setAttribute('data-theme',s||(sys?'dark':'light'));
+  var saved=localStorage.getItem('3dzaap_theme')||'light';
+  document.documentElement.setAttribute('data-theme',saved);
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
