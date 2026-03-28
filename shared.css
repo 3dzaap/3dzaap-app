@@ -586,15 +586,20 @@ body {
    14. TABLE
    ================================================================ */
 
-.table-card { background: var(--bg-card); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1.5px solid var(--border); border-radius: var(--rl); box-shadow: var(--sh); overflow: visible; animation: fadeUp .5s var(--ease) .2s both; }
-.table-wrap { overflow-x: auto; overflow-y: visible; }
+.table-card { background: var(--bg-card); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1.5px solid var(--border); border-radius: var(--rl); box-shadow: var(--sh); overflow: hidden; animation: fadeUp .5s var(--ease) .2s both; }
+.table-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px); /* topbar 60px + page padding + filtros */
+  -webkit-overflow-scrolling: touch;
+}
 
 .ord-table { width: 100%; border-collapse: collapse; min-width: 780px; }
 .ord-table thead tr {
   background: var(--bg-table-head);
   border-bottom: 1.5px solid var(--border);
   position: sticky;
-  top: 60px;   /* altura da topbar */
+  top: 0;  /* relativo ao table-wrap (overflow-y:auto) */
   z-index: 10;
 }
 .ord-table th { padding: 11px 16px; font-size: .71rem; font-weight: 800; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; text-align: left; white-space: nowrap; }
