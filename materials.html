@@ -132,7 +132,7 @@
 
 .fil-table{width:100%;border-collapse:collapse;min-width:700px}
 
-.fil-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:10}
+.fil-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border)}
 
 .fil-table th{padding:11px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
 
@@ -1531,16 +1531,38 @@ function toggleSidebar() {
 //  MULTI-BRAND TAG FUNCTIONS
 // ══════════════════════════════════════
 function getBrandsArray(type) {
+  if (type === 'pk') {
+    const v = document.getElementById('pkBrand').value;
+    return v ? v.split('||') : [];
+  }
   const val = document.getElementById(type === 'fdm' ? 'fBrand' : 'rBrand').value;
   return val ? val.split('||').filter(Boolean) : [];
 }
 
 function setBrandsArray(type, arr) {
+  if (type === 'pk') {
+    document.getElementById('pkBrand').value = arr.join('||');
+    return;
+  }
   document.getElementById(type === 'fdm' ? 'fBrand' : 'rBrand').value = arr.join('||');
 }
 
 function renderBrandTags(type, arr) {
-  const isFDM = type === 'fdm';
+  if (type === 'pk') {
+    const container = document.getElementById('pkBrandTags');
+    const empty     = document.getElementById('pkBrandTagsEmpty');
+    [...container.querySelectorAll('.brand-tag')].forEach(t => t.remove());
+    if (!arr.length) { empty.style.display = ''; return; }
+    empty.style.display = 'none';
+    arr.forEach(brand => {
+      const tag = document.createElement('span');
+      tag.className = 'brand-tag';
+      tag.innerHTML = escH(brand) + '<button type="button" onclick="removeBrandTag(\'pk\',\'' + brand.replace(/'/g,"\\'") + '\')">×</button>';
+      container.appendChild(tag);
+    });
+    return;
+  }
+    const isFDM = type === 'fdm';
   const container = document.getElementById(isFDM ? 'fBrandTags' : 'rBrandTags');
   const empty     = document.getElementById(isFDM ? 'fBrandTagsEmpty' : 'rBrandTagsEmpty');
   [...container.querySelectorAll('.brand-tag')].forEach(t => t.remove());
@@ -1660,42 +1682,7 @@ function pkAddBrand() {
   sel.value = '';
 }
 
-// Override getBrandsArray/setBrandsArray/renderBrandTags to support 'pk' type
-const _origGetBrandsArray = getBrandsArray;
-const _origSetBrandsArray = setBrandsArray;
-const _origRenderBrandTags = renderBrandTags;
-
-function getBrandsArray(type) {
-  if (type === 'pk') {
-    const v = document.getElementById('pkBrand').value;
-    return v ? v.split('||') : [];
-  }
-  return _origGetBrandsArray(type);
-}
-function setBrandsArray(type, arr) {
-  if (type === 'pk') {
-    document.getElementById('pkBrand').value = arr.join('||');
-    return;
-  }
-  _origSetBrandsArray(type, arr);
-}
-function renderBrandTags(type, arr) {
-  if (type === 'pk') {
-    const container = document.getElementById('pkBrandTags');
-    const empty     = document.getElementById('pkBrandTagsEmpty');
-    [...container.querySelectorAll('.brand-tag')].forEach(t => t.remove());
-    if (!arr.length) { empty.style.display = ''; return; }
-    empty.style.display = 'none';
-    arr.forEach(brand => {
-      const tag = document.createElement('span');
-      tag.className = 'brand-tag';
-      tag.innerHTML = `${escH(brand)}<button type="button" onclick="removeBrandTag('pk','${brand.replace(/'/g,"\\'")}')">×</button>`;
-      container.appendChild(tag);
-    });
-    return;
-  }
-  _origRenderBrandTags(type, arr);
-}
+// getBrandsArray / setBrandsArray / renderBrandTags support 'pk' natively (merged above)
 
 // ── Color rows ──────────────────────────────────────────────
 function _pkColorNameFromHex(hex) {
