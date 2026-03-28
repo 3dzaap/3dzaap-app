@@ -371,10 +371,8 @@ async function applyFeatureGating() {
         </div>`;
       return;
     }
-    const oLock = document.getElementById('ordersLock');
-    const fLock = document.getElementById('financialLock');
-    if (oLock && !['trial','pro','business'].includes(plan)) oLock.style.display = '';
-    if (fLock) fLock.style.display = 'none';
+    // Os badges de lock no sidebar são geridos pelo sidebar.js via PLAN_FEATURES —
+    // não é necessário manipulá-los aqui.
   } catch(e) {}
 }
 

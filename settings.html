@@ -8,15 +8,26 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
 // ── THEME SYSTEM (settings) ─────────────────────────────────
-// Applies theme immediately to avoid flash. Uses localStorage only.
+// Esta página sobrepõe intencionalmente applyTheme() e toggleTheme()
+// de utils.js com versões alargadas que suportam:
+//   • Radio buttons de preferência (light / dark)
+//   • Modo automático por hora (dark 20h–7h, light restante)
+//   • setInterval de atualização a cada minuto
+//
+// A sobreposição é segura porque utils.js é carregado APÓS este bloco
+// (ver ordem de scripts no final do <body>), pelo que as funções aqui
+// declaradas ficam como definitivas nesta página.
+// Todas as outras páginas usam as versões simples do utils.js.
+
+// Aplicar tema imediatamente para evitar flash — idêntico ao utils.js
 (function() {
   var t = localStorage.getItem('3dzaap_theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
 })();
 
-// applyTheme: called when user picks an option or toggles the button.
+// applyTheme alargado: suporta modo automático por hora
 // pref: 'light' | 'dark'
-// auto: boolean — if true, switches by hour (dark 20h–7h, light otherwise)
+// auto: boolean — se true, comuta por hora (dark 20h–7h, light restante)
 function applyTheme(pref, auto) {
   var t;
   if (auto) {
@@ -31,15 +42,15 @@ function applyTheme(pref, auto) {
   if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
 }
 
-// toggleTheme: called by the ☀️/🌙 button — always overrides auto
+// toggleTheme alargado: desativa modo auto ao comutar manualmente
 function toggleTheme() {
   var curr = document.documentElement.getAttribute('data-theme') || 'light';
   var next = curr === 'dark' ? 'light' : 'dark';
-  // Disable auto mode when manually toggling
+  // Desativar modo auto quando o utilizador comuta manualmente
   localStorage.removeItem('3dzaap_theme_auto');
   var autoChk = document.getElementById('prefThemeAuto');
   if (autoChk) autoChk.checked = false;
-  // Sync radio to match
+  // Sincronizar radio com o novo valor
   var radio = document.querySelector('input[name="prefTheme"][value="' + next + '"]');
   if (radio) radio.checked = true;
   applyTheme(next, false);
@@ -50,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var autoChk = document.getElementById('prefThemeAuto');
   var radios  = document.querySelectorAll('input[name="prefTheme"]');
 
-  // Sync button icon
+  // Sincronizar ícone do botão de tema
   var t0 = document.documentElement.getAttribute('data-theme') || 'light';
   var b0 = document.getElementById('themeToggle');
   if (b0) b0.textContent = t0 === 'dark' ? '☀️' : '🌙';
@@ -77,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Auto-update every minute for hour-based switching
+  // Atualizar tema automático a cada minuto se o modo auto estiver ativo
   setInterval(function() {
     if (localStorage.getItem('3dzaap_theme_auto') === '1') {
       var pref = (document.querySelector('input[name="prefTheme"]:checked') || {}).value || 'light';
@@ -85,11 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 60000);
 });
-</script>
-<script>
-
-
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
