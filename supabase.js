@@ -439,6 +439,17 @@ const DB = {
     return data.map(_mapPrinterFromDB);
   },
 
+  // ── PRINTER MODELS (CATALOG) ────────────────────────────────
+  async getPrinterModels() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('printer_models').select('*')
+      .order('brand', { ascending: true })
+      .order('name', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
   // ── ACTIVITY LOG ────────────────────────────────────────────
 
   async getLog() {
@@ -682,6 +693,11 @@ function _mapPrinterFromDB(row) {
     mmsSystem:          row.mms_system || null,
     mmsQty:             parseInt(row.mms_qty || 1),
     notes:              row.notes || null,
+    imageUrl:           row.image_url || null,
+    powerPrint:         parseInt(row.power_print) || null,
+    powerStandby:       parseInt(row.power_standby) || null,
+    powerMax:           parseInt(row.power_max) || null,
+    catalogId:          row.catalog_id || null,
     createdAt:          row.created_at,
     updatedAt:          row.updated_at,
   };
@@ -705,6 +721,11 @@ function _mapPrinterToDB(p) {
     mms_system:           p.mmsSystem           || null,
     mms_qty:              p.mmsQty              || null,
     notes:                p.notes               || null,
+    image_url:            p.imageUrl            || null,
+    power_print:          p.powerPrint          || null,
+    power_standby:        p.powerStandby        || null,
+    power_max:            p.powerMax            || null,
+    catalog_id:           p.catalogId           || null,
   };
 }
 

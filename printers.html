@@ -641,12 +641,25 @@ async function loadUserData() {
 async function loadData() {
   try {
     printers = await DB.getPrinters();
+    printerModels = await DB.getPrinterModels();
   } catch(e) {
-    console.error('[3DZAAP] printers load error:', e);
+    console.error('[3DZAAP] printers/models load error:', e);
     printers = [];
+    printerModels = [];
   }
+  _initBrandSelect();
   renderPrinters();
   updateStats();
+}
+
+function _initBrandSelect() {
+  const pBrand = document.getElementById('pBrand');
+  if (!pBrand) return;
+  const brands = [...new Set(printerModels.map(m => m.brand))].sort();
+  const options = ['<option value="">— Selecionar fabricante —</option>']
+                .concat(brands.map(b => `<option value="${b}">${b}</option>`))
+                .concat(['<option value="Outro">Outro (personalizado)…</option>']);
+  pBrand.innerHTML = options.join('');
 }
 
 // ── RENDER ─────────────────────────────
@@ -668,49 +681,82 @@ function renderPrinters() {
     const totalMaintCost = (p.maintenances||[]).reduce((s,m) => s + (parseFloat(m.cost)||0), 0);
 
     return `
-    <div class="printer-card status-${p.status}" onclick="openDetailModal('${p.id}')">
-      <div class="printer-card-header">
-        <div class="printer-card-title">
-          <div class="printer-brand">${escH(p.brand)}${p.customName ? ` <span style="color:var(--blue);font-weight:800">· ${escH(p.customName)}</span>` : ''}</div>
-          <div class="printer-model">${escH(p.customName || p.model)}</div>
-          ${p.customName ? `<div style="font-size:.68rem;color:var(--muted);margin-top:1px">${escH(p.model)}</div>` : ''}
-        </div>
-        <span class="printer-type-badge pt-${p.printerType}">${TYPE_LABELS[p.printerType]||p.printerType}</span>
-      </div>
-
-      ${p.mmsSystem ? `<div style="font-size:11px;color:var(--text-muted);margin:4px 0 2px;display:flex;align-items:center;gap:4px"><span>🎨</span><span>${_mmsLabel(p)}</span></div>` : ''}
-
-      ${alertChip}
-
-      <div class="printer-hours-wrap">
-        <div class="printer-hours-labels">
-          <span class="printer-hours-used">${p.hoursUsed||0}h usadas</span>
-          <span class="printer-hours-total">de ${p.lifeHours||5000}h estimadas</span>
-        </div>
-        <div class="printer-hours-bar">
-          <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
+    <div class="printer-card status-${p.status}" onclick="openDetailModal('${p.id}')" style="display:flex;flex-direction:column;height:100%;border-radius:12px;overflow:hidden;background:var(--bg-card);border:1px solid var(--border)">
+      <div style="height:180px;background:#fff;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border)">
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${escH(p.model)}" style="width:100%;height:100%;object-fit:contain;padding:16px;mix-blend-mode:multiply">` : `<div style="font-size:3rem;background:var(--bg-card);width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:0.6">🖨️</div>`}
+        <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px">
+          <span class="printer-type-badge pt-${p.printerType}" style="backdrop-filter:blur(4px)">${TYPE_LABELS[p.printerType]||p.printerType}</span>
         </div>
       </div>
 
-      <div class="printer-card-stats">
-        <div class="printer-stat">
-          <span class="printer-stat-val">${p.price ? fmtEur(p.price) : '—'}</span>
-          <span class="printer-stat-lbl">Custo</span>
+      <div class="printer-card-header" style="flex-direction:column;align-items:flex-start;padding:14px 14px 4px">
+        <div style="display:flex;justify-content:space-between;width:100%">
+          <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">${escH(p.brand)}</span>
+          <span style="font-weight:700;color:var(--blue)">${p.price ? fmtEur(p.price) : ''}</span>
         </div>
+        <div class="printer-card-title" style="margin-top:2px">
+          <div class="printer-model" style="font-size:16px;font-weight:800">${escH(p.customName || p.model)}</div>
+          ${p.customName ? `<div style="font-size:11px;color:var(--muted);margin-top:1px">${escH(p.model)}</div>` : ''}
+        </div>
+      </div>
+
+      <div style="padding:0 14px;flex:1">
+        ${p.mmsSystem ? `<div style="font-size:11px;color:var(--text-muted);margin:4px 0 2px;display:flex;align-items:center;gap:4px"><span>🎨</span><span>${_mmsLabel(p)}</span></div>` : ''}
+
+        ${(p.powerPrint || p.powerStandby) ? `
+        <div style="margin-top:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase">
+            <span style="color:#d4a045">⚡</span> Consumo Elétrico
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+                <div style="color:#d4a045;font-weight:800;font-size:13px">${p.powerPrint||0}W</div>
+                <div style="font-size:9px;color:var(--text-muted)">A imprimir</div>
+             </div>
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+                <div style="color:#4cd681;font-weight:800;font-size:13px">${p.powerStandby||0}W</div>
+                <div style="font-size:9px;color:var(--text-muted)">Standby</div>
+             </div>
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+                <div style="color:#8b86e8;font-weight:800;font-size:13px">${p.powerMax||0}W</div>
+                <div style="font-size:9px;color:var(--text-muted)">Max.</div>
+             </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <div style="margin-top:12px">
+          ${alertChip}
+        </div>
+
+        <div class="printer-hours-wrap" style="margin-top:10px">
+          <div class="printer-hours-labels">
+            <span class="printer-hours-used">${p.hoursUsed||0}h usadas</span>
+            <span class="printer-hours-total">de ${p.lifeHours||5000}h globais</span>
+          </div>
+          <div class="printer-hours-bar">
+            <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="printer-card-stats" style="padding:10px 14px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:12px;background:var(--bg-lighter)">
         <div class="printer-stat">
           <span class="printer-stat-val">${(p.maintenances||[]).length}</span>
-          <span class="printer-stat-lbl">Manutenções</span>
+          <span class="printer-stat-lbl">Revisões</span>
         </div>
         <div class="printer-stat">
           <span class="printer-stat-val">${totalMaintCost > 0 ? fmtEur(totalMaintCost) : '—'}</span>
-          <span class="printer-stat-lbl">Custo total mant.</span>
+          <span class="printer-stat-lbl">Custo Total</span>
         </div>
       </div>
 
-      <div class="printer-card-actions" onclick="event.stopPropagation()">
+      <div class="printer-card-actions" onclick="event.stopPropagation()" style="justify-content:space-between;padding:10px 14px">
         <span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span>
-        <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar">✏️</button>
-        <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar">🗑️</button>
+        <div style="display:flex;gap:4px">
+          <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar">✏️</button>
+          <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar">🗑️</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -753,85 +799,7 @@ function updateStats() {
   document.getElementById('statTotalHours').textContent  = totalHours + 'h';
 }
 
-// ── PRINTER CATALOG ────────────────────────────────────────────
-const PRINTER_CATALOG = {
-  'Bambu Lab': {
-    fdm: ['X1 Carbon','X1E','P1S','P1P','A1','A1 Mini','A1 Mini Combo','H2D','H2S','H2C'],
-    resina: []
-  },
-  'Prusa Research': {
-    fdm: ['MK4','MK4S','Mini+','XL','XL Multi-Tool','Core One'],
-    resina: ['SL1S Speed']
-  },
-  'Creality': {
-    fdm: ['Ender-3 V3 SE','Ender-3 V3 KE','Ender-3 V3','Ender-3 V3 Plus','K1','K1 SE','K1C','K1 Max','K2','K2 Plus','Creality Hi'],
-    resina: ['Halot One Plus','Halot Mage','Halot Mage Pro']
-  },
-  'Anycubic': {
-    fdm: ['Kobra 2','Kobra 2 Pro','Kobra 2 Max','Kobra 3','Kobra 3 Max','Kobra S1','Kobra S1 Max','Kobra X'],
-    resina: ['Photon Mono M5s','Photon Mono M7','Photon Mono M7 Pro','Photon Mono M7 Max','Photon P1']
-  },
-  'Elegoo': {
-    fdm: ['Neptune 4','Neptune 4 Pro','Neptune 4 Plus','Neptune 4 Max','Centauri Carbon','OrangeStorm Giga'],
-    resina: ['Saturn 3 Ultra','Saturn 4','Saturn 4 Ultra','Saturn 4 Ultra 16K','Mars 4','Mars 4 Ultra','Mars 5','Mars 5 Ultra']
-  },
-  'FlashForge': {
-    fdm: ['Adventurer 5M','Adventurer 5M Pro','Adventurer 5M Lite','Creator 4S','Creator 5','Creator 5 Pro','Guider 3 Plus'],
-    resina: ['Focus 8.9']
-  },
-  'QIDI Tech': {
-    fdm: ['X-Max 3','X-Plus 3','X-Smart 3','Q1 Pro','Plus4'],
-    resina: []
-  },
-  'Snapmaker': {
-    fdm: ['Snapmaker 2.0 A150','Snapmaker 2.0 A250','Snapmaker 2.0 A350','Artisan','J1s','U1'],
-    resina: []
-  },
-  'Voron Design': {
-    fdm: ['Voron 0.2','Voron Trident','Voron 2.4','Voron Switchwire'],
-    resina: []
-  },
-  'Raise3D': {
-    fdm: ['Pro3','Pro3 Plus','E2','E2CF','N4'],
-    resina: []
-  },
-  'Ultimaker': {
-    fdm: ['S3','S5','S7'],
-    resina: []
-  },
-  'Artillery': {
-    fdm: ['Sidewinder X4 Pro','Genius Pro','Hornet'],
-    resina: []
-  },
-  'Sovol': {
-    fdm: ['SV06','SV06 Plus','SV07','SV08'],
-    resina: []
-  },
-  'Phrozen': {
-    fdm: [],
-    resina: ['Sonic Mini 8K','Sonic Mega 8K','Sonic Mighty 8K','Transform 12K']
-  },
-  'Formlabs': {
-    fdm: [],
-    resina: ['Form 3','Form 3+','Form 3L','Form 4','Form 4L']
-  },
-  'Zortrax': {
-    fdm: ['M200 Plus','M300 Dual','E3'],
-    resina: ['Inkspire 2']
-  },
-  'BCN3D': {
-    fdm: ['Epsilon W27','Epsilon W50','Omega I60'],
-    resina: []
-  },
-  'Stratasys': {
-    fdm: ['F123CR','F370CR','Fortus 380'],
-    resina: ['Origin One']
-  },
-  'MakerBot': {
-    fdm: ['METHOD X','METHOD XL','SKETCH'],
-    resina: []
-  }
-};
+// ── PRINTER CATALOG (FETCHED FROM DB) ──────────────────────────────────────────
 
 // ── MULTI-MATERIAL SYSTEM CATALOG ──────────────────────────────
 // slots: filament slots per unit | chainable: can connect multiple units
@@ -943,10 +911,10 @@ function _updateSlotsHint() {
 function onBrandChange() {
   const brand = document.getElementById('pBrand').value;
   // If brand only has one type, auto-select it
-  if (brand && PRINTER_CATALOG[brand]) {
-    const cat = PRINTER_CATALOG[brand];
-    const hasFDM    = cat.fdm.length > 0;
-    const hasResina = cat.resina.length > 0;
+  if (brand && brand !== 'Outro') {
+    const bModels = printerModels.filter(m => m.brand === brand);
+    const hasFDM = bModels.some(m => m.type === 'fdm');
+    const hasResina = bModels.some(m => m.type === 'resina');
     if (hasFDM && !hasResina)    document.getElementById('pType').value = 'fdm';
     if (!hasFDM && hasResina)   document.getElementById('pType').value = 'resina';
   }
@@ -970,8 +938,7 @@ function updateModelSelect() {
 
   if (isOther) return;
 
-  const cat    = PRINTER_CATALOG[brand] || { fdm: [], resina: [] };
-  const models = type === 'resina' ? cat.resina : cat.fdm;
+  const models = printerModels.filter(m => m.brand === brand && m.type === type).sort((a,b) => a.name.localeCompare(b.name));
 
   sel.innerHTML = '';
   if (!models.length) {
@@ -979,7 +946,7 @@ function updateModelSelect() {
     return;
   }
   sel.innerHTML = '<option value="">— Selecionar modelo —</option>' +
-    models.map(m => `<option value="${m}">${m}</option>`).join('') +
+    models.map(m => `<option value="${m.name}">${m.name}</option>`).join('') +
     '<option value="__custom__">Outro (personalizado)…</option>';
 }
 
@@ -1026,7 +993,7 @@ function openPrinterModal(id = null) {
 
     // Set brand & type first
     const brandSel = document.getElementById('pBrand');
-    const knownBrand = PRINTER_CATALOG[brand] ? brand : 'Outro';
+    const knownBrand = printerModels.some(m => m.brand === brand) ? brand : 'Outro';
     brandSel.value = knownBrand;
     document.getElementById('pType').value = type;
 
@@ -1037,9 +1004,9 @@ function openPrinterModal(id = null) {
     if (knownBrand === 'Outro') {
       document.getElementById('pModelCustom').value = model;
     } else {
-      const cat    = PRINTER_CATALOG[brand] || { fdm: [], resina: [] };
-      const models = type === 'resina' ? cat.resina : cat.fdm;
-      if (models.includes(model)) {
+      const bModels = printerModels.filter(m => m.brand === knownBrand && m.type === type);
+      const hasModel = bModels.some(m => m.name === model);
+      if (hasModel) {
         document.getElementById('pModelSelect').value = model;
       } else {
         // Model not in catalog — show custom
@@ -1133,6 +1100,18 @@ async function savePrinter() {
     mmsSystem:          document.getElementById('pMmsSystem').value || null,
     mmsQty:             document.getElementById('pMmsSystem').value ? (parseInt(document.getElementById('pMmsQty').value) || 1) : null,
   };
+
+  // Import catalog data
+  if (brandSel !== 'Outro' && data.model) {
+    const matched = printerModels.find(m => m.brand === brandSel && m.name === data.model);
+    if (matched) {
+      data.imageUrl     = matched.image_url;
+      data.powerPrint   = matched.power_print;
+      data.powerStandby = matched.power_standby;
+      data.powerMax     = matched.power_max;
+      data.catalogId    = matched.id;
+    }
+  }
 
   try {
     if (_editingPrinterId) {
