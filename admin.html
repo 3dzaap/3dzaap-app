@@ -802,22 +802,62 @@ function _adminSb() {
 //  KPIs
 // ══════════════════════════════════════════════════════════
 function updateKPIs() {
+  const now       = new Date();
+  const d30       = new Date(now); d30.setDate(d30.getDate() - 30);
+  const d60       = new Date(now); d60.setDate(d60.getDate() - 60);
+
+  // Current period: last 30 days / Previous period: 31-60 days ago
+  const newThisPeriod = _companies.filter(c => { const d = new Date(c.created_at); return d >= d30 && d <= now; }).length;
+  const newPrevPeriod = _companies.filter(c => { const d = new Date(c.created_at); return d >= d60 && d < d30; }).length;
+
   const active    = _companies.filter(c => !c.is_suspended).length;
   const trials    = _companies.filter(c => c.plan === 'trial').length;
   const pastDue   = _subscriptions.filter(s => s.status === 'past_due').length;
-  const mrr       = _companies.reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
+  const mrr       = _companies.filter(c => !c.is_suspended).reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
+
+  // MRR previous period: simulate based on companies that existed 30 days ago
+  const mrrPrev   = _companies.filter(c => !c.is_suspended && new Date(c.created_at) < d30)
+                              .reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
+  const mrrDiff   = mrr - mrrPrev;
+
+  // Trials: compare this period vs previous
+  const trialsNew  = _companies.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d30).length;
+  const trialsPrev = _companies.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d60 && new Date(c.created_at) < d30).length;
 
   setText('kpiCompanies', active);
   setText('kpiMrr', '€ ' + mrr.toFixed(0));
   setText('kpiTrials', trials);
   setText('kpiPastDue', pastDue);
 
-  // Deltas — placeholder (would compare with previous period in production)
-  const d = document.getElementById('kpiPastDueD');
-  if (d) {
-    d.textContent = pastDue > 0 ? `⚠️ Requer atenção` : '✅ Tudo em ordem';
-    d.className = 'kpi-delta ' + (pastDue > 0 ? 'down' : 'up');
+  // ── Delta: Empresas ativas
+  _setDelta('kpiCompaniesD', newThisPeriod, newPrevPeriod, v => `+${v} este mês`, v => `+${v} mês anterior`, '→ Sem novas');
+
+  // ── Delta: MRR
+  const mrrEl = document.getElementById('kpiMrrD');
+  if (mrrEl) {
+    if (mrrDiff > 0)      { mrrEl.textContent = `▲ +€${mrrDiff.toFixed(0)} vs mês anterior`; mrrEl.className = 'kpi-delta up'; }
+    else if (mrrDiff < 0) { mrrEl.textContent = `▼ −€${Math.abs(mrrDiff).toFixed(0)} vs mês anterior`; mrrEl.className = 'kpi-delta down'; }
+    else                  { mrrEl.textContent = '→ Sem alteração'; mrrEl.className = 'kpi-delta'; }
   }
+
+  // ── Delta: Trials
+  _setDelta('kpiTrialsD', trialsNew, trialsPrev, v => `+${v} novos este mês`, v => `+${v} mês anterior`, '→ Sem novos');
+
+  // ── Delta: Past due — contextual (sem comparação temporal, é estado atual)
+  const pdEl = document.getElementById('kpiPastDueD');
+  if (pdEl) {
+    pdEl.textContent = pastDue > 0 ? `⚠️ Requer atenção` : '✅ Tudo em ordem';
+    pdEl.className   = 'kpi-delta ' + (pastDue > 0 ? 'down' : 'up');
+  }
+}
+
+function _setDelta(elId, curr, prev, labelCurr, labelPrev, labelNone) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (curr > prev)      { el.textContent = `▲ ${labelCurr(curr)}`; el.className = 'kpi-delta up'; }
+  else if (prev > curr) { el.textContent = `▼ ${labelPrev(prev)}`; el.className = 'kpi-delta down'; }
+  else if (curr > 0)    { el.textContent = `→ ${labelCurr(curr)}`; el.className = 'kpi-delta'; }
+  else                  { el.textContent = labelNone;               el.className = 'kpi-delta'; }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1324,6 +1364,7 @@ async function sendBroadcast() {
       if (document.getElementById('broadcastExpires')) document.getElementById('broadcastExpires').value = '';
       showToast('📢 Broadcast enviado!', 'ok');
       await loadBroadcasts(); // refresh list
+      setTimeout(() => { const fb = document.getElementById('broadcastFb'); if (fb) fb.textContent = ''; }, 4000);
     } catch(e) {
       showToast('Erro: ' + e.message, 'err');
       document.getElementById('broadcastFb').textContent = '❌ Erro: ' + e.message;
