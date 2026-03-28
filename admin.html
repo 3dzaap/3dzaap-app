@@ -105,6 +105,23 @@
 .toggle input:checked + .toggle-slider { background:var(--blue); }
 .toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
 
+/* ── Broadcast list ───────────────────────────────────────── */
+.bc-list { display:flex; flex-direction:column; gap:0; }
+.bc-item { display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start; padding:12px 0; border-bottom:1px solid var(--border); }
+.bc-item:last-child { border-bottom:none; }
+.bc-item-meta { font-size:.72rem; color:var(--muted); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.bc-item-title { font-size:.84rem; font-weight:700; color:var(--dark); display:flex; align-items:center; gap:6px; }
+.bc-item-msg { font-size:.78rem; color:var(--muted); margin-top:3px; line-height:1.4; }
+.bc-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; padding-top:2px; }
+.bc-type-info    { background:rgba(59,143,212,.1);  color:var(--blue);    border:1px solid rgba(59,143,212,.25);  padding:2px 7px; border-radius:10px; font-size:.65rem; font-weight:700; text-transform:uppercase; }
+.bc-type-warning { background:rgba(245,148,58,.1);  color:var(--orange);  border:1px solid rgba(245,148,58,.25);  padding:2px 7px; border-radius:10px; font-size:.65rem; font-weight:700; text-transform:uppercase; }
+.bc-type-success { background:rgba(34,197,94,.1);   color:#16a34a;        border:1px solid rgba(34,197,94,.25);   padding:2px 7px; border-radius:10px; font-size:.65rem; font-weight:700; text-transform:uppercase; }
+.bc-inactive .bc-item-title { opacity:.5; }
+.bc-inactive .bc-item-msg   { opacity:.45; }
+.bc-status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.bc-status-dot.on  { background:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,.2); }
+.bc-status-dot.off { background:var(--border); }
+
 /* ── Audit log ────────────────────────────────────────────── */
 .audit-row { display:grid; grid-template-columns:140px 1fr 120px; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:.8rem; align-items:start; }
 .audit-row:last-child { border-bottom:none; }
@@ -442,6 +459,27 @@
               </div>
             </div>
 
+            <!-- BROADCASTS ATIVOS -->
+            <div class="ad-card">
+              <div class="ad-card-header">
+                <div class="ad-card-title">📋 Broadcasts ativos</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span class="badge" id="broadcastsCount" style="background:var(--blue-g);color:var(--blue)">0</span>
+                  <button class="btn btn-ghost btn-sm" onclick="loadBroadcasts()">🔄</button>
+                </div>
+              </div>
+              <div class="ad-card-body">
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <button class="btn btn-primary btn-sm" id="bcFilterAll"      onclick="filterBroadcasts('all')"      style="font-size:.72rem">Todos</button>
+                  <button class="btn btn-ghost btn-sm"   id="bcFilterActive"   onclick="filterBroadcasts('active')"   style="font-size:.72rem">Ativos</button>
+                  <button class="btn btn-ghost btn-sm"   id="bcFilterInactive" onclick="filterBroadcasts('inactive')" style="font-size:.72rem">Inativos</button>
+                </div>
+                <div class="bc-list" id="broadcastsList">
+                  <div style="text-align:center;color:var(--muted);padding:20px;font-size:.82rem">A carregar…</div>
+                </div>
+              </div>
+            </div>
+
             <!-- FEATURE FLAGS -->
             <div class="ad-card">
               <div class="ad-card-header"><div class="ad-card-title">🚩 Feature Flags</div></div>
@@ -598,6 +636,8 @@ const PLAN_MRR = { trial: 0, starter: 9.90, pro: 19.90, business: 39.90 };
 let _companies    = [];
 let _subscriptions = [];
 let _users        = [];
+let _broadcasts   = [];
+let _bcFilter     = 'all';
 let _superAdmins  = [];   // list of {user_id, email} from DB
 let _auditLog     = [];
 let _currentTab   = 'companies';
@@ -636,6 +676,7 @@ async function refreshAll() {
     loadSuperAdmins(),
     loadAuditLog(),
     loadAdminFlags(),
+    loadBroadcasts(),
   ]);
   updateKPIs();
   renderMetrics();
@@ -1127,6 +1168,140 @@ async function syncStripe() {
   await _adminAudit('sync_stripe', 'Sincronização manual Stripe solicitada');
 }
 
+// ══════════════════════════════════════════════════════════
+//  BROADCASTS — LOAD & RENDER
+// ══════════════════════════════════════════════════════════
+async function loadBroadcasts() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('admin_broadcasts')
+      .select('id, title, message, target, type, active, expires_at, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    _broadcasts = data || [];
+    renderBroadcastsList();
+  } catch(e) {
+    document.getElementById('broadcastsList').innerHTML =
+      `<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:16px">Erro ao carregar: ${escH(e.message)}</div>`;
+  }
+}
+
+function filterBroadcasts(filter) {
+  _bcFilter = filter;
+  ['All','Active','Inactive'].forEach(f => {
+    const btn = document.getElementById('bcFilter' + f);
+    if (btn) btn.classList.toggle('btn-primary', filter === f.toLowerCase());
+    if (btn) btn.classList.toggle('btn-ghost',   filter !== f.toLowerCase());
+  });
+  renderBroadcastsList();
+}
+
+function renderBroadcastsList() {
+  const el = document.getElementById('broadcastsList');
+  const countEl = document.getElementById('broadcastsCount');
+
+  const now = new Date();
+  let list = _broadcasts.filter(b => {
+    const expired = b.expires_at && new Date(b.expires_at) < now;
+    const isActive = b.active && !expired;
+    if (_bcFilter === 'active')   return isActive;
+    if (_bcFilter === 'inactive') return !isActive;
+    return true;
+  });
+
+  const activeCount = _broadcasts.filter(b => b.active && (!b.expires_at || new Date(b.expires_at) >= now)).length;
+  if (countEl) countEl.textContent = activeCount;
+
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:24px;font-size:.82rem">
+      ${_bcFilter === 'active' ? 'Nenhum broadcast ativo.' : 'Sem broadcasts para mostrar.'}
+    </div>`;
+    return;
+  }
+
+  const targetLabels = { all:'Todos', trial:'Trial', past_due:'Em atraso', pro:'Pro', business:'Business' };
+  const typeIcons    = { info:'ℹ️', warning:'⚠️', success:'✅' };
+
+  el.innerHTML = list.map(b => {
+    const expired  = b.expires_at && new Date(b.expires_at) < now;
+    const isActive = b.active && !expired;
+    const expStr   = b.expires_at
+      ? (expired ? `<span style="color:var(--danger);font-weight:700">Expirado ${fmtDate(b.expires_at)}</span>`
+                 : `Expira ${fmtDate(b.expires_at)}`)
+      : 'Sem expiração';
+
+    return `<div class="bc-item${isActive ? '' : ' bc-inactive'}">
+      <div>
+        <div class="bc-item-title">
+          <span class="bc-status-dot ${isActive ? 'on' : 'off'}"></span>
+          ${typeIcons[b.type] || '📢'} ${escH(b.title)}
+          <span class="bc-type-${b.type||'info'}">${b.type||'info'}</span>
+        </div>
+        <div class="bc-item-msg">${escH(b.message)}</div>
+        <div class="bc-item-meta">
+          <span>👥 ${targetLabels[b.target] || b.target}</span>
+          <span>·</span>
+          <span>📅 ${fmtDate(b.created_at)}</span>
+          <span>·</span>
+          <span>${expStr}</span>
+        </div>
+      </div>
+      <div class="bc-actions">
+        <button class="btn-table ${isActive ? 'danger' : 'success'}"
+          onclick="toggleBroadcast('${b.id}', ${isActive})"
+          title="${isActive ? 'Desativar' : 'Ativar'}">
+          ${isActive ? '⏸ Desativar' : '▶ Ativar'}
+        </button>
+        <button class="btn-table danger"
+          onclick="deleteBroadcast('${b.id}', '${escAttr(b.title)}')"
+          title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleBroadcast(id, currentlyActive) {
+  const newVal = !currentlyActive;
+  const label  = newVal ? 'ativar' : 'desativar';
+  try {
+    const { error } = await _adminSb()
+      .from('admin_broadcasts')
+      .update({ active: newVal })
+      .eq('id', id);
+    if (error) throw error;
+    await _adminAudit('broadcast_toggle', `id=${id} active=${newVal}`);
+    const b = _broadcasts.find(x => x.id === id);
+    if (b) b.active = newVal;
+    renderBroadcastsList();
+    showToast(newVal ? '✅ Broadcast ativado' : '⏸ Broadcast desativado', 'ok');
+  } catch(e) {
+    showToast(`Erro ao ${label}: ${e.message}`, 'err');
+  }
+}
+
+async function deleteBroadcast(id, title) {
+  showConfirm(
+    '🗑️ Eliminar broadcast',
+    `Eliminar permanentemente o broadcast "${title}"?\n\nEsta ação não pode ser revertida.`,
+    async () => {
+      try {
+        const { error } = await _adminSb()
+          .from('admin_broadcasts')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        await _adminAudit('broadcast_delete', `id=${id} title=${title}`);
+        _broadcasts = _broadcasts.filter(x => x.id !== id);
+        renderBroadcastsList();
+        showToast('🗑️ Broadcast eliminado', 'ok');
+      } catch(e) {
+        showToast('Erro ao eliminar: ' + e.message, 'err');
+      }
+    }
+  );
+}
+
 async function sendBroadcast() {
   const title   = document.getElementById('broadcastTitle').value.trim();
   const msg     = document.getElementById('broadcastMsg').value.trim();
@@ -1148,6 +1323,7 @@ async function sendBroadcast() {
       document.getElementById('broadcastMsg').value   = '';
       if (document.getElementById('broadcastExpires')) document.getElementById('broadcastExpires').value = '';
       showToast('📢 Broadcast enviado!', 'ok');
+      await loadBroadcasts(); // refresh list
     } catch(e) {
       showToast('Erro: ' + e.message, 'err');
       document.getElementById('broadcastFb').textContent = '❌ Erro: ' + e.message;
