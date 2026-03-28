@@ -1151,26 +1151,17 @@ function closeSidebar() {
   document.getElementById('sideOverlay').classList.remove('open');
 }
 
-// ── USER MENU ──────────────────────────
-function toggleUserMenu() {
-  const dd = document.getElementById('userDropdown');
-  const ch = document.getElementById('userChevron');
-  const open = dd.classList.toggle('open');
-  ch.classList.toggle('up', open);
-}
-function closeUserMenu() {
-  document.getElementById('userDropdown').classList.remove('open');
-  const ch = document.getElementById('userChevron');
-  if (ch) ch.classList.remove('up');
-}
+// ── USER MENU — delegado para sidebar.js ──────────────────
+function toggleUserMenu() { Sidebar._toggleUserMenu(); }
+function closeUserMenu()  { Sidebar._closeUserMenu();  }
 document.addEventListener('click', e => {
-  if (!e.target.closest('#userRow') && !e.target.closest('#userDropdown') && !e.target.closest('.company-pill')) {
-    closeUserMenu();
+  if (!e.target.closest('#sidebarUserRow') && !e.target.closest('#sidebarUserDropdown')) {
+    Sidebar._closeUserMenu();
   }
 });
 
 async function doLogout() {
-  closeUserMenu();
+  Sidebar._closeUserMenu();
   showToast('Sessão terminada. Até logo! 👋','ok');
   setTimeout(() => Auth.logout(), 1000);
 }
@@ -1194,7 +1185,7 @@ async function loadBroadcasts() {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    if (error) return; // 403 / tabela inexistente / sem RLS — silent fail
+    if (error) return; // 403 / tabela inexistente — silent fail
     if (!data || !data.length) return;
 
     // Filtrar pelo target (all, trial, past_due, pro, business)
