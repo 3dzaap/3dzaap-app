@@ -27,7 +27,8 @@ const Sidebar = (() => {
       items: [
         { id: 'dashboard',   href: 'dashboard.html',   icon: '🏠', label: 'Início' },
         { id: 'calculator',  href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
-        { id: 'admin',       href: 'admin.html',        icon: '🛡️', label: 'Admin', superAdmin: true },
+        { id: 'orders',      href: 'orders.html',      icon: '📦', label: 'Pedidos',    lockId: 'navLockOrders' },
+        { id: 'financial',   href: 'financial.html',   icon: '💰', label: 'Financeiro', lockId: 'navLockFinancial' },
       ]
     },
     {
@@ -35,8 +36,6 @@ const Sidebar = (() => {
       items: [
         { id: 'materials',   href: 'materials.html',   icon: '🎨', label: 'Materiais' },
         { id: 'printers',    href: 'printers.html',    icon: '🖨️', label: 'Impressoras' },
-        { id: 'orders',      href: 'orders.html',      icon: '📦', label: 'Pedidos',   lockId: 'navLockOrders' },
-        { id: 'financial',   href: 'financial.html',   icon: '💰', label: 'Financeiro', lockId: 'navLockFinancial' },
         { id: 'backoffice',  href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice' },
       ]
     },
@@ -46,6 +45,7 @@ const Sidebar = (() => {
         { id: 'settings',    href: 'settings.html',    icon: '⚙️', label: 'Configurações' },
         { id: 'billing',     href: '#',                icon: '💳', label: 'Assinatura', muted: true,
           onclick: "showToast('💳 Assinatura — em breve','');return false;" },
+        { id: 'admin',       href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
   ];
