@@ -8,9 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
 (function(){
-  var saved=localStorage.getItem('3dzaap_theme');
-  var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  document.documentElement.setAttribute('data-theme',saved||(sys?'dark':'light'));
+  var saved=localStorage.getItem('3dzaap_theme')||'light';
+  document.documentElement.setAttribute('data-theme',saved);
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -158,11 +157,6 @@
         <a href="dashboard.html" class="btn btn-primary" style="margin-top:8px">← Voltar ao Dashboard</a>
       </div>
       <div id="adminContent" style="display:none">
-
-        <!-- ── BREADCRUMB ─────────────────────────────── -->
-        <div class="breadcrumb">
-          <a href="dashboard.html">Dashboard</a><span>›</span><strong>🛡️ Admin</strong>
-        </div>
 
         <!-- ── PAGE HEADER ────────────────────────────── -->
         <div class="page-header">
