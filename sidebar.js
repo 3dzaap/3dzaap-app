@@ -27,6 +27,7 @@ const Sidebar = (() => {
       items: [
         { id: 'dashboard',   href: 'dashboard.html',   icon: '🏠', label: 'Início' },
         { id: 'calculator',  href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
+        { id: 'admin',       href: 'admin.html',        icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
     {
@@ -67,7 +68,8 @@ const Sidebar = (() => {
           : '';
         const muteStyle = item.muted ? ' style="opacity:.6"' : '';
         const onclickAttr = item.onclick ? ` onclick="${item.onclick}"` : '';
-        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${onclickAttr}${muteStyle}><span class="nav-icon">${item.icon}</span> ${item.label}${lockSpan}</a>`;
+        const superAdminAttr = item.superAdmin ? ' data-superadmin="1" style="display:none"' : '';
+        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> ${item.label}${lockSpan}</a>`;
       }).join('\n        ');
 
       return `<div class="nav-section">
@@ -176,6 +178,11 @@ const Sidebar = (() => {
 
     // Feature lock badges
     _applyLocks(plan);
+
+    // Super-admin nav items — mostrar apenas se isSuperAdmin === true
+    document.querySelectorAll('[data-superadmin]').forEach(el => {
+      el.style.display = session.isSuperAdmin ? '' : 'none';
+    });
   }
 
   // ── FEATURE LOCKS ─────────────────────────────────────────

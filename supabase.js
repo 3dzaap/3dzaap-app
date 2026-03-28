@@ -141,6 +141,18 @@ const Auth = {
     if (!session) return null;
     const company = _companyCache || await Auth._loadCompany();
     const user    = session.user;
+
+    // Check super_admins table
+    let isSuperAdmin = false;
+    try {
+      const { data: saRow } = await _sb
+        .from('super_admins')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      isSuperAdmin = !!saRow;
+    } catch(_) {}
+
     return {
       email:       user.email,
       fname:       user.user_metadata?.fname || '',
@@ -152,6 +164,7 @@ const Auth = {
       companyId:   company?.id,
       role:        company?.role || 'owner',
       trialEndsAt: company?.trial_ends_at || null,
+      isSuperAdmin,
     };
   },
 
@@ -175,6 +188,26 @@ const Auth = {
     if (error) throw error;
     _companyCache = null;
     await Auth._loadCompany();
+  },
+
+  // ── SUPER ADMIN MANAGEMENT ───────────────────────────────
+  async setSuperAdmin(userId, email, grantedByEmail) {
+    const { error } = await _sb.from('super_admins').upsert(
+      { user_id: userId, email, granted_by: grantedByEmail, granted_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+    if (error) throw error;
+  },
+
+  async revokeSuperAdmin(userId) {
+    const { error } = await _sb.from('super_admins').delete().eq('user_id', userId);
+    if (error) throw error;
+  },
+
+  async getSuperAdmins() {
+    const { data, error } = await _sb.from('super_admins').select('*').order('granted_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
   },
 };
 

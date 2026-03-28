@@ -596,8 +596,6 @@
 // ══════════════════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════════════════
-const ADMIN_EMAIL = '3dzaap@gmail.com';
-
 const PLAN_MRR = { trial: 0, starter: 9.90, pro: 19.90, business: 39.90 };
 
 // ══════════════════════════════════════════════════════════
@@ -606,8 +604,10 @@ const PLAN_MRR = { trial: 0, starter: 9.90, pro: 19.90, business: 39.90 };
 let _companies    = [];
 let _subscriptions = [];
 let _users        = [];
+let _superAdmins  = [];   // list of {user_id, email} from DB
 let _auditLog     = [];
 let _currentTab   = 'companies';
+let _currentAdminEmail = '';
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -622,12 +622,12 @@ async function checkAdminAccess() {
   if (!ok) return;
 
   const session = await Auth.getSession();
-  if (!session || session.email !== ADMIN_EMAIL) {
+  if (!session || !session.isSuperAdmin) {
     document.getElementById('accessDenied').style.display = 'flex';
-    // Hide sidebar for non-admins reaching this page
     return;
   }
 
+  _currentAdminEmail = session.email;
   loadCfg(session);
   Sidebar.setSession(session);
   document.getElementById('adminContent').style.display = 'block';
@@ -639,6 +639,7 @@ async function refreshAll() {
     loadCompanies(),
     loadSubscriptions(),
     loadUsers(),
+    loadSuperAdmins(),
     loadAuditLog(),
     loadAdminFlags(),
   ]);
@@ -717,6 +718,14 @@ async function loadUsers() {
     document.getElementById('usersCount').textContent = _users.length;
   } catch(e) {
     showToast('Erro ao carregar utilizadores: ' + e.message, 'err');
+  }
+}
+
+async function loadSuperAdmins() {
+  try {
+    _superAdmins = await Auth.getSuperAdmins();
+  } catch(e) {
+    _superAdmins = [];
   }
 }
 
@@ -875,14 +884,20 @@ function renderUsersTable(data) {
   }
   tbody.innerHTML = data.map(u => {
     const plan = u.companies?.plan || '—';
+    const isSA = _superAdmins.some(sa => sa.user_id === u.user_id);
+    const saBtn = isSA
+      ? `<button class="btn-table danger" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',false)" title="Revogar Super Admin">🛡️ Revogar SA</button>`
+      : `<button class="btn-table" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',true)" title="Promover a Super Admin">🛡️ Dar SA</button>`;
+    const saBadge = isSA ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>` : '';
     return `<tr>
       <td class="mono" style="font-size:.78rem">${escH(u.user_id || '—')}</td>
       <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
-      <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span></td>
+      <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
       <td><span class="plan-badge plan-${plan}">${plan}</span></td>
       <td class="mono">${fmtDate(u.joined_at)}</td>
       <td class="mono">—</td>
       <td style="white-space:nowrap">
+        ${saBtn}
         <button class="btn-table" onclick="impersonateUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">👤 Impersonar</button>
         <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
       </td>
@@ -1017,7 +1032,7 @@ function renderAuditLog() {
     <div class="audit-row">
       <div class="audit-time">${new Date(r.created_at).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
       <div class="audit-msg">${escH(r.action || r.message || '')}</div>
-      <div class="audit-who">${escH(r.admin_email || ADMIN_EMAIL)}</div>
+      <div class="audit-who">${escH(r.admin_email || _currentAdminEmail)}</div>
     </div>`).join('');
 }
 
@@ -1254,7 +1269,7 @@ async function _adminAction(action, params) {
 async function _adminAudit(action, detail) {
   try {
     await _adminSb().from('admin_audit_log').insert({
-      admin_email: ADMIN_EMAIL,
+      admin_email: _currentAdminEmail,
       action,
       detail,
       created_at: new Date().toISOString(),
@@ -1262,6 +1277,48 @@ async function _adminAudit(action, detail) {
   } catch(e) {
     // Audit log table may not exist yet — fail silently
   }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SUPER ADMIN TOGGLE
+// ══════════════════════════════════════════════════════════
+async function toggleSuperAdmin(userId, companyName, grant) {
+  if (!userId) return;
+  const action = grant ? 'Promover a Super Admin' : 'Revogar Super Admin';
+  const msg    = grant
+    ? `Dar acesso Super Admin ao utilizador "${userId}" (${companyName})?\n\nEste utilizador poderá aceder ao painel Admin e gerir outros super admins.`
+    : `Revogar Super Admin de "${userId}" (${companyName})?\n\nEste utilizador perderá acesso ao painel Admin.`;
+
+  showConfirm(`🛡️ ${action}`, msg, async () => {
+    try {
+      if (grant) {
+        // Find email from memberships data (best effort)
+        const u = _users.find(u => u.user_id === userId);
+        const email = u?.email || userId;
+        await Auth.setSuperAdmin(userId, email, _currentAdminEmail);
+        await _adminAuditSA('grant_super_admin', `userId=${userId} company=${companyName}`);
+        showToast(`✅ Super Admin concedido a ${companyName}`, 'ok');
+      } else {
+        await Auth.revokeSuperAdmin(userId);
+        await _adminAuditSA('revoke_super_admin', `userId=${userId} company=${companyName}`);
+        showToast(`✅ Super Admin revogado de ${companyName}`, 'ok');
+      }
+      await loadSuperAdmins();
+      renderUsersTable(_users);
+    } catch(e) {
+      showToast('Erro: ' + e.message, 'err');
+    }
+  });
+}
+
+async function _adminAuditSA(action, detail) {
+  try {
+    await _adminSb().from('admin_audit_log').insert({
+      admin_email: _currentAdminEmail,
+      action, detail,
+      created_at: new Date().toISOString(),
+    });
+  } catch(_) {}
 }
 
 // ══════════════════════════════════════════════════════════
