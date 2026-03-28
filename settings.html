@@ -13,13 +13,13 @@ function _computeIsDark(pref, auto) {
     var h = new Date().getHours();
     return h >= 20 || h < 7;
   }
-  if (pref === 'system') return window.matchMedia('(prefers-color-scheme:dark)').matches;
+  if (pref === 'system') return false; // 'system' defaults to light
   return pref === 'dark';
 }
 
 // Apply ASAP to avoid flash
 (function() {
-  var pref = localStorage.getItem('3dzaap_theme') || 'system';
+  var pref = localStorage.getItem('3dzaap_theme') || 'light';
   var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
   document.documentElement.setAttribute('data-theme', _computeIsDark(pref, auto) ? 'dark' : 'light');
 })();
@@ -93,13 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Listen for system changes
-  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function() {
-    var pref = localStorage.getItem('3dzaap_theme') || 'system';
-    var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-    if (pref === 'system' && !auto) applyTheme(pref, false);
-    updateThemeToggleBtn();
-  });
+  // System color scheme changes are intentionally ignored —
+  // theme is only changed via settings or the manual toggle button.
 
   // Auto-update every minute (hour-based switching)
   setInterval(function() {
@@ -799,9 +794,9 @@ async function initPage() {
   // Sync theme from Supabase → localStorage → UI radios
   var _themePref = cfg.theme || 'system';
   var _themeAuto = cfg.themeAuto || false;
-  // Update localStorage
-  if (_themePref !== 'system') localStorage.setItem('3dzaap_theme', _themePref);
-  else localStorage.removeItem('3dzaap_theme');
+  // Update localStorage — always persist an explicit value so other modules don't fall back to OS
+  var _themeForStorage = (_themePref === 'system') ? 'light' : _themePref;
+  localStorage.setItem('3dzaap_theme', _themeForStorage);
   if (_themeAuto) localStorage.setItem('3dzaap_theme_auto', '1');
   else localStorage.removeItem('3dzaap_theme_auto');
   // Update radio buttons to match Supabase value (not what initThemeToggle set earlier)
@@ -1012,8 +1007,9 @@ async function saveAll() {
     await Auth.updateCompany({ name: name, config: cfg, signature: sig });
     if (_session) { _session.companyName = name; _session.config = cfg; _session.signature = sig; }
     // Sync theme to localStorage immediately so other modules pick it up on navigation
-    if (cfg.theme && cfg.theme !== 'system') localStorage.setItem('3dzaap_theme', cfg.theme);
-    else localStorage.removeItem('3dzaap_theme');
+    // 'system' maps to 'light' in localStorage so other modules don't follow OS preference
+    var _themeToStore = (cfg.theme && cfg.theme !== 'system') ? cfg.theme : 'light';
+    localStorage.setItem('3dzaap_theme', _themeToStore);
     if (cfg.themeAuto) localStorage.setItem('3dzaap_theme_auto', '1');
     else localStorage.removeItem('3dzaap_theme_auto');
     applyTheme(cfg.theme || 'system', cfg.themeAuto || false);
