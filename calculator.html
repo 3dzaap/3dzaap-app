@@ -1339,7 +1339,7 @@ function _buildClientMsg(){
     '👋 Olá!',
     '',
     'Segue o seu orçamento de impressão 3D:',
-    '——————————————————————',
+    '————',
   ];
   if(name) lines.push('📐 *Peça:* '+name);
   lines.push('🖨️ *Tecnologia:* '+modeLabel);
@@ -1348,10 +1348,10 @@ function _buildClientMsg(){
   if(qty>1){
     lines.push('🔢 *Quantidade:* '+qty+' unidades');
     lines.push('💵 *Preço unitário:* '+sym+' '+r.unitPrice.toFixed(2));
-    lines.push('——————————————————————');
+    lines.push('————');
     lines.push('💰 *TOTAL: '+sym+' '+r.finalPrice.toFixed(2)+'*');
   }else{
-    lines.push('——————————————————————');
+    lines.push('————');
     lines.push('💰 *Preço: '+sym+' '+r.finalPrice.toFixed(2)+'*');
   }
   lines.push('');
