@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
 (function(){
-  var saved=localStorage.getItem('3dzaap_theme')||'light';
-  document.documentElement.setAttribute('data-theme',saved);
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -210,14 +210,12 @@
 .bs-inativa     .badge-dot { background: #94a3b8; }
 
 /* Dark mode overrides for hardcoded semantic colors */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --chip-warn-text: #fbbf24;
-    --chip-ok-text:   #4ade80;
-    --bs-op-text:     #4ade80;
-    --bs-maint-text:  #fbbf24;
-    --bs-inact-text:  #94a3b8;
-  }
+:root[data-theme="dark"] {
+  --chip-warn-text: #fbbf24;
+  --chip-ok-text:   #4ade80;
+  --bs-op-text:     #4ade80;
+  --bs-maint-text:  #fbbf24;
+  --bs-inact-text:  #94a3b8;
 }
 
 

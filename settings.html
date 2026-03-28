@@ -8,49 +8,41 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script>
 // ── THEME SYSTEM (settings) ─────────────────────────────────
-function _computeIsDark(pref, auto) {
-  if (auto) {
-    var h = new Date().getHours();
-    return h >= 20 || h < 7;
-  }
-  if (pref === 'system') return false; // 'system' defaults to light
-  return pref === 'dark';
-}
-
-// Apply ASAP to avoid flash
+// Applies theme immediately to avoid flash. Uses localStorage only.
 (function() {
-  var pref = localStorage.getItem('3dzaap_theme') || 'light';
-  var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-  document.documentElement.setAttribute('data-theme', _computeIsDark(pref, auto) ? 'dark' : 'light');
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
 })();
 
+// applyTheme: called when user picks an option or toggles the button.
+// pref: 'light' | 'dark'
+// auto: boolean — if true, switches by hour (dark 20h–7h, light otherwise)
 function applyTheme(pref, auto) {
-  document.documentElement.setAttribute('data-theme', _computeIsDark(pref, auto) ? 'dark' : 'light');
-}
-
-function updateThemeToggleBtn() {
+  var t;
+  if (auto) {
+    var h = new Date().getHours();
+    t = (h >= 20 || h < 7) ? 'dark' : 'light';
+  } else {
+    t = (pref === 'dark') ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('3dzaap_theme', t);
   var b = document.getElementById('themeToggle');
-  if (b) b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
 }
 
-function updateAutoRowVisibility(pref) {
-  var row = document.getElementById('themeAutoRow');
-  if (row) row.style.display = pref === 'system' ? '' : 'none';
-}
-
+// toggleTheme: called by the ☀️/🌙 button — always overrides auto
 function toggleTheme() {
   var curr = document.documentElement.getAttribute('data-theme') || 'light';
   var next = curr === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('3dzaap_theme', next);
+  // Disable auto mode when manually toggling
   localStorage.removeItem('3dzaap_theme_auto');
-
   var autoChk = document.getElementById('prefThemeAuto');
   if (autoChk) autoChk.checked = false;
+  // Sync radio to match
   var radio = document.querySelector('input[name="prefTheme"][value="' + next + '"]');
   if (radio) radio.checked = true;
-  updateAutoRowVisibility(next);
-  updateThemeToggleBtn();
+  applyTheme(next, false);
   if (typeof markDirty === 'function') markDirty();
 }
 
@@ -58,51 +50,38 @@ document.addEventListener('DOMContentLoaded', function() {
   var autoChk = document.getElementById('prefThemeAuto');
   var radios  = document.querySelectorAll('input[name="prefTheme"]');
 
-  function getPref() {
-    var r = document.querySelector('input[name="prefTheme"]:checked');
-    return r ? r.value : (localStorage.getItem('3dzaap_theme') || 'system');
-  }
-
-  // Initial sync
-  updateAutoRowVisibility(getPref());
-  updateThemeToggleBtn();
+  // Sync button icon
+  var t0 = document.documentElement.getAttribute('data-theme') || 'light';
+  var b0 = document.getElementById('themeToggle');
+  if (b0) b0.textContent = t0 === 'dark' ? '☀️' : '🌙';
 
   radios.forEach(function(r) {
     r.addEventListener('change', function() {
-      var pref = getPref();
+      var pref = r.value;
       var auto = !!(autoChk && autoChk.checked);
-      localStorage.setItem('3dzaap_theme', pref);
       if (auto) localStorage.setItem('3dzaap_theme_auto', '1');
       else localStorage.removeItem('3dzaap_theme_auto');
       applyTheme(pref, auto);
-      updateAutoRowVisibility(pref);
-      updateThemeToggleBtn();
       if (typeof markDirty === 'function') markDirty();
     });
   });
 
   if (autoChk) {
     autoChk.addEventListener('change', function() {
-      var pref = getPref();
+      var pref = (document.querySelector('input[name="prefTheme"]:checked') || {}).value || 'light';
       var auto = !!autoChk.checked;
       if (auto) localStorage.setItem('3dzaap_theme_auto', '1');
       else localStorage.removeItem('3dzaap_theme_auto');
       applyTheme(pref, auto);
-      updateThemeToggleBtn();
       if (typeof markDirty === 'function') markDirty();
     });
   }
 
-  // System color scheme changes are intentionally ignored —
-  // theme is only changed via settings or the manual toggle button.
-
-  // Auto-update every minute (hour-based switching)
+  // Auto-update every minute for hour-based switching
   setInterval(function() {
-    var pref = localStorage.getItem('3dzaap_theme') || 'system';
-    var auto = localStorage.getItem('3dzaap_theme_auto') === '1';
-    if (auto) {
+    if (localStorage.getItem('3dzaap_theme_auto') === '1') {
+      var pref = (document.querySelector('input[name="prefTheme"]:checked') || {}).value || 'light';
       applyTheme(pref, true);
-      updateThemeToggleBtn();
     }
   }, 60000);
 });
@@ -509,21 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="settings-card-title"><span>🌗</span> Aparência</div>
 
           <label class="form-label" style="margin-bottom:8px;display:block">Tema</label>
-          <div class="theme-options">
-
-            <div class="theme-option">
-              <input type="radio" name="prefTheme" id="themeSystem" value="system">
-              <label for="themeSystem">
-                <div class="theme-preview">
-                  <div class="tp-sidebar" style="background:linear-gradient(#e8f1fb 50%,#0c1e3a 50%)"></div>
-                  <div class="tp-main" style="background:linear-gradient(#d0e4f4 50%,#08142a 50%);display:flex;flex-direction:column;gap:3px;padding:4px">
-                    <div class="tp-card" style="background:linear-gradient(90deg,rgba(255,255,255,.7) 50%,#102342 50%)"></div>
-                    <div class="tp-card" style="background:linear-gradient(90deg,rgba(255,255,255,.7) 50%,#102342 50%);width:70%"></div>
-                  </div>
-                </div>
-                Seguir sistema
-              </label>
-            </div>
+          <div class="theme-options" style="grid-template-columns:1fr 1fr">
 
             <div class="theme-option">
               <input type="radio" name="prefTheme" id="themeLight" value="light">
@@ -559,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="toggle-row" style="padding:0;border:none">
               <div class="toggle-info">
                 <div class="toggle-label">Mudar automaticamente por hora</div>
-                <div class="toggle-desc theme-auto-hint">Claro das <strong id="autoHourLight">07:00</strong> às <strong id="autoHourDark">20:00</strong>, escuro depois — sobrepõe-se ao sistema</div>
+                <div class="toggle-desc theme-auto-hint">Claro das <strong id="autoHourLight">07:00</strong> às <strong id="autoHourDark">20:00</strong>, escuro depois</div>
               </div>
               <label class="toggle">
                 <input type="checkbox" id="prefThemeAuto">
@@ -791,20 +756,14 @@ async function initPage() {
   document.getElementById('prefDateFmt').value  = cfg.dateFmt     || 'DD/MM/YYYY';
   document.getElementById('prefWeightUnit').value = cfg.weightUnit || 'g';
   document.getElementById('notifStockOut').checked = cfg.notifStockOut !== false;
-  // Sync theme from Supabase → localStorage → UI radios
-  var _themePref = cfg.theme || 'system';
+  // Sync theme UI from saved config — only updates radios/checkbox, does NOT change active theme.
+  // The active theme was already set by the <head> script from localStorage on page load.
+  var _themePref = cfg.theme || 'light';
   var _themeAuto = cfg.themeAuto || false;
-  // Update localStorage — always persist an explicit value so other modules don't fall back to OS
-  var _themeForStorage = (_themePref === 'system') ? 'light' : _themePref;
-  localStorage.setItem('3dzaap_theme', _themeForStorage);
-  if (_themeAuto) localStorage.setItem('3dzaap_theme_auto', '1');
-  else localStorage.removeItem('3dzaap_theme_auto');
-  // Update radio buttons to match Supabase value (not what initThemeToggle set earlier)
   var _themeRadio = document.querySelector('input[name="prefTheme"][value="' + _themePref + '"]');
   if (_themeRadio) _themeRadio.checked = true;
   var _autoChk = document.getElementById('prefThemeAuto');
   if (_autoChk) _autoChk.checked = _themeAuto;
-  updateAutoRowVisibility(_themePref);
   document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
   document.getElementById('notifOverdue').checked  = cfg.notifOverdue  !== false;
   document.getElementById('notifMonthly').checked  = cfg.notifMonthly  === true;
@@ -983,10 +942,10 @@ function buildConfig() {
   cfg.notifStockLow = document.getElementById('notifStockLow').checked;
   cfg.notifOverdue  = document.getElementById('notifOverdue').checked;
   cfg.notifMonthly  = document.getElementById('notifMonthly').checked;
-  // Theme preference
+  // Theme preference — 'light' | 'dark' only
   var themeRadio = document.querySelector('input[name="prefTheme"]:checked');
-  cfg.theme = themeRadio ? themeRadio.value : 'system';
-  cfg.themeAuto = document.getElementById('prefThemeAuto') ? document.getElementById('prefThemeAuto').checked : false;
+  cfg.theme = (themeRadio && themeRadio.value === 'dark') ? 'dark' : 'light';
+  cfg.themeAuto = !!(document.getElementById('prefThemeAuto') && document.getElementById('prefThemeAuto').checked);
   // Logo: prefer uploaded base64, then URL field, then keep existing
   var logoUrl = _logoB64 || document.getElementById('logoUrl').value.trim() || ((_session && _session.config) ? _session.config.logoUrl : '');
   cfg.logoUrl = logoUrl;
@@ -1006,14 +965,10 @@ async function saveAll() {
   try {
     await Auth.updateCompany({ name: name, config: cfg, signature: sig });
     if (_session) { _session.companyName = name; _session.config = cfg; _session.signature = sig; }
-    // Sync theme to localStorage immediately so other modules pick it up on navigation
-    // 'system' maps to 'light' in localStorage so other modules don't follow OS preference
-    var _themeToStore = (cfg.theme && cfg.theme !== 'system') ? cfg.theme : 'light';
-    localStorage.setItem('3dzaap_theme', _themeToStore);
+    // Apply and persist theme — applyTheme writes to localStorage and updates the button
+    applyTheme(cfg.theme || 'light', cfg.themeAuto || false);
     if (cfg.themeAuto) localStorage.setItem('3dzaap_theme_auto', '1');
     else localStorage.removeItem('3dzaap_theme_auto');
-    applyTheme(cfg.theme || 'system', cfg.themeAuto || false);
-    updateThemeToggleBtn();
     var _elCNs = document.getElementById('companyNameSidebar'); if(_elCNs) _elCNs.textContent = name;
     var _elCAs = document.getElementById('companyAvatarSidebar'); if(_elCAs) _elCAs.textContent = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
     _logoB64 = null; _sigB64 = null;

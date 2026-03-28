@@ -103,67 +103,23 @@
 
 /* ================================================================
    2. DARK MODE
-   Two-path system:
-   A) OS-level dark (prefers-color-scheme) — no [data-theme]
-   B) User toggle via [data-theme="dark"] on <html>
-   IMPORTANT: add this snippet to every page's <head> BEFORE
-   any stylesheet to avoid flash-of-wrong-theme:
+   Single-path system — controlled exclusively via [data-theme] on <html>.
+   Theme is NEVER driven by OS preference (prefers-color-scheme is not used).
+
+   Rules:
+   - Default is always light.
+   - Theme is stored in localStorage key '3dzaap_theme' ('light' | 'dark').
+   - Changed only by: manual toggle button OR settings page.
+   - Every page reads localStorage in <head> to avoid flash:
 
    <script>
      (function(){
-       var s=localStorage.getItem('3dzaap_theme');
-       var sys=window.matchMedia('(prefers-color-scheme:dark)').matches;
-       document.documentElement.setAttribute('data-theme',s||(sys?'dark':'light'));
+       var t = localStorage.getItem('3dzaap_theme') || 'light';
+       document.documentElement.setAttribute('data-theme', t);
      })();
    </script>
    ================================================================ */
 
-/* OS dark — respects [data-theme="light"] override */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --black:  #eaf2fc;
-    --dark:   #d6e8f6;
-    --muted:  #b8d0e8;
-    --subtle: #8fb4d0;
-
-    --border:  rgba(59,143,212,0.18);
-    --bdark:   rgba(0,0,0,0.35);
-    --glass:   rgba(30,70,130,0.20);
-    --glass-s: rgba(10,28,60,0.98);
-
-    --sh:       0 2px 8px rgba(0,0,0,0.50), 0 1px 3px rgba(0,0,0,0.30);
-    --sh-lg:    0 8px 24px rgba(0,0,0,0.55), 0 3px 8px rgba(0,0,0,0.35);
-    --sh-float: 0 16px 48px rgba(0,0,0,0.65), 0 6px 16px rgba(0,0,0,0.40);
-
-    --bg-page:            #08142a;
-    --bg-gradient:        linear-gradient(145deg, #07111f 0%, #091628 40%, #0a1a30 65%, #081320 100%);
-    --bg-sidebar:         #0c1e3a;
-    --bg-topbar:          #0c1e3a;
-    --bg-card:            #102342;
-    --bg-card-s:          #132a4e;
-    --bg-input:           #152f55;
-    --border-input:       rgba(59,143,212,0.22);
-    --bg-table-head:      #0c1e38;
-    --bg-table-row-hover: rgba(59,143,212,0.12);
-    --bg-table-row-border:rgba(59,143,212,0.08);
-    --bg-expand:          #0c1e38;
-    --bg-hover:           #183560;
-    --bg-hover-s:         #1e3e70;
-    --bg-overlay:         rgba(0,0,0,0.72);
-    --bg-modal-header:    #132a4e;
-    --bg-modal-footer:    #0e2040;
-    --bg-grand-total:     #0c1e38;
-    --bg-nav-active:      rgba(59,143,212,0.20);
-    --bg-btn-ghost:       rgba(59,143,212,0.10);
-
-    --orb1: rgba(59,143,212,0.08);
-    --orb2: rgba(245,148,58,0.05);
-    --blur:    none;
-    --blur-sm: none;
-  }
-}
-
-/* Manual dark toggle */
 :root[data-theme="dark"] {
   --black:  #eaf2fc;
   --dark:   #d6e8f6;

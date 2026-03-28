@@ -78,19 +78,38 @@ function showToast(msg, type) {
   _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
 
-// ── DARK MODE ─────────────────────────────────────────────────
-// O snippet de inicialização antecipada (antes do CSS carregar)
-// continua inline no <head> de cada página.
-// Estas funções gerem o toggle e sincronização do ícone.
-function toggleTheme() {
-  var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('3dzaap_theme', next);
+// ── THEME SYSTEM ──────────────────────────────────────────────
+// Single source of truth for dark/light mode across all pages.
+//
+// RULES:
+//   - Theme is stored in localStorage '3dzaap_theme': 'light' | 'dark'
+//   - Default is always 'light' when nothing is stored
+//   - Never follows OS preference — only changed by explicit user action:
+//       a) Clicking the ☀️/🌙 toggle button (calls toggleTheme)
+//       b) Changing in Settings page and saving
+//   - Every page <head> must apply theme early to avoid flash:
+//       <script>
+//         (function(){
+//           var t = localStorage.getItem('3dzaap_theme') || 'light';
+//           document.documentElement.setAttribute('data-theme', t);
+//         })();
+//       </script>
+
+function applyTheme(theme) {
+  var t = (theme === 'dark') ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('3dzaap_theme', t);
   var b = document.getElementById('themeToggle');
-  if (b) b.textContent = next === 'dark' ? '☀️' : '🌙';
+  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
 }
 
 function initThemeToggle() {
+  var t = document.documentElement.getAttribute('data-theme') || 'light';
   var b = document.getElementById('themeToggle');
-  if (b) b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
 }
