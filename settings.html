@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .rcpt-overlay.open{display:flex}
 
-.rcpt-modal{background:#fff;border-radius:var(--rl);width:100%;max-width:700px;box-shadow:var(--sh-float);animation:modalIn .3s var(--ease);margin:auto;overflow:hidden;display:flex;flex-direction:column}
+.rcpt-modal{background:var(--bg-card-s);border-radius:var(--rl);width:100%;max-width:700px;box-shadow:var(--sh-float);animation:modalIn .3s var(--ease);margin:auto;overflow:hidden;display:flex;flex-direction:column}
 
 .rcpt-header{background:linear-gradient(135deg,#0D1117 0%,#162032 100%);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
 
@@ -258,13 +258,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .rcpt-status-bar.paid{background:#dcfce7;color:#16a34a}
 
-.rcpt-status-bar.pending{background:#fff7ed;color:#ea580c}
+.rcpt-status-bar.pending{background:rgba(245,158,11,.15);color:#ea580c}
 
 .rcpt-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;margin-right:4px}
 
 .rcpt-body{padding:14px 28px 10px;flex:1}
 
-.rcpt-section-label{font-size:.62rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #f1f5f9;margin-top:10px}
+.rcpt-section-label{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:10px}
 
 .rcpt-section-label:first-child{margin-top:0}
 
@@ -272,19 +272,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .rcpt-field-label{font-size:.6rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
 
-.rcpt-field-value{font-size:.78rem;font-weight:600;color:#0D1117;margin-top:1px}
+.rcpt-field-value{font-size:.78rem;font-weight:600;color:var(--dark);margin-top:1px}
 
 .rcpt-table{width:100%;border-collapse:collapse;font-size:.78rem}
 
-.rcpt-table th{padding:5px 8px;text-align:left;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;background:#f8fafc}
+.rcpt-table th{padding:5px 8px;text-align:left;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:var(--bg-hover-s)}
 
 .rcpt-table th.r{text-align:right}
 
-.rcpt-table td{padding:6px 8px;border-bottom:1px solid #f1f5f9}
+.rcpt-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
 
 .rcpt-table td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#475569}
 
-.rcpt-table td.bold{font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;color:#0D1117}
+.rcpt-table td.bold{font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;color:var(--dark)}
 
 .rcpt-table tbody tr:last-child td{border-bottom:none}
 
@@ -296,29 +296,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .rcpt-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:8px}
 
-.rcpt-notes{margin-top:8px;background:#f8fafc;border-radius:6px;padding:7px 10px;font-size:.74rem;color:#475569;line-height:1.4}
+.rcpt-notes{margin-top:8px;background:var(--bg-hover-s);border-radius:6px;padding:7px 10px;font-size:.74rem;color:var(--muted);line-height:1.4}
 
-.rcpt-sig-row{display:flex;align-items:flex-end;justify-content:space-between;padding:10px 28px 8px;border-top:1px solid #e2e8f0;flex-shrink:0}
+.rcpt-sig-row{display:flex;align-items:flex-end;justify-content:space-between;padding:10px 28px 8px;border-top:1px solid var(--border);flex-shrink:0}
 
 .rcpt-sig-block{text-align:center}
 
 .rcpt-sig-img{height:48px;width:auto;display:block;margin:0 auto 2px}
 
-.rcpt-sig-line{width:180px;border-top:1.5px solid #cbd5e1;margin-bottom:4px}
+.rcpt-sig-line{width:180px;border-top:1.5px solid var(--border);margin-bottom:4px}
 
 .rcpt-sig-name{font-size:.62rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.7px}
 
 .rcpt-sig-location{font-size:.62rem;color:#94a3b8;margin-top:1px}
 
-.rcpt-footer{background:#f8fafc;border-top:1px solid #e2e8f0;padding:9px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rcpt-footer{background:var(--bg-hover-s);border-top:1px solid var(--border);padding:9px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 
-.rcpt-brand{font-weight:800;font-size:.85rem;color:#0D1117}
+.rcpt-brand{font-weight:800;font-size:.85rem;color:var(--dark)}
 
 .rcpt-tagline{font-size:.62rem;color:#94a3b8}
 
 .rcpt-thanks{font-size:.7rem;color:#64748b;text-align:right}
 
-.rcpt-actions-bar{display:flex;justify-content:flex-end;gap:10px;padding:10px 20px 12px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0;background:#fff}
+.rcpt-actions-bar{display:flex;justify-content:flex-end;gap:10px;padding:10px 20px 12px;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg-card-s)}
 
 /* ── iOS Safari fix: substituir transform por left
      backdrop-filter + transform = bug iOS que bloqueia toque ── */
