@@ -424,7 +424,7 @@ footer{position:relative;z-index:1;padding:40px 0 26px;border-top:1px solid rgba
       <li><a href="#faq">FAQ</a></li>
     </ul>
     <div class="nact">
-      <a href="auth-onboarding.html" class="btn btn-g">Entrar</a>
+      <a href="login.html" class="btn btn-g">Entrar</a>
       <a href="auth-onboarding.html" class="btn btn-p">Começar Grátis →</a>
     </div>
     <div class="hbg" id="hbg" onclick="tmenu()"><span></span><span></span><span></span></div>
@@ -436,7 +436,7 @@ footer{position:relative;z-index:1;padding:40px 0 26px;border-top:1px solid rgba
   <a href="#pricing" onclick="cmenu()">💳 Preços</a>
   <a href="#faq" onclick="cmenu()">❓ FAQ</a>
   <hr>
-  <a href="auth-onboarding.html" class="btn btn-g">Entrar na conta</a>
+  <a href="login.html" class="btn btn-g">Entrar na conta</a>
   <a href="auth-onboarding.html" class="btn btn-p" onclick="cmenu()">Começar Trial Grátis →</a>
 </div>
 
@@ -521,6 +521,98 @@ footer{position:relative;z-index:1;padding:40px 0 26px;border-top:1px solid rgba
     </div>
   </div>
 </div></div>
+
+<!-- PAS FRAMEWORK -->
+<style>
+.pas-section { padding: 120px 0 60px; position: relative; z-index: 2; }
+.pas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  margin-top: 48px;
+}
+.pas-card {
+  padding: 40px 32px;
+  text-align: left;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pas-card::after {
+  content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--orange-g), transparent); opacity: 0; transition: opacity 0.3s var(--ease); pointer-events: none;
+}
+.pas-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--sh-lg);
+  border-color: var(--orange-lt);
+}
+.pas-card:hover::after { opacity: 1; }
+.pas-icon { font-size: 2.8rem; margin-bottom: 24px; filter: drop-shadow(0 4px 12px rgba(245,148,58,0.4)); display: inline-block; }
+.pas-title { font-size: 1.4rem; font-weight: 800; color: var(--dark); margin-bottom: 16px; letter-spacing: -0.02em; }
+.pas-desc { font-size: 1.05rem; color: var(--muted); line-height: 1.6; }
+.pas-desc strong { color: var(--orange-d); font-weight: 700; }
+
+.pas-solution { margin-top: 48px; }
+.ps-box {
+  padding: 48px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--blue-g), rgba(255,255,255,0.7));
+  border: 1px solid var(--blue-lt);
+  border-radius: var(--rx);
+  box-shadow: var(--sh);
+}
+.ps-box h3 { font-size: 2rem; font-weight: 900; color: var(--blue-dd); margin-bottom: 16px; letter-spacing: -0.03em; }
+.ps-box p { font-size: 1.15rem; color: var(--dark); max-width: 800px; margin: 0 auto; line-height: 1.7; font-weight: 500; }
+
+@media(max-width: 768px) {
+  .pas-section { padding: 80px 0 40px; }
+  .pas-grid { grid-template-columns: 1fr; gap: 24px; }
+  .pas-card { padding: 32px 24px; }
+  .ps-box { padding: 32px 24px; }
+  .ps-box h3 { font-size: 1.6rem; }
+}
+</style>
+
+<section class="pas-section" id="pas">
+  <div class="wrap">
+    <div class="fhdr fu">
+      <div class="slbl" style="color: var(--orange-d); background: var(--orange-g);">O Problema</div>
+      <h2 class="stit">A impressão 3D é incrível.<br>Gerir o negócio? Nem por isso.</h2>
+      <p class="ssub">Se lida com orçamentos de boca, filamento que acaba a meio de uma impressão e ficheiros perdidos pelas mensagens, compreendemos a sua dor.</p>
+    </div>
+    
+    <div class="pas-grid">
+      <!-- Problem 1 -->
+      <div class="gc pas-card fu d1">
+        <div class="pas-icon">💸</div>
+        <h3 class="pas-title">Preços "A Olho"</h3>
+        <p class="pas-desc">Cobrar apenas pelo "tempo de impressão" ignora o custo do desgaste da máquina, consumo de energia, taxa de falhas e pós-processamento. Resultado? <strong>Trabalhar para aquecer.</strong></p>
+      </div>
+
+      <!-- Problem 2 -->
+      <div class="gc pas-card fu d2">
+        <div class="pas-icon">🧵</div>
+        <h3 class="pas-title">O Caos do Inventário</h3>
+        <p class="pas-desc">Inicia uma impressão de 24 horas e percebe a meio que a bobine de filamento não chega. Lá vai outra impressão para o lixo, e <strong>mais um cliente à espera.</strong></p>
+      </div>
+
+      <!-- Problem 3 -->
+      <div class="gc pas-card fu d3">
+        <div class="pas-icon">🤯</div>
+        <h3 class="pas-title">Pedidos Desorganizados</h3>
+        <p class="pas-desc">Mensagens de clientes espalhadas pelo Instagram, WhatsApp e Email. "Em que ponto está a minha peça?" — e você <strong>perde imenso tempo</strong> apenas a tentar organizar os ficheiros.</p>
+      </div>
+    </div>
+    
+    <div class="pas-solution fu d4">
+      <div class="gc ps-box">
+        <h3>A nossa Solução.</h3>
+        <p>A <span class="b3d">3D</span><span class="bzp">ZAAP</span> foi construída do zero para resolver exatamente isto. Uma plataforma única que transforma o seu "hobby" num <strong>processo de produção altamente rentável, previsível e sem stress</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- FEATURES -->
 <section class="features" id="features"><div class="wrap">
@@ -859,3 +951,9 @@ document.querySelectorAll("a[href^='#']").forEach(a=>{
     const t=document.querySelector(a.getAttribute("href"));
     if(!t)return;
     e.preventDefault();
+    t.scrollIntoView({behavior:"smooth"});
+  });
+});
+</script>
+</body>
+</html>
