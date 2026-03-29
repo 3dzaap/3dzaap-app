@@ -136,9 +136,9 @@
 
 .slider-row{display:flex;align-items:center;gap:9px}
 
-.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer}
 
-.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);cursor:pointer;transition:transform .15s}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);cursor:pointer;transition:transform .15s}
 
 .slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
@@ -352,9 +352,9 @@
 
 .adv-slider-wrap{margin-top:5px;display:flex;align-items:center;gap:8px}
 
-.adv-slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:rgba(59,143,212,.18);border-radius:2px;outline:none;cursor:pointer}
+.adv-slider-wrap input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:rgba(59,143,212,.18);border-radius:2px;outline:none;cursor:pointer}
 
-.adv-slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 5px rgba(59,143,212,.3);cursor:pointer;transition:transform .15s}
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 5px rgba(59,143,212,.3);cursor:pointer;transition:transform .15s}
 
 .adv-slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
 
@@ -541,6 +541,15 @@
                   <label>Nome da impressão <span class="field-hint">(opcional — identifica no histórico)</span></label>
                   <div class="field-wrap">
                     <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…">
+                  </div>
+                </div>
+                <!-- NOVO SELECT DE IMPRESSORA -->
+                <div class="field full" id="calcPrinterField">
+                  <label>A sua Impressora <span class="field-hint">(preenche consumos e parâmetros automaticamente)</span></label>
+                  <div class="field-wrap">
+                    <select id="calcPrinterSelect" onchange="onCalcPrinterChange()" style="width:100%;padding:8px 11px;border-radius:var(--r);border:1.5px solid var(--border-input);background:var(--bg-input);color:var(--dark);font-family:var(--f);font-size:.86rem;font-weight:600;outline:none;cursor:pointer;transition:border-color .18s;">
+                      <option value="">Genérica / Inserção Manual</option>
+                    </select>
                   </div>
                 </div>
                 <div class="field">
@@ -852,6 +861,7 @@ let defaults = {...HARDCODED_DEFAULTS};
 let calcHistory = [];
 let advOpen = false;
 let _historyPersistTimer = null;
+let _userPrinters = [];
 
 // Debounced Supabase persist — avoids hammering DB on rapid saves
 function _persistHistory() {
@@ -869,7 +879,11 @@ function _persistHistory() {
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadUserData();
+  await loadUserData();
+  try {
+    _userPrinters = await DB.getPrinters();
+  } catch(e) { _userPrinters = []; }
+  renderPrintersDropdown();
   await loadCompanyDefaults();
   applyDefaultsToForm();
   liveCalc();
@@ -967,6 +981,42 @@ async function applyFeatureGating(){
 // ══════════════════════════════════════
 let _calcMode = 'fdm'; // 'fdm' | 'resin'
 
+function renderPrintersDropdown() {
+  const sel = document.getElementById('calcPrinterSelect');
+  if (!sel) return;
+  if (!_userPrinters.length) {
+    sel.innerHTML = '<option value="">Genérica / Inserção Manual</option>';
+    return;
+  }
+  let html = '<option value="">Genérica / Inserção Manual</option>';
+  const isResin = _calcMode === 'resin';
+  const filtered = _userPrinters.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
+  
+  filtered.forEach(p => {
+    html += `<option value="${p.id}">🖨️ ${p.customName || p.model} (${p.brand})</option>`;
+  });
+  sel.innerHTML = html;
+}
+
+function onCalcPrinterChange() {
+  const sel = document.getElementById('calcPrinterSelect');
+  if(!sel || !sel.value) return; 
+  const p = _userPrinters.find(x => x.id === sel.value);
+  if(!p) return;
+
+  if (p.price) setV('printerPrice', p.price);
+  if (p.lifeHours) setV('printerLife', p.lifeHours);
+  
+  if (_calcMode === 'resin') {
+    if (p.powerPrint || p.powerStandby) setV('uvLampPower', p.powerPrint || 60);
+  } else {
+    if (p.powerPrint) setV('powerConsumption', p.powerPrint);
+  }
+  
+  showToast('⚡ Energia e custos preenchidos: ' + (p.customName || p.model), 'ok');
+  liveCalc();
+}
+
 function setMode(mode) {
   _calcMode = mode;
   document.getElementById('modeFDM').classList.toggle('active', mode === 'fdm');
@@ -977,6 +1027,7 @@ function setMode(mode) {
   if (resinSec) resinSec.style.display = mode === 'resin' ? '' : 'none';
   var lbl = document.getElementById('rFilamentLabel');
   if (lbl) lbl.textContent = mode === 'resin' ? 'Custo da resina' : 'Custo do filamento';
+  renderPrintersDropdown();
   liveCalc();
 }
 
