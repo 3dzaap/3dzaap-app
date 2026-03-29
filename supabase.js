@@ -82,6 +82,17 @@ const Auth = {
     return data;
   },
 
+  async loginWithGoogle() {
+    const { data, error } = await _sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/auth-onboarding.html'
+      }
+    });
+    if (error) throw error;
+    return data;
+  },
+
   async logout() {
     await _sb.auth.signOut();
     _companyId    = null;
@@ -101,7 +112,7 @@ const Auth = {
     try {
       const { data: mem, error: memErr } = await _sb
         .from('memberships')
-        .select('role, companies(id, name, slug, plan, config, signature, trial_ends_at)')
+        .select('role, companies(id, name, slug, plan, config, signature, logo_url, trial_ends_at)')
         .eq('user_id', user.id)
         .limit(1)
         .single();
@@ -115,7 +126,7 @@ const Auth = {
     if (!company) {
       const { data: owned, error: ownedErr } = await _sb
         .from('companies')
-        .select('id, name, slug, plan, config, signature, trial_ends_at')
+        .select('id, name, slug, plan, config, signature, logo_url, trial_ends_at')
         .eq('owner_id', user.id)
         .limit(1)
         .single();

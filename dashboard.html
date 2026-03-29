@@ -193,6 +193,12 @@
   border-radius:20px;padding:2px 8px;
 }
 
+@media(min-width:1100px){
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:1100px) and (min-width:681px){
+  .stats-grid{grid-template-columns:1fr 1fr 1fr}
+}
 @media(max-width:800px){
   .actions-grid{grid-template-columns:repeat(2,1fr)}
 }
@@ -346,37 +352,50 @@
 
       <!-- Stats Grid -->
       <div class="stats-grid">
+        <!-- Financial Health -->
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon blue">💰</div>
-            <span class="stat-badge badge-up" id="revBadge">+12%</span>
+            <span class="stat-badge badge-up" id="revBadge">+0%</span>
           </div>
           <div class="stat-value" id="statRevenue">— 0,00</div>
-          <div class="stat-label">Receita este mês</div>
+          <div class="stat-label">Fluxo de Caixa (Faturado)</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between;">
+            <span>Liquidado: <strong id="statPaid" style="color: var(--success)">— 0,00</strong></span>
+            <span>Pendente: <strong id="statPending" style="color: var(--warning)">— 0,00</strong></span>
+          </div>
         </div>
+
+        <!-- Operations & Efficiency -->
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-icon orange">📦</div>
-            <span class="stat-badge badge-neu" id="ordersBadge">—</span>
+            <div class="stat-icon orange">⚙️</div>
+            <span class="stat-badge badge-neu" id="efficiencyBadge">0%</span>
           </div>
           <div class="stat-value" id="statOrders">0</div>
-          <div class="stat-label">Pedidos activos</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon green">✅</div>
-            <span class="stat-badge badge-up" id="paidBadge">—</span>
+          <div class="stat-label">Pedidos Activos</div>
+          <div style="margin-top: 10px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:4px">
+              <span>Eficiência da Frota</span>
+              <span id="efficiencyLabel">0/0 online</span>
+            </div>
+            <div style="height:4px; background:rgba(0,0,0,0.05); border-radius:10px; overflow:hidden">
+              <div id="efficiencyBar" style="width:0%; height:100%; background:var(--orange); transition: width 0.5s ease"></div>
+            </div>
           </div>
-          <div class="stat-value" id="statPaid">— 0,00</div>
-          <div class="stat-label">Recebido este mês</div>
         </div>
+
+        <!-- Stock Alerts & Ruptures -->
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon red">⚠️</div>
-            <span class="stat-badge badge-down" id="stockBadge">—</span>
+            <span class="stat-badge badge-down" id="stockBadge">0</span>
           </div>
           <div class="stat-value" id="statStock">0</div>
-          <div class="stat-label">Alertas de stock</div>
+          <div class="stat-label">Alertas de Stock</div>
+          <div id="ruptureAlert" style="margin-top: 10px; font-size: 0.72rem; color: var(--danger); background: rgba(239, 68, 68, 0.05); padding: 4px 8px; border-radius: 4px; display: none;">
+            🔔 <span id="ruptureMaterial">Nenhum risco imediato</span>
+          </div>
         </div>
       </div>
 
@@ -833,76 +852,77 @@ function renderStats() {
   const monthOrders = state.orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
   const prevOrders  = state.orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
 
-  // Revenue this month (paid)
-  const revenue     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-  const prevRevenue = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  // Revenue this month (Total vs Paid)
+  const totalRevenue = monthOrders.reduce((s,o)=>s+parseFloat(o.total||0),0);
+  const paidRevenue  = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
+  const pendingRevenue = Math.max(0, totalRevenue - paidRevenue);
+  
+  const prevTotalRevenue = prevOrders.reduce((s,o)=>s+parseFloat(o.total||0),0);
 
   // Active orders (not done)
   const activeOrders = state.orders.filter(o => o.status !== 'done').length;
-  const activeThisMonth = monthOrders.filter(o => o.status !== 'done').length;
 
-  // Paid this month
-  const paid     = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-  const prevPaid = prevOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-
-  // Filament alerts — use new status logic
+  // Filament alerts
   const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
-  const outOfStock = state.filaments.filter(f => getFilamentStatus(f) === 'red').length;
-  const stockLow   = state.filaments.filter(f => getFilamentStatus(f) === 'orange').length;
-  const totalAlerts = outOfStock + stockLow;
+  const totalAlerts = alertFils.length;
 
-  // Update values
-  document.getElementById('statRevenue').textContent = fmtEur(revenue);
-  document.getElementById('statOrders').textContent  = activeOrders;
-  document.getElementById('statPaid').textContent    = fmtEur(paid);
-  document.getElementById('statStock').textContent   = totalAlerts;
+  // Update Financial Values
+  document.getElementById('statRevenue').textContent = fmtEur(totalRevenue);
+  document.getElementById('statPaid').textContent    = fmtEur(paidRevenue);
+  document.getElementById('statPending').textContent = fmtEur(pendingRevenue);
 
   // Revenue badge — vs prev month
-  const revPct = prevRevenue > 0 ? Math.round((revenue - prevRevenue) / prevRevenue * 100) : null;
+  const revPct = prevTotalRevenue > 0 ? Math.round((totalRevenue - prevTotalRevenue) / prevTotalRevenue * 100) : null;
   const revBadge = document.getElementById('revBadge');
   if (revPct !== null) {
     revBadge.textContent = (revPct >= 0 ? '+' : '') + revPct + '%';
     revBadge.className = 'stat-badge ' + (revPct >= 0 ? 'badge-up' : 'badge-down');
   } else {
-    revBadge.textContent = revenue > 0 ? fmtEur(revenue) : '—';
+    revBadge.textContent = totalRevenue > 0 ? 'Este mês' : '—';
     revBadge.className = 'stat-badge badge-neu';
   }
 
-  // Orders badge
-  const ordersBadge = document.getElementById('ordersBadge');
-  ordersBadge.textContent = activeThisMonth > 0 ? `${activeThisMonth} este mês` : `${activeOrders} total`;
-  ordersBadge.className = 'stat-badge badge-neu';
+  // Update Operations (Active Orders)
+  document.getElementById('statOrders').textContent  = activeOrders;
 
-  // Paid badge — vs prev month
-  const paidPct = prevPaid > 0 ? Math.round((paid - prevPaid) / prevPaid * 100) : null;
-  const paidBadge = document.getElementById('paidBadge');
-  if (paidPct !== null) {
-    paidBadge.textContent = (paidPct >= 0 ? '+' : '') + paidPct + '%';
-    paidBadge.className = 'stat-badge ' + (paidPct >= 0 ? 'badge-up' : 'badge-down');
-  } else {
-    paidBadge.textContent = paid > 0 ? 'Recebido' : '—';
-    paidBadge.className = 'stat-badge badge-neu';
-  }
+  // Fleet Efficiency
+  const totalPrinters = state.printers.length;
+  const onlinePrinters = state.printers.filter(p => p.status === 'operacional').length;
+  const efficiencyPct = totalPrinters > 0 ? Math.round((onlinePrinters / totalPrinters) * 100) : 0;
+  
+  document.getElementById('efficiencyBadge').textContent = `${efficiencyPct}%`;
+  document.getElementById('efficiencyLabel').textContent = `${onlinePrinters}/${totalPrinters} online`;
+  document.getElementById('efficiencyBar').style.width = `${efficiencyPct}%`;
+  document.getElementById('efficiencyBadge').className = 'stat-badge ' + (efficiencyPct > 80 ? 'badge-up' : efficiencyPct > 50 ? 'badge-neu' : 'badge-down');
 
-  // Stock badge
+  // Stock Alerts & Ruptures
+  document.getElementById('statStock').textContent = totalAlerts;
   const stockBadge = document.getElementById('stockBadge');
-  if (outOfStock > 0) {
-    stockBadge.textContent = `${outOfStock} esgotado${outOfStock!==1?'s':''}`;
-    stockBadge.className = 'stat-badge badge-down';
-  } else if (stockLow > 0) {
-    stockBadge.textContent = `${stockLow} stock baixo`;
-    stockBadge.className = 'stat-badge badge-down';
+  stockBadge.className = 'stat-badge ' + (totalAlerts > 0 ? 'badge-down' : 'badge-up');
+  stockBadge.textContent = totalAlerts > 0 ? `${totalAlerts} alerta${totalAlerts!==1?'s':''}` : 'Tudo OK';
+
+  const ruptureEl = document.getElementById('ruptureAlert');
+  const ruptureMatEl = document.getElementById('ruptureMaterial');
+  
+  if (totalAlerts > 0) {
+    const mostCritical = alertFils.sort((a,b) => {
+        const aStatus = getFilamentStatus(a) === 'red' ? 0 : 1;
+        const bStatus = getFilamentStatus(b) === 'red' ? 0 : 1;
+        return aStatus - bStatus;
+    })[0];
+    
+    ruptureEl.style.display = 'block';
+    ruptureMatEl.textContent = `Risco: ${mostCritical.type} ${mostCritical.color || ''}`;
   } else {
-    stockBadge.textContent = 'Tudo OK ✅';
-    stockBadge.className = 'stat-badge badge-up';
+    ruptureEl.style.display = 'none';
   }
 
   // Gate financial stats
   if (!canAccess('financial')) {
     document.getElementById('statRevenue').classList.add('locked');
-    document.getElementById('statPaid').classList.add('locked');
+    document.getElementById('statPaid').style.filter = 'blur(4px)';
+    document.getElementById('statPending').style.filter = 'blur(4px)';
     revBadge.style.display = 'none';
-    paidBadge.style.display = 'none';
   }
 }
 

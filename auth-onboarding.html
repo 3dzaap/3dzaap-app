@@ -773,8 +773,12 @@ async function doReset() {
 // ══════════════════════════════════════════════════════════════
 //  GOOGLE AUTH
 // ══════════════════════════════════════════════════════════════
-function googleAuth() {
-  toast('Integração Google — em breve 🔗');
+async function googleAuth() {
+  try {
+    await Auth.loginWithGoogle();
+  } catch (e) {
+    toast('Erro ao iniciar login com Google: ' + (e.message || ''), 'err');
+  }
 }
 
 // ══════════════════════════════════════════════════════════════

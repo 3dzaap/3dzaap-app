@@ -121,27 +121,27 @@
    ================================================================ */
 
 :root[data-theme="dark"] {
-  --black:  #eaf2fc;
-  --dark:   #d6e8f6;
-  --muted:  #b8d0e8;
-  --subtle: #8fb4d0;
+  --black:  #f8fafc;
+  --dark:   #f1f5f9;
+  --muted:  #cbd5e1;
+  --subtle: #94a3b8;
 
-  --border:  rgba(59,143,212,0.18);
-  --bdark:   rgba(0,0,0,0.35);
-  --glass:   rgba(30,70,130,0.20);
-  --glass-s: rgba(10,28,60,0.98);
+  --border:  rgba(59,143,212,0.22);
+  --bdark:   rgba(0,0,0,0.45);
+  --glass:   rgba(15,35,70,0.30);
+  --glass-s: rgba(10,25,50,0.98);
 
-  --sh:       0 2px 8px rgba(0,0,0,0.50), 0 1px 3px rgba(0,0,0,0.30);
-  --sh-lg:    0 8px 24px rgba(0,0,0,0.55), 0 3px 8px rgba(0,0,0,0.35);
-  --sh-float: 0 16px 48px rgba(0,0,0,0.65), 0 6px 16px rgba(0,0,0,0.40);
+  --sh:       0 4px 12px rgba(0,0,0,0.60), 0 2px 4px rgba(0,0,0,0.40);
+  --sh-lg:    0 12px 32px rgba(0,0,0,0.70), 0 4px 12px rgba(0,0,0,0.45);
+  --sh-float: 0 20px 60px rgba(0,0,0,0.80), 0 8px 24px rgba(0,0,0,0.55);
 
-  --bg-page:            #08142a;
-  --bg-gradient:        linear-gradient(145deg, #07111f 0%, #091628 40%, #0a1a30 65%, #081320 100%);
-  --bg-sidebar:         #0c1e3a;
-  --bg-topbar:          #0c1e3a;
-  --bg-card:            #102342;
-  --bg-card-s:          #132a4e;
-  --bg-input:           #152f55;
+  --bg-page:            #020617;
+  --bg-gradient:        linear-gradient(145deg, #020617 0%, #0f172a 40%, #1e293b 75%, #020617 100%);
+  --bg-sidebar:         #0f172a;
+  --bg-topbar:          #0f172a;
+  --bg-card:            #1e293b;
+  --bg-card-s:          #1e293b;
+  --bg-input:           #0f172a;
   --border-input:       rgba(59,143,212,0.22);
   --bg-table-head:      #0c1e38;
   --bg-table-row-hover: rgba(59,143,212,0.12);
@@ -256,8 +256,9 @@ body {
   background: var(--bg-sidebar);
   border-right: 1.5px solid var(--border);
   display: flex; flex-direction: column;
-  position: fixed; top: 0; left: 0; height: 100vh; z-index: 250;
+  position: fixed; top: 0; left: 0; height: 100dvh; z-index: 250;
   transition: left .3s var(--ease);
+  overflow: hidden;
 }
 
 .sidebar-logo {
