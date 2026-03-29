@@ -525,6 +525,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (session) { window.location.href = 'dashboard.html'; return; }
   } catch(e) {}
 
+  // Parse URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode');
+  if (mode === 'signup') {
+    switchTab('signup');
+  } else if (mode === 'login') {
+    switchTab('login');
+  }
+
   // Ligar botões com addEventListener (sem onclick no HTML — evita duplicados)
   document.getElementById('loginBtn').addEventListener('click',  doLogin);
   document.getElementById('signupBtn').addEventListener('click', doSignup);
