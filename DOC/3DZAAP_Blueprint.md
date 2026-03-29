@@ -1,7 +1,16 @@
 # 3DZAAP Print Manager — SaaS Blueprint
-**v1.1 · 2025 · Confidencial**  
-Stack: `Next.js` · `TypeScript` · `Supabase` · `Stripe` · `Cloudflare`  
-Módulos: Calculadora · Filamentos · Pedidos · Financeiro · BackOffice
+**v1.2 · 2026 · Centralized Auth & DB**  
+Stack: `HTML/Vanilla JS (Homologation)` → `Next.js` · `TypeScript` · `Supabase` · `Stripe` · `Cloudflare`  
+Módulos: Calculadora · Filamentos · Pedidos · Financeiro · BackOffice · Catálogo de Impressoras
+
+---
+
+## 0. Estado Atual do Projeto (Progresso)
+- **Frontend / Protótipo (Atual):** A aplicação atualmente é uma versão monolítica em HTML/Vanilla CSS (`index.html`, `admin.html`, etc.) totalmente funcional e homologada.
+- **Backend / Supabase (Atual):**
+  - Conexão e credenciais do projeto Supabase (`yjggsndxatezgqljlhxb`) validadas e testadas com sucesso via acesso REST.
+  - Scripts SQL base (Tabelas de negócio, Catálogo de Impressoras com métricas de consumo de energia, e RLS) já definidos na directoria `/DOC`.
+- **Próximos Passos (Migração):** Executar os scripts SQL no Supabase, mapear todos os métodos do ficheiro `supabase.js` legados da versão local e, posteriormente, reescrever a UI para a arquitetura escalável e multi-tenant (Next.js 14).
 
 ---
 
