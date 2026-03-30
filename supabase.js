@@ -318,9 +318,17 @@ const DB = {
 
   async saveOrder(order) {
     await _ensureCompany();
-    const row   = _mapOrderToDB(order);
+    
+    // Check if it's a new order without a number (e.g. from Calculator)
     const isNew = !order.id || _isLocalId(order.id);
+    if (isNew && (!order.orderNumeric || order.orderNumeric === 0)) {
+       const lastStored = await this.getLastOrderNumber();
+       const next = lastStored + 1;
+       order.orderNumeric = next;
+       order.orderNumber  = `IMP-${String(next).padStart(4,'0')}`;
+    }
 
+    const row   = _mapOrderToDB(order);
     if (!isNew) {
       const { data, error } = await _sb
         .from('orders').update(row)
@@ -732,7 +740,7 @@ function _mapOrderFromDB(row) {
 function _mapOrderToDB(o) {
   const row = {
     order_number:    o.orderNumber || `IMP-${String(o.orderNumeric || 0).padStart(4,'0')}`,
-    order_numeric:   o.orderNumeric || 0,
+    order_numeric:   parseInt(o.orderNumeric || 0),
     client_name:     o.clientName,
     client_email:    o.clientEmail  || null,
     client_phone:    o.clientPhone  || null,
