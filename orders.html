@@ -1345,10 +1345,14 @@ async function sendWhatsAppTracking(id) {
     const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
     const portalUrl = base + '/portal.html?t=' + token;
     
-    let msg = `🎨 *Olá ${o.clientName}!* Aqui está o link para acompanhar o progresso do seu pedido de impressão 3D em tempo real:\n\n🚀 ${portalUrl}`;
+    let msg = `🎨 *Olá ${o.clientName}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:\n\n🚀 ${portalUrl}`;
     
     if (o.status === 'orcamento') {
       msg = `📄 *Olá ${o.clientName}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:\n\n🔗 ${portalUrl}`;
+    }
+
+    if (passphrase) {
+      msg += `\n\n🔑 *Código de acesso:* ${passphrase}`;
     }
 
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');

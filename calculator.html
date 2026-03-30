@@ -1417,13 +1417,17 @@ function _buildClientMsg(){
   ];
 
   if (_portalUrl) {
-    lines.push('', '🔗 *Acompanhe ou aprove aqui:*', _portalUrl);
+    lines.push('', '🔗 *Acompanhe ou aprova aqui:*', _portalUrl);
+    if (_portalPin) {
+      lines.push('🔑 *Código de acesso:* ' + _portalPin);
+    }
   }
 
   return lines.join('\n');
 }
 
 let _portalUrl = '';
+let _portalPin = '';
 
 function copyForClient(){
   const txt=_buildClientMsg();
@@ -1449,6 +1453,7 @@ async function sendWhatsApp(){
   try {
     const name=(document.getElementById('printName').value||'').trim();
     const token=crypto.randomUUID();
+    const pin=Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
     const expiry=new Date();
     expiry.setDate(expiry.getDate()+7);
     
@@ -1458,6 +1463,7 @@ async function sendWhatsApp(){
       status: 'orcamento',
       isQuote: true,
       shareToken: token,
+      passphrase: pin,
       expiresAt: expiry.toISOString(),
       items: [{
         description: name || 'Impressão 3D Customizada',
@@ -1473,6 +1479,7 @@ async function sendWhatsApp(){
     // Determine portal URL
     const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
     _portalUrl = base + '/portal.html?t=' + token;
+    _portalPin = pin;
 
     const txt=_buildClientMsg();
     const encoded=encodeURIComponent(txt);
@@ -1484,7 +1491,8 @@ async function sendWhatsApp(){
   } finally {
     btn.disabled=false;
     btn.innerHTML=orig;
-    _portalUrl = ''; // Reset for next calculate
+    _portalUrl = ''; 
+    _portalPin = '';
   }
 }
 

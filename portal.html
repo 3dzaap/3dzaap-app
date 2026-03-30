@@ -147,6 +147,62 @@ body { background: var(--bg); min-height: 100dvh; display: flex; flex-direction:
 .btn-decline { background: rgba(239,68,68,.1); color: var(--danger); border: 1.5px solid rgba(239,68,68,.2); }
 .btn-print { background: var(--bg-btn-ghost); border: 1.5px solid var(--border); color: var(--dark); }
 
+/* ── PIN Entry Screen ─────────────────────────────── */
+.pin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pin-card {
+  background: var(--bg-card-s);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 40px 30px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: var(--sh-float);
+}
+
+.pin-icon { font-size: 3rem; margin-bottom: 20px; }
+.pin-title { font-size: 1.25rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.pin-desc { font-size: .88rem; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+
+.pin-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.pin-field {
+  width: 50px;
+  height: 60px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--dark);
+  transition: all .2s var(--ease);
+}
+
+.pin-field:focus {
+  border-color: var(--blue);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px rgba(59,143,212,.15);
+  outline: none;
+}
+
 /* ── Loading & Errors ─────────────────────────────── */
 .portal-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 16px; color: var(--muted); }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -158,6 +214,12 @@ body { background: var(--bg); min-height: 100dvh; display: flex; flex-direction:
 /* ── Animations ─────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .animate { animation: fadeIn .4s var(--ease) forwards; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.shake { animation: shake .4s var(--ease); }
 
 </style>
 </head>
@@ -168,6 +230,22 @@ body { background: var(--bg); min-height: 100dvh; display: flex; flex-direction:
   <div class="portal-loading" id="loadingState">
     <div class="spinner"></div>
     <p>A carregar o seu pedido...</p>
+  </div>
+</div>
+
+<!-- PIN Overlay (Hidden by default) -->
+<div class="pin-overlay" id="pinOverlay" style="display:none">
+  <div class="pin-card" id="pinCard">
+    <div class="pin-icon">🔐</div>
+    <div class="pin-title">Acesso Restrito</div>
+    <div class="pin-desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
+    <div class="pin-input-group">
+      <input type="password" maxlength="1" class="pin-field" id="p1" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-field" id="p2" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-field" id="p3" inputmode="numeric">
+      <input type="password" maxlength="1" class="pin-field" id="p4" inputmode="numeric">
+    </div>
+    <p id="pinError" style="color:var(--danger);font-size:.8rem;font-weight:600;display:none;margin-top:-10px;margin-bottom:10px">Código incorreto. Tente novamente.</p>
   </div>
 </div>
 
@@ -191,9 +269,60 @@ async function init() {
     const data = await DB.getTrackingInfo(_token);
     _order = data.order;
     _company = data;
-    renderPortal();
+    
+    // Check if we already have a valid PIN in session
+    const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
+    if (_order.passphrase && _order.passphrase !== storedPin) {
+      showPinScreen();
+    } else {
+      renderPortal();
+    }
   } catch (err) {
     renderError('Não encontrado', err.message, '📄');
+  }
+}
+
+function showPinScreen() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('pinOverlay').style.display = 'flex';
+  
+  const inputs = document.querySelectorAll('.pin-field');
+  inputs.forEach((input, idx) => {
+    input.addEventListener('input', (e) => {
+      if (e.target.value.length === 1 && idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      }
+      checkFullPin();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+        inputs[idx - 1].focus();
+      }
+    });
+  });
+  inputs[0].focus();
+}
+
+function checkFullPin() {
+  const inputs = document.querySelectorAll('.pin-field');
+  const pin = Array.from(inputs).map(i => i.value).join('');
+  if (pin.length === 4) {
+    if (pin === _order.passphrase) {
+      sessionStorage.setItem('3dzaap_portal_pin_' + _token, pin);
+      document.getElementById('pinOverlay').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('pinOverlay').style.display = 'none';
+        renderPortal();
+      }, 300);
+    } else {
+      const card = document.getElementById('pinCard');
+      const err = document.getElementById('pinError');
+      card.classList.add('shake');
+      err.style.display = 'block';
+      inputs.forEach(i => i.value = '');
+      inputs[0].focus();
+      setTimeout(() => card.classList.remove('shake'), 400);
+    }
   }
 }
 
@@ -204,8 +333,10 @@ function renderPortal() {
   // Decide what to show
   let html = '';
   
-  // 1. Tracker Section (if approved or done)
-  if (!_order.isQuote) {
+  const productionStates = ['aprovado', 'modelagem', 'printing', 'done'];
+  
+  // 1. Tracker Section (Production States)
+  if (productionStates.includes(_order.status)) {
     html += renderTracker();
   }
 
@@ -217,7 +348,7 @@ function renderPortal() {
           ${_company.logoUrl ? `<img src="${_company.logoUrl}">` : `<span style="color:#fff;font-weight:800;font-size:1.2rem">${_company.companyName}</span>`}
         </div>
         <div class="rcpt-header-right">
-          <div class="rcpt-title">${_order.isQuote ? 'Orçm. Provisório' : 'Recibo / Pedido'}</div>
+          <div class="rcpt-title">${['orcamento', 'validacao'].includes(_order.status) ? 'Orçamento Profissional' : 'Recibo / Pedido'}</div>
           <div class="rcpt-number">${_order.orderNumber}</div>
         </div>
       </div>
@@ -279,9 +410,9 @@ function renderPortal() {
 }
 
 function renderTracker() {
-  const statuses = ['orcamento', 'aprovado', 'printing', 'done'];
-  const labels = ['Análise', 'Confirmado', 'Impressão', 'Pronto'];
-  const icons = ['⏳', '📦', '🖨️', '✅'];
+  const statuses = ['orcamento', 'aprovado', 'modelagem', 'printing', 'done'];
+  const labels = ['Análise', 'Confirmado', 'Modelagem', 'Impressão', 'Pronto'];
+  const icons = ['⏳', '📦', '📐', '🖨️', '✅'];
   
   // Current status index
   let currentIdx = statuses.indexOf(_order.status);
@@ -324,7 +455,9 @@ function renderButtons() {
   const bar = document.getElementById('actionsBar');
   let html = '';
   
-  if (_order.isQuote && _order.status === 'orcamento') {
+  const decisionStates = ['orcamento', 'validacao'];
+  
+  if (decisionStates.includes(_order.status)) {
     html += `
       <button class="btn-portal btn-decline" onclick="handleAction('decline')">❌ Declinar</button>
       <button class="btn-portal btn-approve" onclick="handleAction('approve')">✅ Aprovar Orçamento</button>
@@ -332,7 +465,7 @@ function renderButtons() {
   } else if (_order.status === 'declined') {
     html += `<div style="color:var(--danger);font-weight:700">Orçamento foi declinado.</div>`;
   } else {
-    // Tracking/Approved view
+    // Production/Tracking view
     html += `
       <button class="btn-portal btn-print" onclick="window.print()">🖨️ PDF / Recibo</button>
       <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:var(--blue)">📱 Contactar WhatsApp</button>

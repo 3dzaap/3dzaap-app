@@ -409,7 +409,7 @@ const DB = {
       throw new Error('Palavra-passe incorrecta.');
     }
 
-    const newStatus = action === 'approve' ? 'validacao' : 'declined';
+    const newStatus = action === 'approve' ? 'aprovado' : 'declined';
     const updateFields = { 
       status: newStatus,
       updated_at: new Date().toISOString()
