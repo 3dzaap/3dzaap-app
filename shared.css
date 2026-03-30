@@ -19,6 +19,8 @@
    ================================================================ */
 
 :root {
+  color-scheme: light;
+
   /* ── Brand colours ─────────────────────────────── */
   --blue:     #3B8FD4;
   --blue-d:   #2a6fb0;
@@ -121,6 +123,8 @@
    ================================================================ */
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
+
   --black:  #f8fafc;
   --dark:   #f1f5f9;
   --muted:  #cbd5e1;
@@ -519,10 +523,17 @@ body {
   background: var(--bg-input); border: 1.5px solid var(--border-input);
   font-size: .86rem; font-family: var(--f); color: var(--dark);
   outline: none; transition: border-color .18s, box-shadow .18s;
+  -webkit-appearance: none; appearance: none;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,143,212,.1); background: var(--bg-hover-s); }
 .form-input::placeholder, .form-textarea::placeholder { color: var(--subtle); opacity: 0.7; }
-.form-select   { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 10px 6px; padding-right: 30px; cursor: pointer; }
+/* Override browser autofill background/text color issues */
+.form-input:-webkit-autofill, .form-input:-webkit-autofill:hover, .form-input:-webkit-autofill:focus, .form-textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--dark) !important;
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-input) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+.form-select   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394A3B8'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 10px 6px; padding-right: 30px; cursor: pointer; }
 .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 .form-hint     { font-size: .70rem; color: var(--subtle); margin-top: 2px; }
 
