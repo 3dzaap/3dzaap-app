@@ -170,7 +170,7 @@ const Sidebar = (() => {
     if (avatarEl) {
       const logoUrl = session.logo_url || session.config?.logoUrl || '';
       if (logoUrl) {
-        avatarEl.innerHTML = `<img src="${logoUrl}" alt="${_esc(companyName)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+        avatarEl.innerHTML = `<img src="${logoUrl}" alt="${_esc(companyName)}" style="width:100%;height:100%;object-fit:cover;border-radius:22%">`;
       } else {
         avatarEl.textContent = companyInitials;
       }
