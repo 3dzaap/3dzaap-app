@@ -603,6 +603,10 @@ function renderOrders(keepExpandId) {
               <button class="btn btn-ghost btn-sm" onclick="${o.paymentStatus==='pago'?`togglePayment('${o.id}','pendente')`:`togglePayment('${o.id}','pago')`}">${o.paymentStatus==='pago'?'⏳ Marcar pendente':'✓ Marcar pago'}</button>
               <button class="btn btn-ghost btn-sm" onclick="openModal('${o.id}')">✏️ Editar</button>
               <button class="btn btn-ghost btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue)">🧾 Recibo</button>
+              <button class="btn btn-ghost btn-sm" onclick="sendWhatsAppTracking('${o.id}')" style="color:#25D366;display:flex;align-items:center;gap:4px">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.284l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.768-5.764-5.768zm3.393 8.243c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.513-2.96-2.63-.086-.117-.694-.925-.694-1.764s.432-1.25.586-1.42c.154-.171.335-.214.446-.214.111 0 .221.002.318.006.097.004.213-.037.332.25.119.287.408.996.444 1.069.036.073.06.158.012.256-.048.097-.072.158-.144.243-.072.085-.152.19-.216.256-.064.067-.132.14-.056.27.076.13.338.557.726.903.5.445.921.583 1.051.647.13.064.206.048.284-.04.078-.088.333-.388.421-.52.088-.132.176-.11.297-.064.121.046.767.362.899.428.132.066.219.098.251.154.032.056.032.324-.112.729z"/></svg> 
+                Tracking
+              </button>
               <button class="btn btn-ghost btn-sm" style="color:var(--danger);margin-left:auto" onclick="confirmDelete('${o.id}')">🗑️ Eliminar</button>
             </div>
           </div>
@@ -1307,6 +1311,55 @@ async function printReceipt(id) {
       <div class="rcpt-thanks">Obrigado pela sua confiança! 🙏</div>
     </div>`;
   document.getElementById('rcptOverlay').classList.add('open');
+}
+
+async function sendWhatsAppTracking(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  const btn = document.querySelector(`#exp-${id} button[onclick^="sendWhatsAppTracking"]`);
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⏳...';
+
+  try {
+    let token = o.shareToken;
+    let passphrase = o.passphrase;
+
+    // Generate token if it doesn't exist
+    if (!token) {
+      token = crypto.randomUUID();
+      passphrase = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
+      
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + 7);
+      
+      o.shareToken = token;
+      o.passphrase = passphrase;
+      o.expiresAt = expiry.toISOString();
+      if (!o.isQuote) o.isQuote = (o.status === 'orcamento');
+
+      await DB.saveOrder(o);
+    }
+
+    const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
+    const portalUrl = base + '/portal.html?t=' + token;
+    
+    let msg = `🎨 *Olá ${o.clientName}!* Aqui está o link para acompanhar o progresso do seu pedido de impressão 3D em tempo real:\n\n🚀 ${portalUrl}`;
+    
+    if (o.status === 'orcamento') {
+      msg = `📄 *Olá ${o.clientName}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:\n\n🔗 ${portalUrl}`;
+    }
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    showToast('✅ Link de tracking pronto!','ok');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao gerar link de tracking.','err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
 }
 
 function closeReceipt() { document.getElementById('rcptOverlay').classList.remove('open'); }

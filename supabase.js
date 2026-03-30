@@ -112,7 +112,7 @@ const Auth = {
     try {
       const { data: mem, error: memErr } = await _sb
         .from('memberships')
-        .select('role, companies(id, name, slug, plan, config, signature, logo_url, trial_ends_at)')
+        .select('role, companies(id, name, slug, plan, config, signature, trial_ends_at)')
         .eq('user_id', user.id)
         .limit(1)
         .single();
@@ -126,7 +126,7 @@ const Auth = {
     if (!company) {
       const { data: owned, error: ownedErr } = await _sb
         .from('companies')
-        .select('id, name, slug, plan, config, signature, logo_url, trial_ends_at')
+        .select('id, name, slug, plan, config, signature, trial_ends_at')
         .eq('owner_id', user.id)
         .limit(1)
         .single();
@@ -350,6 +350,81 @@ const DB = {
     const rows = orders.map(o => ({ ..._mapOrderToDB(o), company_id: _companyId }));
     const { error } = await _sb.from('orders').insert(rows);
     if (error) throw error;
+  },
+
+  // ── CUSTOMER PORTAL & TRACKING (Public) ─────────────────────
+  
+  async getTrackingInfo(shareToken) {
+    if (!shareToken) throw new Error('Token de partilha não fornecido.');
+    
+    // Fetch order + company info for the receipt view
+    const { data: row, error } = await _sb
+      .from('orders')
+      .select(`
+        *,
+        companies (
+          name, 
+          config, 
+          signature
+        )
+      `)
+      .eq('share_token', shareToken)
+      .single();
+
+    if (error || !row) throw new Error('Pedido ou Orçamento não encontrado.');
+    
+    const order = _mapOrderFromDB(row);
+    const company = row.companies || {};
+    const config = company.config || {};
+    
+    return { 
+      order, 
+      companyName: company.name || '3DZAAP',
+      companyConfig: config,
+      logoUrl: config.logoUrl || '', // Fallback to config
+      signature: company.signature || null
+    };
+  },
+
+  async respondToQuote(shareToken, action, passphrase) {
+    if (!shareToken) throw new Error('Token de partilha necessário.');
+    
+    // First verify passphrase if provided in the data
+    const { data: check, error: checkErr } = await _sb
+      .from('orders')
+      .select('id, passphrase, expires_at, status, is_quote')
+      .eq('share_token', shareToken)
+      .single();
+      
+    if (checkErr || !check) throw new Error('Documento não encontrado.');
+    
+    // Check expiration for quotes
+    if (check.is_quote && check.expires_at) {
+      if (new Date(check.expires_at) < new Date()) {
+        throw new Error('Este orçamento já expirou.');
+      }
+    }
+
+    if (passphrase && check.passphrase && check.passphrase !== passphrase) {
+      throw new Error('Palavra-passe incorrecta.');
+    }
+
+    const newStatus = action === 'approve' ? 'validacao' : 'declined';
+    const updateFields = { 
+      status: newStatus,
+      updated_at: new Date().toISOString()
+    };
+    
+    // If approved, it's no longer just a "quote" draft
+    if (action === 'approve') updateFields.is_quote = false;
+
+    const { error } = await _sb
+      .from('orders')
+      .update(updateFields)
+      .eq('share_token', shareToken);
+
+    if (error) throw error;
+    return { status: newStatus };
   },
 
   // ── EXPENSES ────────────────────────────────────────────────
@@ -638,6 +713,10 @@ function _mapOrderFromDB(row) {
     notes:         row.notes         || '',
     printerId:     row.printer_id    || null,
     estPrintHours: row.est_print_hours ? parseFloat(row.est_print_hours) : null,
+    shareToken:    row.share_token,
+    passphrase:    row.passphrase,
+    expiresAt:     row.expires_at,
+    isQuote:       row.is_quote || false,
     updatedAt:     row.updated_at,
   };
 }
@@ -659,6 +738,10 @@ function _mapOrderToDB(o) {
     notes:           o.notes        || null,
     printer_id:      o.printerId    || null,
     est_print_hours: o.estPrintHours || null,
+    share_token:     o.shareToken   || null,
+    passphrase:      o.passphrase   || null,
+    expires_at:      o.expiresAt    || null,
+    is_quote:        o.isQuote      || false,
   };
   if (o.createdAt) row.created_at = o.createdAt;
   return row;

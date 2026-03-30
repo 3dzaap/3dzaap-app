@@ -862,6 +862,7 @@ let calcHistory = [];
 let advOpen = false;
 let _historyPersistTimer = null;
 let _userPrinters = [];
+let _sessionData = null;
 
 // Debounced Supabase persist — avoids hammering DB on rapid saves
 function _persistHistory() {
@@ -899,6 +900,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  _sessionData = session;
   loadCfg(session);
   updateCurrencyLabels();
   loadCfg(session);
@@ -1384,33 +1386,44 @@ function _buildClientMsg(){
   const qty=i.qty||1;
   const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
   const date=new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
+  const companyName = (_sessionData && _sessionData.companyName) ? _sessionData.companyName : '3DZAAP';
 
-  // WhatsApp-friendly formatting: *bold*, no box-drawing chars
+  // Professional WhatsApp formatting
   const lines=[
-    '👋 Olá!',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '📄 *ORÇAMENTO DE IMPRESSÃO 3D*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '🏢 *'+companyName+'*',
+    '📅 *Data:* '+date,
     '',
-    'Segue o seu orçamento de impressão 3D:',
-    '————',
+    '📐 *Peça:* '+(name || 'Impressão 3D Customizada'),
+    '🖨️ *Tecnologia:* '+modeLabel,
+    '🔢 *Quantidade:* '+qty+' un.',
+    '',
+    '------------------------------------',
+    '📝 *DETALHE TÉCNICO:*',
+    i.mode==='resin' ? '• Volume est.: '+i.resinVolume+'ml' : '• Peso est.: '+i.partWeight+'g',
+    '• Tempo est.: '+i.printTime+'h',
+    '------------------------------------',
+    '',
+    '💰 *VALORES:*',
+    '• Preço Unitário: '+sym+' '+r.unitPrice.toFixed(2),
+    '• *TOTAL: '+sym+' '+r.finalPrice.toFixed(2)+'*',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━',
+    '⏳ Válido por 7 dias.',
+    '🚀 Gerado via 3DZAAP',
+    '━━━━━━━━━━━━━━━━━━━━'
   ];
-  if(name) lines.push('📐 *Peça:* '+name);
-  lines.push('🖨️ *Tecnologia:* '+modeLabel);
-  lines.push('📅 *Data:* '+date);
-  lines.push('');
-  if(qty>1){
-    lines.push('🔢 *Quantidade:* '+qty+' unidades');
-    lines.push('💵 *Preço unitário:* '+sym+' '+r.unitPrice.toFixed(2));
-    lines.push('————');
-    lines.push('💰 *TOTAL: '+sym+' '+r.finalPrice.toFixed(2)+'*');
-  }else{
-    lines.push('————');
-    lines.push('💰 *Preço: '+sym+' '+r.finalPrice.toFixed(2)+'*');
+
+  if (_portalUrl) {
+    lines.push('', '🔗 *Acompanhe ou aprove aqui:*', _portalUrl);
   }
-  lines.push('');
-  lines.push('⏳ Orçamento válido por 7 dias.');
-  lines.push('Para dúvidas ou encomenda, responda a esta mensagem. 🙏');
 
   return lines.join('\n');
 }
+
+let _portalUrl = '';
 
 function copyForClient(){
   const txt=_buildClientMsg();
@@ -1424,14 +1437,55 @@ function copyForClient(){
   }else{fbClientCopy(txt);}
 }
 
-function sendWhatsApp(){
+async function sendWhatsApp(){
   const i=getInputs(); const r=computeResults(i);
   if(r.finalPrice===0){showToast('Calcula primeiro antes de enviar','err');return;}
-  const txt=_buildClientMsg();
-  const encoded=encodeURIComponent(txt);
-  window.open('https://wa.me/?text='+encoded,'_blank');
-  const el=document.getElementById('waBtn');
-  if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
+  
+  const btn=document.getElementById('waBtn');
+  const orig=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<span>⏳ A gerar link...</span>';
+
+  try {
+    const name=(document.getElementById('printName').value||'').trim();
+    const token=crypto.randomUUID();
+    const expiry=new Date();
+    expiry.setDate(expiry.getDate()+7);
+    
+    const newOrder={
+      clientName: 'Cliente (Via WhatsApp)',
+      total: r.finalPrice,
+      status: 'orcamento',
+      isQuote: true,
+      shareToken: token,
+      expiresAt: expiry.toISOString(),
+      items: [{
+        description: name || 'Impressão 3D Customizada',
+        qty: i.qty || 1,
+        material: i.materialName || 'N/A',
+        weight: i.mode==='resin' ? i.resinVolume : i.partWeight,
+        total: r.finalPrice
+      }]
+    };
+
+    await DB.saveOrder(newOrder);
+    
+    // Determine portal URL
+    const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
+    _portalUrl = base + '/portal.html?t=' + token;
+
+    const txt=_buildClientMsg();
+    const encoded=encodeURIComponent(txt);
+    window.open('https://wa.me/?text='+encoded,'_blank');
+    showToast('✅ Link de tracking enviado!','ok');
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao gerar link de tracking.','err');
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML=orig;
+    _portalUrl = ''; // Reset for next calculate
+  }
 }
 
 function fbClientCopy(t){
