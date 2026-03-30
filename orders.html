@@ -416,8 +416,8 @@ let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
 
-const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',done:'Concluído'};
-const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
+const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Aprovação',aprovado:'Confirmado',fila:'Em Fila',printing:'Produção',preparacao:'Preparação',enviado:'Enviado',done:'Concluído'};
+const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'fila',aprovado:'fila',fila:'printing',printing:'preparacao',preparacao:'enviado',enviado:'done',done:null};
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1262,7 +1262,7 @@ async function printReceipt(id) {
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
-  const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Validação',aprovado:'Aprovado',printing:'Printing',done:'Concluído'};
+  const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Aprovação',aprovado:'Confirmado',fila:'Em Fila',printing:'Produção',preparacao:'Preparação',enviado:'Enviado',done:'Concluído'};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
   const cfg = userData.config || _cfg || {};

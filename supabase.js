@@ -409,14 +409,22 @@ const DB = {
       throw new Error('Palavra-passe incorrecta.');
     }
 
-    const newStatus = action === 'approve' ? 'aprovado' : 'declined';
+    let newStatus = 'aprovado';
+    if (action === 'decline') {
+      newStatus = 'declined';
+    } else if (action === 'approve') {
+      // Logic for two-step approval
+      if (check.status === 'orcamento') newStatus = 'modelagem';
+      else newStatus = 'aprovado';
+    }
+
     const updateFields = { 
       status: newStatus,
       updated_at: new Date().toISOString()
     };
     
-    // If approved, it's no longer just a "quote" draft
-    if (action === 'approve') updateFields.is_quote = false;
+    // If approved at final stage or initial budget, it might no longer be just a "quote"
+    if (action === 'approve' && newStatus === 'aprovado') updateFields.is_quote = false;
 
     const { error } = await _sb
       .from('orders')
