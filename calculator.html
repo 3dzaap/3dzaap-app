@@ -538,7 +538,13 @@
                   </div>
                 </div>
                 <div class="field full">
-                  <label>Nome da impressão <span class="field-hint">(opcional — identifica no histórico)</span></label>
+                  <label>Nome do cliente <span class="field-hint">(para identificar o pedido)</span></label>
+                  <div class="field-wrap">
+                    <input type="text" id="clientName" placeholder="Ex: João Silva, Empresa Lda…">
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Nome da impressão <span class="field-hint">(opcional — identifica o item no histórico)</span></label>
                   <div class="field-wrap">
                     <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…">
                   </div>
@@ -1381,6 +1387,7 @@ function copyResults(){
 }
 function _buildClientMsg(){
   const i=getInputs(); const r=computeResults(i);
+  const clientName=(document.getElementById('clientName')||{value:''}).value.trim();
   const name=(document.getElementById('printName').value||'').trim();
   const sym=(_cfg&&_cfg._currSymbol)||'€';
   const qty=i.qty||1;
@@ -1393,6 +1400,7 @@ function _buildClientMsg(){
     '━━━━━━━━━━━━━━━━━━━━',
     '📄 *ORÇAMENTO DE IMPRESSÃO 3D*',
     '━━━━━━━━━━━━━━━━━━━━',
+    ...(clientName ? ['👋 *Olá, ' + clientName + '!*', ''] : []),
     '🏢 *'+companyName+'*',
     '📅 *Data:* '+date,
     '',
@@ -1451,14 +1459,19 @@ async function sendWhatsApp(){
   btn.innerHTML='<span>⏳ A gerar link...</span>';
 
   try {
-    const name=(document.getElementById('printName').value||'').trim();
-    const token=crypto.randomUUID();
-    const pin=Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
-    const expiry=new Date();
-    expiry.setDate(expiry.getDate()+7);
+    const clientNameVal = (document.getElementById('clientName').value || '').trim();
+    const name = (document.getElementById('printName').value || '').trim();
+    const token = crypto.randomUUID();
+    const pin = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + 7);
     
-    const newOrder={
-      clientName: 'Cliente (Via WhatsApp)',
+    // unitPrice = total price / qty (so orders module can recalculate correctly)
+    const qty = i.qty || 1;
+    const unitPrice = qty > 0 ? r.finalPrice / qty : r.finalPrice;
+
+    const newOrder = {
+      clientName: clientNameVal || 'Cliente (Via WhatsApp)',
       total: r.finalPrice,
       status: 'orcamento',
       isQuote: true,
@@ -1467,10 +1480,10 @@ async function sendWhatsApp(){
       expiresAt: expiry.toISOString(),
       items: [{
         description: name || 'Impressão 3D Customizada',
-        qty: i.qty || 1,
+        quantity: qty,
+        unitPrice: unitPrice,
         material: i.materialName || 'N/A',
-        weight: i.mode==='resin' ? i.resinVolume : i.partWeight,
-        total: r.finalPrice
+        weightG: i.mode === 'resin' ? i.resinVolume : i.partWeight,
       }]
     };
 
@@ -1493,6 +1506,9 @@ async function sendWhatsApp(){
     btn.innerHTML=orig;
     _portalUrl = ''; 
     _portalPin = '';
+    // Reset client name and print name after sending
+    const cnEl = document.getElementById('clientName');
+    if (cnEl) cnEl.value = '';
   }
 }
 

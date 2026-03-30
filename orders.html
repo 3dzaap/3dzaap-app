@@ -547,13 +547,15 @@ function renderOrders(keepExpandId) {
   const rows = [];
   filtered.forEach(o => {
     const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
-    const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
-    const itemsHtml = its.map((it,idx) => `
+    // Support legacy items with 'total' field (from old calculator format)
+    const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity||it.qty||1)||1) * (parseFloat(it.unitPrice)||0));
+    const grand = its.reduce((s,i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
+    const itemsHtml = its.map((it, idx) => `
       <tr>
         <td>${idx+1}. ${escH(it.description||'—')}</td>
-        <td class="r">${it.quantity}</td>
-        <td class="r">${fmtEur(it.unitPrice||0)}</td>
-        <td class="bold">${fmtEur((it.quantity||0)*(it.unitPrice||0))}</td>
+        <td class="r">${it.quantity || it.qty || 1}</td>
+        <td class="r">${fmtEur(parseFloat(it.unitPrice)||0)}</td>
+        <td class="bold">${fmtEur(_itTotal(it))}</td>
       </tr>`).join('');
 
     const detailGrid = [
@@ -617,8 +619,9 @@ function renderOrders(keepExpandId) {
   if (mobList) {
     mobList.innerHTML = filtered.map(o => {
       const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
-      const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
-      const itemsHtml = its.map(it=>`<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity}</span><span class="mob-item-total">${fmtEur((it.quantity||0)*(it.unitPrice||0))}</span></div>`).join('');
+      const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity||it.qty||1)||1) * (parseFloat(it.unitPrice)||0));
+      const grand = its.reduce((s,i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
+      const itemsHtml = its.map(it => `<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity||it.qty||1}</span><span class="mob-item-total">${fmtEur(_itTotal(it))}</span></div>`).join('');
       return `<div class="mob-ord-card" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
@@ -947,11 +950,14 @@ function openModal(id = null) {
     document.getElementById('oClientPhone').value = o.clientPhone || '';
     document.getElementById('oStatus').value = o.status || 'orcamento';
     document.getElementById('oPaymentStatus').value = o.paymentStatus || 'pendente';
-    document.getElementById('oCreatedAt').value = o.createdAt || '';
-    document.getElementById('oDueDate').value = o.dueDate || '';
+    // Handle both full ISO timestamps (2026-03-30T07:04:22Z) and date-only strings (2026-03-30)
+    const _toDateStr = (v) => v ? (v.includes('T') ? v.split('T')[0] : v) : '';
+    document.getElementById('oCreatedAt').value = _toDateStr(o.createdAt);
+    document.getElementById('oDueDate').value = _toDateStr(o.dueDate);
     document.getElementById('oNotes').value = o.notes || '';
     const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0,filamentId:'',weightG:''}];
-    its.forEach(it => addOrderItem(it));
+    // Normalize items: support old calculator format (qty/weight/total → quantity/weightG/unitPrice)
+    its.forEach(it => addOrderItem(_normalizeItem(it)));
   } else {
     document.getElementById('oClientName').value = '';
     document.getElementById('oClientEmail').value = '';
@@ -1012,6 +1018,26 @@ function applyCalcPrefill(p) {
 }
 
 // ── ITEMS ──────────────────────────────
+
+// Normalize items from old calculator format to orders modal format
+// Maps: qty → quantity, weight → weightG, total → unitPrice (when unitPrice is missing)
+function _normalizeItem(it) {
+  if (!it) return it;
+  const qty = parseInt(it.quantity || it.qty || 1) || 1;
+  // Derive unitPrice from total/qty when unitPrice is missing or zero
+  const rawUnitPrice = parseFloat(it.unitPrice);
+  const unitPrice = (rawUnitPrice > 0) ? rawUnitPrice
+    : (it.total ? parseFloat(it.total) / qty : 0);
+  return {
+    description: it.description || '',
+    quantity:    qty,
+    unitPrice:   unitPrice,
+    filamentId:  it.filamentId || '',
+    weightG:     it.weightG || it.weight || '',
+    material:    it.material || '',
+  };
+}
+
 function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,4); }
 
 function buildMaterialOptions(selectedId) {
