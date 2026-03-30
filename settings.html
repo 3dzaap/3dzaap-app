@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <link rel="stylesheet" href="shared.css">
+<!-- Cropper.js for image dimensioning -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
 /* TABS */
@@ -132,9 +135,9 @@ document.addEventListener('DOMContentLoaded', function() {
 /* LOGO UPLOAD */
 .logo-upload-area{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 
-.logo-preview{width:72px;height:72px;border-radius:50%;border:1.5px dashed rgba(59,143,212,.35);background:var(--bg-input);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.logo-preview{width:72px;height:72px;border-radius:22%;border:1.5px dashed rgba(59,143,212,.35);background:var(--bg-input);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
 
-.logo-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.logo-preview img{width:100%;height:100%;object-fit:cover;border-radius:22%}
 
 .logo-preview-placeholder{font-size:.72rem;color:var(--subtle);text-align:center;padding:8px}
 
@@ -362,6 +365,9 @@ document.addEventListener('DOMContentLoaded', function() {
 .theme-auto-hint{font-size:.75rem;color:var(--subtle);margin-top:4px;line-height:1.5}
 
 @media(max-width:480px){.theme-options{grid-template-columns:1fr 1fr 1fr;gap:7px}}
+/* CROPPER OVERRIDES */
+.cropper-view-box, .cropper-face { border-radius: 22%; }
+.cropper-line, .cropper-point { background-color: var(--blue); }
 </style>
 </head>
 <body>
@@ -666,6 +672,25 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
+<!-- CROP MODAL -->
+<div class="modal-overlay" id="cropModalOverlay" style="display:none;align-items:center;justify-content:center;z-index:99999">
+  <div class="modal" style="width:100%;max-width:500px;margin:16px">
+    <div class="modal-header">
+      <div class="modal-title">✂️ Recortar Logo</div>
+      <button class="modal-close" onclick="closeCropModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div style="width:100%;height:300px;background:#000;display:flex;align-items:center;justify-content:center" id="cropContainer">
+        <img id="cropImage" src="" style="max-width:100%;max-height:100%;display:none">
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:16px 20px;display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeCropModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="applyCrop()">✅ Aplicar Recorte</button>
+    </div>
+  </div>
+</div>
+
 <!-- INVITE MODAL -->
 <div id="inviteModal" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(13,17,23,.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--bg-card-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rx);width:100%;max-width:440px;box-shadow:var(--sh-float)">
@@ -728,7 +753,10 @@ async function initPage() {
         <div style="font-size:3rem">🔒</div>
         <div style="font-size:1.2rem;font-weight:800;color:var(--dark,#1e293b)">Configurações — Plano Business</div>
         <div style="font-size:.9rem;color:var(--muted,#64748b);max-width:360px">O teu plano <strong>${plan}</strong> não inclui acesso às Configurações. Faz upgrade para Business.</div>
-        <a href="calculator.html" style="margin-top:8px;padding:10px 24px;background:#3b8fd4;color:#fff;border-radius:8px;text-decoration:none;font-weight:700">← Voltar à Calculadora</a>
+        <a href="calculator.html" class="btn btn-primary" style="margin-top:16px; align-self:flex-start">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar à Calculadora
+        </a>
       </div>`;
     return;
   }
@@ -845,7 +873,11 @@ function wireEvents() {
     var file = e.target.files[0];
     if (!file) return;
     if (file.size > 1024 * 1024) { showToast('Ficheiro demasiado grande (máx 1MB)', 'err'); return; }
-    compressAndSetLogo(file);
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      openCropModal(ev.target.result);
+    };
+    reader.readAsDataURL(file);
   });
   document.getElementById('logoUrl').addEventListener('input', function(){
     var url = this.value.trim();
@@ -1131,6 +1163,46 @@ async function doLogout() {
 }
 
 // ── HELPERS ────────────────────────────────────────────────────
+// ── CROPPER ────────────────────────────────────────────────────
+let cropper = null;
+function openCropModal(imgSrc) {
+  const overlay = document.getElementById('cropModalOverlay');
+  const img = document.getElementById('cropImage');
+  overlay.style.display = 'flex';
+  img.src = imgSrc;
+  img.style.display = 'block';
+  
+  if (cropper) { cropper.destroy(); }
+  cropper = new Cropper(img, {
+    aspectRatio: 1,
+    viewMode: 1,
+    dragMode: 'move',
+    autoCropArea: 0.9,
+    restore: false,
+    guides: true,
+    center: true,
+    highlight: false,
+    cropBoxMovable: false,
+    cropBoxResizable: false,
+    toggleDragModeOnDblclick: false,
+  });
+}
+
+function closeCropModal() {
+  document.getElementById('cropModalOverlay').style.display = 'none';
+  if (cropper) { cropper.destroy(); cropper = null; }
+  document.getElementById('logoFile').value = '';
+}
+
+function applyCrop() {
+  if (!cropper) return;
+  const canvas = cropper.getCroppedCanvas({ width: 400, height: 400, fillColor: 'transparent' });
+  const base64 = canvas.toDataURL('image/png', 0.9);
+  _logoB64 = base64;
+  showLogoPreview(base64);
+  markDirty();
+  closeCropModal();
+}
 </script>
 </body>
 </html>

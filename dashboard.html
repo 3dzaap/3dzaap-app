@@ -295,8 +295,8 @@
       <div class="sub-banner-inner" id="subBannerInner">
         <span class="sub-icon" id="subIcon">⏰</span>
         <div class="sub-text">
-          <div class="sub-title" id="subTitle">Trial activo — 12 dias restantes</div>
-          <div class="sub-sub" id="subSub">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o trial.</div>
+          <div class="sub-title" id="subTitle">Período experimental ativo — 12 dias restantes</div>
+          <div class="sub-sub" id="subSub">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o período experimental.</div>
         </div>
         <div class="sub-cta">
           <a class="btn-sub" onclick="navigate('billing')">Upgrade agora →</a>
@@ -403,7 +403,7 @@
       <div class="actions-grid">
         <a class="action-card" href="calculator.html">
           <div class="action-icon">📐</div>
-          <div class="action-title">Nova Calculação</div>
+          <div class="action-title">Novo Cálculo</div>
           <div class="action-desc">Calcular custo de impressão</div>
         </a>
         <a class="action-card" id="actionOrders" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#">
@@ -613,8 +613,8 @@ function renderBanner() {
     const days = state.company.trialDaysLeft ?? 14;
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
     icon.textContent = days <= 3 ? '🚨' : '⏰';
-    title.textContent = `Trial activo — ${days} dia${days!==1?'s':''} restante${days!==1?'s':''}`;
-    sub.textContent = 'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o trial.';
+    title.textContent = `Período experimental ativo — ${days} dia${days!==1?'s':''} restante${days!==1?'s':''}`;
+    sub.textContent = 'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar.';
   } else if (plan === 'starter') {
     inner.className = 'sub-banner-inner active-banner';
     icon.textContent = '✅';
