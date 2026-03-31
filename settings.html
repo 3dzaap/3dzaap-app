@@ -122,49 +122,17 @@
 </head>
 <body class="dashboard-body">
 
-<div class="dashboard-container">
-  <!-- SIDEBAR -->
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <div class="logo-circle">3D</div>
-        <span><span class="b3d">3D</span><span class="bzp">ZAAP</span></span>
-      </div>
-      <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
-    </div>
-    
-    <div class="sidebar-user" onclick="toggleUserMenu()">
-      <div class="user-avatar" id="companyAvatarSidebar">--</div>
-      <div class="user-info">
-        <div class="user-name" id="companyNameSidebar">A carregar...</div>
-        <div class="user-plan" id="planBadge">Trial</div>
-      </div>
-      <div class="user-chevron" id="userChevron">▼</div>
-      
-      <div class="user-dropdown" id="userDropdown">
-        <a href="settings.html" class="dropdown-item">⚙️ <span data-i18n="settings.title">Configurações</span></a>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item logout" onclick="doLogout()">🚪 <span data-i18n="nav.logout">Sair</span></button>
-      </div>
-    </div>
-
-    <div class="sidebar-nav">
-      <a href="calculator.html" class="nav-item">🧮 <span data-i18n="modules.calc.title">Calculadora</span></a>
-      <a href="materials.html" class="nav-item">📦 <span data-i18n="modules.materials.title">Materiais</span></a>
-      <a href="orders.html" class="nav-item">📋 <span data-i18n="modules.orders.title">Pedidos</span></a>
-      <a href="printers.html" class="nav-item">🖨️ <span data-i18n="modules.printers.title">Máquinas</span></a>
-      <a href="finance.html" class="nav-item">📈 <span data-i18n="modules.finance.title">Financeiro</span></a>
-      <div class="nav-spacer"></div>
-      <a href="settings.html" class="nav-item active">⚙️ <span data-i18n="settings.title">Configurações</span></a>
-    </div>
-  </nav>
+<div class="layout">
+  <div class="sidebar-overlay" id="sideOverlay" onclick="Sidebar.toggle()"></div>
+  <!-- O Sidebar será injetado pelo sidebar.js -->
+  <aside class="sidebar" id="sidebar"></aside>
 
   <!-- MAIN CONTENT -->
-  <div class="main-content">
-    <header class="top-bar">
-      <button class="menu-toggle" id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-      <div class="top-bar-title" data-i18n="settings.title">Configurações</div>
-      <div class="top-bar-actions">
+  <main class="main">
+    <header class="topbar">
+      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" data-i18n="settings.title">Configurações</div>
+      <div class="topbar-actions">
         <!-- Dashboard shortcuts if needed -->
       </div>
     </header>
@@ -510,13 +478,10 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<!-- SCRIPTS -->
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/db.js"></script>
-<script src="js/sidebar-loader.js"></script>
+<script src="sidebar.js"></script>
 <script src="js/utils.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script src="i18n.js"></script>
@@ -538,10 +503,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function initI18n() {
-  // Let i18n.js handle its own DOMContentLoaded, 
-  // but if we need a manual trigger or locale sync:
-  if (window.i18n && !window.i18n.translations.settings) {
-    const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  if (window.i18n) {
     await i18n.init(); 
   }
 }
@@ -552,7 +514,10 @@ async function initPage() {
   _session = await Auth.getSession();
   if (!_session) return;
   
+  // Inicializa o Sidebar global
+  Sidebar.init();
   Sidebar.setSession(_session);
+  
   loadData();
 }
 
