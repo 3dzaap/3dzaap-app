@@ -46,6 +46,13 @@ const Sidebar = (() => {
         { id: 'admin',       i18nKey: 'nav.admin', href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
+    {
+      section: 'Ajuda', i18nKey: 'nav.help',
+      items: [
+        { id: 'support_wa',  i18nKey: 'nav.support_wa', href: 'https://wa.me/351938925645', icon: '💬', label: 'WhatsApp', external: true },
+        { id: 'instagram',   i18nKey: 'nav.instagram',  href: 'https://instagram.com/3dzaap', icon: '📸', label: 'Instagram', external: true },
+      ]
+    },
   ];
 
   // ── DETECT ACTIVE PAGE ────────────────────────────────────
@@ -67,7 +74,8 @@ const Sidebar = (() => {
         const muteStyle = item.muted ? ' style="opacity:.6"' : '';
         const onclickAttr = item.onclick ? ` onclick="${item.onclick}"` : '';
         const superAdminAttr = item.superAdmin ? ' data-superadmin="1" style="display:none"' : '';
-        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
+        const targetAttr = item.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
       }).join('\n        ');
 
       return `<div class="nav-section">
@@ -85,16 +93,6 @@ const Sidebar = (() => {
         <span class="b3d">3D</span><span class="bzp">ZAAP</span>
       </div>
     </a>
-    <div class="sidebar-ctrls">
-      <button class="theme-toggle-mini" id="sidebarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema">🌙</button>
-      <select id="sidebarLangSelect" class="lang-select-mini" onchange="window.i18n && window.i18n.setLanguage(this.value)">
-        <option value="en">EN</option>
-        <option value="pt-BR">BR</option>
-        <option value="pt-PT">PT</option>
-        <option value="es">ES</option>
-        <option value="en-GB">UK</option>
-      </select>
-    </div>
   </div>
 
   <div class="sidebar-company">
@@ -249,19 +247,41 @@ const Sidebar = (() => {
     document.getElementById('sideOverlay')?.classList.remove('open');
   }
 
-  // ── USER MENU ─────────────────────────────────────────────
+  // ── USER MENU & GLOBAL CTRLS ──────────────────────────────
   function _syncUI() {
+    // Injetar os controlos dinamicamente na topbar (se não existirem)
+    document.querySelectorAll('.topbar').forEach(tb => {
+      if (!tb.querySelector('.global-ctrls')) {
+        tb.insertAdjacentHTML('beforeend', `
+          <div class="global-ctrls" style="display:flex;align-items:center;gap:12px;margin-left:auto;">
+            <button class="theme-toggle-mini" id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema" style="background:var(--bg-card);border:1px solid var(--border);color:var(--dark)">🌙</button>
+            <select id="topbarLangSelect" class="lang-select-mini" onchange="window.i18n && window.i18n.setLanguage(this.value)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--dark)">
+              <option value="en">EN</option>
+              <option value="pt-BR">BR</option>
+              <option value="pt-PT">PT</option>
+              <option value="es">ES</option>
+              <option value="en-GB">UK</option>
+            </select>
+          </div>
+        `);
+      }
+    });
+
     if (window.i18n) i18n.updateLanguageSwitcherUI();
-    const isDark = document.body.classList.contains('dark-mode');
-    const btn = document.getElementById('sidebarThemeToggle');
-    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+    const isDark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark';
+    
+    document.querySelectorAll('.theme-toggle-mini').forEach(btn => {
+       btn.innerHTML = isDark ? '☀️' : '🌙';
+    });
   }
 
   function toggleTheme() {
     const isDark = document.body.classList.toggle('dark-mode');
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('3dzaap_theme', isDark ? 'dark' : 'light');
-    const btn = document.getElementById('sidebarThemeToggle');
-    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+    document.querySelectorAll('.theme-toggle-mini').forEach(btn => {
+       btn.innerHTML = isDark ? '☀️' : '🌙';
+    });
   }
 
   function _toggleUserMenu() {
