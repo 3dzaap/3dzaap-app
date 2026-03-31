@@ -404,7 +404,7 @@
         </div>
         <div class="sub-cta">
           <a class="btn-sub" onclick="navigate('billing')" data-i18n="dash.sub_banner.upgrade">Upgrade agora →</a>
-          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar" data-i18n="dash.sub_banner.close">✕</button>
+          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar">✕</button>
         </div>
       </div>
     </div>
@@ -990,6 +990,19 @@ function renderStats() {
   const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
+  // Calculate variables from state.orders
+  const activeOrders = state.orders.filter(o => !['concluido', 'done', 'entregue', 'cancelado'].includes(o.status)).length;
+  const totalRevenue = state.orders.reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const paidRevenue  = state.orders.filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const pendingRevenue = totalRevenue - paidRevenue;
+
+  // Previous month revenue for comparison
+  const now = new Date();
+  const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
+  const prevTotalRevenue = state.orders
+    .filter(o => (o.createdAt || o.created_at || '').startsWith(prevMonthStr))
+    .reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+
   // Update Financial Values with Animation
   animateValue('statRevenue', 0, totalRevenue, 1000);
   animateValue('statPaid', 0, paidRevenue, 1000);
@@ -1407,7 +1420,7 @@ function dismissBroadcast(id) {
   sessionStorage.setItem('bc_dismissed', JSON.stringify(dismissed));
 }
 </script>
-<script src="i18n.js"></script>
+
 
 <script>
 // Close help popover on outside click

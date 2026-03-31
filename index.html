@@ -209,11 +209,12 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
       <a href="#faq" data-i18n="nav.faq">FAQ</a>
     </div>
     <div class="nact">
-      <select class="lang-select" onchange="window.i18n ? window.i18n.setLanguage(this.value) : (localStorage.setItem('3dzaap_lang', this.value), location.reload())">
+      <select id="topbarLangSelect" class="lang-select" onchange="window.i18n ? window.i18n.setLanguage(this.value) : (localStorage.setItem('3dzaap_lang', this.value), location.reload())">
         <option value="pt-PT">🇵🇹 PT</option>
         <option value="pt-BR">🇧🇷 BR</option>
         <option value="en">🇺🇸 EN</option>
         <option value="es">🇪🇸 ES</option>
+        <option value="en-GB">🇬🇧 UK</option>
       </select>
       <a href="auth-onboarding.html" class="btn btn-g" data-i18n="nav.login">Entrar</a>
       <a href="auth-onboarding.html?mode=signup" class="btn btn-p" data-i18n="nav.get_started">Começar Grátis</a>

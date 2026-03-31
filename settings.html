@@ -921,9 +921,10 @@ function renderPricing(locale) {
   }
   
   const isAnnual = _billingCycle === 'annual';
-  const starterFinal = (baseStarter * multiplier).toFixed(2);
-  const proFinal = (basePro * multiplier).toFixed(2);
-  const businessFinal = (baseBusiness * multiplier).toFixed(2);
+  const disc = isAnnual ? 0.8 : 1;
+  const starterFinal = (baseStarter * multiplier * disc).toFixed(2);
+  const proFinal = (basePro * multiplier * disc).toFixed(2);
+  const businessFinal = (baseBusiness * multiplier * disc).toFixed(2);
 
   // Update Main Prices
   document.getElementById('price-starter-symbol').textContent = symbol;
@@ -934,9 +935,9 @@ function renderPricing(locale) {
   document.getElementById('price-business-val').textContent = businessFinal;
 
   // Update Annual Hints (Total)
-  const starterTotal = (baseStarter * multiplier * 12).toFixed(2);
-  const proTotal = (basePro * multiplier * 12).toFixed(2);
-  const businessTotal = (baseBusiness * multiplier * 12).toFixed(2);
+  const starterTotal = (baseStarter * multiplier * disc * 12).toFixed(2);
+  const proTotal = (basePro * multiplier * disc * 12).toFixed(2);
+  const businessTotal = (baseBusiness * multiplier * disc * 12).toFixed(2);
   
   const starterHint = document.getElementById('price-starter-total');
   const proHint = document.getElementById('price-pro-total');
