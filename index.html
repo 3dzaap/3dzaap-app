@@ -55,54 +55,64 @@ html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
 body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidden;line-height:1.6}
 
 /* ── BG & ORBS ────────────────────────── */
-.bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#f0f4f9;overflow:hidden}
-.orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.4;z-index:0}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#f8fafc;overflow:hidden}
+.bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 20% 30%,rgba(59,143,212,0.15) 0%,transparent 40%),
+              radial-gradient(circle at 80% 70%,rgba(245,148,58,0.12) 0%,transparent 40%);
+  filter: blur(60px);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.3;z-index:0}
 .o1{width:600px;height:600px;background:var(--blue);top:-200px;right:-100px;animation:orb1 20s infinite alternate}
 .o2{width:500px;height:500px;background:var(--orange);bottom:-150px;left:-100px;animation:orb2 25s infinite alternate}
-.o3{width:400px;height:400px;background:var(--blue-lt);top:40%;left:20%;animation:orb3 22s infinite alternate}
 @keyframes orb1{from{transform:translate(0,0)}to{transform:translate(-100px,100px) scale(1.1)}}
 @keyframes orb2{from{transform:translate(0,0)}to{transform:translate(120px,-80px) scale(1.2)}}
-@keyframes orb3{from{transform:translate(0,0) rotate(0deg)}to{transform:translate(-50px,50px) rotate(180deg)}}
-
-/* ── UTILS ──────────────────────────── */
-.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px}
-.gc{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh)}
-
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:var(--rm);font-family:var(--f);font-size:.95rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:all .3s var(--ease);position:relative;overflow:hidden;white-space:nowrap}
-.btn-p{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 6px 20px rgba(59,143,212,0.3)}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,143,212,0.4)}
-.btn-g{background:rgba(255,255,255,0.8);color:var(--dark);border:1.5px solid var(--border);box-shadow:var(--sh)}
-.btn-g:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
-
-/* Animations */
-.fu{opacity:0;transform:translateY(30px);transition:opacity 0.8s var(--ease), transform 0.8s var(--ease)}
-.fu.vis{opacity:1;transform:translateY(0)}
-.d1{transition-delay:0.1s}.d2{transition-delay:0.2s}.d3{transition-delay:0.3s}.d4{transition-delay:0.4s}
-
-/* ── NAVBAR ─────────────────────────── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:12px 0;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);transition:all 0.3s}
-.nav.scrolled{padding:8px 0;box-shadow:var(--sh)}
-.nav .wrap{display:flex;align-items:center;justify-content:space-between}
-.nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
-.nlogo img{height:40px;width:40px;border-radius:10px}
-.nlogo span{font-size:1.4rem;font-weight:900}
-.nlinks{display:flex;align-items:center;gap:8px}
-.nlinks a{padding:8px 16px;border-radius:var(--r);color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:600;transition:all 0.2s}
-.nlinks a:hover{color:var(--blue);background:var(--blue-g)}
-.nact{display:flex;align-items:center;gap:12px}
-
-/* Lang select */
-.lang-select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--glass);font-family:var(--f);font-size:0.8rem;font-weight:600;cursor:pointer;outline:none}
 
 /* ── HERO ───────────────────────────── */
-.hero{padding:160px 0 80px;text-align:center}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,255,255,0.9);border:1.5px solid var(--border);border-radius:30px;font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:24px;box-shadow:var(--sh)}
-.headline{font-size:clamp(2.5rem, 5vw, 4.5rem);font-weight:900;line-height:1.1;letter-spacing:-2px;margin-bottom:20px;color:var(--black)}
-.hl-grad{background:linear-gradient(135deg, var(--blue), var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.1rem;color:var(--muted);max-width:700px;margin:0 auto 40px;line-height:1.7}
-.hero-ctas{display:flex;gap:16px;justify-content:center;margin-bottom:40px}
-.hero-mockup{max-width:1000px;margin:0 auto;border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:4px solid white;position:relative;z-index:2}
+.hero{padding:180px 0 100px;text-align:center;position:relative;overflow:hidden}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:rgba(255,255,255,0.8);border:1.5px solid var(--border);border-radius:30px;font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:24px;box-shadow:var(--sh);backdrop-filter:blur(10px)}
+.eyebrow .dot{width:8px;height:8px;background:var(--blue);border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,143,212,0.4)}70%{box-shadow:0 0 0 10px rgba(59,143,212,0)}100%{box-shadow:0 0 0 0 rgba(59,143,212,0)}}
+
+.headline{font-size:clamp(2.8rem, 6vw, 4.8rem);font-weight:950;line-height:1.05;letter-spacing:-3px;margin-bottom:24px;color:var(--black)}
+.hl-grad{background:linear-gradient(135deg, var(--blue), #6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.25rem;color:var(--muted);max-width:750px;margin:0 auto 48px;line-height:1.6}
+.hero-ctas{display:flex;gap:20px;justify-content:center;margin-bottom:64px}
+
+.hero-visual{position:relative;max-width:1100px;margin:0 auto;perspective:1000px}
+.hero-mockup{border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:6px solid white;position:relative;z-index:2;background:white;transition:transform 0.5s var(--ease)}
+.hero-visual:hover .hero-mockup{transform:rotateX(2deg) translateY(-5px)}
+.hero-mockup img{width:100%;display:block}
+
+/* Floating Cards */
+.fcard-ui {
+  position: absolute; z-index: 10; padding: 16px 20px; border-radius: 20px;
+  background: rgba(255,255,255,0.9); border: 1.5px solid white; box-shadow: var(--sh-lg);
+  backdrop-filter: blur(12px); display: flex; align-items: center; gap: 12px;
+  animation: float 4s infinite ease-in-out;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.fc-1 { top: 10%; left: -5%; animation-delay: 0s; }
+.fc-2 { bottom: 20%; right: -5%; animation-delay: 1s; }
+.fc-3 { top: 40%; right: -8%; animation-delay: 2s; }
+
+.fc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.fc-info { text-align: left; }
+.fc-label { font-size: 0.75rem; color: var(--subtle); font-weight: 700; text-transform: uppercase; }
+.fc-val { font-size: 1.1rem; font-weight: 900; color: var(--black); }
+
+/* ── TRUST BAR ───────────────────────── */
+.trust-bar {
+  padding: 40px 0; border-top: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.3); margin-top: -60px; position: relative; z-index: 20;
+}
+.t-grid { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 32px; }
+.t-item { text-align: center; }
+.t-val { display: block; font-size: 1.8rem; font-weight: 950; color: var(--black); margin-bottom: 4px; }
+.t-lbl { display: block; font-size: 0.85rem; font-weight: 700; color: var(--subtle); text-transform: uppercase; letter-spacing: 1px; }
 .hero-mockup img{width:100%;display:block}
 
 /* ── STATS ──────────────────────────── */
@@ -226,20 +236,64 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
   <div class="wrap">
     <div class="eyebrow fu">
       <span class="dot"></span>
-      <span data-i18n="hero.badge">A Solução Definitiva para Impressão 3D</span>
+      <span data-i18n="hero.badge">A Solução Profissional para Makers de Alto Rendimento</span>
     </div>
     <h1 class="headline fu d1">
-      <span data-i18n="hero.title_p1">Transforme a sua</span><br>
-      <span class="hl-grad"><span class="b3d">Impressão</span> <span class="bzp">3D</span></span> 
-      <span data-i18n="hero.title_p2">num Negócio Rentável.</span>
+       <span data-i18n="hero.title_p1">O Sistema Operativo do teu</span><br>
+       <span class="hl-grad" data-i18n="hero.title_p2">Estúdio de Impressão 3D.</span>
     </h1>
-    <p class="hero-sub fu d2" data-i18n="hero.subtitle">Deixe de cobrar "a olho" e recupere o controlo do seu stock, pedidos e lucros com a plataforma líder para profissionais de 3D.</p>
+    <p class="hero-sub fu d2" data-i18n="hero.subtitle">Orçamentos precisos, stock automatizado e gestão profissional de clientes — Tudo num só dashboard para escalar a tua produção.</p>
     <div class="hero-ctas fu d3">
-      <a href="#pricing" class="btn btn-p btn-lg" data-i18n="hero.cta_primary">Ver Planos e Preços</a>
-      <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Explorar Módulos</a>
+      <a href="auth-onboarding.html?mode=signup" class="btn btn-p btn-lg" data-i18n="hero.cta_primary">Começar 14 dias grátis</a>
+      <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Ver Demonstração</a>
     </div>
-    <div class="hero-mockup fu d4">
-      <img src="mockup-hero.png" alt="3DZAAP Dashboard Mockup">
+    
+    <div class="hero-visual fu d4">
+      <!-- Floating Elements -->
+      <div class="fcard-ui fc-1">
+        <div class="fc-icon" style="background:#f0f7ff;color:#3b8fd4">💰</div>
+        <div class="fc-info">
+          <div class="fc-label" data-i18n="hero.stat_margin">Lucro Médio</div>
+          <div class="fc-val">+24.5%</div>
+        </div>
+      </div>
+      <div class="fcard-ui fc-2">
+        <div class="fc-icon" style="background:#fff7ed;color:#f5943a">📦</div>
+        <div class="fc-info">
+          <div class="fc-label" data-i18n="nav.orders">Pedidos</div>
+          <div class="fc-val">12 Ativos</div>
+        </div>
+      </div>
+      <div class="fcard-ui fc-3">
+        <div class="fc-icon" style="background:#f0fdf4;color:#22c55e">✅</div>
+        <div class="fc-info">
+          <div class="fc-label">Stock</div>
+          <div class="fc-val">OK</div>
+        </div>
+      </div>
+
+      <div class="hero-mockup">
+        <img src="mockup-hero.png" alt="3DZAAP Dashboard Mockup">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust-bar fu">
+  <div class="wrap">
+    <div class="t-grid">
+      <div class="t-item">
+        <span class="t-val" data-i18n="hero.trust_calculations">+5.000</span>
+        <span class="t-lbl" data-i18n="hero.stat_users">Makers Ativos</span>
+      </div>
+      <div class="t-item">
+        <span class="t-val" data-i18n="hero.trust_precision">99%</span>
+        <span class="t-lbl" data-i18n="hero.trust_precision">Precisão de Custo</span>
+      </div>
+      <div class="t-item">
+        <span class="t-val" data-i18n="hero.trust_time">4h/semana</span>
+        <span class="t-lbl" data-i18n="hero.trust_time">Poupas Tempo</span>
+      </div>
     </div>
   </div>
 </section>
