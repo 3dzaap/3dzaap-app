@@ -428,10 +428,18 @@ const STATUS_LABELS = {
   aprovado:'Aprovado', printing:'Printing', done:'Concluído'
 };
 
-function fmtEur(v) {
-  const sym = (_cfg && _cfg._currSymbol) || '€';
-  const val = parseFloat(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return sym + ' ' + val;
+function fmtCurrency(v) {
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const currencyMap = {
+    'pt-PT': { code: 'EUR', symbol: '€', locale: 'pt-PT' },
+    'pt-BR': { code: 'BRL', symbol: 'R$', locale: 'pt-BR' },
+    'en':    { code: 'USD', symbol: '$', locale: 'en-US' },
+    'es':    { code: 'EUR', symbol: '€', locale: 'es-ES' },
+    'en-GB': { code: 'GBP', symbol: '£', locale: 'en-GB' }
+  };
+  const cfg = currencyMap[lang] || currencyMap['pt-PT'];
+  const num = parseFloat(v || 0).toLocaleString(cfg.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return cfg.symbol + ' ' + num;
 }
 
 function animateValue(id, start, end, duration) {

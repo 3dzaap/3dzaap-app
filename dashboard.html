@@ -710,14 +710,15 @@ function renderGreeting() {
 function fmtCurrency(v) {
   const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
   const currencyMap = {
-    'pt-PT': { code: 'EUR', locale: 'pt-PT' },
-    'pt-BR': { code: 'BRL', locale: 'pt-BR' },
-    'en':    { code: 'USD', locale: 'en-US' },
-    'es':    { code: 'EUR', locale: 'es-ES' },
-    'en-GB': { code: 'GBP', locale: 'en-GB' }
+    'pt-PT': { code: 'EUR', symbol: '€', locale: 'pt-PT' },
+    'pt-BR': { code: 'BRL', symbol: 'R$', locale: 'pt-BR' },
+    'en':    { code: 'USD', symbol: '$', locale: 'en-US' },
+    'es':    { code: 'EUR', symbol: '€', locale: 'es-ES' },
+    'en-GB': { code: 'GBP', symbol: '£', locale: 'en-GB' }
   };
   const cfg = currencyMap[lang] || currencyMap['pt-PT'];
-  return parseFloat(v || 0).toLocaleString(cfg.locale, { style: 'currency', currency: cfg.code });
+  const num = parseFloat(v || 0).toLocaleString(cfg.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return cfg.symbol + ' ' + num;
 }
 
 function animateValue(id, start, end, duration) {
