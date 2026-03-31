@@ -63,8 +63,17 @@ const i18n = {
             console.warn(`Locale ${locale} not supported`);
             return;
         }
-        await this.loadTranslations(locale);
-        this.translatePage();
+        // Early update for reactive components (like pricing)
+        this.currentLocale = locale;
+        localStorage.setItem('3dzaap_lang', locale);
+        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: locale } }));
+
+        try {
+            await this.loadTranslations(locale);
+            this.translatePage();
+        } catch(e) {
+            console.warn('[3DZAAP] Dynamic translation load failed, but locale event dispatched.');
+        }
         this.updateLanguageSwitcherUI();
     },
 

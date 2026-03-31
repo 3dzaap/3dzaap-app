@@ -438,7 +438,7 @@
                 <!-- STARTER -->
                 <div class="plan-card" id="card-starter">
                   <div class="plan-name" data-i18n="pricing.starter.name">Starter</div>
-                  <div class="plan-price">9.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
+                  <div class="plan-price"><span id="price-starter-symbol">€</span><span id="price-starter-val">9.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span></div>
                   <ul class="plan-features">
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora</span></li>
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Filamentos</span></li>
@@ -449,7 +449,7 @@
                 <!-- PRO -->
                 <div class="plan-card" id="card-pro">
                   <div class="plan-name" data-i18n="pricing.pro.name">Pro</div>
-                  <div class="plan-price">19.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
+                  <div class="plan-price"><span id="price-pro-symbol">€</span><span id="price-pro-val">19.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span></div>
                   <ul class="plan-features">
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos</span></li>
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos / OS</span></li>
@@ -612,6 +612,12 @@ function loadData() {
   
   updateSubTab();
   loadTeam();
+  renderPricing();
+
+  // Language Change Listener for Dynamic Prices
+  window.addEventListener('languageChanged', (e) => {
+    renderPricing(e.detail.locale);
+  });
 
   // Deep-linking: ?tab=name
   setTimeout(() => {
@@ -760,6 +766,30 @@ async function loadTeam() {
 function updateSubTab() {
   const plan = _session.plan || 'trial';
   document.getElementById('currPlanLabel').textContent = plan.toUpperCase();
+}
+
+function renderPricing(locale) {
+  const lang = locale || localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const baseStarter = 9.90;
+  const basePro = 19.90;
+  
+  let multiplier = 1;
+  let symbol = '€';
+  
+  if (lang === 'pt-BR') {
+    multiplier = 5;
+    symbol = 'R$';
+  } else if (lang === 'en') {
+    symbol = '$';
+  }
+  
+  const starterFinal = (baseStarter * multiplier).toFixed(2);
+  const proFinal = (basePro * multiplier).toFixed(2);
+  
+  document.getElementById('price-starter-symbol').textContent = symbol;
+  document.getElementById('price-starter-val').textContent = starterFinal;
+  document.getElementById('price-pro-symbol').textContent = symbol;
+  document.getElementById('price-pro-val').textContent = proFinal;
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }

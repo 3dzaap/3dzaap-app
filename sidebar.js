@@ -85,6 +85,14 @@ const Sidebar = (() => {
         <span class="b3d">3D</span><span class="bzp">ZAAP</span>
       </div>
     </a>
+    <div class="sidebar-lang">
+      <select class="lang-select-mini" onchange="i18n.setLanguage(this.value)">
+        <option value="en">EN</option>
+        <option value="pt-BR">BR</option>
+        <option value="pt-PT">PT</option>
+        <option value="es">ES</option>
+      </select>
+    </div>
   </div>
 
   <div class="sidebar-company">
