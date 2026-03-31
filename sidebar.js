@@ -100,7 +100,6 @@ const Sidebar = (() => {
 
   <div class="sidebar-footer">
     <div class="user-dropdown" id="sidebarUserDropdown">
-      <a class="dd-item" href="settings.html">⚙️ <span data-i18n="nav.settings_short">Configurações da conta</span></a>
       <a class="dd-item" href="settings.html?tab=assinatura">💳 <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
       <a class="dd-item" href="index.html">🌐 <span data-i18n="nav.go_to_lander">Ver landing page</span></a>
       <div class="dd-divider"></div>

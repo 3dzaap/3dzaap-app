@@ -891,6 +891,25 @@ async function loadTeam() {
 function updateSubTab() {
   const plan = _session.plan || 'trial';
   document.getElementById('currPlanLabel').textContent = plan.toUpperCase();
+
+  const expiryEl = document.getElementById('currExpiryValue');
+  if (plan === 'trial' && _session.trialEndsAt) {
+    const end = new Date(_session.trialEndsAt);
+    const now = new Date();
+    const diff = end - now;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    
+    if (days > 0) {
+      expiryEl.textContent = `${days} dia${days === 1 ? '' : 's'}`;
+      expiryEl.style.color = days <= 3 ? 'var(--danger)' : 'var(--dark)';
+    } else {
+      expiryEl.textContent = 'Expirado';
+      expiryEl.style.color = 'var(--danger)';
+    }
+  } else {
+    expiryEl.textContent = 'Ativo';
+    expiryEl.style.color = 'var(--dark)';
+  }
 }
 
 let _billingCycle = 'monthly';
