@@ -266,6 +266,7 @@
 
 <div class="layout">
 <script src="utils.js"></script>
+<script src="i18n.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 
@@ -277,10 +278,10 @@
 
     <!-- Topbar -->
     <header class="topbar">
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-title" id="topbarTitle" data-i18n="dash.title">Dashboard</div>
       <div class="topbar-actions">
 
-        <div class="topbar-notif" onclick="showToast('Sem notificações por agora','')">
+        <div class="topbar-notif" onclick="showToast(window.i18n.getNestedTranslation('dash.no_notifs') || 'Sem notificações por agora','')">
           🔔
         </div>
         </div>
@@ -292,12 +293,12 @@
       <div class="sub-banner-inner" id="subBannerInner">
         <span class="sub-icon" id="subIcon">⏰</span>
         <div class="sub-text">
-          <div class="sub-title" id="subTitle">Período experimental ativo — 12 dias restantes</div>
-          <div class="sub-sub" id="subSub">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o período experimental.</div>
+          <div class="sub-title" id="subTitle" data-i18n="dash.sub_banner.trial_active">Período experimental ativo — 14 dias restantes</div>
+          <div class="sub-sub" id="subSub" data-i18n="dash.sub_banner.trial_desc">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o período experimental.</div>
         </div>
         <div class="sub-cta">
-          <a class="btn-sub" onclick="navigate('billing')">Upgrade agora →</a>
-          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar">✕</button>
+          <a class="btn-sub" onclick="navigate('billing')" data-i18n="dash.sub_banner.upgrade">Upgrade agora →</a>
+          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar" data-i18n="dash.sub_banner.close">✕</button>
         </div>
       </div>
     </div>
@@ -311,24 +312,24 @@
       <!-- Greeting -->
       <div class="greeting">
         <h1 id="greetingText">Bem-vindo! 👋</h1>
-        <p>Aqui está o resumo da tua actividade</p>
+        <p data-i18n="dash.greeting.summary">Aqui está o resumo da tua actividade</p>
         <div class="greeting-date" id="greetingDate"></div>
       </div>
 
       <!-- Health Score Card -->
       <div class="health-card" id="healthCard">
         <div class="health-left">
-          <div class="health-title">⚡ Saúde do Negócio</div>
+          <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
           <div class="health-score-row">
             <span class="health-score-number" id="healthNumber">—</span>
             <span class="health-score-max">/100</span>
           </div>
-          <div class="health-label" id="healthLabel">A calcular...</div>
+          <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
           <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
           <div class="health-insights" id="healthInsights"></div>
           <div class="health-due-tip" id="healthDueTip" style="display:none">
             <span>💡</span>
-            <span>Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
+            <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
           </div>
         </div>
         <div class="health-ring-wrap">
@@ -340,7 +341,7 @@
             </svg>
             <div class="health-ring-label">
               <span id="healthRingNum">—</span>
-              <span class="health-ring-sub">pontos</span>
+              <span class="health-ring-sub" data-i18n="dash.health.points">pontos</span>
             </div>
           </div>
           <div class="health-delta" id="healthDelta"></div>
@@ -356,7 +357,7 @@
             <span class="stat-badge badge-up" id="revBadge">+0%</span>
           </div>
           <div class="stat-value" id="statRevenue">— 0,00</div>
-          <div class="stat-label">Fluxo de Caixa (Faturado)</div>
+          <div class="stat-label" data-i18n="dash.stats.revenue">Fluxo de Caixa (Faturado)</div>
           <div style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between;">
             <span>Liquidado: <strong id="statPaid" style="color: var(--success)">— 0,00</strong></span>
             <span>Pendente: <strong id="statPending" style="color: var(--warning)">— 0,00</strong></span>
@@ -370,10 +371,10 @@
             <span class="stat-badge badge-neu" id="efficiencyBadge">0%</span>
           </div>
           <div class="stat-value" id="statOrders">0</div>
-          <div class="stat-label">Pedidos Activos</div>
+          <div class="stat-label" data-i18n="dash.stats.active_orders">Pedidos Activos</div>
           <div style="margin-top: 10px;">
             <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:4px">
-              <span>Eficiência da Frota</span>
+              <span data-i18n="dash.stats.fleet_eff">Eficiência da Frota</span>
               <span id="efficiencyLabel">0/0 online</span>
             </div>
             <div style="height:4px; background:rgba(0,0,0,0.05); border-radius:10px; overflow:hidden">
@@ -389,7 +390,7 @@
             <span class="stat-badge badge-down" id="stockBadge">0</span>
           </div>
           <div class="stat-value" id="statStock">0</div>
-          <div class="stat-label">Alertas de Stock</div>
+          <div class="stat-label" data-i18n="dash.stats.alerts">Alertas de Stock</div>
           <div id="ruptureAlert" style="margin-top: 10px; font-size: 0.72rem; color: var(--danger); background: rgba(239, 68, 68, 0.05); padding: 4px 8px; border-radius: 4px; display: none;">
             🔔 <span id="ruptureMaterial">Nenhum risco imediato</span>
           </div>
@@ -400,40 +401,40 @@
       <div class="actions-grid">
         <a class="action-card" href="calculator.html">
           <div class="action-icon">📐</div>
-          <div class="action-title">Novo Cálculo</div>
-          <div class="action-desc">Calcular custo de impressão</div>
+          <div class="action-title" data-i18n="dash.actions.calc">Novo Cálculo</div>
+          <div class="action-desc" data-i18n="dash.actions.calc_desc">Calcular custo de impressão</div>
         </a>
         <a class="action-card" id="actionOrders" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#">
           <div class="action-icon">📦</div>
-          <div class="action-title">Novo Pedido</div>
-          <div class="action-desc">Registar pedido de cliente</div>
+          <div class="action-title" data-i18n="dash.actions.order">Novo Pedido</div>
+          <div class="action-desc" data-i18n="dash.actions.order_desc">Registar pedido de cliente</div>
           <span class="action-lock" id="ordersActionLock" style="display:none">Pro+</span>
         </a>
         <a class="action-card" href="materials.html">
           <div class="action-icon">🎨</div>
-          <div class="action-title">Gerir Materiais</div>
-          <div class="action-desc">Actualizar stock de materiais</div>
+          <div class="action-title" data-i18n="dash.actions.mat">Gerir Materiais</div>
+          <div class="action-desc" data-i18n="dash.actions.mat_desc">Actualizar stock de materiais</div>
         </a>
         <a class="action-card" id="actionFinancial" onclick="handleFeatureClick('financial','Financeiro','Business')" href="#">
           <div class="action-icon">📊</div>
-          <div class="action-title">Relatório Financeiro</div>
-          <div class="action-desc">Ver receitas e pagamentos</div>
+          <div class="action-title" data-i18n="dash.actions.fin">Relatório Financeiro</div>
+          <div class="action-desc" data-i18n="dash.actions.fin_desc">Ver receitas e pagamentos</div>
           <span class="action-lock" id="financialActionLock" style="display:none">Business</span>
         </a>
         <a class="action-card" href="printers.html">
           <div class="action-icon">🖨️</div>
-          <div class="action-title">Impressoras</div>
-          <div class="action-desc">Gerir parque de impressoras</div>
+          <div class="action-title" data-i18n="dash.actions.print">Impressoras</div>
+          <div class="action-desc" data-i18n="dash.actions.print_desc">Gerir parque de impressoras</div>
         </a>
         <a class="action-card" href="backoffice.html">
           <div class="action-icon">🗄️</div>
-          <div class="action-title">BackOffice</div>
-          <div class="action-desc">Backup e restauro de dados</div>
+          <div class="action-title" data-i18n="dash.actions.back">BackOffice</div>
+          <div class="action-desc" data-i18n="dash.actions.back_desc">Backup e restauro de dados</div>
         </a>
         <a class="action-card" onclick="navigate('billing')" href="#">
           <div class="action-icon">💳</div>
-          <div class="action-title">Gerir Plano</div>
-          <div class="action-desc">Assinatura e facturação</div>
+          <div class="action-title" data-i18n="dash.actions.plan">Gerir Plano</div>
+          <div class="action-desc" data-i18n="dash.actions.plan_desc">Assinatura e facturação</div>
         </a>
       </div>
 
@@ -443,13 +444,13 @@
         <!-- Recent Orders -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📦 Pedidos Recentes</div>
-            <a class="card-action" onclick="navigate('orders')" href="#">Ver todos →</a>
+            <div class="card-title" data-i18n="dash.cards.recent_orders">📦 Pedidos Recentes</div>
+            <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ver todos →</a>
           </div>
           <div class="card-body" id="recentOrdersBody">
             <div class="empty-state">
               <div class="empty-icon">📦</div>
-              <div class="empty-text">Sem pedidos ainda.<br>Cria o teu primeiro pedido no módulo Pedidos.</div>
+              <div class="empty-text" data-i18n="dash.cards.empty_orders">Sem pedidos ainda.<br>Cria o teu primeiro pedido no módulo Pedidos.</div>
             </div>
           </div>
         </div>
@@ -457,13 +458,13 @@
         <!-- Filament Alerts -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🎨 Alertas de Stock</div>
-            <a class="card-action" href="materials.html">Gerir →</a>
+            <div class="card-title" data-i18n="dash.cards.fil_alerts">🎨 Alertas de Stock</div>
+            <a class="card-action" href="materials.html" data-i18n="dash.cards.manage">Gerir →</a>
           </div>
           <div class="card-body" id="filamentAlertsBody">
             <div class="empty-state">
               <div class="empty-icon">🎨</div>
-              <div class="empty-text">Sem alertas.<br>O teu stock está em ordem!</div>
+              <div class="empty-text" data-i18n="dash.cards.empty_fil">Sem alertas.<br>O teu stock está em ordem!</div>
             </div>
           </div>
         </div>
@@ -471,13 +472,13 @@
         <!-- Printer Alerts -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🖨️ Impressoras</div>
-            <a class="card-action" href="printers.html">Gerir →</a>
+            <div class="card-title" data-i18n="dash.cards.print_alerts">🖨️ Impressoras</div>
+            <a class="card-action" href="printers.html" data-i18n="dash.cards.manage">Gerir →</a>
           </div>
           <div class="card-body" id="printerAlertsBody">
             <div class="empty-state">
               <div class="empty-icon">🖨️</div>
-              <div class="empty-text">Sem impressoras.<br>Adiciona a tua primeira impressora.</div>
+              <div class="empty-text" data-i18n="dash.cards.empty_print">Sem impressoras.<br>Adiciona a tua primeira impressora.</div>
             </div>
           </div>
         </div>
@@ -492,12 +493,12 @@
 <div class="gate-overlay" id="gateOverlay" onclick="closeGate(event)">
   <div class="gate-modal">
     <div class="gate-icon" id="gateIcon">🔒</div>
-    <div class="gate-title" id="gateTitle">Funcionalidade bloqueada</div>
-    <div class="gate-sub" id="gateSub">Esta funcionalidade requer um upgrade de plano.</div>
+    <div class="gate-title" id="gateTitle" data-i18n="dash.gate.locked">Funcionalidade bloqueada</div>
+    <div class="gate-sub" id="gateSub" data-i18n="dash.gate.req_upgrade">Esta funcionalidade requer um upgrade de plano.</div>
     <div class="gate-plans" id="gatePlans"></div>
     <div class="gate-actions">
-      <button class="btn-upgrade" onclick="navigate('billing');closeGate()">Ver planos e fazer upgrade →</button>
-      <button class="btn-cancel" onclick="closeGate()">Agora não</button>
+      <button class="btn-upgrade" onclick="navigate('billing');closeGate()" data-i18n="dash.gate.btn_upgrade">Ver planos e fazer upgrade →</button>
+      <button class="btn-cancel" onclick="closeGate()" data-i18n="dash.gate.btn_cancel">Agora não</button>
     </div>
   </div>
 </div>
@@ -528,7 +529,8 @@ let state = {
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadState();
+  if (window.i18n) await window.i18n.init(); // Force await so translations load before rendering dynamic DOM
+  await loadState();
   renderGreeting();
   renderBanner();
   calcHealthScore();
@@ -589,9 +591,13 @@ async function loadState() {
 // ── GREETING ───────────────────────────
 function renderGreeting() {
   const h = new Date().getHours();
-  const period = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  // English, BR or native period:
+  let periodKey = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'night';
+  const period = window.i18n ? (window.i18n.getNestedTranslation('dash.greeting.'+periodKey) || periodKey) : (h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite');
+  
   const firstName = state.user.name.split(' ')[0];
-  document.getElementById('greetingText').textContent = `${period}, ${firstName}! 👋`;
+  const tpl = window.i18n ? (window.i18n.getNestedTranslation('dash.greeting.welcome') || '{period}, {name}! 👋') : '{period}, {name}! 👋';
+  document.getElementById('greetingText').textContent = tpl.replace('{period}', period).replace('{name}', firstName);
 }
 
 // ── HELPERS ────────────────────────────
@@ -789,11 +795,13 @@ function calcHealthScore() {
   score += trendScore;
 
   // ── RENDER ──────────────────────────────────────────────────
+  // ── RENDER ──────────────────────────────────────────────────
+  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   const bands = [
-    { min:80, label:'Negócio saudável 💚',   cls:'score-great', bar:'bar-great', ring:'#22c55e' },
-    { min:55, label:'Atenção necessária 🟡',  cls:'score-ok',    bar:'bar-ok',    ring:'#f59e0b' },
-    { min:30, label:'Negócio em risco 🟠',    cls:'score-risk',  bar:'bar-risk',  ring:'#f97316' },
-    { min:0,  label:'Situação crítica 🔴',    cls:'score-crit',  bar:'bar-crit',  ring:'#ef4444' },
+    { min:80, label:t('dash.health.bands.80') || 'Negócio saudável 💚',   cls:'score-great', bar:'bar-great', ring:'#22c55e' },
+    { min:55, label:t('dash.health.bands.55') || 'Atenção necessária 🟡',  cls:'score-ok',    bar:'bar-ok',    ring:'#f59e0b' },
+    { min:30, label:t('dash.health.bands.30') || 'Negócio em risco 🟠',    cls:'score-risk',  bar:'bar-risk',  ring:'#f97316' },
+    { min:0,  label:t('dash.health.bands.0')  || 'Situação crítica 🔴',    cls:'score-crit',  bar:'bar-crit',  ring:'#ef4444' },
   ];
   const band = bands.find(b => score >= b.min);
 
@@ -831,12 +839,13 @@ function calcHealthScore() {
   ringNum.style.color = band.ring;
 
   // Delta vs yesterday
+  const l_vs = t('dash.health.vs') || 'vs ontem';
   if (prevScore >= 0 && prevScore !== score) {
     const diff = score - prevScore;
-    deltaEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + diff + ' vs ontem';
+    deltaEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + diff + ' ' + l_vs;
     deltaEl.style.color = diff > 0 ? 'var(--success)' : 'var(--danger)';
   } else if (prevScore === score) {
-    deltaEl.textContent = '→ igual ao último acesso';
+    deltaEl.textContent = (t('dash.health.equal') || '→ igual ao último acesso');
   }
 
   // Insights — limit to top 3 most actionable
@@ -872,27 +881,6 @@ function getFilamentStatus(f) {
 }
 
 function renderStats() {
-  const now = new Date();
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  // Previous month for comparison
-  const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
-  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
-
-  const monthOrders = state.orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
-  const prevOrders  = state.orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
-
-  // Revenue this month (Total vs Paid)
-  const totalRevenue = monthOrders.reduce((s,o)=>s+parseFloat(o.total||0),0);
-  const paidRevenue  = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-  const pendingRevenue = Math.max(0, totalRevenue - paidRevenue);
-  
-  const prevTotalRevenue = prevOrders.reduce((s,o)=>s+parseFloat(o.total||0),0);
-
-  // Active orders (not done)
-  const activeOrders = state.orders.filter(o => o.status !== 'done').length;
-
-  // Filament alerts
   const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
@@ -902,13 +890,14 @@ function renderStats() {
   animateValue('statPending', 0, pendingRevenue, 1000);
 
   // Revenue badge — vs prev month
+  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   const revPct = prevTotalRevenue > 0 ? Math.round((totalRevenue - prevTotalRevenue) / prevTotalRevenue * 100) : null;
   const revBadge = document.getElementById('revBadge');
   if (revPct !== null) {
     revBadge.textContent = (revPct >= 0 ? '+' : '') + revPct + '%';
     revBadge.className = 'stat-badge ' + (revPct >= 0 ? 'badge-up' : 'badge-down');
   } else {
-    revBadge.textContent = totalRevenue > 0 ? 'Este mês' : '—';
+    revBadge.textContent = totalRevenue > 0 ? (t('dash.stats.this_month') || 'Este mês') : '—';
     revBadge.className = 'stat-badge badge-neu';
   }
 
@@ -929,7 +918,10 @@ function renderStats() {
   document.getElementById('statStock').textContent = totalAlerts;
   const stockBadge = document.getElementById('stockBadge');
   stockBadge.className = 'stat-badge ' + (totalAlerts > 0 ? 'badge-down' : 'badge-up');
-  stockBadge.textContent = totalAlerts > 0 ? `${totalAlerts} alerta${totalAlerts!==1?'s':''}` : 'Tudo OK';
+  
+  const l_alerts = t('dash.stats.badge_alerts') || 'alertas';
+  const l_ok = t('dash.stats.badge_ok') || 'Tudo OK';
+  stockBadge.textContent = totalAlerts > 0 ? `${totalAlerts} ${l_alerts}` : l_ok;
 
   const ruptureEl = document.getElementById('ruptureAlert');
   const ruptureMatEl = document.getElementById('ruptureMaterial');
@@ -942,7 +934,8 @@ function renderStats() {
     })[0];
     
     ruptureEl.style.display = 'block';
-    ruptureMatEl.textContent = `Risco: ${mostCritical.type} ${mostCritical.color || ''}`;
+    const l_risk = t('dash.stats.risk') || 'Risco:';
+    ruptureMatEl.textContent = `${l_risk} ${mostCritical.type} ${mostCritical.color || ''}`;
   } else {
     ruptureEl.style.display = 'none';
   }
