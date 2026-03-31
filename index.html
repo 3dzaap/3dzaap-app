@@ -515,11 +515,11 @@ const PRICES = {
 };
 
 const LOCALE_FMT = {
-  'pt-PT': { sym: '€', mult: 1,    code: 'EUR' },
-  'es':    { sym: '€', mult: 1,    code: 'EUR' },
-  'en':    { sym: '$', mult: 1,    code: 'USD' },
-  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL' },
-  'en-GB': { sym: '£', mult: 1,    code: 'GBP' }
+  'pt-PT': { sym: '€', mult: 1,    code: 'EUR', locale: 'pt-PT' },
+  'es':    { sym: '€', mult: 1,    code: 'EUR', locale: 'es-ES' },
+  'en':    { sym: '$', mult: 1,    code: 'USD', locale: 'en-US' },
+  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL', locale: 'pt-BR' },
+  'en-GB': { sym: '£', mult: 1,    code: 'GBP', locale: 'en-GB' }
 };
 
 function _updatePricingDisplay() {
@@ -540,7 +540,7 @@ function _updatePricingDisplay() {
 
   // Update amounts
   const p = PRICES[period];
-  const fmt2 = v => (v * fmt.mult).toFixed(2);
+  const fmt2 = v => (v * fmt.mult).toLocaleString(fmt.locale || 'pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const sp = document.getElementById('sp'); if (sp) sp.textContent = fmt2(p.starter);
   const pp = document.getElementById('pp'); if (pp) pp.textContent = fmt2(p.pro);

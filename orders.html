@@ -523,26 +523,20 @@ const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'A
 const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'fila',aprovado:'fila',fila:'printing',printing:'preparacao',preparacao:'enviado',enviado:'done',done:null};
 
 // ── HELPERS ────────────────────────────
-function fmtEur(v) {
-  const sym = (_cfg && _cfg._currSymbol) || '€';
-  const val = parseFloat(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return sym + ' ' + val;
-}
-
 function animateValue(id, start, end, duration, isCurrency = false) {
   const obj = document.getElementById(id);
   if (!obj) return;
-  if (start === end) { obj.textContent = isCurrency ? fmtEur(end) : Math.round(end); return; }
+  if (start === end) { obj.textContent = isCurrency ? fmtCurrency(end) : Math.round(end); return; }
   
   const range = end - start;
   let current = start;
   const timer = setInterval(() => {
     current += (range / (duration / 16)); // ~60fps
     if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
-      obj.textContent = isCurrency ? fmtEur(end) : Math.round(end);
+      obj.textContent = isCurrency ? fmtCurrency(end) : Math.round(end);
       clearInterval(timer);
     } else {
-      obj.textContent = isCurrency ? fmtEur(current) : Math.round(current);
+      obj.textContent = isCurrency ? fmtCurrency(current) : Math.round(current);
     }
   }, 16);
 }
@@ -686,8 +680,8 @@ function renderOrders(keepExpandId) {
       <tr>
         <td>${idx+1}. ${escH(it.description||'—')}</td>
         <td class="r">${it.quantity || it.qty || 1}</td>
-        <td class="r">${fmtEur(parseFloat(it.unitPrice)||0)}</td>
-        <td class="bold">${fmtEur(_itTotal(it))}</td>
+        <td class="r">${fmtCurrency(parseFloat(it.unitPrice)||0)}</td>
+        <td class="bold">${fmtCurrency(_itTotal(it))}</td>
       </tr>`).join('');
 
     const detailGrid = [
@@ -708,7 +702,7 @@ function renderOrders(keepExpandId) {
         <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub">${its.length} item(s)</div></td>
         <td><span class="badge bs-${o.status}"><span class="badge-dot"></span>${STATUS_LABELS[o.status]||o.status}</span></td>
         <td><span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?'✓ Pago':'⏳ Pendente'}</span></td>
-        <td class="cell-mono">${fmtEur(grand)}</td>
+        <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -728,7 +722,7 @@ function renderOrders(keepExpandId) {
                 ${itemsHtml}
                 <tr class="grand-row">
                   <td colspan="3" style="text-align:right;color:var(--muted);font-size:.78rem">Total</td>
-                  <td class="bold">${fmtEur(grand)}</td>
+                  <td class="bold">${fmtCurrency(grand)}</td>
                 </tr>
               </tbody>
             </table>
@@ -753,7 +747,7 @@ function renderOrders(keepExpandId) {
       const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
       const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity||it.qty||1)||1) * (parseFloat(it.unitPrice)||0));
       const grand = its.reduce((s,i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
-      const itemsHtml = its.map(it => `<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity||it.qty||1}</span><span class="mob-item-total">${fmtEur(_itTotal(it))}</span></div>`).join('');
+      const itemsHtml = its.map(it => `<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity||it.qty||1}</span><span class="mob-item-total">${fmtCurrency(_itTotal(it))}</span></div>`).join('');
       
       const nextStatus = STATUS_NEXT[o.status];
       const canAdvance = !!nextStatus;
@@ -761,7 +755,7 @@ function renderOrders(keepExpandId) {
       return `<div class="mob-ord-card" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
-          <span class="mob-ord-total">${fmtEur(grand)}</span>
+          <span class="mob-ord-total">${fmtCurrency(grand)}</span>
         </div>
         <div class="mob-ord-client">${escH(o.clientName)}</div>
         <div class="mob-ord-meta">
@@ -776,7 +770,7 @@ function renderOrders(keepExpandId) {
             ${o.clientEmail?`<div><div class="mob-expand-lbl">Email</div><div class="mob-expand-val">${escH(o.clientEmail)}</div></div>`:''}
             ${o.clientPhone?`<div><div class="mob-expand-lbl">Telefone</div><div class="mob-expand-val">${escH(o.clientPhone)}</div></div>`:''}
           </div>
-          <div class="mob-items-list">${itemsHtml}<div class="mob-grand"><span>Total</span><span>${fmtEur(grand)}</span></div></div>
+          <div class="mob-items-list">${itemsHtml}<div class="mob-grand"><span>Total</span><span>${fmtCurrency(grand)}</span></div></div>
           
           <div class="mob-actions-wrap" style="display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid rgba(59,143,212,.15)">
             ${canAdvance?`<button class="btn btn-primary" onclick="advanceStatus('${o.id}')" style="width:100%">🔄 Avançar → ${STATUS_LABELS[nextStatus]}</button>`:'<div style="font-size:.8rem;color:var(--success);font-weight:700;text-align:center;padding:8px">✅ Pedido concluído</div>'}
@@ -1101,7 +1095,7 @@ function openModal(id = null) {
   // reset weight unit header
   const _lbl = document.getElementById('weightUnitLabel');
   if (_lbl) _lbl.textContent = 'g/ml';
-  document.getElementById('oGrandTotal').textContent = fmtEur(0);
+  document.getElementById('oGrandTotal').textContent = fmtCurrency(0);
   document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
 
   if (id) {
@@ -1296,7 +1290,7 @@ function removeItem(id) {
 
 function recalcTotal() {
   const total = _items.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
-  document.getElementById('oGrandTotal').textContent = fmtEur(total);
+  document.getElementById('oGrandTotal').textContent = fmtCurrency(total);
 }
 
 function getItemsFromDOM() {

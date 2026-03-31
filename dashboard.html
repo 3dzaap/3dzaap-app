@@ -635,7 +635,7 @@ let state = {
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-  if (window.i18n) await window.i18n.init(); // Force await so translations load before rendering dynamic DOM
+  if (window.i18n) await window.i18n.init(); 
   await loadState();
   renderGreeting();
   renderBanner();
@@ -997,14 +997,15 @@ function getFilamentStatus(f) {
 }
 
 function renderStats() {
-  const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
-  const totalAlerts = alertFils.length;
-
-  // Calculate variables from state.orders
-  const activeOrders = state.orders.filter(o => !['concluido', 'done', 'entregue', 'cancelado'].includes(o.status)).length;
-  const totalRevenue = state.orders.reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
-  const paidRevenue  = state.orders.filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  if (!state.orders) return;
+  
+  // Calculate variables from state.orders FIRST to avoid ReferenceErrors
+  const totalRevenue = (state.orders || []).reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const paidRevenue  = (state.orders || []).filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
   const pendingRevenue = totalRevenue - paidRevenue;
+  const activeOrders = (state.orders || []).filter(o => !['concluido', 'done', 'entregue', 'cancelado'].includes(o.status)).length;
+  const alertFils = (state.filaments || []).filter(f => getFilamentStatus(f) !== 'green');
+  const totalAlerts = alertFils.length;
 
   // Previous month revenue for comparison
   const now = new Date();

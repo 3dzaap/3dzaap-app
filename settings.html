@@ -888,17 +888,20 @@ async function loadTeam() {
   </div>`;
 }
 
-function updateSubTab() {
+async function updateSubTab() {
   const plan = _session.plan || 'trial';
   document.getElementById('currPlanLabel').textContent = plan.toUpperCase();
 
   const expiryEl = document.getElementById('currExpiryValue');
+  const expiryTitle = document.getElementById('expiryLabelTitle');
+  
   if (plan === 'trial' && _session.trialEndsAt) {
     const end = new Date(_session.trialEndsAt);
     const now = new Date();
     const diff = end - now;
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     
+    expiryTitle.setAttribute('data-i18n', 'settings.sub.expires');
     if (days > 0) {
       expiryEl.textContent = `${days} dia${days === 1 ? '' : 's'}`;
       expiryEl.style.color = days <= 3 ? 'var(--danger)' : 'var(--dark)';
@@ -906,9 +909,12 @@ function updateSubTab() {
       expiryEl.textContent = 'Expirado';
       expiryEl.style.color = 'var(--danger)';
     }
-  } else {
+  } else if (plan === 'trial') {
     expiryEl.textContent = 'Ativo';
     expiryEl.style.color = 'var(--dark)';
+  } else {
+    expiryEl.textContent = 'Subscrito';
+    expiryEl.style.color = 'var(--blue)';
   }
 }
 
@@ -923,9 +929,13 @@ function setBillingCycle(cycle) {
 
 function renderPricing(locale) {
   const lang = locale || localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const baseStarter = 9.90;
-  const basePro = 19.90;
-  const baseBusiness = 39.90;
+  const isAnnual = _billingCycle === 'annual';
+  
+  // Normalized Price Values (from landing page)
+  const PRICES = {
+    monthly: { starter: 9.90,  pro: 19.90, business: 39.90 },
+    annual:  { starter: 7.90,  pro: 15.90, business: 31.90 }
+  };
   
   let multiplier = 1;
   let symbol = '€';
@@ -939,24 +949,21 @@ function renderPricing(locale) {
     symbol = '£';
   }
   
-  const isAnnual = _billingCycle === 'annual';
-  const disc = isAnnual ? 0.8 : 1;
-  const starterFinal = (baseStarter * multiplier * disc).toFixed(2);
-  const proFinal = (basePro * multiplier * disc).toFixed(2);
-  const businessFinal = (baseBusiness * multiplier * disc).toFixed(2);
+  const p = isAnnual ? PRICES.annual : PRICES.monthly;
+  const fmt = v => (v * multiplier).toFixed(2);
 
   // Update Main Prices
   document.getElementById('price-starter-symbol').textContent = symbol;
-  document.getElementById('price-starter-val').textContent = starterFinal;
+  document.getElementById('price-starter-val').textContent = fmt(p.starter);
   document.getElementById('price-pro-symbol').textContent = symbol;
-  document.getElementById('price-pro-val').textContent = proFinal;
+  document.getElementById('price-pro-val').textContent = fmt(p.pro);
   document.getElementById('price-business-symbol').textContent = symbol;
-  document.getElementById('price-business-val').textContent = businessFinal;
+  document.getElementById('price-business-val').textContent = fmt(p.business);
 
   // Update Annual Hints (Total)
-  const starterTotal = (baseStarter * multiplier * disc * 12).toFixed(2);
-  const proTotal = (basePro * multiplier * disc * 12).toFixed(2);
-  const businessTotal = (baseBusiness * multiplier * disc * 12).toFixed(2);
+  const starterTotal = (p.starter * multiplier * 12).toFixed(2);
+  const proTotal = (p.pro * multiplier * 12).toFixed(2);
+  const businessTotal = (p.business * multiplier * 12).toFixed(2);
   
   const starterHint = document.getElementById('price-starter-total');
   const proHint = document.getElementById('price-pro-total');

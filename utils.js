@@ -44,14 +44,26 @@ function loadCfg(session) {
 }
 
 // ── FORMATTERS ────────────────────────────────────────────────
-function fmtEur(v) {
+function fmtCurrency(v) {
+  var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
   var sym = (_cfg && _cfg._currSymbol) || '€';
-  var loc = (_cfg && _cfg._locale)     || 'pt-PT';
+  
+  // Se _cfg não tiver símbolo (ainda não carregado), tentamos adivinhar pelo idioma
+  if(!(_cfg && _cfg._currSymbol)) {
+    if(locale === 'pt-BR') sym = 'R$';
+    else if(locale === 'en-GB') sym = '£';
+    else if(locale.startsWith('en')) sym = '$';
+  }
+  
+  var loc = (_cfg && _cfg._locale) || locale;
   return sym + ' ' + parseFloat(v || 0).toLocaleString(loc, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
 }
+
+// Alias for backward compatibility
+function fmtEur(v) { return fmtCurrency(v); }
 
 function fmtDate(s) {
   if (!s) return '—';
