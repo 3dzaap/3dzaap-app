@@ -181,23 +181,16 @@ const Auth = {
     const user    = session.user;
 
     // ── SUPER ADMIN CHECK ────────────────────────────────────
-    // Bootstrap: email(s) que sempre têm acesso, mesmo antes da tabela existir.
-    // Adicionar aqui emails de recuperação de emergência se necessário.
-    const BOOTSTRAP_ADMINS = ['3dzaap@gmail.com'];
-
-    let isSuperAdmin = BOOTSTRAP_ADMINS.includes(user.email);
-
-    if (!isSuperAdmin) {
-      // Verificar tabela super_admins no Supabase
-      try {
-        const { data: saRow, error } = await _sb
-          .from('super_admins')
-          .select('user_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        if (!error) isSuperAdmin = !!saRow;
-      } catch(_) {}
-    }
+    // Purely database-driven check via super_admins table.
+    let isSuperAdmin = false;
+    try {
+      const { data: saRow, error } = await _sb
+        .from('super_admins')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!error) isSuperAdmin = !!saRow;
+    } catch(_) {}
 
     return {
       email:       user.email,

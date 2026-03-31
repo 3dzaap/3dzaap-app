@@ -1,16 +1,17 @@
 # 3DZAAP Print Manager — SaaS Blueprint
-**v1.2 · 2026 · Centralized Auth & DB**  
-Stack: `HTML/Vanilla JS (Homologation)` → `Next.js` · `TypeScript` · `Supabase` · `Stripe` · `Cloudflare`  
+**v1.3 · Março 2026 · MVP Homologado & Launch Ready**  
+Stack: `HTML/Vanilla JS (MVP)` → `Next.js` · `TypeScript` · `Supabase` · `Stripe` · `Cloudflare`  
 Módulos: Calculadora · Filamentos · Pedidos · Financeiro · BackOffice · Catálogo de Impressoras
 
 ---
 
 ## 0. Estado Atual do Projeto (Progresso)
-- **Frontend / Protótipo (Atual):** A aplicação atualmente é uma versão monolítica em HTML/Vanilla CSS (`index.html`, `admin.html`, etc.) totalmente funcional e homologada.
-- **Backend / Supabase (Atual):**
-  - Conexão e credenciais do projeto Supabase (`yjggsndxatezgqljlhxb`) validadas e testadas com sucesso via acesso REST.
-  - Scripts SQL base (Tabelas de negócio, Catálogo de Impressoras com métricas de consumo de energia, e RLS) já definidos na directoria `/DOC`.
-- **Próximos Passos (Migração):** Executar os scripts SQL no Supabase, mapear todos os métodos do ficheiro `supabase.js` legados da versão local e, posteriormente, reescrever a UI para a arquitetura escalável e multi-tenant (Next.js 14).
+- **Frontend / MVP (Concluído):** A aplicação HTML/Vanilla CSS (`index.html`, `dashboard.html`, `orders.html`, etc.) está 100% funcional, animada e homologada para lançamento.
+- **Backend / Supabase (Concluído):**
+  - Conexão e credenciais validadas.
+  - **RLS (Row Level Security):** Script final de isolamento multi-tenant pronto no ficheiro `/DOC/supabase_rls_script.md`.
+  - **Onboarding:** Fluxo de 4 passos com configuração inicial de máquinas/materiais live.
+- **Próximos Passos (Evolução SaaS):** Iniciar a reescrita da UI para a arquitetura Next.js 14, preservando a lógica de negócio já validada no MVP.
 
 ---
 
@@ -352,9 +353,11 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults {
 
 **Funcionalidades:** Calcular · Reset · Exportar CSV · Copiar para clipboard
 
-**Melhorias planeadas (v1.2):**
+**Implementado:**
+- Botão "Criar Pedido com estes dados" — pré-preenche o módulo de Pedidos via query string/sessionStorage e regista despesa automática de material no módulo Financeiro (v1.3).
+
+**Melhorias planeadas (v1.4):**
 - Modo Resina (toggle FDM/Resina) com campos: `resinPrice`, `resinVolume`, `resinDensity`, `washTime`, `cureTime`, `uvLampPower`
-- Botão "Criar Pedido com estes dados" — pré-preenche o módulo de Pedidos via query string/sessionStorage e regista despesa automática de material no módulo Financeiro
 
 ### 6.2 Filamentos
 **Planos:** Trial · Starter · Pro · Business
@@ -754,16 +757,20 @@ Deno.serve(async (req) => {
 
 ## 18. Checklist de Lançamento
 
-### Pré-Lançamento
-- [ ] Setup Supabase (produção) + executar todas as migrations
-- [ ] Configurar e testar RLS policies (isolamento multi-tenant)
-- [ ] Setup Stripe: produtos, preços, webhooks endpoint
-- [ ] Configurar Cloudflare Pages: env vars + domínio customizado
-- [ ] GitHub Actions secrets: `CF_API_TOKEN`, `SUPABASE_*`, `STRIPE_*`
-- [ ] Deploy Edge Functions: stripe-checkout, stripe-portal, stripe-webhook
-- [ ] Testar fluxo completo: signup → onboarding → upgrade → uso de módulo
-- [ ] Cloudflare WAF rules para rate limiting
+### Pré-Lançamento (MVP HTML)
+- [x] Setup Supabase (produção) + migrations base
+- [x] Configurar e testar RLS policies (isolamento multi-tenant)
+- [x] Fluxo de Onboarding (4 passos)
+- [x] Dashboard Real-time + Health Score
+- [x] Animações Premium & Squircle Design
 - [ ] Configurar emails transacionais (Supabase + Resend/Postmark)
+
+### Migração SaaS (Next.js)
+- [ ] Setup Monorepo (Turbo + pnpm)
+- [ ] Setup Stripe: produtos, preços, webhooks endpoint
+- [ ] Deploy Edge Functions: stripe-checkout, stripe-portal, stripe-webhook
+- [ ] Reescrita completa da UI (React/Radix)
+- [ ] Rate Limiting (Cloudflare WAF)
 - [ ] Smoke tests em staging antes de apontar DNS para produção
 
 ### Pós-Lançamento
