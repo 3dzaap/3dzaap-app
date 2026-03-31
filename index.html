@@ -24,6 +24,21 @@
   --f:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
   --ease:cubic-bezier(0.22,1,0.36,1);
 }
+.b3d{color:var(--blue);font-weight:900}
+.bzp{color:var(--orange);font-weight:900}
+
+/* ── PAS SECTION (The Two Paths) ── */
+.pas{padding:100px 0;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(59,143,212,0.05) 100%)}
+.pas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin:48px 0}
+.pas-card{padding:40px;border-radius:var(--rl);background:#fff;border:1.5px solid var(--border);transition:all 0.3s var(--ease);text-align:center}
+.pas-card:hover{transform:translateY(-8px);box-shadow:var(--sh-lg);border-color:rgba(245,148,58,0.3)}
+.pas-icon{font-size:3rem;margin-bottom:20px;display:block}
+.pas-title{font-size:1.4rem;font-weight:800;margin-bottom:12px;color:var(--black)}
+.pas-desc{font-size:1rem;color:var(--muted);line-height:1.6}
+.pas-solution{margin-top:60px;padding:48px;border-radius:var(--rx);background:linear-gradient(135deg,var(--dark),var(--black));color:#fff;text-align:center;box-shadow:var(--sh-xl)}
+.ps-box h3{font-size:2rem;font-weight:900;margin-bottom:16px;color:var(--blue-lt)}
+.ps-box p{font-size:1.2rem;max-width:800px;margin:0 auto;line-height:1.6;opacity:0.9}
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
 body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidden;line-height:1.6}
@@ -61,7 +76,6 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
 .nlogo img{height:40px;width:40px;border-radius:10px}
 .nlogo span{font-size:1.4rem;font-weight:900;color:var(--black)}
-.nlogo b{color:var(--blue)}
 .nlinks{display:flex;align-items:center;gap:8px}
 .nlinks a{padding:8px 16px;border-radius:var(--r);color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:600;transition:all 0.2s}
 .nlinks a:hover{color:var(--blue);background:var(--blue-g)}
@@ -74,7 +88,7 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .hero{padding:160px 0 80px;text-align:center}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,255,255,0.9);border:1.5px solid var(--border);border-radius:30px;font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:24px;box-shadow:var(--sh)}
 .headline{font-size:clamp(2.5rem, 5vw, 4.5rem);font-weight:900;line-height:1.1;letter-spacing:-2px;margin-bottom:20px;color:var(--black)}
-.hl-grad{background:linear-gradient(135deg, var(--blue), var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hl-grad{background:linear-gradient(135deg, var(--blue), var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-sub{font-size:1.1rem;color:var(--muted);max-width:700px;margin:0 auto 40px;line-height:1.7}
 .hero-ctas{display:flex;gap:16px;justify-content:center;margin-bottom:40px}
 .hero-mockup{max-width:1000px;margin:0 auto;border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:4px solid white;position:relative;z-index:2}
@@ -166,42 +180,43 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
 
 <nav class="nav" id="nav">
   <div class="wrap">
-    <a href="#" class="nlogo">
-      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AMCFREpPxt/OAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAHuSURBVHja7ZvLThRBFEXP9K/M6EwwMTHB8An8/99GMCYmJmZ0YjLhW4N57GvS3dXVDL0kO5m+p2pt3Vv3Vp8oimI91Nf0N8P/AQAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIAAGIBqAKoBaP6R6m63Y7vd8unL6S6Xy77L5ULXG63XF62eR7XvUvU3PZ/PebPZ5M1mk9erVd5sNnm7Xufdbpe36/V0zT9S3e129H0/0P+v/fUA7vWWAUivpIdp7XU5reXv0iPpeVp7Pa3l39Ir6Xlae13S5fS72unXp/XvauXf0vM0f72m4/v9fupS9/v9/6LzeDyeB97D4fA58B4Oh/vAe/iZzK7f03H6f7/6PZ8Xf/N/73O/9v83O/vOnvOnfvUe977f0/L66X8f/W/pWdqP+/v7Z5/7vP99zvfX/GzPr8f+BwAAYAACAAAgAAIAACAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAABiAAByAAByAAByAAByAAByAAByAAByAAByAAByAAByAAByAAByAAByAABiAABiAABiAABiAABiAABiAAByAAByAAByAA6gF8Arh4eD07HIn6AAAAAElFTkSuQmCC" alt="3DZAAP Logo">
-      <span>3D<b>ZAAP</b></span>
+    <a href="/" class="nlogo">
+      <img src="logo.png" alt="3DZAAP" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%233B8FD4%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22 font-size=%2240%22>3D</text></svg>'">
+      <span><span class="b3d">3D</span><span class="bzp">ZAAP</span></span>
     </a>
     <div class="nlinks">
       <a href="#features" data-i18n="nav.features">Funcionalidades</a>
-      <a href="#how" data-i18n="nav.how">Como Funciona</a>
       <a href="#pricing" data-i18n="nav.pricing">Preços</a>
       <a href="#faq" data-i18n="nav.faq">FAQ</a>
     </div>
     <div class="nact">
-      <select class="lang-select" onchange="i18n.switchLanguage(this.value)">
-        <option value="pt">Portugal</option>
-        <option value="br">Brasil</option>
-        <option value="en">English</option>
-        <option value="es">Español</option>
+      <select class="lang-select" onchange="window.i18n ? window.i18n.setLanguage(this.value) : (localStorage.setItem('3dzaap_lang', this.value), location.reload())">
+        <option value="pt-PT">🇵🇹 PT</option>
+        <option value="pt-BR">🇧🇷 BR</option>
+        <option value="en">🇺🇸 EN</option>
+        <option value="es">🇪🇸 ES</option>
       </select>
-      <a href="login.html" class="btn btn-g" data-i18n="nav.login">Entrar</a>
-      <a href="auth-onboarding.html" class="btn btn-p" data-i18n="nav.signup">Criar Conta</a>
+      <a href="auth-onboarding.html" class="btn btn-g" data-i18n="nav.login">Entrar</a>
+      <a href="auth-onboarding.html?mode=signup" class="btn btn-p" data-i18n="nav.get_started">Começar Grátis</a>
     </div>
   </div>
 </nav>
 
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow fu d1" data-i18n="hero.eyebrow">A plataforma n.º 1 para Makers profissionais</div>
-    <h1 class="headline fu d2">
-      <span data-i18n="hero.title_main">Gestão Profissional para</span><br>
-      <span class="hl-grad" data-i18n="hero.title_gradient">Impressão 3D</span>
+    <div class="eyebrow fu">
+      <span class="dot"></span>
+      <span data-i18n="hero.badge">A Solução Definitiva para Impressão 3D</span>
+    </div>
+    <h1 class="headline fu d1">
+      <span data-i18n="hero.title_p1">Transforme a sua</span><br>
+      <span class="hl-grad"><span class="b3d">Impressão</span> <span class="bzp">3D</span></span> 
+      <span data-i18n="hero.title_p2">num Negócio Rentável.</span>
     </h1>
-    <p class="hero-sub fu d3" data-i18n="hero.subtitle">
-      Esqueça as folhas de cálculo. Calcule custos reais, controle o seu stock de filamentos e acompanhe encomendas com uma interface de elite.
-    </p>
-    <div class="hero-ctas fu d4">
-      <a href="auth-onboarding.html" class="btn btn-p" data-i18n="hero.cta_primary">Começar Trial Grátis</a>
-      <a href="#features" class="btn btn-g" data-i18n="hero.cta_secondary">Ver Funcionalidades</a>
+    <p class="hero-sub fu d2" data-i18n="hero.subtitle">Deixe de cobrar "a olho" e recupere o controlo do seu stock, pedidos e lucros com a plataforma líder para profissionais de 3D.</p>
+    <div class="hero-ctas fu d3">
+      <a href="#pricing" class="btn btn-p btn-lg" data-i18n="hero.cta_primary">Ver Planos e Preços</a>
+      <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Explorar Módulos</a>
     </div>
     <div class="hero-mockup fu d4">
       <img src="mockup-hero.png" alt="3DZAAP Dashboard Mockup">
@@ -209,20 +224,37 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
   </div>
 </section>
 
-<section class="stats">
+<!-- THE TWO PATHS -->
+<section class="pas">
   <div class="wrap">
-    <div class="stats-grid gc fu">
-      <div class="stat-card">
-        <div class="stat-v">10k+</div>
-        <div class="stat-l" data-i18n="stats.parts">Peças Calculadas</div>
+    <div class="sec-hdr fu">
+      <span class="slbl" data-i18n="pas.label">O Problema</span>
+      <h2 class="stit" data-i18n="pas.title">A impressão 3D é incrível.<br>Gerir o negócio? Nem por isso.</h2>
+      <p class="ssub" data-i18n="pas.subtitle">Se lida com orçamentos de boca, filamento que acaba a meio de uma impressão e ficheiros perdidos pelas mensagens, compreendemos a sua dor.</p>
+    </div>
+    
+    <div class="pas-grid">
+      <div class="pas-card gc fu d1">
+        <span class="pas-icon">💸</span>
+        <h3 class="pas-title" data-i18n="pas.p1.title">Preços "A Olho"</h3>
+        <p class="pas-desc" data-i18n="pas.p1.desc">Cobrar apenas pelo "tempo de impressão" ignora custos de energia, falhas e pós-processamento. Resultado? Trabalhar para não ganhar.</p>
       </div>
-      <div class="stat-card">
-        <div class="stat-v">500+</div>
-        <div class="stat-l" data-i18n="stats.filament">Kg de Filamento</div>
+      <div class="pas-card gc fu d2">
+        <span class="pas-icon">🧵</span>
+        <h3 class="pas-title" data-i18n="pas.p2.title">Caos do Inventário</h3>
+        <p class="pas-desc" data-i18n="pas.p2.desc">Descobrir que o material acabou a meio de uma peça de 20 horas é frustrante. Mais uma impressão para o lixo.</p>
       </div>
-      <div class="stat-card">
-        <div class="stat-v">2k+</div>
-        <div class="stat-l" data-i18n="stats.saved">Horas Poupadas</div>
+      <div class="pas-card gc fu d3">
+        <span class="pas-icon">🤯</span>
+        <h3 class="pas-title" data-i18n="pas.p3.title">Pedidos Perdidos</h3>
+        <p class="pas-desc" data-i18n="pas.p3.desc">Mensagens no Instagram, WhatsApp e Email. Perde mais tempo a organizar ficheiros do que a produzir.</p>
+      </div>
+    </div>
+
+    <div class="pas-solution fu d4">
+      <div class="ps-box">
+         <h3 data-i18n="pas.solution.title">A nossa Solução.</h3>
+         <p><span class="b3d">3D</span><span class="bzp">ZAAP</span> <span data-i18n="pas.solution.desc">foi construída do zero para transformar o seu hobby num processo de produção altamente rentável, previsível e sem stress.</span></p>
       </div>
     </div>
   </div>
@@ -235,9 +267,7 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
       <h2 class="stit" data-i18n="modules.subtitle">Um ecossistema completo para o seu negócio</h2>
     </div>
 
-    <!-- 8 Modules Detail -->
     <div class="fgrid">
-      <!-- Health Score (Hero Feature) -->
       <div class="fcard fcard-hs gc fu">
         <div class="hs-left">
           <div class="ficon">🏥</div>
@@ -323,7 +353,7 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pamt">0</span>
         </div>
         <p class="pdesc" data-i18n="pricing.trial.desc">14 dias. Sem cartão.</p>
-        <button class="btn btn-g pbtn" data-i18n="pricing.trial.cta">Começar Grátis</button>
+        <a href="auth-onboarding.html?mode=signup" class="btn btn-g pbtn" data-i18n="pricing.trial.cta">Começar Grátis</a>
       </div>
 
       <div class="pcard gc fu">
@@ -334,7 +364,7 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.starter.desc">Calculadora e Filamentos.</p>
-        <button class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Escolher Starter</button>
+        <a href="auth-onboarding.html?mode=signup&plan=starter" class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Escolher Starter</a>
       </div>
 
       <div class="pcard gc popular fu">
@@ -345,7 +375,7 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.pro.desc">Módulo de Pedidos incluído.</p>
-        <button class="btn btn-p pbtn" data-i18n="pricing.pro.cta">Escolher Pro</button>
+        <a href="auth-onboarding.html?mode=signup&plan=pro" class="btn btn-p pbtn" data-i18n="pricing.pro.cta">Escolher Pro</a>
       </div>
 
       <div class="pcard gc fu">
@@ -356,7 +386,7 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.business.desc">Financeiro e Customização.</p>
-        <button class="btn btn-g pbtn" data-i18n="pricing.business.cta">Escolher Business</button>
+        <a href="auth-onboarding.html?mode=signup&plan=business" class="btn btn-g pbtn" data-i18n="pricing.business.cta">Escolher Business</a>
       </div>
     </div>
   </div>
@@ -368,13 +398,21 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
       <h2 class="stit" data-i18n="faq.title">Perguntas Frequentes</h2>
     </div>
     <div class="fgrid">
-      <div class="fcard gc">
-        <h3 class="ftit" data-i18n="faq.q1">Preciso de cartão?</h3>
-        <p class="fdesc" data-i18n="faq.a1">Não. O trial de 14 dias é totalmente gratuito e não exige dados de pagamento.</p>
+      <div class="fcard gc fu">
+        <h3 class="ftit" data-i18n="faq.q1">Preciso de cartão de crédito para testar?</h3>
+        <p class="fdesc" data-i18n="faq.a1">Não. O nosso trial de 14 dias é totalmente gratuito e não exige qualquer dado de pagamento para começar.</p>
       </div>
-      <div class="fcard gc">
-        <h3 class="ftit" data-i18n="faq.q2">Os dados estão seguros?</h3>
-        <p class="fdesc" data-i18n="faq.a2">Sim, usamos isolamento de dados (RLS) via Supabase para garantir total privacidade.</p>
+      <div class="fcard gc fu">
+        <h3 class="ftit" data-i18n="faq.q2">Os meus dados estão seguros?</h3>
+        <p class="fdesc" data-i18n="faq.a2">Sim, utilizamos encriptação de ponta e isolamento de dados (RLS) via Supabase para garantir que apenas você acede às suas informações.</p>
+      </div>
+      <div class="fcard gc fu">
+        <h3 class="ftit" data-i18n="faq.q3">Posso cancelar a qualquer momento?</h3>
+        <p class="fdesc" data-i18n="faq.a3">Com certeza. Não existem contratos de fidelização. Pode cancelar a sua subscrição diretamente nas definições a qualquer momento.</p>
+      </div>
+      <div class="fcard gc fu">
+        <h3 class="ftit" data-i18n="faq.q4">Como funciona o suporte técnico?</h3>
+        <p class="fdesc" data-i18n="faq.a4">Oferecemos suporte prioritário via WhatsApp e Email para todos os planos pagos, e documentação completa para todos os utilizadores.</p>
       </div>
     </div>
   </div>
@@ -384,8 +422,8 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
   <div class="wrap">
     <div class="fgrid-main">
       <div class="fbrand">
-        <div class="flogo">3D<b>ZAAP</b></div>
-        <p style="color:rgba(255,255,255,0.5); font-size:0.9rem">
+        <div class="flogo"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
+        <p style="color:var(--muted); font-size:0.9rem">
           O cérebro do seu negócio de impressão 3D.
         </p>
       </div>
@@ -442,13 +480,6 @@ function tbill() {
     document.getElementById('l-ann').classList.remove('on');
   }
 }
-
-// Language Specific Formatting (Currency)
-window.addEventListener('languageChanged', (e) => {
-    const locale = e.detail.locale;
-    const curSymbol = (locale === 'br') ? 'R$' : '€';
-    document.querySelectorAll('.pcur').forEach(el => el.innerText = curSymbol);
-});
 
 // Scroll Animation (Intersection Observer)
 const obs = new IntersectionObserver((ents) => {

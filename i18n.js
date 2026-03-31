@@ -4,11 +4,15 @@
  */
 
 const i18n = {
-    currentLocale: localStorage.getItem('3dzaap_lang') || 'pt',
+    currentLocale: localStorage.getItem('3dzaap_lang') || 'pt-PT',
     translations: {},
-    supportedLocales: ['pt', 'br', 'en', 'es'],
+    supportedLocales: ['pt-PT', 'pt-BR', 'en', 'es'],
 
     async init() {
+        // Fallback for old 'pt' or 'br' codes
+        if (this.currentLocale === 'pt') this.currentLocale = 'pt-PT';
+        if (this.currentLocale === 'br') this.currentLocale = 'pt-BR';
+        
         await this.loadTranslations(this.currentLocale);
         this.translatePage();
         this.updateLanguageSwitcherUI();
@@ -17,6 +21,7 @@ const i18n = {
     async loadTranslations(locale) {
         try {
             const response = await fetch(`./locales/${locale}.json`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.translations = await response.json();
             this.currentLocale = locale;
             localStorage.setItem('3dzaap_lang', locale);
@@ -32,31 +37,39 @@ const i18n = {
             const key = el.getAttribute('data-i18n');
             const translation = this.getNestedTranslation(key);
             if (translation) {
+                // If it's an input or textarea, update both placeholder and value if needed
                 if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                     if (el.placeholder) el.placeholder = translation;
+                } else if (el.tagName === 'SELECT') {
+                   // Skip direct select translation unless needed
                 } else {
                     el.innerHTML = translation;
                 }
             }
         });
 
-        // Update body class for regional styling if needed
         document.body.classList.remove(...this.supportedLocales.map(l => `lang-${l}`));
         document.body.classList.add(`lang-${this.currentLocale}`);
-
-        // Dispatch event for components that need to react
         window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: this.currentLocale } }));
     },
 
     getNestedTranslation(key) {
+        if (!key) return null;
         return key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
     },
 
-    async switchLanguage(locale) {
-        if (!this.supportedLocales.includes(locale)) return;
+    async setLanguage(locale) {
+        if (!this.supportedLocales.includes(locale)) {
+            console.warn(`Locale ${locale} not supported`);
+            return;
+        }
         await this.loadTranslations(locale);
         this.translatePage();
         this.updateLanguageSwitcherUI();
+    },
+
+    async switchLanguage(locale) {
+        return this.setLanguage(locale);
     },
 
     updateLanguageSwitcherUI() {
@@ -67,7 +80,5 @@ const i18n = {
     }
 };
 
-// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => i18n.init());
-
 window.i18n = i18n;
