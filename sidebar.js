@@ -1,56 +1,47 @@
 // ============================================================
-// sidebar.js — 3DZAAP  v1.0
+// sidebar.js — 3DZAAP  v1.1
 // Sidebar único partilhado por todas as páginas.
 // Injeta HTML, preenche dados do utilizador e gere interacções.
 //
 // USO EM CADA PÁGINA:
-//   1. Remover o bloco <aside class="sidebar">…</aside> do HTML
-//   2. Manter: <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+//   1. Manter: <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 //              <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
-//   3. Adicionar antes de </body>:
+//   2. Adicionar antes de </body>:
+//        <script src="utils.js"></script>
+//        <script src="i18n.js"></script>
 //        <script src="sidebar.js"></script>
 //        <script>Sidebar.init();</script>
-//      OU chamar Sidebar.init() dentro do DOMContentLoaded da página
 //
 // DADOS DINÂMICOS:
 //   Após Auth.getSession(), chamar: Sidebar.setSession(session)
-//   Isso preenche nome, logo, plano, etc.
 // ============================================================
 
 const Sidebar = (() => {
 
   // ── NAV ITEMS ─────────────────────────────────────────────
-  // Ordem e estrutura da navegação. Editar aqui para alterar todas as páginas.
   const NAV = [
     {
       section: 'Principal', i18nKey: 'nav.principal',
       items: [
-        { id: 'dashboard',   i18nKey: 'nav.home', href: 'dashboard.html',   icon: '🏠', label: 'Início',        lockId: 'navLockDashboard' },
-        { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
-        { id: 'orders',      i18nKey: 'nav.orders', href: 'orders.html',      icon: '📦', label: 'Pedidos',       lockId: 'navLockOrders' },
-        { id: 'financial',   i18nKey: 'nav.financial', href: 'financial.html',   icon: '💰', label: 'Financeiro',    lockId: 'navLockFinancial' },
+        { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '🏠', label: 'Início',       lockId: 'navLockDashboard' },
+        { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '📐', label: 'Calculadora' },
+        { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '📦', label: 'Pedidos',      lockId: 'navLockOrders' },
+        { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '💰', label: 'Financeiro',   lockId: 'navLockFinancial' },
       ]
     },
     {
       section: 'Gestão', i18nKey: 'nav.gestao',
       items: [
-        { id: 'materials',   i18nKey: 'nav.materials', href: 'materials.html',   icon: '🎨', label: 'Materiais' },
-        { id: 'printers',    i18nKey: 'nav.printers', href: 'printers.html',    icon: '🖨️', label: 'Impressoras' },
-        { id: 'backoffice',  i18nKey: 'nav.backoffice', href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice',   lockId: 'navLockBackoffice' },
+        { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '🎨', label: 'Materiais' },
+        { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '🖨️', label: 'Impressoras' },
+        { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '🗄️', label: 'BackOffice',  lockId: 'navLockBackoffice' },
       ]
     },
     {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
-        { id: 'settings',    i18nKey: 'nav.settings_short', href: 'settings.html',    icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
-        { id: 'admin',       i18nKey: 'nav.admin', href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
-      ]
-    },
-    {
-      section: 'Ajuda', i18nKey: 'nav.help',
-      items: [
-        { id: 'support_wa',  i18nKey: 'nav.support_wa', href: 'https://wa.me/351938925645', icon: '💬', label: 'WhatsApp', external: true },
-        { id: 'instagram',   i18nKey: 'nav.instagram',  href: 'https://instagram.com/3dzaap', icon: '📸', label: 'Instagram', external: true },
+        { id: 'settings', i18nKey: 'nav.settings_short', href: 'settings.html', icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
+        { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
   ];
@@ -71,11 +62,11 @@ const Sidebar = (() => {
         const lockSpan = item.lockId
           ? `<span class="nav-lock" id="${item.lockId}" style="display:none">—</span>`
           : '';
-        const muteStyle = item.muted ? ' style="opacity:.6"' : '';
-        const onclickAttr = item.onclick ? ` onclick="${item.onclick}"` : '';
-        const superAdminAttr = item.superAdmin ? ' data-superadmin="1" style="display:none"' : '';
-        const targetAttr = item.external ? ' target="_blank" rel="noopener noreferrer"' : '';
-        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
+        const muteStyle   = item.muted       ? ' style="opacity:.6"' : '';
+        const onclickAttr = item.onclick      ? ` onclick="${item.onclick}"` : '';
+        const superAttr   = item.superAdmin   ? ' data-superadmin="1" style="display:none"' : '';
+        const targetAttr  = item.external     ? ' target="_blank" rel="noopener noreferrer"' : '';
+        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
       }).join('\n        ');
 
       return `<div class="nav-section">
@@ -127,20 +118,86 @@ const Sidebar = (() => {
 </aside>`;
   }
 
+  // ── TOPBAR GLOBAL CONTROLS ────────────────────────────────
+  // Injected once into every .topbar — theme toggle + lang select + help popover
+  function _injectTopbarControls() {
+    document.querySelectorAll('.topbar').forEach(tb => {
+      if (tb.querySelector('.global-ctrls')) return; // already injected
+
+      const locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+      const isDark  = document.documentElement.getAttribute('data-theme') === 'dark';
+      const themeIcon = isDark ? '☀️' : '🌙';
+
+      const opts = ['pt-PT','pt-BR','en','es','en-GB']
+        .map(v => `<option value="${v}"${v === locale ? ' selected' : ''}>${
+          ({  'pt-PT':'🇵🇹 PT','pt-BR':'🇧🇷 BR','en':'🇺🇸 EN','es':'🇪🇸 ES','en-GB':'🇬🇧 UK' }[v] || v)
+        }</option>`)
+        .join('');
+
+      tb.insertAdjacentHTML('beforeend', `
+        <div class="global-ctrls" style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+          <button id="topbarThemeToggle"
+            style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;"
+            title="Alternar Tema"
+            onclick="Sidebar.toggleTheme()">${themeIcon}</button>
+          <select id="topbarLangSelect"
+            style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:8px;padding:5px 8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:var(--f,inherit);"
+            onchange="window.i18n && window.i18n.setLanguage(this.value)">${opts}</select>
+          <div style="position:relative;">
+            <button id="topbarHelpBtn"
+              style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;font-weight:700;"
+              title="Ajuda & Contacto"
+              onclick="Sidebar._toggleHelp(event)">?</button>
+            <div id="topbarHelpPopover" style="display:none;position:absolute;right:0;top:42px;background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));border-radius:12px;padding:12px;width:220px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:9999;">
+              <div style="font-size:.75rem;font-weight:800;color:var(--muted,#4A5568);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Contacte-nos</div>
+              <a href="https://wa.me/351938925645" target="_blank"
+                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
+                onmouseover="this.style.background='rgba(37,211,102,.1)'" onmouseout="this.style.background='transparent'">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="20" height="20" alt="WhatsApp"> WhatsApp
+              </a>
+              <a href="https://instagram.com/3dzaap" target="_blank"
+                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
+                onmouseover="this.style.background='rgba(225,48,108,.1)'" onmouseout="this.style.background='transparent'">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="20" height="20" alt="Instagram"> @3dzaap
+              </a>
+              <a href="mailto:suporte@3dzaap.com"
+                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
+                onmouseover="this.style.background='rgba(59,143,212,.1)'" onmouseout="this.style.background='transparent'">
+                <span style="font-size:1.2rem;">✉️</span> suporte@3dzaap.com
+              </a>
+            </div>
+          </div>
+        </div>
+      `);
+    });
+
+    // Close help popover on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#topbarHelpBtn') && !e.target.closest('#topbarHelpPopover')) {
+        const pop = document.getElementById('topbarHelpPopover');
+        if (pop) pop.style.display = 'none';
+      }
+    });
+  }
+
   // ── INJECT INTO DOM ───────────────────────────────────────
   function init() {
-    // Find the layout div and prepend sidebar into it
     const layout = document.querySelector('.layout');
     if (!layout) {
-      console.warn('[Sidebar] .layout element not found — cannot inject sidebar.');
+      console.warn('[Sidebar] .layout element not found.');
       return;
     }
-    // Remove any existing <aside class="sidebar"> (legacy inline)
+
     const existing = layout.querySelector('aside.sidebar');
     if (existing) existing.remove();
 
     layout.insertAdjacentHTML('afterbegin', _buildHTML());
-    _syncUI();
+    _injectTopbarControls();
+
+    // Apply current theme icon
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const btn = document.getElementById('topbarThemeToggle');
+    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
 
     // Bind global click to close user menu
     document.addEventListener('click', e => {
@@ -149,9 +206,7 @@ const Sidebar = (() => {
       }
     });
 
-    if (window.i18n) {
-      window.i18n.translatePage();
-    }
+    if (window.i18n) window.i18n.translatePage();
   }
 
   // ── POPULATE WITH SESSION DATA ────────────────────────────
@@ -163,22 +218,18 @@ const Sidebar = (() => {
       : session.fname || session.lname
       || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c => c.toUpperCase());
 
-    const initials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    const companyName = session.companyName || '—';
-    const companyInitials = companyName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '—';
-    const planLabels = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
-    const plan = session.plan || 'trial';
+    const initials        = fullName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const companyName     = session.companyName || '—';
+    const companyInitials = companyName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || '—';
+    const planLabels      = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
+    const plan            = session.plan || 'trial';
 
-    // User info
-    _setText('sidebarUserName',  fullName);
-    _setText('sidebarUserEmail', session.email);
-    _setText('sidebarUserAvatar', initials);
-
-    // Company info
+    _setText('sidebarUserName',    fullName);
+    _setText('sidebarUserEmail',   session.email);
+    _setText('sidebarUserAvatar',  initials);
     _setText('sidebarCompanyName', companyName);
     _setText('sidebarPlanBadge',   planLabels[plan] || 'Trial');
 
-    // Company avatar — logo takes priority over initials
     const avatarEl = document.getElementById('sidebarCompanyAvatar');
     if (avatarEl) {
       const logoUrl = session.logo_url || session.config?.logoUrl || '';
@@ -189,29 +240,21 @@ const Sidebar = (() => {
       }
     }
 
-    // Feature lock badges
     _applyLocks(plan);
 
-    // Super-admin nav items — mostrar apenas se isSuperAdmin === true
     document.querySelectorAll('[data-superadmin]').forEach(el => {
       el.style.display = session.isSuperAdmin ? '' : 'none';
     });
   }
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
-  // Fonte de verdade — lógica de planos acordada:
-  // Trial    : todos os módulos
-  // Starter  : Calculadora, Materiais (max 10), Impressoras (max 1)
-  // Pro      : Calculadora, Materiais, Impressoras, Pedidos, BackOffice, Configurações, Dashboard
-  // Business : todos os módulos
   const PLAN_FEATURES = {
-    trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true },
+    trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
     starter:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
-    pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true, settings:false },
-    business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true },
+    pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
+    business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
   };
 
-  // Limites de registos por plano (null = sem limite)
   const PLAN_LIMITS = {
     trial:    { materials: null, printers: null },
     starter:  { materials: 10,  printers: 1    },
@@ -219,7 +262,7 @@ const Sidebar = (() => {
     business: { materials: null, printers: null },
   };
 
-  const LOCK_LABELS = { orders: 'Pro+', financial: 'Business', backoffice: 'Pro+', settings: 'Pro+', dashboard: 'Pro+' };
+  const LOCK_LABELS = { orders:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
@@ -227,13 +270,27 @@ const Sidebar = (() => {
       const lockId = `navLock${feature.charAt(0).toUpperCase() + feature.slice(1)}`;
       const el = document.getElementById(lockId);
       if (!el) return;
-      if (!allowed) {
-        el.textContent = LOCK_LABELS[feature] || '—';
-        el.style.display = '';
-      } else {
-        el.style.display = 'none';
-      }
+      el.textContent = LOCK_LABELS[feature] || '—';
+      el.style.display = allowed ? 'none' : '';
     });
+  }
+
+  // ── THEME ─────────────────────────────────────────────────
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('3dzaap_theme', next);
+    document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
+      btn.innerHTML = next === 'dark' ? '☀️' : '🌙';
+    });
+  }
+
+  // ── HELP POPOVER ──────────────────────────────────────────
+  function _toggleHelp(e) {
+    e.stopPropagation();
+    const pop = document.getElementById('topbarHelpPopover');
+    if (pop) pop.style.display = pop.style.display === 'none' ? 'block' : 'none';
   }
 
   // ── MOBILE SIDEBAR ────────────────────────────────────────
@@ -247,43 +304,7 @@ const Sidebar = (() => {
     document.getElementById('sideOverlay')?.classList.remove('open');
   }
 
-  // ── USER MENU & GLOBAL CTRLS ──────────────────────────────
-  function _syncUI() {
-    // Injetar os controlos dinamicamente na topbar (se não existirem)
-    document.querySelectorAll('.topbar').forEach(tb => {
-      if (!tb.querySelector('.global-ctrls')) {
-        tb.insertAdjacentHTML('beforeend', `
-          <div class="global-ctrls" style="display:flex;align-items:center;gap:12px;margin-left:auto;">
-            <button class="theme-toggle-mini" id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema" style="background:var(--bg-card);border:1px solid var(--border);color:var(--dark)">🌙</button>
-            <select id="topbarLangSelect" class="lang-select-mini" onchange="window.i18n && window.i18n.setLanguage(this.value)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--dark)">
-              <option value="en">EN</option>
-              <option value="pt-BR">BR</option>
-              <option value="pt-PT">PT</option>
-              <option value="es">ES</option>
-              <option value="en-GB">UK</option>
-            </select>
-          </div>
-        `);
-      }
-    });
-
-    if (window.i18n) i18n.updateLanguageSwitcherUI();
-    const isDark = document.body.classList.contains('dark-mode') || document.documentElement.getAttribute('data-theme') === 'dark';
-    
-    document.querySelectorAll('.theme-toggle-mini').forEach(btn => {
-       btn.innerHTML = isDark ? '☀️' : '🌙';
-    });
-  }
-
-  function toggleTheme() {
-    const isDark = document.body.classList.toggle('dark-mode');
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('3dzaap_theme', isDark ? 'dark' : 'light');
-    document.querySelectorAll('.theme-toggle-mini').forEach(btn => {
-       btn.innerHTML = isDark ? '☀️' : '🌙';
-    });
-  }
-
+  // ── USER MENU ─────────────────────────────────────────────
   function _toggleUserMenu() {
     const dd = document.getElementById('sidebarUserDropdown');
     const ch = document.getElementById('sidebarUserChevron');
@@ -314,9 +335,9 @@ const Sidebar = (() => {
   }
 
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, _toggleUserMenu, _closeUserMenu, _doLogout, toggleTheme, PLAN_FEATURES, PLAN_LIMITS };
+  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, PLAN_FEATURES, PLAN_LIMITS };
 
 })();
 
-// Expose toggleSidebar globally so existing onclick="toggleSidebar()" still works
+// Expose toggleSidebar globally for existing onclick="toggleSidebar()"
 function toggleSidebar() { Sidebar.toggle(); }

@@ -1,6 +1,11 @@
 /**
  * 3DZAAP i18n Engine (Vanilla JS)
  * Handles language switching, translation loading, and DOM updates.
+ *
+ * RULE: The global topbar language selector changes the locale and reloads
+ * the page so all JS-rendered content re-renders in the new language.
+ * EXCEPTION: settings.html — the language selector there is a PREFERENCE
+ * field that the user saves with the Save button. It must NOT trigger a reload.
  */
 
 const i18n = {
@@ -21,13 +26,13 @@ const i18n = {
     async loadTranslations(locale) {
         try {
             const response = await fetch(`./locales/${locale}.json`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             this.translations = await response.json();
             this.currentLocale = locale;
             localStorage.setItem('3dzaap_lang', locale);
             document.documentElement.lang = locale;
         } catch (error) {
-            console.error(`Failed to load translations for ${locale}:`, error);
+            console.warn(`[i18n] Failed to load ${locale}:`, error.message);
         }
     },
 
@@ -37,11 +42,10 @@ const i18n = {
             const key = el.getAttribute('data-i18n');
             const translation = this.getNestedTranslation(key);
             if (translation) {
-                // If it's an input or textarea, update both placeholder and value if needed
                 if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                     if (el.placeholder) el.placeholder = translation;
                 } else if (el.tagName === 'SELECT') {
-                   // Skip direct select translation unless needed
+                    // Skip — selects manage their own options
                 } else {
                     el.innerHTML = translation;
                 }
@@ -58,16 +62,30 @@ const i18n = {
         return key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
     },
 
+    /**
+     * Called by the GLOBAL topbar selector (all pages except settings.html).
+     * Saves preference + reloads so JS-rendered content re-renders correctly.
+     */
     async setLanguage(locale) {
         if (!this.supportedLocales.includes(locale)) {
-            console.warn(`Locale ${locale} not supported`);
+            console.warn(`[i18n] Locale ${locale} not supported`);
             return;
         }
-        
-        // Save the new locale and reload the page to ensure all JS-rendered
-        // modules perfectly catch the new locale translations
         localStorage.setItem('3dzaap_lang', locale);
         window.location.reload();
+    },
+
+    /**
+     * Called ONLY from settings.html preference selector.
+     * Just updates the UI in-place without reloading (user saves manually).
+     */
+    async setLanguageSilent(locale) {
+        if (!this.supportedLocales.includes(locale)) return;
+        this.currentLocale = locale;
+        localStorage.setItem('3dzaap_lang', locale);
+        await this.loadTranslations(locale);
+        this.translatePage();
+        this.updateLanguageSwitcherUI();
     },
 
     async switchLanguage(locale) {
@@ -75,9 +93,14 @@ const i18n = {
     },
 
     updateLanguageSwitcherUI() {
-        const switchers = document.querySelectorAll('.lang-select, .lang-select-mini, #sidebarLangSelect');
-        switchers.forEach(s => {
-            s.value = this.currentLocale;
+        // Sync all global selectors — but NOT the settings preference field
+        const switchers = document.querySelectorAll('#topbarLangSelect, .lang-select-mini');
+        switchers.forEach(s => { s.value = this.currentLocale; });
+
+        // Sync the topbar theme button icon
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
+            btn.innerHTML = isDark ? '☀️' : '🌙';
         });
     }
 };

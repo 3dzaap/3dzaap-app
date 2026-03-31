@@ -325,11 +325,13 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label" data-i18n="settings.prefs.lang">Idioma</label>
-                  <select id="prefLang" class="form-select" onchange="window.i18n.setLanguage(this.value)">
+                  <!-- setLanguageSilent: translates page in-place without reloading (user saves manually) -->
+                  <select id="prefLang" class="form-select" onchange="window.i18n && window.i18n.setLanguageSilent(this.value); markDirty();">
                     <option value="pt-PT">🇵🇹 Portugal (pt-PT)</option>
                     <option value="pt-BR">🇧🇷 Brasil (pt-BR)</option>
                     <option value="en">🇺🇸 English (en)</option>
                     <option value="es">🇪🇸 Español (es)</option>
+                    <option value="en-GB">🇬🇧 English UK (en-GB)</option>
                   </select>
                 </div>
                 <div class="form-group">
