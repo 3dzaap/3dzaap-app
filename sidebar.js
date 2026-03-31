@@ -80,25 +80,13 @@ const Sidebar = (() => {
 
     return `
 <aside class="sidebar" id="sidebar">
-  <!-- NOVO LOGO OFICIAL 3DZAAP -->
   <div class="sidebar-logo">
-    <div class="brand-logo-wrap">
-      <div class="brand-nozzle">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%">
-          <!-- Bloco Superior (Azul) -->
-          <rect x="20" y="10" width="60" height="30" rx="8" fill="#3B8FD4"/>
-          <!-- Conector (Laranja) -->
-          <rect x="40" y="40" width="20" height="10" fill="#F5943A"/>
-          <!-- Ponta (Azul) -->
-          <path d="M35 50 H65 L50 75 Z" fill="#3B8FD4"/>
-          <!-- Filamento (Laranja) -->
-          <path d="M50 75 Q50 90 70 90 Q90 90 90 70" stroke="#F5943A" stroke-width="8" stroke-linecap="round"/>
-        </svg>
-      </div>
+    <a href="dashboard.html" class="brand-logo-wrap">
+      <img src="logo.jpg" class="brand-nozzle squacircle" alt="3DZAAP">
       <div class="brand-text">
         <span class="b3d">3D</span><span class="bzp">ZAAP</span>
       </div>
-    </div>
+    </a>
   </div>
 
   <div class="sidebar-company">
