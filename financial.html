@@ -325,6 +325,30 @@ const STATUS_LABELS = {
   aprovado:'Aprovado', printing:'Printing', done:'Concluído'
 };
 
+function fmtEur(v) {
+  const sym = (_cfg && _cfg._currSymbol) || '€';
+  const val = parseFloat(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return sym + ' ' + val;
+}
+
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  if (start === end) { obj.textContent = fmtEur(end); return; }
+  
+  const range = end - start;
+  let current = start;
+  const timer = setInterval(() => {
+    current += (range / (duration / 16)); // ~60fps
+    if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
+      obj.textContent = fmtEur(end);
+      clearInterval(timer);
+    } else {
+      obj.textContent = fmtEur(current);
+    }
+  }, 16);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
     await loadUserData();
@@ -421,13 +445,13 @@ function renderAll() {
   const pendente  = pendentes.reduce((s,o) => s + (o.total||0), 0);
   const media     = periodOrders.length ? total / periodOrders.length : 0;
 
-  document.getElementById('kpiTotal').textContent       = fmtEur(total);
+  animateValue('kpiTotal', 0, total, 800);
   document.getElementById('kpiTotalSub').textContent    = `${periodOrders.length} pedido${periodOrders.length!==1?'s':''}`;
-  document.getElementById('kpiPago').textContent        = fmtEur(pago);
+  animateValue('kpiPago', 0, pago, 800);
   document.getElementById('kpiPagoSub').textContent     = `${pagos.length} pago${pagos.length!==1?'s':''}`;
-  document.getElementById('kpiPendente').textContent    = fmtEur(pendente);
+  animateValue('kpiPendente', 0, pendente, 800);
   document.getElementById('kpiPendenteSub').textContent = `${pendentes.length} pendente${pendentes.length!==1?'s':''}`;
-  document.getElementById('kpiMedia').textContent       = fmtEur(media);
+  animateValue('kpiMedia', 0, media, 800);
   document.getElementById('kpiMediaSub').textContent    = 'por pedido';
 
   // Status distribution

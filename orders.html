@@ -419,6 +419,31 @@ let _items = []; // modal items buffer
 const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Aprovação',aprovado:'Confirmado',fila:'Em Fila',printing:'Produção',preparacao:'Preparação',enviado:'Enviado',done:'Concluído'};
 const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'fila',aprovado:'fila',fila:'printing',printing:'preparacao',preparacao:'enviado',enviado:'done',done:null};
 
+// ── HELPERS ────────────────────────────
+function fmtEur(v) {
+  const sym = (_cfg && _cfg._currSymbol) || '€';
+  const val = parseFloat(v || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return sym + ' ' + val;
+}
+
+function animateValue(id, start, end, duration, isCurrency = false) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  if (start === end) { obj.textContent = isCurrency ? fmtEur(end) : Math.round(end); return; }
+  
+  const range = end - start;
+  let current = start;
+  const timer = setInterval(() => {
+    current += (range / (duration / 16)); // ~60fps
+    if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
+      obj.textContent = isCurrency ? fmtEur(end) : Math.round(end);
+      clearInterval(timer);
+    } else {
+      obj.textContent = isCurrency ? fmtEur(current) : Math.round(current);
+    }
+  }, 16);
+}
+
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
@@ -722,11 +747,15 @@ function updateStats() {
   const paid = orders.filter(o => o.paymentStatus === 'pago');
   const pendingVal = pending.reduce((s,o)=>s+(o.total||0),0);
   const paidVal = paid.reduce((s,o)=>s+(o.total||0),0);
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statProgress').textContent = progress;
-  document.getElementById('statPendingVal').textContent = fmtEur(pendingVal);
+
+  const prevTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
+  const prevProgress = parseInt(document.getElementById('statProgress').textContent) || 0;
+
+  animateValue('statTotal', prevTotal, total, 800);
+  animateValue('statProgress', prevProgress, progress, 800);
+  animateValue('statPendingVal', 0, pendingVal, 800, true);
   document.getElementById('statPendingCount').textContent = pending.length + ' pedido' + (pending.length!==1?'s':'');
-  document.getElementById('statPaidVal').textContent = fmtEur(paidVal);
+  animateValue('statPaidVal', 0, paidVal, 800, true);
   document.getElementById('statPaidCount').textContent = paid.length + ' pedido' + (paid.length!==1?'s':'');
 }
 

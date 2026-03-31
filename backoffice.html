@@ -438,17 +438,42 @@ async function loadData() {
   refreshStats();
 }
 
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  const range = end - start;
+  if (range === 0) { obj.textContent = Math.round(end); return; }
+  let current = start;
+  const timer = setInterval(() => {
+    current += (range / (duration / 16));
+    if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
+      obj.textContent = Math.round(end);
+      clearInterval(timer);
+    } else {
+      obj.textContent = Math.round(current);
+    }
+  }, 16);
+}
+
 // ── STORAGE STATS ──────────────────────
 function refreshStats() {
-  const kb = data => (JSON.stringify(data).length / 1024).toFixed(1) + ' KB';
-  document.getElementById('statFil').textContent = filaments.length;
-  document.getElementById('statOrd').textContent = orders.length;
-  document.getElementById('statExp').textContent = expenses.length;
-  document.getElementById('statPrt').textContent = printers.length;
-  document.getElementById('statFilSize').textContent = kb(filaments);
-  document.getElementById('statOrdSize').textContent = kb(orders);
-  document.getElementById('statExpSize').textContent = kb(expenses);
-  document.getElementById('statPrtSize').textContent = kb(printers);
+  const kbVal = data => (JSON.stringify(data).length / 1024);
+  
+  const prevFil = parseInt(document.getElementById('statFil').textContent) || 0;
+  const prevOrd = parseInt(document.getElementById('statOrd').textContent) || 0;
+  const prevExp = parseInt(document.getElementById('statExp').textContent) || 0;
+  const prevPrt = parseInt(document.getElementById('statPrt').textContent) || 0;
+
+  animateValue('statFil', prevFil, filaments.length, 800);
+  animateValue('statOrd', prevOrd, orders.length, 800);
+  animateValue('statExp', prevExp, expenses.length, 800);
+  animateValue('statPrt', prevPrt, printers.length, 800);
+
+  document.getElementById('statFilSize').textContent = kbVal(filaments).toFixed(1) + ' KB';
+  document.getElementById('statOrdSize').textContent = kbVal(orders).toFixed(1) + ' KB';
+  document.getElementById('statExpSize').textContent = kbVal(expenses).toFixed(1) + ' KB';
+  document.getElementById('statPrtSize').textContent = kbVal(printers).toFixed(1) + ' KB';
+  
   const total = (JSON.stringify(filaments).length + JSON.stringify(orders).length + JSON.stringify(expenses).length + JSON.stringify(printers).length) / 1024;
   document.getElementById('statTotal').textContent = total.toFixed(1) + ' KB';
 }

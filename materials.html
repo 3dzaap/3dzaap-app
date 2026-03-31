@@ -770,6 +770,24 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── HELPERS ────────────────────────────
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  const range = end - start;
+  if (range === 0) { obj.textContent = Math.round(end); return; }
+  let current = start;
+  const timer = setInterval(() => {
+    current += (range / (duration / 16));
+    if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
+      obj.textContent = Math.round(end);
+      clearInterval(timer);
+    } else {
+      obj.textContent = Math.round(current);
+    }
+  }, 16);
+}
+
 // ══════════════════════════════════════
 //  CATÁLOGOS
 // ══════════════════════════════════════
@@ -1230,11 +1248,16 @@ function renderStats() {
     unitStr = totalL % 1 === 0 ? totalL + ' L' : totalL.toFixed(2) + ' L';
   }
 
-  document.getElementById('statTotal').textContent = list.length;
+  const prevTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
+  const prevStock = parseInt(document.getElementById('statStock').textContent) || 0;
+  const prevLow   = parseInt(document.getElementById('statLow').textContent) || 0;
+  const prevEmpty = parseInt(document.getElementById('statEmpty').textContent) || 0;
+
+  animateValue('statTotal', prevTotal, list.length, 800);
   document.getElementById('statUnit').textContent  = unitStr;
-  document.getElementById('statStock').textContent = stock.length;
-  document.getElementById('statLow').textContent   = low.length;
-  document.getElementById('statEmpty').textContent = empty.length;
+  animateValue('statStock', prevStock, stock.length, 800);
+  animateValue('statLow',   prevLow,   low.length,   800);
+  animateValue('statEmpty', prevEmpty, empty.length, 800);
 
   buildTooltip('tipTotal', list);
   buildTooltip('tipStock', stock);
