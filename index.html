@@ -143,8 +143,14 @@ input:checked + .ttr + .tth{transform:translateX(24px)}
 .pdesc{font-size:0.85rem;color:var(--muted);min-height:45px}
 .pbtn{width:100%}
 
+.pfeatures{list-style:none;text-align:left;margin:20px 0;flex-grow:1;display:flex;flex-direction:column;gap:12px}
+.pfeature{font-size:.88rem;color:var(--muted);display:flex;align-items:flex-start;gap:12px;line-height:1.3}
+.pfeature span{color:var(--blue);font-weight:900;font-size:1.1rem;line-height:1}
+.pfeature.off{opacity:.4}
+.pfeature.off span{color:var(--subtle)}
+
 /* ── FOOTER ─────────────────────────── */
-footer{padding:80px 0 40px;background:var(--dark);color:white}
+footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);color:white;border-top:1px solid rgba(255,255,255,0.1)}
 .fgrid-main{display:grid;grid-template-columns:1.5fr repeat(3, 1fr);gap:40px;margin-bottom:60px}
 .flogo{font-size:1.5rem;font-weight:900;margin-bottom:20px}
 .flogo b{color:var(--blue)}
@@ -353,6 +359,12 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pamt">0</span>
         </div>
         <p class="pdesc" data-i18n="pricing.trial.desc">14 dias. Sem cartão.</p>
+        <ul class="pfeatures">
+          <li class="pfeature"><span data-i18n="pricing.trial.features.0">✓</span> <span data-i18n="pricing.trial.features.0_label">Acesso Total Business</span></li>
+          <li class="pfeature"><span data-i18n="pricing.trial.features.1">✓</span> <span data-i18n="pricing.trial.features.1_label">Sem Compromisso</span></li>
+          <li class="pfeature"><span data-i18n="pricing.trial.features.2">✓</span> <span data-i18n="pricing.trial.features.2_label">Setup em 1 Minuto</span></li>
+          <li class="pfeature"><span data-i18n="pricing.trial.features.3">✓</span> <span data-i18n="pricing.trial.features.3_label">Dicas de Configuração</span></li>
+        </ul>
         <a href="auth-onboarding.html?mode=signup" class="btn btn-g pbtn" data-i18n="pricing.trial.cta">Começar Grátis</a>
       </div>
 
@@ -364,6 +376,13 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.starter.desc">Calculadora e Filamentos.</p>
+        <ul class="pfeatures">
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora Ilimitada</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Gestão de Materiais</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.2">Catálogo de Máquinas</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.3">Exportação de Dados</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.4">Temas Claro/Escuro</span></li>
+        </ul>
         <a href="auth-onboarding.html?mode=signup&plan=starter" class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Escolher Starter</a>
       </div>
 
@@ -375,6 +394,13 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.pro.desc">Módulo de Pedidos incluído.</p>
+        <ul class="pfeatures">
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.0">Tudo do Plano Starter</span></li>
+          <li class="pfeature" style="font-weight:700;color:var(--dark)"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos (CRM)</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.2">WhatsApp Tracking</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos e OS Dinâmicos</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.4">Fotos das Peças</span></li>
+        </ul>
         <a href="auth-onboarding.html?mode=signup&plan=pro" class="btn btn-p pbtn" data-i18n="pricing.pro.cta">Escolher Pro</a>
       </div>
 
@@ -386,6 +412,13 @@ footer{padding:80px 0 40px;background:var(--dark);color:white}
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
         <p class="pdesc" data-i18n="pricing.business.desc">Financeiro e Customização.</p>
+        <ul class="pfeatures">
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.business.features.0">Tudo do Plano Pro</span></li>
+          <li class="pfeature" style="font-weight:700;color:var(--dark)"><span>✓</span> <span data-i18n="pricing.business.features.1">Módulo Financeiro</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.business.features.2">White Label Personalizado</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.business.features.3">Multi-utilizador</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.business.features.4">Suporte Prioritário</span></li>
+        </ul>
         <a href="auth-onboarding.html?mode=signup&plan=business" class="btn btn-g pbtn" data-i18n="pricing.business.cta">Escolher Business</a>
       </div>
     </div>

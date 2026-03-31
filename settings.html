@@ -128,7 +128,7 @@
     <div class="sidebar-header">
       <div class="sidebar-logo">
         <div class="logo-circle">3D</div>
-        <span>3D<b>ZAAP</b></span>
+        <span><span class="b3d">3D</span><span class="bzp">ZAAP</span></span>
       </div>
       <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
     </div>
@@ -312,7 +312,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label" data-i18n="settings.prefs.lang">Idioma</label>
-                  <select id="prefLang" class="form-select" onchange="localStorage.setItem('3dzaap_lang', this.value)">
+                  <select id="prefLang" class="form-select" onchange="window.i18n.setLanguage(this.value)">
                     <option value="pt-PT">🇵🇹 Portugal (pt-PT)</option>
                     <option value="pt-BR">🇧🇷 Brasil (pt-BR)</option>
                     <option value="en">🇺🇸 English (en)</option>
@@ -424,31 +424,34 @@
               <div class="plans-grid">
                 <!-- STARTER -->
                 <div class="plan-card" id="card-starter">
-                  <div class="plan-name">Starter</div>
+                  <div class="plan-name" data-i18n="pricing.starter.name">Starter</div>
                   <div class="plan-price">9.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> Calculadora</li>
-                    <li class="plan-feature"><span>✓</span> Filamentos</li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Filamentos</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.2">Catálogo</span></li>
                   </ul>
                   <button class="btn btn-ghost btn-sm" onclick="window.open('https://wa.me/351912345678?text=Interesse%20no%20Plano%20Starter')" data-i18n="settings.sub.btn_choose">Escolher</button>
                 </div>
                 <!-- PRO -->
                 <div class="plan-card" id="card-pro">
-                  <div class="plan-name">Pro</div>
+                  <div class="plan-name" data-i18n="pricing.pro.name">Pro</div>
                   <div class="plan-price">19.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> Gestão de Pedidos</li>
-                    <li class="plan-feature"><span>✓</span> Recibos / OS</li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos / OS</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.4">Fotos</span></li>
                   </ul>
                   <button class="btn btn-ghost btn-sm" onclick="window.open('https://wa.me/351912345678?text=Interesse%20no%20Plano%20Pro')" data-i18n="settings.sub.btn_choose">Escolher</button>
                 </div>
                 <!-- BUSINESS -->
                 <div class="plan-card" id="card-business">
-                  <div class="plan-name">Business</div>
+                  <div class="plan-name" data-i18n="pricing.business.name">Business</div>
                   <div class="plan-price">39.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> Tudo Ilimitado</li>
-                    <li class="plan-feature"><span>✓</span> Equipa / Branding</li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.1">Módulo Financeiro</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.2">Branding</span></li>
+                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.3">Equipa</span></li>
                   </ul>
                   <button class="btn btn-primary btn-sm" onclick="window.open('https://wa.me/351912345678?text=Duvida%20Plano%20Business')" data-i18n="settings.sub.btn_contact">Vendas</button>
                 </div>
@@ -535,9 +538,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function initI18n() {
-  if (window.i18n) {
+  // Let i18n.js handle its own DOMContentLoaded, 
+  // but if we need a manual trigger or locale sync:
+  if (window.i18n && !window.i18n.translations.settings) {
     const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-    await i18n.setLanguage(lang);
+    await i18n.init(); 
   }
 }
 

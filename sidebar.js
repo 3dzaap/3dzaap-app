@@ -23,29 +23,29 @@ const Sidebar = (() => {
   // Ordem e estrutura da navegação. Editar aqui para alterar todas as páginas.
   const NAV = [
     {
-      section: 'Principal',
+      section: 'Principal', i18nKey: 'nav.principal',
       items: [
-        { id: 'dashboard',   href: 'dashboard.html',   icon: '🏠', label: 'Início',        lockId: 'navLockDashboard' },
-        { id: 'calculator',  href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
-        { id: 'orders',      href: 'orders.html',      icon: '📦', label: 'Pedidos',       lockId: 'navLockOrders' },
-        { id: 'financial',   href: 'financial.html',   icon: '💰', label: 'Financeiro',    lockId: 'navLockFinancial' },
+        { id: 'dashboard',   i18nKey: 'nav.home', href: 'dashboard.html',   icon: '🏠', label: 'Início',        lockId: 'navLockDashboard' },
+        { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html',  icon: '📐', label: 'Calculadora' },
+        { id: 'orders',      i18nKey: 'nav.orders', href: 'orders.html',      icon: '📦', label: 'Pedidos',       lockId: 'navLockOrders' },
+        { id: 'financial',   i18nKey: 'nav.financial', href: 'financial.html',   icon: '💰', label: 'Financeiro',    lockId: 'navLockFinancial' },
       ]
     },
     {
-      section: 'Gestão',
+      section: 'Gestão', i18nKey: 'nav.gestao',
       items: [
-        { id: 'materials',   href: 'materials.html',   icon: '🎨', label: 'Materiais' },
-        { id: 'printers',    href: 'printers.html',    icon: '🖨️', label: 'Impressoras' },
-        { id: 'backoffice',  href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice',   lockId: 'navLockBackoffice' },
+        { id: 'materials',   i18nKey: 'nav.materials', href: 'materials.html',   icon: '🎨', label: 'Materiais' },
+        { id: 'printers',    i18nKey: 'nav.printers', href: 'printers.html',    icon: '🖨️', label: 'Impressoras' },
+        { id: 'backoffice',  i18nKey: 'nav.backoffice', href: 'backoffice.html',  icon: '🗄️', label: 'BackOffice',   lockId: 'navLockBackoffice' },
       ]
     },
     {
-      section: 'Conta',
+      section: 'Conta', i18nKey: 'nav.conta',
       items: [
-        { id: 'settings',    href: 'settings.html',    icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
-        { id: 'billing',     href: '#',                icon: '💳', label: 'Assinatura', muted: true,
+        { id: 'settings',    i18nKey: 'nav.settings_short', href: 'settings.html',    icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
+        { id: 'billing',     i18nKey: 'nav.billing', href: '#',                icon: '💳', label: 'Assinatura', muted: true,
           onclick: "showToast('💳 Assinatura — em breve','');return false;" },
-        { id: 'admin',       href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
+        { id: 'admin',       i18nKey: 'nav.admin', href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
   ];
@@ -69,11 +69,11 @@ const Sidebar = (() => {
         const muteStyle = item.muted ? ' style="opacity:.6"' : '';
         const onclickAttr = item.onclick ? ` onclick="${item.onclick}"` : '';
         const superAdminAttr = item.superAdmin ? ' data-superadmin="1" style="display:none"' : '';
-        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> ${item.label}${lockSpan}</a>`;
+        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${onclickAttr}${muteStyle}${superAdminAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
       }).join('\n        ');
 
       return `<div class="nav-section">
-        <div class="nav-section-label">${section.section}</div>
+        <div class="nav-section-label" data-i18n="${section.i18nKey}">${section.section}</div>
         ${items}
       </div>`;
     }).join('\n      ');
@@ -81,10 +81,8 @@ const Sidebar = (() => {
     return `
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <img src="https://customer-assets.emergentagent.com/job_spool-tracker-3/artifacts/5c5xc7cz_LogoFundoBranco.png"
-         alt="3DZAAP"
-         onerror="this.style.display='none'">
-    <div class="sidebar-logo-text">Print Manager</div>
+    <div class="logo-circle">3D</div>
+    <span><span class="b3d">3D</span><span class="bzp">ZAAP</span></span>
   </div>
 
   <div class="sidebar-company">
@@ -101,11 +99,11 @@ const Sidebar = (() => {
 
   <div class="sidebar-footer">
     <div class="user-dropdown" id="sidebarUserDropdown">
-      <a class="dd-item" href="settings.html">⚙️ Configurações da conta</a>
-      <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');Sidebar._closeUserMenu();return false;" style="opacity:.6">💳 Gerir assinatura</a>
-      <a class="dd-item" href="index.html">🌐 Ver landing page</a>
+      <a class="dd-item" href="settings.html">⚙️ <span data-i18n="nav.settings_short">Configurações da conta</span></a>
+      <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');Sidebar._closeUserMenu();return false;" style="opacity:.6">💳 <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
+      <a class="dd-item" href="index.html">🌐 <span data-i18n="nav.go_to_lander">Ver landing page</span></a>
       <div class="dd-divider"></div>
-      <a class="dd-item danger" onclick="Sidebar._doLogout();return false;">🚪 Sair</a>
+      <a class="dd-item danger" onclick="Sidebar._doLogout();return false;">🚪 <span data-i18n="nav.logout">Sair</span></a>
     </div>
     <div class="user-row" id="sidebarUserRow" onclick="Sidebar._toggleUserMenu()">
       <div class="user-avatar" id="sidebarUserAvatar">—</div>
@@ -139,6 +137,10 @@ const Sidebar = (() => {
         _closeUserMenu();
       }
     });
+
+    if (window.i18n) {
+      window.i18n.translatePage();
+    }
   }
 
   // ── POPULATE WITH SESSION DATA ────────────────────────────
