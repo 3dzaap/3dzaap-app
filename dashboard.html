@@ -707,14 +707,23 @@ function renderGreeting() {
 }
 
 // ── HELPERS ────────────────────────────
-function fmtEur(v) {
-  return parseFloat(v || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+function fmtCurrency(v) {
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const currencyMap = {
+    'pt-PT': { code: 'EUR', locale: 'pt-PT' },
+    'pt-BR': { code: 'BRL', locale: 'pt-BR' },
+    'en':    { code: 'USD', locale: 'en-US' },
+    'es':    { code: 'EUR', locale: 'es-ES' },
+    'en-GB': { code: 'GBP', locale: 'en-GB' }
+  };
+  const cfg = currencyMap[lang] || currencyMap['pt-PT'];
+  return parseFloat(v || 0).toLocaleString(cfg.locale, { style: 'currency', currency: cfg.code });
 }
 
 function animateValue(id, start, end, duration) {
   const obj = document.getElementById(id);
   if (!obj) return;
-  if (start === end) { obj.textContent = fmtEur(end); return; }
+  if (start === end) { obj.textContent = fmtCurrency(end); return; }
   
   const range = end - start;
   let current = start;
@@ -724,10 +733,10 @@ function animateValue(id, start, end, duration) {
   const timer = setInterval(() => {
     current += (range / (duration / 16)); // ~60fps
     if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
-      obj.textContent = fmtEur(end);
+      obj.textContent = fmtCurrency(end);
       clearInterval(timer);
     } else {
-      obj.textContent = fmtEur(current);
+      obj.textContent = fmtCurrency(current);
     }
   }, 16);
 }
@@ -1092,7 +1101,7 @@ function renderRecentOrders() {
         <div class="order-client-date">${dateStr}</div>
       </div>
       <span class="order-status-badge s-${status}">${statusLabel}</span>
-      <span class="order-amount">${fmtEur(o.total||0)}</span>
+      <span class="order-amount">${fmtCurrency(o.total||0)}</span>
     </div>`;
   }).join('');
 }

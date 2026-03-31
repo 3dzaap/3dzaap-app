@@ -518,7 +518,8 @@ const LOCALE_FMT = {
   'pt-PT': { sym: '€', mult: 1,    code: 'EUR' },
   'es':    { sym: '€', mult: 1,    code: 'EUR' },
   'en':    { sym: '$', mult: 1,    code: 'USD' },
-  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL' }
+  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL' },
+  'en-GB': { sym: '£', mult: 1,    code: 'GBP' }
 };
 
 function _updatePricingDisplay() {
@@ -544,6 +545,46 @@ function _updatePricingDisplay() {
   const sp = document.getElementById('sp'); if (sp) sp.textContent = fmt2(p.starter);
   const pp = document.getElementById('pp'); if (pp) pp.textContent = fmt2(p.pro);
   const bp = document.getElementById('bp'); if (bp) bp.textContent = fmt2(p.business);
+
+  // Update annual totals
+  const starterTotal = (p.starter * fmt.mult * 12).toFixed(2);
+  const proTotal     = (p.pro * fmt.mult * 12).toFixed(2);
+  const businessTotal = (p.business * fmt.mult * 12).toFixed(2);
+
+  const starterCard = document.getElementById('sp')?.closest('.pcard');
+  const proCard     = document.getElementById('pp')?.closest('.pcard');
+  const businessCard = document.getElementById('bp')?.closest('.pcard');
+
+  if (isAnn) {
+    _setTotalHint(starterCard, `${fmt.sym} ${starterTotal}`);
+    _setTotalHint(proCard, `${fmt.sym} ${proTotal}`);
+    _setTotalHint(businessCard, `${fmt.sym} ${businessTotal}`);
+  } else {
+    _clearTotalHints([starterCard, proCard, businessCard]);
+  }
+}
+
+function _setTotalHint(card, text) {
+  if (!card) return;
+  let hint = card.querySelector('.annual-total-hint');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.className = 'annual-total-hint';
+    hint.style.cssText = 'font-size: 0.75rem; color: var(--subtle); margin-top: 4px; font-weight: 600;';
+    card.querySelector('.pamt-wrap').after(hint);
+  }
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const label = 'Total: ';
+  const per = lang === 'en' || lang === 'en-GB' ? '/yr' : '/ano';
+  hint.textContent = `${label}${text}${per}`;
+}
+
+function _clearTotalHints(cards) {
+  cards.forEach(card => {
+    if (!card) return;
+    const hint = card.querySelector('.annual-total-hint');
+    if (hint) hint.remove();
+  });
 }
 
 function tbill() { _updatePricingDisplay(); }
