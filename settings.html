@@ -122,15 +122,17 @@
 </head>
 <body class="dashboard-body">
 
+<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
 <div class="layout">
-  <div class="sidebar-overlay" id="sideOverlay" onclick="Sidebar.toggle()"></div>
-  <!-- O Sidebar será injetado pelo sidebar.js -->
-  <aside class="sidebar" id="sidebar"></aside>
+  <script src="utils.js"></script>
+  <script src="sidebar.js"></script>
+  <script>Sidebar.init();</script>
 
   <!-- MAIN CONTENT -->
-  <main class="main">
+  <div class="main">
     <header class="topbar">
-      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
       <div class="topbar-title" data-i18n="settings.title">Configurações</div>
       <div class="topbar-actions">
         <!-- Dashboard shortcuts if needed -->
@@ -437,10 +439,17 @@
 <div class="save-bar" id="saveBar">
   <div class="save-bar-msg" id="saveBarMsg">💡 <span data-i18n="settings.save_bar.unsaved">Alterações não guardadas</span></div>
   <div class="save-bar-btns">
-    <button class="btn btn-ghost btn-sm" id="btnDiscard" data-i18n="settings.save_bar.btn_discard">Descartar</button>
-    <button class="btn btn-primary btn-sm" id="btnSaveAll" data-i18n="settings.save_bar.btn_save">💾 Guardar tudo</button>
+    <button class="btn btn-ghost" onclick="cancelChanges()" data-i18n="common.cancel">Cancelar</button>
+    <button class="btn btn-primary" id="saveBtn" onclick="saveAllChanges()" data-i18n="common.save">💾 Guardar tudo</button>
   </div>
 </div>
+
+<script>
+// Dashboard Bridge Functions for Sidebar.js compatibility
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleUserMenu() { Sidebar._toggleUserMenu(); }
+function doLogout() { Auth.logout(); }
+</script>
 
 <!-- CROP MODAL (Standard UI) -->
 <div class="modal-overlay" id="cropModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center">

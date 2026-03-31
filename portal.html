@@ -159,8 +159,9 @@ body {
 .rcpt-sig-location { font-size: .6rem; color: #94a3b8; margin-top: 2px; }
 
 .rcpt-footer { margin-top: 32px; padding: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: .7rem; display: flex; justify-content: space-between; align-items: center; }
-.rcpt-brand { font-weight: 900; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; }
-.rcpt-brand span:first-child { color: var(--orange); }
+.rcpt-brand { font-weight: 900; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; font-size: 1.1rem; display: flex; align-items: center; gap: 4px; }
+.rcpt-brand .b3d { color: var(--blue); }
+.rcpt-brand .bzp { color: var(--orange); }
 .rcpt-tagline { font-size: .6rem; opacity: .6; text-transform: uppercase; letter-spacing: 1px; }
 
 /* ── Receipt View ─────────────────────────────── */
@@ -486,7 +487,12 @@ function renderPortal() {
         <div class="rcpt-logo">
           ${_company.logoUrl 
             ? `<img src="${_company.logoUrl}" style="height:38px;width:auto;object-fit:contain;border-radius:22%">` 
-            : `<div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:var(--orange)">3D</span>ZAAP</div>`}
+            : `<div class="brand-logo-wrap" style="margin-bottom:0; gap:8px">
+                 <img src="logo.jpg" class="brand-nozzle squacircle" style="width:32px; height:32px; padding:3px">
+                 <div class="brand-text" style="font-size:1.1rem; color:#fff">
+                   <span class="b3d">3D</span><span class="bzp">ZAAP</span>
+                 </div>
+               </div>`}
           <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${_company.companyName}</div>
         </div>
         <div class="rcpt-header-right">
@@ -560,8 +566,8 @@ function renderPortal() {
       
       <div class="rcpt-footer">
         <div>
-          <div class="rcpt-brand"><span>3D</span><span>ZAAP</span></div>
-          <div class="rcpt-tagline">Printing Manager</div>
+          <div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
+          <div class="rcpt-tagline">Print Manager</div>
         </div>
         <div style="font-size:.75rem;font-weight:600;color:var(--blue);opacity:0.8">Obrigado pela sua confiança! 🙏</div>
       </div>
