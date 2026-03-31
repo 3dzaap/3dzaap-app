@@ -19,17 +19,49 @@
   document.documentElement.setAttribute('data-theme', active);
 })();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <style>
-/* Settings Specific Styles */
-.settings-grid { display: grid; grid-template-columns: 240px 1fr; gap: 32px; min-height: calc(100vh - 120px); }
-.settings-nav { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 100px; height: fit-content; }
-.settings-nav-btn { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; border: none; background: transparent; color: var(--muted); font-family: var(--font); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: left; }
-.settings-nav-btn:hover { background: var(--bg-card-s); color: var(--dark); }
-.settings-nav-btn.active { background: var(--blue-g); color: var(--blue); }
-.settings-nav-btn span { font-size: 1.1rem; }
+/* Settings Specific Styles — Tab Menu at Top */
+.settings-grid { display: flex; flex-direction: column; gap: 24px; min-height: calc(100vh - 120px); }
+.settings-nav { 
+  display: flex; 
+  flex-direction: row; 
+  gap: 8px; 
+  position: sticky; 
+  top: 72px; /* Just below topbar */
+  background: var(--bg-page); 
+  padding: 12px 0;
+  border-bottom: 1.5px solid var(--border);
+  z-index: 10;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.settings-nav::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+
+.settings-nav-btn { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  padding: 10px 18px; 
+  border-radius: 12px; 
+  border: none; 
+  background: transparent; 
+  color: var(--muted); 
+  font-family: var(--f), var(--font); 
+  font-size: 0.88rem; 
+  font-weight: 700; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  white-space: nowrap;
+  user-select: none;
+}
+.settings-nav-btn:hover { background: var(--blue-g); color: var(--blue); }
+.settings-nav-btn.active { background: var(--blue-g); color: var(--blue); box-shadow: 0 0 0 1.5px var(--blue); }
+.settings-nav-btn span { font-size: 1rem; pointer-events: none; }
 
 .settings-content { display: flex; flex-direction: column; gap: 24px; padding-bottom: 100px; }
 .settings-card { background: var(--bg-card-s); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1.5px solid var(--border); border-radius: var(--rx); padding: 24px; box-shadow: var(--sh-card); display: flex; flex-direction: column; gap: 24px; }
@@ -122,7 +154,8 @@
 </head>
 <body class="dashboard-body">
 
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<!-- Mobile toggle -->
+<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
@@ -148,18 +181,18 @@
       </div>
 
       <div class="settings-grid">
-        <!-- INTERNAL NAV -->
-        <aside class="settings-nav">
+        <!-- INTERNAL NAV (Horizontal at Top) -->
+        <nav class="settings-nav">
           <button class="settings-nav-btn active" data-tab="empresa">🏢 <span data-i18n="settings.tabs.company">Empresa</span></button>
           <button class="settings-nav-btn" data-tab="marca">🎨 <span data-i18n="settings.tabs.brand">Marca</span></button>
           <button class="settings-nav-btn" data-tab="preferencias">⚙️ <span data-i18n="settings.tabs.prefs">Preferências</span></button>
           <button class="settings-nav-btn" data-tab="notificacoes">🔔 <span data-i18n="settings.tabs.notifs">Notificações</span></button>
           <button class="settings-nav-btn" data-tab="equipa">👥 <span data-i18n="settings.tabs.team">Equipa</span></button>
           <button class="settings-nav-btn" data-tab="assinatura">💳 <span data-i18n="settings.tabs.sub">Assinatura</span></button>
-        </aside>
+        </nav>
 
         <!-- CONTENT PANELS -->
-        <main class="settings-content">
+        <div class="settings-content">
           
           <!-- TAB: EMPRESA -->
           <div class="settings-panel active" id="tab-empresa">
@@ -429,7 +462,7 @@
             </div>
           </div>
 
-        </main>
+        </div>
       </div>
     </div>
   </div>
@@ -487,11 +520,7 @@ function doLogout() { Auth.logout(); }
   </div>
 </div>
 
-<script src="js/supabase.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/db.js"></script>
-<script src="sidebar.js"></script>
-<script src="js/utils.js"></script>
+<!-- Save Bar scripts removed from here and moved to head/top as needed -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script src="i18n.js"></script>
 
@@ -513,7 +542,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function initI18n() {
   if (window.i18n) {
-    await i18n.init(); 
+    try {
+      await i18n.init(); 
+    } catch(e) {
+      console.warn('[3DZAAP] i18n load failed (likely CORS), proceeding with defaults.');
+    }
   }
 }
 
@@ -521,10 +554,12 @@ async function initPage() {
   const ok = await Auth.requireAuth();
   if (!ok) return;
   _session = await Auth.getSession();
-  if (!_session) return;
+  if (!_session) {
+    console.error('[3DZAAP] Failed to get session');
+    return;
+  }
   
-  // Inicializa o Sidebar global
-  Sidebar.init();
+  // A sidebar já foi iniciada no topo do .layout
   Sidebar.setSession(_session);
   
   loadData();
