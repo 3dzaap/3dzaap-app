@@ -597,6 +597,39 @@ function renderGreeting() {
   document.getElementById('greetingText').textContent = `${period}, ${firstName}! 👋`;
 }
 
+// ── HELPERS ────────────────────────────
+function fmtEur(v) {
+  return parseFloat(v || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+}
+
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  if (start === end) { obj.textContent = fmtEur(end); return; }
+  
+  const range = end - start;
+  let current = start;
+  const increment = end > start ? 1 : -1;
+  const stepTime = Math.abs(Math.floor(duration / range));
+  
+  const timer = setInterval(() => {
+    current += (range / (duration / 16)); // ~60fps
+    if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
+      obj.textContent = fmtEur(end);
+      clearInterval(timer);
+    } else {
+      obj.textContent = fmtEur(current);
+    }
+  }, 16);
+}
+
+function escH(t){
+  if(!t) return '';
+  const div = document.createElement('div');
+  div.textContent = t;
+  return div.innerHTML;
+}
+
 // ── BANNER ─────────────────────────────
 function renderBanner() {
   const banner = document.getElementById('subBanner');
@@ -866,10 +899,10 @@ function renderStats() {
   const alertFils = state.filaments.filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
-  // Update Financial Values
-  document.getElementById('statRevenue').textContent = fmtEur(totalRevenue);
-  document.getElementById('statPaid').textContent    = fmtEur(paidRevenue);
-  document.getElementById('statPending').textContent = fmtEur(pendingRevenue);
+  // Update Financial Values with Animation
+  animateValue('statRevenue', 0, totalRevenue, 1000);
+  animateValue('statPaid', 0, paidRevenue, 1000);
+  animateValue('statPending', 0, pendingRevenue, 1000);
 
   // Revenue badge — vs prev month
   const revPct = prevTotalRevenue > 0 ? Math.round((totalRevenue - prevTotalRevenue) / prevTotalRevenue * 100) : null;

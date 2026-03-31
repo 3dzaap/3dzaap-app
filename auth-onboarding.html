@@ -318,6 +318,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="step-dot" id="dot2">2</div>
         <div class="step-line" id="line2"></div>
         <div class="step-dot" id="dot3">3</div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-dot" id="dot4">4</div>
       </div>
 
       <!-- STEP 1 -->
@@ -455,6 +457,56 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </div>
           </div>
         </div>
+        <button class="btn-primary" id="step3Btn">
+          <span class="btn-label">Quase pronto →</span>
+          <div class="spinner"></div>
+        </button>
+        <div style="text-align:center;margin-top:10px">
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
+        </div>
+      </div>
+
+      <!-- STEP 4 [NEW] -->
+      <div class="step-panel" id="step4">
+        <div class="steps-header">
+          <div class="steps-title">🏗️ O teu equipamento</div>
+          <div class="steps-sub">Opcional — adiciona agora ou depois</div>
+        </div>
+        
+        <div class="field">
+          <label>A tua 1ª Impressora 3D</label>
+          <div class="field-wrap">
+            <span class="ico">🖨️</span>
+            <input type="text" class="inp" id="initPrinterName" placeholder="Ex: Creality Ender 3 / Bambu Lab X1">
+          </div>
+        </div>
+
+        <div style="background:rgba(59,143,212,.06);border-radius:12px;padding:12px 14px;border:1px solid rgba(59,143,212,.1);margin-bottom:16px">
+          <div class="field" style="margin-bottom:8px">
+            <label>O teu 1º Filamento (Cor/Nome)</label>
+            <div class="field-wrap">
+              <span class="ico">🧵</span>
+              <input type="text" class="inp" id="initFilName" placeholder="Ex: PLA Preto / PETG Branco">
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="field" style="margin-bottom:0">
+              <label>Custo (€/kg)</label>
+              <div class="field-wrap">
+                <span class="ico">💰</span>
+                <input type="number" class="inp" id="initFilPrice" value="25" min="1" step="0.5">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>Stock (kg)</label>
+              <div class="field-wrap">
+                <span class="ico">⚖️</span>
+                <input type="number" class="inp" id="initFilStock" value="1" min="0.1" step="0.1">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="field" style="margin-top:4px">
           <label>Assinatura para recibos <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
           <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
@@ -467,14 +519,14 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
               <span style="font-size:.75rem;cursor:pointer;color:var(--muted)" onclick="clearSignature()">✕ Remover</span>
             </div>
           </div>
-          <div style="font-size:.72rem;color:var(--muted);margin-top:5px">PNG ou JPG, fundo transparente recomendado</div>
         </div>
+
         <button class="btn-primary" id="finishBtn">
           <span class="btn-label">🚀 Entrar no dashboard</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(3)">← Voltar</span>
         </div>
       </div>
     </div>
@@ -540,6 +592,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('resetBtn').addEventListener('click',  doReset);
   document.getElementById('step1Btn').addEventListener('click',  () => goStep(2));
   document.getElementById('step2Btn').addEventListener('click',  () => goStep(3));
+  document.getElementById('step3Btn').addEventListener('click',  () => goStep(4));
   document.getElementById('finishBtn').addEventListener('click', finishOnboarding);
 
   // Enter — apenas em campos relevantes, nunca durante onboarding
@@ -652,16 +705,19 @@ function goStep(n) {
 
 function setStep(n) {
   STATE.step = n;
-  for (let i = 1; i <= 3; i++) {
-    document.getElementById('step' + i).classList.toggle('active', i === n);
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step' + i);
+    if(el) el.classList.toggle('active', i === n);
     const d = document.getElementById('dot' + i);
+    if(!d) continue;
     d.classList.remove('active', 'done');
     if      (i < n) { d.classList.add('done');   d.textContent = '✓'; }
     else if (i === n){ d.classList.add('active'); d.textContent = i;   }
     else             { d.textContent = i; }
   }
-  for (let i = 1; i <= 2; i++) {
-    document.getElementById('line' + i).classList.toggle('done', i < n);
+  for (let i = 1; i <= 3; i++) {
+    const l = document.getElementById('line' + i);
+    if(l) l.classList.toggle('done', i < n);
   }
 }
 
@@ -685,6 +741,15 @@ async function finishOnboarding() {
   };
 
   try {
+    const initPrinter = {
+      name: document.getElementById('initPrinterName').value.trim()
+    };
+    const initFilament = {
+      name:  document.getElementById('initFilName').value.trim(),
+      price: document.getElementById('initFilPrice').value,
+      stock: document.getElementById('initFilStock').value
+    };
+
     const result = await Auth.register({
       fname:       STATE.form.fname,
       lname:       STATE.form.lname,
@@ -695,6 +760,8 @@ async function finishOnboarding() {
       plan:        STATE.plan,
       config,
       signature:   STATE.signatureB64 || null,
+      initFilament,
+      initPrinter,
     });
 
     document.getElementById('onboardingPanel').style.display = 'none';

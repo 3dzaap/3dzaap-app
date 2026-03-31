@@ -17,7 +17,7 @@ let _companyCache = null;   // objecto completo — evita queries repetidas
 // ============================================================
 const Auth = {
 
-  async register({ fname, lname, email, pass, companyName, slug, plan, config, signature }) {
+  async register({ fname, lname, email, pass, companyName, slug, plan, config, signature, initFilament, initPrinter }) {
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
       options: { data: { fname, lname } }
@@ -68,6 +68,33 @@ const Auth = {
 
     _companyId    = company.id;
     _companyCache = company;
+
+    // ── INITIAL DATA (OPCIONAL) ───────────────────────────────
+    if (initFilament && initFilament.name) {
+      try {
+        await _sb.from('filaments').insert({
+          company_id: _companyId,
+          name:       initFilament.name,
+          price:      parseFloat(initFilament.price || 25),
+          total:      parseFloat(initFilament.stock || 1),
+          inUse:      0,
+          alerta:     0.5,
+          color:      '#3B8FD4'
+        });
+      } catch(e) { console.warn('[3DZAAP] initFilament err:', e); }
+    }
+
+    if (initPrinter && initPrinter.name) {
+      try {
+        await _sb.from('printers').insert({
+          company_id: _companyId,
+          name:       initPrinter.name,
+          status:     'disponivel',
+          custo_hora: 0.5,
+          created_at: new Date().toISOString()
+        });
+      } catch(e) { console.warn('[3DZAAP] initPrinter err:', e); }
+    }
 
     const needsEmailConfirm = !authData.session;
     return { user: authData.user, company, needsEmailConfirm };
