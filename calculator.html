@@ -1425,7 +1425,7 @@ function _buildClientMsg(){
   ];
 
   if (_portalUrl) {
-    lines.push('', '🔗 *Acompanhe ou aprova aqui:*', _portalUrl);
+    lines.push('', '🔗 *Acompanhe ou aprove aqui:*', _portalUrl);
     if (_portalPin) {
       lines.push('🔑 *Código de acesso:* ' + _portalPin);
     }
@@ -1457,6 +1457,8 @@ async function sendWhatsApp(){
   const orig=btn.innerHTML;
   btn.disabled=true;
   btn.innerHTML='<span>⏳ A gerar link...</span>';
+
+  const waWin = window.open('', '_blank');
 
   try {
     const clientNameVal = (document.getElementById('clientName').value || '').trim();
@@ -1496,10 +1498,18 @@ async function sendWhatsApp(){
 
     const txt=_buildClientMsg();
     const encoded=encodeURIComponent(txt);
-    window.open('https://wa.me/?text='+encoded,'_blank');
+    const waUrl = 'https://wa.me/?text='+encoded;
+
+    if (waWin) {
+      waWin.location.href = waUrl;
+    } else {
+      window.open(waUrl, '_blank');
+    }
+
     showToast('✅ Link de tracking enviado!','ok');
   } catch(err) {
     console.error(err);
+    if (waWin) waWin.close();
     showToast('Erro ao gerar link de tracking.','err');
   } finally {
     btn.disabled=false;
