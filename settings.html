@@ -46,21 +46,31 @@
   display: flex; 
   align-items: center; 
   gap: 10px; 
-  padding: 10px 18px; 
+  padding: 12px 20px; 
   border-radius: 12px; 
   border: none; 
   background: transparent; 
   color: var(--muted); 
   font-family: var(--f), var(--font); 
-  font-size: 0.88rem; 
+  font-size: 0.9rem; 
   font-weight: 700; 
   cursor: pointer; 
-  transition: all 0.2s; 
+  transition: all 0.25s var(--ease); 
   white-space: nowrap;
-  user-select: none;
+  position: relative;
 }
 .settings-nav-btn:hover { background: var(--blue-g); color: var(--blue); }
-.settings-nav-btn.active { background: var(--blue-g); color: var(--blue); box-shadow: 0 0 0 1.5px var(--blue); }
+.settings-nav-btn.active { background: var(--blue-g); color: var(--blue); }
+.settings-nav-btn.active::after { 
+  content: ''; 
+  position: absolute; 
+  bottom: 0; 
+  left: 20px; 
+  right: 20px; 
+  height: 3px; 
+  background: var(--blue); 
+  border-radius: 10px 10px 0 0; 
+}
 .settings-nav-btn span { font-size: 1rem; pointer-events: none; }
 
 .settings-content { display: flex; flex-direction: column; gap: 24px; padding-bottom: 100px; }
@@ -472,16 +482,24 @@
 <div class="save-bar" id="saveBar">
   <div class="save-bar-msg" id="saveBarMsg">💡 <span data-i18n="settings.save_bar.unsaved">Alterações não guardadas</span></div>
   <div class="save-bar-btns">
-    <button class="btn btn-ghost" onclick="cancelChanges()" data-i18n="common.cancel">Cancelar</button>
-    <button class="btn btn-primary" id="saveBtn" onclick="saveAllChanges()" data-i18n="common.save">💾 Guardar tudo</button>
+    <button class="btn btn-ghost" id="btnDiscard" data-i18n="common.cancel">Cancelar</button>
+    <button class="btn btn-primary" id="btnSaveAll" data-i18n="common.save">💾 Guardar tudo</button>
   </div>
 </div>
 
 <script>
 // Dashboard Bridge Functions for Sidebar.js compatibility
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-function toggleUserMenu() { Sidebar._toggleUserMenu(); }
-function doLogout() { Auth.logout(); }
+function toggleSidebar() { 
+  const side = document.getElementById('sidebar');
+  if (side) side.classList.toggle('open'); 
+}
+function toggleUserMenu() { 
+  const dd = document.getElementById('sidebarUserDropdown');
+  if (dd) dd.classList.toggle('open'); 
+}
+function doLogout() { 
+  Auth.logout(); 
+}
 </script>
 
 <!-- CROP MODAL (Standard UI) -->
@@ -608,8 +626,10 @@ function showSigPreview(src) {
 
 function wireEvents() {
   // Save/Discard
-  document.getElementById('btnSaveAll').addEventListener('click', saveAll);
-  document.getElementById('btnDiscard').addEventListener('click', () => window.location.reload());
+  const bSave = document.getElementById('btnSaveAll');
+  const bDisc = document.getElementById('btnDiscard');
+  if (bSave) bSave.addEventListener('click', saveAll);
+  if (bDisc) bDisc.addEventListener('click', () => window.location.reload());
 
   // Input tracking
   document.querySelectorAll('.form-input, .form-select, input[type="checkbox"], input[type="radio"]').forEach(el => {
