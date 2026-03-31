@@ -623,6 +623,7 @@ function loadData() {
   const theme = cfg.theme || 'light';
   document.querySelector(`input[name="prefTheme"][value="${theme}"]`).checked = true;
 
+  // logo_url comes from companies.logo_url column (Opção B)
   if (_session.logo_url) showLogoPreview(_session.logo_url);
   if (_session.signature) showSigPreview(_session.signature);
   
