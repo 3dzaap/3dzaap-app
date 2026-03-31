@@ -43,8 +43,6 @@ const Sidebar = (() => {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
         { id: 'settings',    i18nKey: 'nav.settings_short', href: 'settings.html',    icon: '⚙️', label: 'Configurações', lockId: 'navLockSettings' },
-        { id: 'billing',     i18nKey: 'nav.billing', href: '#',                icon: '💳', label: 'Assinatura', muted: true,
-          onclick: "showToast('💳 Assinatura — em breve','');return false;" },
         { id: 'admin',       i18nKey: 'nav.admin', href: 'admin.html',       icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
@@ -90,7 +88,7 @@ const Sidebar = (() => {
   </div>
 
   <div class="sidebar-company">
-    <div class="company-pill">
+    <div class="company-pill" onclick="window.location.href='settings.html?tab=assinatura'" title="Gerir Plano" style="cursor:pointer">
       <div class="company-avatar" id="sidebarCompanyAvatar">—</div>
       <span class="company-name" id="sidebarCompanyName">—</span>
       <span class="company-plan" id="sidebarPlanBadge">—</span>
@@ -104,7 +102,7 @@ const Sidebar = (() => {
   <div class="sidebar-footer">
     <div class="user-dropdown" id="sidebarUserDropdown">
       <a class="dd-item" href="settings.html">⚙️ <span data-i18n="nav.settings_short">Configurações da conta</span></a>
-      <a class="dd-item" href="#" onclick="showToast('💳 Assinatura — em breve','');Sidebar._closeUserMenu();return false;" style="opacity:.6">💳 <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
+      <a class="dd-item" href="settings.html?tab=assinatura">💳 <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
       <a class="dd-item" href="index.html">🌐 <span data-i18n="nav.go_to_lander">Ver landing page</span></a>
       <div class="dd-divider"></div>
       <a class="dd-item danger" onclick="Sidebar._doLogout();return false;">🚪 <span data-i18n="nav.logout">Sair</span></a>

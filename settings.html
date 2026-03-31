@@ -612,6 +612,16 @@ function loadData() {
   
   updateSubTab();
   loadTeam();
+
+  // Deep-linking: ?tab=name
+  setTimeout(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab) {
+      const btn = document.querySelector(`.settings-nav-btn[data-tab="${tab}"]`);
+      if (btn) btn.click();
+    }
+  }, 50);
 }
 
 function showLogoPreview(src) {
