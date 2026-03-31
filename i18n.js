@@ -6,7 +6,7 @@
 const i18n = {
     currentLocale: localStorage.getItem('3dzaap_lang') || 'pt-PT',
     translations: {},
-    supportedLocales: ['pt-PT', 'pt-BR', 'en', 'es'],
+    supportedLocales: ['pt-PT', 'pt-BR', 'en', 'es', 'en-GB'],
 
     async init() {
         // Fallback for old 'pt' or 'br' codes
@@ -63,18 +63,11 @@ const i18n = {
             console.warn(`Locale ${locale} not supported`);
             return;
         }
-        // Early update for reactive components (like pricing)
-        this.currentLocale = locale;
+        
+        // Save the new locale and reload the page to ensure all JS-rendered
+        // modules perfectly catch the new locale translations
         localStorage.setItem('3dzaap_lang', locale);
-        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: locale } }));
-
-        try {
-            await this.loadTranslations(locale);
-            this.translatePage();
-        } catch(e) {
-            console.warn('[3DZAAP] Dynamic translation load failed, but locale event dispatched.');
-        }
-        this.updateLanguageSwitcherUI();
+        window.location.reload();
     },
 
     async switchLanguage(locale) {
@@ -82,7 +75,7 @@ const i18n = {
     },
 
     updateLanguageSwitcherUI() {
-        const switchers = document.querySelectorAll('.lang-select');
+        const switchers = document.querySelectorAll('.lang-select, .lang-select-mini, #sidebarLangSelect');
         switchers.forEach(s => {
             s.value = this.currentLocale;
         });

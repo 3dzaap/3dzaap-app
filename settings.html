@@ -434,11 +434,21 @@
                 </div>
               </div>
 
+              <div class="billing-cycle-wrap">
+                <div class="billing-cycle-switch">
+                  <button class="btn-cycle active" id="btn-monthly" onclick="setBillingCycle('monthly')" data-i18n="pricing.monthly">Mensal</button>
+                  <button class="btn-cycle" id="btn-annual" onclick="setBillingCycle('annual')" data-i18n="pricing.annual">Anual</button>
+                </div>
+              </div>
+
               <div class="plans-grid">
                 <!-- STARTER -->
                 <div class="plan-card" id="card-starter">
                   <div class="plan-name" data-i18n="pricing.starter.name">Starter</div>
-                  <div class="plan-price"><span id="price-starter-symbol">€</span><span id="price-starter-val">9.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span></div>
+                  <div class="plan-price">
+                    <span id="price-starter-symbol">€</span><span id="price-starter-val">9.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    <div id="price-starter-total" class="price-total-hint" style="display:none">Total: € 118.80/ano</div>
+                  </div>
                   <ul class="plan-features">
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora</span></li>
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Filamentos</span></li>
@@ -449,7 +459,10 @@
                 <!-- PRO -->
                 <div class="plan-card" id="card-pro">
                   <div class="plan-name" data-i18n="pricing.pro.name">Pro</div>
-                  <div class="plan-price"><span id="price-pro-symbol">€</span><span id="price-pro-val">19.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span></div>
+                  <div class="plan-price">
+                    <span id="price-pro-symbol">€</span><span id="price-pro-val">19.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    <div id="price-pro-total" class="price-total-hint" style="display:none">Total: € 238.80/ano</div>
+                  </div>
                   <ul class="plan-features">
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos</span></li>
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos / OS</span></li>
@@ -460,7 +473,10 @@
                 <!-- BUSINESS -->
                 <div class="plan-card" id="card-business">
                   <div class="plan-name" data-i18n="pricing.business.name">Business</div>
-                  <div class="plan-price">39.90<span class="unit" data-i18n="pricing.per_month">€/mês</span></div>
+                  <div class="plan-price">
+                    <span id="price-business-symbol">€</span><span id="price-business-val">39.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    <div id="price-business-total" class="price-total-hint" style="display:none">Total: € 478.80/ano</div>
+                  </div>
                   <ul class="plan-features">
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.1">Módulo Financeiro</span></li>
                     <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.2">Branding</span></li>
@@ -768,10 +784,20 @@ function updateSubTab() {
   document.getElementById('currPlanLabel').textContent = plan.toUpperCase();
 }
 
+let _billingCycle = 'monthly';
+
+function setBillingCycle(cycle) {
+  _billingCycle = cycle;
+  document.getElementById('btn-monthly').classList.toggle('active', cycle === 'monthly');
+  document.getElementById('btn-annual').classList.toggle('active', cycle === 'annual');
+  renderPricing();
+}
+
 function renderPricing(locale) {
   const lang = locale || localStorage.getItem('3dzaap_lang') || 'pt-PT';
   const baseStarter = 9.90;
   const basePro = 19.90;
+  const baseBusiness = 39.90;
   
   let multiplier = 1;
   let symbol = '€';
@@ -781,15 +807,44 @@ function renderPricing(locale) {
     symbol = 'R$';
   } else if (lang === 'en') {
     symbol = '$';
+  } else if (lang === 'en-GB') {
+    symbol = '£';
   }
   
+  const isAnnual = _billingCycle === 'annual';
   const starterFinal = (baseStarter * multiplier).toFixed(2);
   const proFinal = (basePro * multiplier).toFixed(2);
-  
+  const businessFinal = (baseBusiness * multiplier).toFixed(2);
+
+  // Update Main Prices
   document.getElementById('price-starter-symbol').textContent = symbol;
   document.getElementById('price-starter-val').textContent = starterFinal;
   document.getElementById('price-pro-symbol').textContent = symbol;
   document.getElementById('price-pro-val').textContent = proFinal;
+  document.getElementById('price-business-symbol').textContent = symbol;
+  document.getElementById('price-business-val').textContent = businessFinal;
+
+  // Update Annual Hints (Total)
+  const starterTotal = (baseStarter * multiplier * 12).toFixed(2);
+  const proTotal = (basePro * multiplier * 12).toFixed(2);
+  const businessTotal = (baseBusiness * multiplier * 12).toFixed(2);
+  
+  const starterHint = document.getElementById('price-starter-total');
+  const proHint = document.getElementById('price-pro-total');
+  const businessHint = document.getElementById('price-business-total');
+  
+  if (isAnnual) {
+    starterHint.style.display = 'block';
+    starterHint.textContent = `Total: ${symbol} ${starterTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+    proHint.style.display = 'block';
+    proHint.textContent = `Total: ${symbol} ${proTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+    businessHint.style.display = 'block';
+    businessHint.textContent = `Total: ${symbol} ${businessTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+  } else {
+    starterHint.style.display = 'none';
+    proHint.style.display = 'none';
+    businessHint.style.display = 'none';
+  }
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }

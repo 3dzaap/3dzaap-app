@@ -760,17 +760,25 @@ body {
    22. MOBILE — SIDEBAR TOGGLE
    ================================================================ */
 
-/* Sidebar Lang Switcher (Global) */
-.sidebar-logo { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 8px; margin-bottom: 24px; }
-.sidebar-lang { position: relative; }
+/* Sidebar Controls (Theme + Lang) */
+.sidebar-logo { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px; margin-bottom: 24px; }
+.sidebar-ctrls { display: flex; align-items: center; gap: 6px; }
+
+.theme-toggle-mini {
+  background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px;
+  color: #fff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s var(--ease); outline: none;
+}
+.theme-toggle-mini:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
+
 .lang-select-mini {
   background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px;
-  color: var(--subtle); font-size: 0.68rem; font-weight: 800; padding: 4px 8px; outline:none;
+  color: var(--subtle); font-size: 0.68rem; font-weight: 800; padding: 0 6px; height: 32px; outline: none;
   cursor: pointer; transition: all 0.2s var(--ease); font-family: var(--f);
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 .lang-select-mini:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); color: #fff; }
-.dark-mode .lang-select-mini { background: rgba(0,0,0,0.15); }
+.dark-mode .theme-toggle-mini, .dark-mode .lang-select-mini { background: rgba(0,0,0,0.2); }
 
 .mob-toggle {
   display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
@@ -787,6 +795,24 @@ body {
 /* ================================================================
    23. ANIMATIONS
    ================================================================ */
+
+/* Billing Cycle Toggle & Hints */
+.billing-cycle-wrap { display: flex; justify-content: center; margin-bottom: 24px; animation: fadeIn .6s var(--ease) both; }
+.billing-cycle-switch { 
+  display: flex; background: var(--bg-input); padding: 4px; border-radius: 12px; 
+  border: 1.5px solid var(--border); box-shadow: var(--sh-sm);
+}
+.btn-cycle {
+  padding: 8px 24px; border-radius: 9px; cursor: pointer; border: none; background: transparent;
+  color: var(--muted); font-size: 0.85rem; font-weight: 700; transition: all 0.2s var(--ease);
+}
+.btn-cycle.active { background: var(--white); color: var(--blue); box-shadow: var(--sh); transform: scale(1.02); }
+.dark-mode .btn-cycle.active { background: var(--blue); color: #fff; }
+
+.price-total-hint {
+  font-size: 0.72rem; color: var(--muted); font-weight: 600; margin-top: 4px;
+  animation: fadeIn .3s var(--ease) both; opacity: 0.8;
+}
 
 @keyframes fadeSlide {
   from { opacity: 0; transform: translateY(16px); }

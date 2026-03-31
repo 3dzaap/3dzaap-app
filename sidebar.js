@@ -85,12 +85,14 @@ const Sidebar = (() => {
         <span class="b3d">3D</span><span class="bzp">ZAAP</span>
       </div>
     </a>
-    <div class="sidebar-lang">
-      <select class="lang-select-mini" onchange="i18n.setLanguage(this.value)">
+    <div class="sidebar-ctrls">
+      <button class="theme-toggle-mini" id="sidebarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema">🌙</button>
+      <select id="sidebarLangSelect" class="lang-select-mini" onchange="window.i18n && window.i18n.setLanguage(this.value)">
         <option value="en">EN</option>
         <option value="pt-BR">BR</option>
         <option value="pt-PT">PT</option>
         <option value="es">ES</option>
+        <option value="en-GB">UK</option>
       </select>
     </div>
   </div>
@@ -140,6 +142,7 @@ const Sidebar = (() => {
     if (existing) existing.remove();
 
     layout.insertAdjacentHTML('afterbegin', _buildHTML());
+    _syncUI();
 
     // Bind global click to close user menu
     document.addEventListener('click', e => {
@@ -247,6 +250,20 @@ const Sidebar = (() => {
   }
 
   // ── USER MENU ─────────────────────────────────────────────
+  function _syncUI() {
+    if (window.i18n) i18n.updateLanguageSwitcherUI();
+    const isDark = document.body.classList.contains('dark-mode');
+    const btn = document.getElementById('sidebarThemeToggle');
+    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+  }
+
+  function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('3dzaap_theme', isDark ? 'dark' : 'light');
+    const btn = document.getElementById('sidebarThemeToggle');
+    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+  }
+
   function _toggleUserMenu() {
     const dd = document.getElementById('sidebarUserDropdown');
     const ch = document.getElementById('sidebarUserChevron');
@@ -277,7 +294,7 @@ const Sidebar = (() => {
   }
 
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, _toggleUserMenu, _closeUserMenu, _doLogout, PLAN_FEATURES, PLAN_LIMITS };
+  return { init, setSession, toggle, close, _toggleUserMenu, _closeUserMenu, _doLogout, toggleTheme, PLAN_FEATURES, PLAN_LIMITS };
 
 })();
 
