@@ -75,7 +75,7 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .nav .wrap{display:flex;align-items:center;justify-content:space-between}
 .nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
 .nlogo img{height:40px;width:40px;border-radius:10px}
-.nlogo span{font-size:1.4rem;font-weight:900;color:var(--black)}
+.nlogo span{font-size:1.4rem;font-weight:900}
 .nlinks{display:flex;align-items:center;gap:8px}
 .nlinks a{padding:8px 16px;border-radius:var(--r);color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:600;transition:all 0.2s}
 .nlinks a:hover{color:var(--blue);background:var(--blue-g)}
@@ -399,7 +399,7 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
           <li class="pfeature" style="font-weight:700;color:var(--dark)"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos (CRM)</span></li>
           <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.2">WhatsApp Tracking</span></li>
           <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos e OS Dinâmicos</span></li>
-          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.4">Fotos das Peças</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.pro.features.4">Portal do Cliente</span></li>
         </ul>
         <a href="auth-onboarding.html?mode=signup&plan=pro" class="btn btn-p pbtn" data-i18n="pricing.pro.cta">Escolher Pro</a>
       </div>
@@ -492,27 +492,50 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
 
 <script src="i18n.js"></script>
 <script>
-// Pricing toggle logic
-function tbill() {
-  const isAnn = document.getElementById('btog').checked;
-  const s = document.getElementById('sp');
-  const p = document.getElementById('pp');
-  const b = document.getElementById('bp');
-  
-  if (isAnn) {
-    s.innerText = "7.90";
-    p.innerText = "15.90";
-    b.innerText = "31.90";
-    document.getElementById('l-ann').classList.add('on');
-    document.getElementById('l-mon').classList.remove('on');
-  } else {
-    s.innerText = "9.90";
-    p.innerText = "19.90";
-    b.innerText = "39.90";
-    document.getElementById('l-mon').classList.add('on');
-    document.getElementById('l-ann').classList.remove('on');
-  }
+// ── PRICING — locale-aware ──────────────────────────────────
+const PRICES = {
+  monthly: { starter: 9.90,  pro: 19.90, business: 39.90 },
+  annual:  { starter: 7.90,  pro: 15.90, business: 31.90 }
+};
+
+const LOCALE_FMT = {
+  'pt-PT': { sym: '€', mult: 1,    code: 'EUR' },
+  'es':    { sym: '€', mult: 1,    code: 'EUR' },
+  'en':    { sym: '$', mult: 1,    code: 'USD' },
+  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL' }
+};
+
+function _updatePricingDisplay() {
+  const isAnn = document.getElementById('btog')?.checked;
+  const period = isAnn ? 'annual' : 'monthly';
+  const locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const fmt = LOCALE_FMT[locale] || LOCALE_FMT['pt-PT'];
+
+  // Toggle annual/monthly label
+  document.getElementById('l-ann')?.classList.toggle('on', isAnn);
+  document.getElementById('l-mon')?.classList.toggle('on', !isAnn);
+
+  // Update currency symbols
+  ['curr-s', 'curr-p', 'curr-b'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmt.sym;
+  });
+
+  // Update amounts
+  const p = PRICES[period];
+  const fmt2 = v => (v * fmt.mult).toFixed(2);
+
+  const sp = document.getElementById('sp'); if (sp) sp.textContent = fmt2(p.starter);
+  const pp = document.getElementById('pp'); if (pp) pp.textContent = fmt2(p.pro);
+  const bp = document.getElementById('bp'); if (bp) bp.textContent = fmt2(p.business);
 }
+
+function tbill() { _updatePricingDisplay(); }
+
+// Re-run when language changes
+window.addEventListener('languageChanged', () => _updatePricingDisplay());
+// Run on load
+document.addEventListener('DOMContentLoaded', () => _updatePricingDisplay());
 
 // Scroll Animation (Intersection Observer)
 const obs = new IntersectionObserver((ents) => {
