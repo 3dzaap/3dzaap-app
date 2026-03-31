@@ -118,68 +118,6 @@ const Sidebar = (() => {
 </aside>`;
   }
 
-  // ── TOPBAR GLOBAL CONTROLS ────────────────────────────────
-  // Injected once into every .topbar — theme toggle + lang select + help popover
-  function _injectTopbarControls() {
-    document.querySelectorAll('.topbar').forEach(tb => {
-      if (tb.querySelector('.global-ctrls')) return; // already injected
-
-      const locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-      const isDark  = document.documentElement.getAttribute('data-theme') === 'dark';
-      const themeIcon = isDark ? '☀️' : '🌙';
-
-      const opts = ['pt-PT','pt-BR','en','es','en-GB']
-        .map(v => `<option value="${v}"${v === locale ? ' selected' : ''}>${
-          ({  'pt-PT':'🇵🇹 PT','pt-BR':'🇧🇷 BR','en':'🇺🇸 EN','es':'🇪🇸 ES','en-GB':'🇬🇧 UK' }[v] || v)
-        }</option>`)
-        .join('');
-
-      tb.insertAdjacentHTML('beforeend', `
-        <div class="global-ctrls" style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-          <button id="topbarThemeToggle"
-            style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:1rem;line-height:1;display:flex;align-items:center;"
-            title="Alternar Tema"
-            onclick="Sidebar.toggleTheme()">${themeIcon}</button>
-          <select id="topbarLangSelect"
-            style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:8px;padding:5px 8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:var(--f,inherit);"
-            onchange="window.i18n && window.i18n.setLanguage(this.value)">${opts}</select>
-          <div style="position:relative;">
-            <button id="topbarHelpBtn"
-              style="background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));color:var(--dark,#1a2332);border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;font-weight:700;"
-              title="Ajuda & Contacto"
-              onclick="Sidebar._toggleHelp(event)">?</button>
-            <div id="topbarHelpPopover" style="display:none;position:absolute;right:0;top:42px;background:var(--bg-card,#fff);border:1.5px solid var(--border,rgba(0,0,0,.1));border-radius:12px;padding:12px;width:220px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:9999;">
-              <div style="font-size:.75rem;font-weight:800;color:var(--muted,#4A5568);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Contacte-nos</div>
-              <a href="https://wa.me/351938925645" target="_blank"
-                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
-                onmouseover="this.style.background='rgba(37,211,102,.1)'" onmouseout="this.style.background='transparent'">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="20" height="20" alt="WhatsApp"> WhatsApp
-              </a>
-              <a href="https://instagram.com/3dzaap" target="_blank"
-                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
-                onmouseover="this.style.background='rgba(225,48,108,.1)'" onmouseout="this.style.background='transparent'">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="20" height="20" alt="Instagram"> @3dzaap
-              </a>
-              <a href="mailto:suporte@3dzaap.com"
-                style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;text-decoration:none;color:var(--dark,#1a2332);font-size:.85rem;font-weight:600;transition:background .15s;"
-                onmouseover="this.style.background='rgba(59,143,212,.1)'" onmouseout="this.style.background='transparent'">
-                <span style="font-size:1.2rem;">✉️</span> suporte@3dzaap.com
-              </a>
-            </div>
-          </div>
-        </div>
-      `);
-    });
-
-    // Close help popover on outside click
-    document.addEventListener('click', e => {
-      if (!e.target.closest('#topbarHelpBtn') && !e.target.closest('#topbarHelpPopover')) {
-        const pop = document.getElementById('topbarHelpPopover');
-        if (pop) pop.style.display = 'none';
-      }
-    });
-  }
-
   // ── INJECT INTO DOM ───────────────────────────────────────
   function init() {
     const layout = document.querySelector('.layout');
@@ -192,9 +130,8 @@ const Sidebar = (() => {
     if (existing) existing.remove();
 
     layout.insertAdjacentHTML('afterbegin', _buildHTML());
-    _injectTopbarControls();
 
-    // Apply current theme icon
+    // Sync theme button icon (button is hardcoded in each page's topbar HTML)
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const btn = document.getElementById('topbarThemeToggle');
     if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
