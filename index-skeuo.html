@@ -10,34 +10,34 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --leather-dark:  #2c1810;
-    --leather-mid:   #5c3320;
-    --leather-light: #8b4513;
+    --leather-dark:  #0c1824;
+    --leather-mid:   #1C2B3A;
+    --leather-light: #243548;
     --linen:         #f5f0e8;
     --linen-dark:    #e8ddc8;
     --linen-border:  #c8b89a;
-    --ink:           #2c2416;
-    --ink-faint:     #6b5a42;
+    --ink:           #1C2B3A;
+    --ink-faint:     #4a6070;
     --metal-light:   #e8e8e8;
     --metal-mid:     #c0c0c0;
     --metal-dark:    #888;
-    --green-felt:    #2d5a1b;
-    --green-felt2:   #3a7524;
-    --amber:         #d4850a;
-    --amber-light:   #f0a020;
+    --green-felt:    #1a3a50;
+    --green-felt2:   #243f58;
+    --amber:         #E8792A;
+    --amber-light:   #f09040;
     --red:           #8b1a1a;
-    --gold:          #c8a040;
-    --gold-light:    #e8c060;
+    --gold:          #4BA3CF;
+    --gold-light:    #7dd3f0;
   }
 
   body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
-    background-color: #1a0e08;
+    background-color: #080e14;
     background-image:
-      repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(255,255,255,.015) 24px, rgba(255,255,255,.015) 25px),
-      repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(255,255,255,.015) 24px, rgba(255,255,255,.015) 25px),
-      linear-gradient(160deg, #2c1810 0%, #1a0e08 40%, #0d0805 100%);
+      repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(75,163,207,.02) 24px, rgba(75,163,207,.02) 25px),
+      repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(75,163,207,.02) 24px, rgba(75,163,207,.02) 25px),
+      linear-gradient(160deg, #1C2B3A 0%, #0c1824 40%, #060d14 100%);
     color: var(--ink);
     overflow-x: hidden;
   }
@@ -56,12 +56,12 @@
   /* ── Sidebar — Polished wood ── */
   .sidebar {
     width: 230px; flex-shrink: 0;
-    background: linear-gradient(180deg, #3d2010 0%, #2c1810 30%, #1e1008 100%);
+    background: linear-gradient(180deg, #1e3040 0%, #1C2B3A 30%, #0c1824 100%);
     border-right: 3px solid;
     border-image: linear-gradient(180deg, var(--gold), var(--leather-mid), var(--gold)) 1;
     display: flex; flex-direction: column; gap: 2px;
     padding: 20px 14px;
-    box-shadow: 4px 0 20px rgba(0,0,0,.5), inset -2px 0 6px rgba(255,200,80,.05);
+    box-shadow: 4px 0 20px rgba(0,0,0,.5), inset -2px 0 6px rgba(75,163,207,.05);
   }
 
   .brand {
@@ -70,19 +70,18 @@
     margin-bottom: 10px;
   }
   .brand-logo {
-    width: 44px; height: 44px; border-radius: 8px;
-    background: linear-gradient(145deg, var(--gold-light), var(--gold), var(--amber));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 800; color: var(--leather-dark);
+    width: 48px; height: 48px; border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgba(75,163,207,.4);
     box-shadow:
-      0 2px 0 rgba(255,255,255,.3) inset,
+      0 2px 0 rgba(255,255,255,.15) inset,
       0 -2px 0 rgba(0,0,0,.3) inset,
       2px 4px 10px rgba(0,0,0,.5);
     margin-bottom: 8px;
-    letter-spacing: -.5px;
   }
+  .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
   .brand-name { font-size: 1.05rem; font-weight: 700; color: var(--gold-light); letter-spacing: .5px; }
-  .brand-sub  { font-size: .62rem; color: var(--gold); opacity: .7; letter-spacing: 1.5px; text-transform: uppercase; }
+  .brand-sub  { font-size: .62rem; color: rgba(75,163,207,.8); opacity: .9; letter-spacing: 1.5px; text-transform: uppercase; }
 
   .nav-item {
     display: flex; align-items: center; gap: 10px;
@@ -163,12 +162,12 @@
     background:
       repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
       linear-gradient(145deg, var(--green-felt2), var(--green-felt));
-    border: 3px solid var(--leather-light);
+    border: 3px solid var(--gold);
     border-radius: 8px;
     box-shadow:
-      0 2px 0 rgba(255,255,255,.08) inset,
+      0 2px 0 rgba(75,163,207,.08) inset,
       0 4px 20px rgba(0,0,0,.3);
-    color: #d4e8c8;
+    color: #c8e4f0;
   }
 
   /* ── Stats row ── */
@@ -219,7 +218,7 @@
   }
   .gauge svg { transform: rotate(-90deg); }
   .gauge-bg   { fill: none; stroke: rgba(0,0,0,.08); stroke-width: 10; }
-  .gauge-fg   { fill: none; stroke: var(--green-felt2); stroke-width: 10; stroke-linecap: round;
+  .gauge-fg   { fill: none; stroke: var(--gold); stroke-width: 10; stroke-linecap: round;
                 stroke-dasharray: 326; stroke-dashoffset: 60; transition: stroke-dashoffset 1s ease; }
   .gauge-num  {
     position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -304,7 +303,7 @@
     padding: 7px 16px; border-radius: 4px;
     font-size: .72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
     background: linear-gradient(145deg, var(--gold-light), var(--amber));
-    color: var(--leather-dark); z-index: 999;
+    color: #0c1824; z-index: 999;
     box-shadow: 0 2px 0 rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.4) inset;
   }
 
@@ -322,7 +321,7 @@
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="brand">
-      <div class="brand-logo">3D</div>
+      <div class="brand-logo"><img src="logo.jpg" alt="3DZAAP"></div>
       <div class="brand-name">3DZAAP</div>
       <div class="brand-sub">Studio Pro</div>
     </div>

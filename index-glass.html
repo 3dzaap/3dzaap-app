@@ -10,18 +10,20 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --blue:   #3b8fd4;
-    --purple: #8b5cf6;
-    --pink:   #ec4899;
-    --cyan:   #06b6d4;
+    --blue:   #4BA3CF;
+    --orange: #E8792A;
+    --navy:   #1C2B3A;
+    --navy2:  #243548;
+    --cyan:   #7dd3f0;
     --green:  #22c55e;
-    --orange: #f97316;
+    --purple: #5b8dd9;
+    --pink:   #e8792a;
   }
 
   body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
+    background: linear-gradient(135deg, #0c1824 0%, #1C2B3A 40%, #0a111a 100%);
     overflow-x: hidden;
     color: #fff;
   }
@@ -36,9 +38,9 @@
     pointer-events: none;
     z-index: 0;
   }
-  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #8b5cf6, #3b8fd4); top: -120px; left: -100px; }
-  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #ec4899, #f97316); bottom: -80px; right: -80px; animation-delay: -6s; }
-  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #06b6d4, #22c55e); bottom: 30%; right: 25%; animation-delay: -3s; }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--navy2), var(--blue)); top: -120px; left: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, var(--orange), #c05010); bottom: -80px; right: -80px; animation-delay: -6s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, var(--blue), var(--cyan)); bottom: 30%; right: 25%; animation-delay: -3s; }
 
   @keyframes drift {
     from { transform: translateY(0) scale(1); }
@@ -73,9 +75,9 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(28,43,58,0.55);
     backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(75,163,207,.15);
   }
 
   .brand {
@@ -84,14 +86,17 @@
   }
   .brand-logo {
     width: 38px; height: 38px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--purple), var(--blue));
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,.25);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 800; color: #fff;
   }
+  .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
   .brand-name { font-weight: 800; font-size: 1.1rem; letter-spacing: .5px; }
   .brand-badge {
-    font-size: .6rem; background: rgba(139,92,246,.3); border: 1px solid rgba(139,92,246,.5);
-    border-radius: 4px; padding: 1px 5px; color: #c4b5fd; font-weight: 600;
+    font-size: .6rem;
+    background: linear-gradient(135deg, rgba(75,163,207,.35), rgba(232,121,42,.2));
+    border: 1px solid rgba(75,163,207,.4);
+    border-radius: 4px; padding: 1px 5px; color: var(--cyan); font-weight: 700;
   }
 
   .nav-item {
@@ -103,8 +108,8 @@
   }
   .nav-item:hover { background: rgba(255,255,255,.1); color: #fff; }
   .nav-item.active {
-    background: linear-gradient(135deg, rgba(139,92,246,.35), rgba(59,143,212,.35));
-    border: 1px solid rgba(139,92,246,.4);
+    background: linear-gradient(135deg, rgba(75,163,207,.35), rgba(232,121,42,.2));
+    border: 1px solid rgba(75,163,207,.4);
     color: #fff;
   }
   .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
@@ -129,7 +134,7 @@
   .topbar-right { display: flex; align-items: center; gap: 12px; }
   .avatar {
     width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--purple), var(--pink));
+    background: linear-gradient(135deg, var(--orange), var(--blue));
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .8rem;
     border: 2px solid rgba(255,255,255,.25);
@@ -162,9 +167,9 @@
     border-radius: 24px 24px 0 0;
   }
   .stat-card.blue::before  { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
-  .stat-card.purple::before{ background: linear-gradient(90deg, var(--purple), var(--pink)); }
+  .stat-card.purple::before{ background: linear-gradient(90deg, var(--orange), #c05010); }
   .stat-card.green::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
-  .stat-card.orange::before{ background: linear-gradient(90deg, var(--orange), var(--pink)); }
+  .stat-card.orange::before{ background: linear-gradient(90deg, var(--orange), var(--blue)); }
 
   .stat-icon {
     width: 40px; height: 40px; border-radius: 10px;
@@ -195,15 +200,17 @@
   .health-title  { font-weight: 700; font-size: 1rem; }
   .health-score  {
     font-size: 3rem; font-weight: 800;
-    background: linear-gradient(135deg, var(--green), var(--cyan));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .health-bar-track {
     height: 8px; background: rgba(255,255,255,.07); border-radius: 8px; overflow: hidden; margin: 10px 0 16px;
   }
   .health-bar-fill {
     height: 100%; width: 82%;
-    background: linear-gradient(90deg, var(--green), var(--cyan));
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
     border-radius: 8px;
     animation: growBar 1.2s cubic-bezier(.4,0,.2,1) both;
   }
@@ -219,7 +226,11 @@
   .orders-card { padding: 24px; }
   .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .card-title  { font-weight: 700; font-size: .95rem; }
-  .card-view-all { font-size: .75rem; color: rgba(139,92,246,.8); cursor: pointer; font-weight: 600; }
+  .card-view-all {
+    font-size: .75rem; color: var(--cyan); cursor: pointer; font-weight: 700;
+    background: rgba(75,163,207,.12); border: 1px solid rgba(75,163,207,.3);
+    padding: 3px 10px; border-radius: 20px;
+  }
 
   .order-row {
     display: flex; align-items: center; gap: 12px;
@@ -244,7 +255,7 @@
     padding: 18px 14px; text-align: center; cursor: pointer;
     transition: transform .2s, box-shadow .2s;
   }
-  .action-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(139,92,246,.25); }
+  .action-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(75,163,207,.25); }
   .action-ic  { font-size: 1.5rem; margin-bottom: 8px; }
   .action-lbl { font-size: .78rem; font-weight: 600; }
   .action-sub { font-size: .68rem; color: rgba(255,255,255,.4); margin-top: 2px; }
@@ -254,8 +265,8 @@
     position: fixed; bottom: 24px; right: 24px;
     padding: 8px 16px; border-radius: 20px;
     font-size: .75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-    background: rgba(139,92,246,.3); border: 1px solid rgba(139,92,246,.5);
-    color: #c4b5fd; z-index: 999;
+    background: rgba(75,163,207,.3); border: 1px solid rgba(75,163,207,.5);
+    color: var(--cyan); z-index: 999;
   }
 
   @media (max-width: 900px) {
@@ -277,7 +288,7 @@
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="brand">
-      <div class="brand-logo">3D</div>
+      <div class="brand-logo"><img src="logo.jpg" alt="3DZAAP Logo"></div>
       <div>
         <div class="brand-name">3DZAAP</div>
         <div class="brand-badge">GLASS UI</div>
@@ -317,7 +328,7 @@
     <div class="topbar glass">
       <div class="topbar-title">Dashboard</div>
       <div class="topbar-right">
-        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+        <div class="notif-btn">🔔<div class="notif-dot" style="background:var(--orange)"></div></div>
         <div class="avatar">BA</div>
       </div>
     </div>
