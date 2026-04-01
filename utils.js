@@ -39,6 +39,11 @@ function loadCfg(session) {
     _cfg._currCode   = _cfg.currency;
     var locMap = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
     _cfg._locale     = locMap[_cfg.currency] || 'pt-PT';
+  } else {
+    // Default fallback if no config
+    _cfg._currSymbol = '€';
+    _cfg._currCode   = 'EUR';
+    _cfg._locale     = 'pt-PT';
   }
   _cfg._dateFmt    = _cfg.dateFmt    || 'DD/MM/YYYY';
   _cfg._weightUnit = _cfg.weightUnit || 'g';
@@ -47,30 +52,32 @@ function loadCfg(session) {
 
 // ── FORMATTERS ────────────────────────────────────────────────
 function getCurrencySymbol() {
+  if (_cfg && _cfg._currSymbol) return _cfg._currSymbol;
+  // Fallback to browser lang if no config loaded
   var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  var sym = _cfg && _cfg._currSymbol ? _cfg._currSymbol : null;
-  if (window.forceLocaleCurrency) sym = null;
-  if (!sym) {
-    if (locale === 'pt-BR') return 'R$';
-    if (locale === 'en-GB') return '£';
-    if (locale.startsWith('en')) return '$';
-    return '€';
-  }
-  return sym;
+  if (locale === 'pt-BR') return 'R$';
+  if (locale === 'en-GB') return '£';
+  if (locale.startsWith('en')) return '$';
+  return '€';
 }
 
 function fmtCurrency(v) {
-  var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  var sym = getCurrencySymbol();
-  
-  var loc = (_cfg && _cfg._locale) ? _cfg._locale : locale;
-  if (window.forceLocaleCurrency) {
-    loc = locale;
+  var val = parseFloat(v || 0);
+  var locale = _cfg && _cfg._locale ? _cfg._locale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
+  var code = _cfg && _cfg._currCode ? _cfg._currCode : 'EUR';
+
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(val);
+  } catch (e) {
+    // Fallback manual if Intl fails
+    var sym = getCurrencySymbol();
+    return sym + ' ' + val.toLocaleString(locale, { minimumFractionDigits: 2 });
   }
-  return sym + ' ' + parseFloat(v || 0).toLocaleString(loc, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
 }
 
 // Alias for backward compatibility

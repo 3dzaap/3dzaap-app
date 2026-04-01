@@ -70,9 +70,21 @@ const i18n = {
         window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: this.currentLocale } }));
     },
 
-    getNestedTranslation(key) {
+    /**
+     * Retrieve a nested translation by dot-notation key.
+     * @param {string} key   e.g. 'dash.sub_banner.trial_active'
+     * @param {object} [vars]  optional map of {placeholder: value} to interpolate
+     * @returns {string|null}
+     */
+    getNestedTranslation(key, vars) {
         if (!key) return null;
-        return key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
+        let val = key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
+        if (val && vars && typeof vars === 'object') {
+            for (const [k, v] of Object.entries(vars)) {
+                val = val.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+            }
+        }
+        return val;
     },
 
     /**

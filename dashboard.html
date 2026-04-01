@@ -652,7 +652,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setDate() {
   const now = new Date();
   const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-  document.getElementById('greetingDate').textContent = now.toLocaleDateString('pt-PT', opts);
+  const locale = (window.i18n && window.i18n.currentLocale) || localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  document.getElementById('greetingDate').textContent = now.toLocaleDateString(locale, opts);
 }
 
 // ── LOAD STATE ─────────────────────────
@@ -707,18 +708,25 @@ function renderGreeting() {
 }
 
 // ── HELPERS ────────────────────────────
-function fmtCurrency(v) {
-  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const currencyMap = {
-    'pt-PT': { code: 'EUR', symbol: '€', locale: 'pt-PT' },
-    'pt-BR': { code: 'BRL', symbol: 'R$', locale: 'pt-BR' },
-    'en':    { code: 'USD', symbol: '$', locale: 'en-US' },
-    'es':    { code: 'EUR', symbol: '€', locale: 'es-ES' },
-    'en-GB': { code: 'GBP', symbol: '£', locale: 'en-GB' }
+// fmtCurrency is provided by utils.js (supports EUR, BRL, USD, GBP via _cfg)
+// Fallback for cases where utils.js is not yet loaded:
+if (typeof fmtCurrency === 'undefined') {
+  window.fmtCurrency = function(v) {
+    const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+    const currencyMap = {
+      'pt-PT': { code: 'EUR', locale: 'pt-PT' },
+      'pt-BR': { code: 'BRL', locale: 'pt-BR' },
+      'en':    { code: 'USD', locale: 'en-US' },
+      'es':    { code: 'EUR', locale: 'es-ES' },
+      'en-GB': { code: 'GBP', locale: 'en-GB' }
+    };
+    const cfg = currencyMap[lang] || currencyMap['pt-PT'];
+    try {
+      return new Intl.NumberFormat(cfg.locale, { style: 'currency', currency: cfg.code, minimumFractionDigits: 2 }).format(parseFloat(v || 0));
+    } catch(e) {
+      return parseFloat(v || 0).toFixed(2);
+    }
   };
-  const cfg = currencyMap[lang] || currencyMap['pt-PT'];
-  const num = parseFloat(v || 0).toLocaleString(cfg.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return cfg.symbol + ' ' + num;
 }
 
 function animateValue(id, start, end, duration) {
@@ -757,26 +765,30 @@ function renderBanner() {
   const title = document.getElementById('subTitle');
   const sub = document.getElementById('subSub');
   const plan = state.company.plan;
+  const t = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
   // Check if dismissed this session
   if (sessionStorage.getItem('banner_dismissed')) { banner.style.display='none'; return; }
 
   if (plan === 'trial') {
     const days = state.company.trialDaysLeft ?? 14;
+    const s = days !== 1 ? 's' : '';
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
     icon.textContent = days <= 3 ? '🚨' : '⏰';
-    title.textContent = `Período experimental ativo — ${days} dia${days!==1?'s':''} restante${days!==1?'s':''}`;
-    sub.textContent = 'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar.';
+    title.textContent = t('dash.sub_banner.trial_active', { n: days, s }) ||
+      `Período experimental ativo — ${days} dia${s} restante${s}`;
+    sub.textContent = t('dash.sub_banner.trial_desc') ||
+      'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar.';
   } else if (plan === 'starter') {
     inner.className = 'sub-banner-inner active-banner';
     icon.textContent = '✅';
-    title.textContent = 'Plano Starter activo';
-    sub.textContent = 'Upgrade para Pro ou Business para desbloquear Pedidos e Financeiro.';
+    title.textContent = t('dash.sub_banner.starter_active') || 'Plano Starter activo';
+    sub.textContent   = t('dash.sub_banner.starter_desc') || 'Upgrade para Pro ou Business para desbloquear Pedidos e Financeiro.';
   } else if (plan === 'pro') {
     inner.className = 'sub-banner-inner active-banner';
     icon.textContent = '✅';
-    title.textContent = 'Plano Pro activo';
-    sub.textContent = 'Upgrade para Business para desbloquear o módulo Financeiro.';
+    title.textContent = t('dash.sub_banner.pro_active') || 'Plano Pro activo';
+    sub.textContent   = t('dash.sub_banner.pro_desc') || 'Upgrade para Business para desbloquear o módulo Financeiro.';
   } else if (plan === 'business') {
     banner.style.display = 'none';
     return;
@@ -912,8 +924,7 @@ function calcHealthScore() {
   score += trendScore;
 
   // ── RENDER ──────────────────────────────────────────────────
-  // ── RENDER ──────────────────────────────────────────────────
-  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
+  const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : null;
   const bands = [
     { min:80, label:t('dash.health.bands.80') || 'Negócio saudável 💚',   cls:'score-great', bar:'bar-great', ring:'#22c55e' },
     { min:55, label:t('dash.health.bands.55') || 'Atenção necessária 🟡',  cls:'score-ok',    bar:'bar-ok',    ring:'#f59e0b' },
@@ -969,10 +980,7 @@ function calcHealthScore() {
   const priority = ['bad','warn','ok'];
   insights.sort((a,b) => priority.indexOf(a.t) - priority.indexOf(b.t));
   insightsEl.innerHTML = insights.slice(0,3).map(i => {
-    let msg = t('dash.health.insights.' + i.key) || i.key;
-    if (i.vars) {
-      for (const [k, v] of Object.entries(i.vars)) msg = msg.replace(`{${k}}`, v);
-    }
+    let msg = t('dash.health.insights.' + i.key, i.vars) || i.key;
     return `<div class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${msg}</span></div>`;
   }).join('');
 
@@ -1025,7 +1033,7 @@ function renderStats() {
   animateValue('statPending', 0, pendingRevenue, 1000);
 
   // Revenue badge — vs prev month
-  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
+  const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : null;
   const revPct = prevTotalRevenue > 0 ? Math.round((totalRevenue - prevTotalRevenue) / prevTotalRevenue * 100) : null;
   const revBadge = document.getElementById('revBadge');
   if (revPct !== null) {
@@ -1043,9 +1051,9 @@ function renderStats() {
   const totalPrinters = state.printers.length;
   const onlinePrinters = state.printers.filter(p => p.status === 'operacional').length;
   const efficiencyPct = totalPrinters > 0 ? Math.round((onlinePrinters / totalPrinters) * 100) : 0;
-  
+
   document.getElementById('efficiencyBadge').textContent = `${efficiencyPct}%`;
-  document.getElementById('efficiencyLabel').textContent = `${onlinePrinters}/${totalPrinters} online`;
+  document.getElementById('efficiencyLabel').textContent = t('dash.stats.fleet_online', { online: onlinePrinters, total: totalPrinters }) || `${onlinePrinters}/${totalPrinters} online`;
   document.getElementById('efficiencyBar').style.width = `${efficiencyPct}%`;
   document.getElementById('efficiencyBadge').className = 'stat-badge ' + (efficiencyPct > 80 ? 'badge-up' : efficiencyPct > 50 ? 'badge-neu' : 'badge-down');
 
@@ -1130,9 +1138,11 @@ function renderPrinterAlerts() {
   });
 
   if (!alerts.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">Todas as impressoras OK.<br>Sem alertas de manutenção.</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">${window.i18n.getNestedTranslation('dash.cards.empty_print') || 'Todas as impressoras OK.<br>Sem alertas de manutenção.'}</div></div>`;
     return;
   }
+
+  const tc = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
   el.innerHTML = alerts.map(p => {
     const interval   = parseInt(p.maintIntervalHours) || 0;
@@ -1140,19 +1150,24 @@ function renderPrinterAlerts() {
     const hoursLeft  = interval > 0 ? interval - hoursSince : null;
     let chipClass, chipLabel;
     if (p.status === 'manutencao') {
-      chipClass = 'fil-out'; chipLabel = 'Em manutenção';
+      chipClass = 'fil-out'; chipLabel = tc('dash.cards.status_maint') || 'Em manutenção';
     } else if (p.status === 'inativa') {
-      chipClass = 'fil-low'; chipLabel = 'Inativa';
+      chipClass = 'fil-low'; chipLabel = tc('dash.cards.status_inactive') || 'Inativa';
     } else if (hoursLeft !== null && hoursLeft <= 0) {
-      chipClass = 'fil-out'; chipLabel = 'Manutenção em atraso';
+      chipClass = 'fil-out'; chipLabel = tc('dash.cards.status_maint_overdue') || 'Manutenção em atraso';
     } else {
-      chipClass = 'fil-low'; chipLabel = `Manutenção em ${hoursLeft}h`;
+      chipClass = 'fil-low';
+      chipLabel = tc('dash.cards.status_maint_in', { h: hoursLeft }) || `Manutenção em ${hoursLeft}h`;
     }
+    const typeLabel = p.printerType === 'resina'
+      ? (tc('dash.cards.printer_type_resin') || 'Resina')
+      : (tc('dash.cards.printer_type_fdm') || 'FDM');
+    const hoursLabel = tc('dash.cards.printer_hours_used', { h: p.hoursUsed || 0 }) || `${p.hoursUsed||0}h usadas`;
     return `<div class="fil-item">
       <div style="font-size:1.2rem;flex-shrink:0">🖨️</div>
       <div class="fil-info">
         <div class="fil-name">${escH(p.brand)} ${escH(p.model)}</div>
-        <div class="fil-sub">${p.printerType === 'resina' ? 'Resina' : 'FDM'} · ${p.hoursUsed||0}h usadas</div>
+        <div class="fil-sub">${typeLabel} · ${hoursLabel}</div>
       </div>
       <span class="fil-status ${chipClass}">${chipLabel}</span>
     </div>`;
@@ -1174,11 +1189,15 @@ function renderFilamentAlerts() {
     .slice(0, 6);
 
   if (!alerts.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Sem alertas de stock.<br>O teu inventário está em ordem!</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">${window.i18n.getNestedTranslation('dash.cards.empty_fil') || 'Sem alertas de stock.<br>O teu inventário está em ordem!'}</div></div>`;
     return;
   }
 
-  const statusLabel = { red:'Esgotado', orange:'Stock baixo' };
+  const tc = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
+  const statusLabel = {
+    red:    tc('dash.cards.fil_out')  || 'Esgotado',
+    orange: tc('dash.cards.fil_low')  || 'Stock baixo'
+  };
   const statusClass = { red:'fil-out', orange:'fil-low' };
 
   el.innerHTML = alerts.map(f => {
@@ -1188,11 +1207,12 @@ function renderFilamentAlerts() {
     const newRolls = Math.max(0, total - inUse);
     const hex      = f.colorHex || '#999';
     const name     = f.colorName || f.color || '';
+    const rollsLabel = tc('dash.cards.fil_rolls', { n: newRolls, s: newRolls !== 1 ? 's' : '' }) || `${newRolls} nova${newRolls !== 1 ? 's' : ''}`;
     return `<div class="fil-item">
       <div class="fil-color-dot" style="background:${escH(hex)}"></div>
       <div class="fil-info">
         <div class="fil-name">${escH(f.type||'?')} ${escH(name)}</div>
-        <div class="fil-sub">${escH(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escH(f.variation||'')} · ${newRolls} nova${newRolls!==1?'s':''}</div>
+        <div class="fil-sub">${escH(Array.isArray(f.brand)?f.brand.join(', '):(f.brand||''))} · ${escH(f.variation||'')} · ${rollsLabel}</div>
       </div>
       <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
     </div>`;
@@ -1288,22 +1308,25 @@ function closeGate(e) {
 }
 
 // ── NAVIGATION ─────────────────────────
-const PAGE_TITLES = {
-  dashboard: 'Dashboard',
-  calculator: 'Calculadora',
-  filaments: 'Materiais',
-  orders: 'Pedidos',
-  financial: 'Financeiro',
-  backoffice: 'BackOffice',
-  settings: 'Configurações',
-  billing: 'Assinatura',
-  '3DZAAP': 'App Principal',
-};
+function getPageTitle(page) {
+  const t = window.i18n ? window.i18n.getNestedTranslation.bind(window.i18n) : () => null;
+  const map = {
+    dashboard:  t('nav.home')           || 'Dashboard',
+    calculator: t('nav.calculator')     || 'Calculadora',
+    filaments:  t('nav.materials')      || 'Materiais',
+    orders:     t('nav.orders')         || 'Pedidos',
+    financial:  t('nav.financial')      || 'Financeiro',
+    backoffice: t('nav.backoffice')     || 'BackOffice',
+    settings:   t('nav.settings_short') || 'Configurações',
+    billing:    t('nav.billing')        || 'Assinatura',
+  };
+  return map[page] || page;
+}
 
 function navigate(page) {
   // Feature gate check
   if ((page === 'orders' || page === 'financial') && !canAccess(page)) {
-    handleFeatureClick(page, PAGE_TITLES[page] || page, page === 'orders' ? 'Pro' : 'Business');
+    handleFeatureClick(page, getPageTitle(page), page === 'orders' ? 'Pro' : 'Business');
     return false;
   }
 
@@ -1329,7 +1352,7 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + page);
   if (navEl) navEl.classList.add('active');
-  document.getElementById('topbarTitle').textContent = PAGE_TITLES[page] || page;
+  document.getElementById('topbarTitle').textContent = getPageTitle(page);
 
   closeSidebar();
   return false;
@@ -1356,7 +1379,8 @@ document.addEventListener('click', e => {
 
 async function doLogout() {
   Sidebar._closeUserMenu();
-  showToast('Sessão terminada. Até logo! 👋','ok');
+  const msg = window.i18n ? (window.i18n.getNestedTranslation('nav.logout_toast') || 'Sessão terminada. Até logo! 👋') : 'Sessão terminada. Até logo! 👋';
+  showToast(msg, 'ok');
   setTimeout(() => Auth.logout(), 1000);
 }
 
