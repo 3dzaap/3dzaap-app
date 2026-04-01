@@ -39,13 +39,26 @@ const i18n = {
     translatePage() {
         const elements = document.querySelectorAll('[data-i18n]');
         elements.forEach(el => {
-            const key = el.getAttribute('data-i18n');
+            let key = el.getAttribute('data-i18n');
+            let target = null;
+            
+            // Support [attr]key syntax
+            if (key.startsWith('[')) {
+                const match = key.match(/^\[(.+?)\](.+)$/);
+                if (match) {
+                    target = match[1];
+                    key = match[2];
+                }
+            }
+
             const translation = this.getNestedTranslation(key);
             if (translation) {
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    if (el.placeholder) el.placeholder = translation;
+                if (target) {
+                    el.setAttribute(target, translation);
+                } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    if (el.placeholder !== undefined) el.placeholder = translation;
                 } else if (el.tagName === 'SELECT') {
-                    // Skip — selects manage their own options
+                    // Skip selects
                 } else {
                     el.innerHTML = translation;
                 }
