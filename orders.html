@@ -564,6 +564,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
   }
   // ── Pre-fill from Calculator ──────────────────────────────
+  // Pre-fill from Calculator
   if (new URLSearchParams(window.location.search).get('from') === 'calc') {
     try {
       const raw = sessionStorage.getItem('3dzaap_calc_prefill');
@@ -574,6 +575,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch(e) { console.warn('[3DZAAP] calc prefill error:', e); }
   }
+
+  // Ensure render runs after i18n/cfg
+  let attempt = 0;
+  const iv = setInterval(() => {
+    if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length) {
+      clearInterval(iv);
+      renderOrders();
+      updateStats();
+    }
+    if (++attempt > 20) { clearInterval(iv); renderOrders(); updateStats(); }
+  }, 100);
 });
 
 // ── USER DATA ──────────────────────────
@@ -639,6 +651,28 @@ async function loadData() {
 // ── ORDER NUMBERS ──────────────────────
 function getNextOrderNumber() { lastOrderNumber += 1; return lastOrderNumber; }
 function fmtOrderNum(n) { return 'PED-' + String(n).padStart(4,'0'); }
+
+// Update unit labels based on currency configuration
+function updateCurrencyLabels() {
+  const symbol = getCurrencySymbol();
+  // Weight/Volume units logic (from calculator)
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const weight = (lang === 'pt-BR' || lang === 'pt-PT' || lang === 'es') ? 'g' : 'g';
+  const volume = (lang === 'pt-BR' || lang === 'pt-PT' || lang === 'es') ? 'ml' : 'ml';
+  
+  const el = document.getElementById('weightUnitLabel');
+  if (el) el.textContent = weight + '/' + volume;
+
+  // Header currency symbols
+  ['statPendingVal', 'statPaidVal', 'oGrandTotal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && (el.textContent === '—' || el.textContent === '— 0,00' || el.textContent.includes('R$'))) {
+       // Only update if it looks like a placeholder or old currency
+       const val = parseFloat(el.getAttribute('data-last-val') || 0);
+       el.textContent = fmtCurrency(val);
+    }
+  });
+}
 
 // ── RENDER ORDERS ──────────────────────
 function renderOrders(keepExpandId) {
@@ -714,8 +748,8 @@ function renderOrders(keepExpandId) {
       <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber||'—')}</span></td>
         <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub" data-i18n="${its.length===1?'orders.filters.count_1':'orders.filters.count_n'}" data-i18n-n="${its.length}">${i18n.getNestedTranslation(its.length===1?'orders.filters.count_1':'orders.filters.count_n',{n:its.length})}</div></td>
-        <td><span class="badge bs-${o.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status]==='function'?STATUS_LABELS[o.status]():(STATUS_LABELS[o.status]||o.status)}</span></td>
-        <td><span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?i18n.getNestedTranslation('status.pago'):i18n.getNestedTranslation('status.pendente')}</span></td>
+        <td><span class="badge bs-${o.status || 'orcamento'}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status || 'orcamento']==='function'?STATUS_LABELS[o.status || 'orcamento']():(STATUS_LABELS[o.status || 'orcamento']||o.status || 'orcamento')}</span></td>
+        <td><span class="badge bp-${o.paymentStatus || 'pendente'}"><span class="badge-dot"></span>${(o.paymentStatus || 'pendente')==='pago'?i18n.getNestedTranslation('status.pago'):i18n.getNestedTranslation('status.pendente')}</span></td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
@@ -777,7 +811,7 @@ function renderOrders(keepExpandId) {
         </div>
         <div class="mob-ord-client">${escH(o.clientName)}</div>
         <div class="mob-ord-meta">
-          <span class="badge bs-${o.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status]==='function'?STATUS_LABELS[o.status]():(STATUS_LABELS[o.status]||o.status)}</span>
+          <span class="badge bs-${o.status || 'orcamento'}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status || 'orcamento']==='function'?STATUS_LABELS[o.status || 'orcamento']():(STATUS_LABELS[o.status || 'orcamento']||o.status || 'orcamento')}</span>
           ${badgePay}
           ${o.dueDate?`<span class="mob-ord-date"><span data-i18n="orders.table.due">${i18n.getNestedTranslation('orders.table.due')}</span>: ${fmtDate(o.dueDate)}</span>`:''}
         </div>
@@ -858,8 +892,8 @@ function toggleMobExpand(id) {
 // ── STATS ──────────────────────────────
 function updateStats() {
   const total = orders.length;
-  const progress = orders.filter(o => !['done','orcamento'].includes(o.status)).length;
-  const pending = orders.filter(o => o.paymentStatus === 'pendente');
+  const progress = orders.filter(o => !['done','orcamento'].includes(o.status || 'orcamento')).length;
+  const pending = orders.filter(o => (o.paymentStatus || 'pendente') === 'pendente');
   const paid = orders.filter(o => o.paymentStatus === 'pago');
   const pendingVal = pending.reduce((s,o)=>s+(o.total||0),0);
   const paidVal = paid.reduce((s,o)=>s+(o.total||0),0);
@@ -869,10 +903,17 @@ function updateStats() {
 
   animateValue('statTotal', prevTotal, total, 800);
   animateValue('statProgress', prevProgress, progress, 800);
+  
+  // Store values for currency update
+  document.getElementById('statPendingVal').setAttribute('data-last-val', pendingVal);
+  document.getElementById('statPaidVal').setAttribute('data-last-val', paidVal);
+  
   animateValue('statPendingVal', 0, pendingVal, 800, true);
   document.getElementById('statPendingCount').textContent = i18n.getNestedTranslation(pending.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: pending.length});
   animateValue('statPaidVal', 0, paidVal, 800, true);
   document.getElementById('statPaidCount').textContent = i18n.getNestedTranslation(paid.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: paid.length});
+  
+  updateCurrencyLabels();
 }
 
 // ── ADVANCE STATUS ─────────────────────

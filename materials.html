@@ -1256,7 +1256,7 @@ function renderTable() {
   if (thPL) thPL.textContent = getCurrencySymbol() + (isFDM ? '/kg' : '/L');
   tbody.innerHTML = filtered.map(m => {
     const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
-    const price    = m.price ? fmtEur(m.price) : '—';
+    const price    = m.price ? fmtCurrency(m.price) : '—';
     const expiryCol = !isFDM ? `<td>${expiryDisplay(m.emptyAt)}</td>` : '';
     return `<tr>
       <td><div class="cell-color">
@@ -1292,7 +1292,7 @@ function renderTable() {
   if (mobFil) {
     mobFil.innerHTML = filtered.map(m => {
       const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
-      const price = m.price ? fmtEur(m.price) : '';
+      const price = m.price ? fmtCurrency(m.price) : '';
       const unitWord = isFDM ? 'bobinas' : 'frascos';
       return `<div class="mob-fil-card">
         <div class="mob-fil-top">
@@ -2200,7 +2200,7 @@ function showPackSiblings(event, packId) {
     <div style="display:flex;align-items:center;gap:8px">
       <div style="width:14px;height:14px;border-radius:4px;background:${escH(m.colorHex||'#ccc')};flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></div>
       <span style="font-size:.82rem;font-weight:600;flex:1">${escH(m.colorName||'—')}</span>
-      <span style="font-size:.75rem;color:var(--muted);font-family:var(--f-mono,monospace)">${m.price ? fmtEur(m.price) : '—'}</span>
+      <span style="font-size:.75rem;color:var(--muted);font-family:var(--f-mono,monospace)">${m.price ? fmtCurrency(m.price) : '—'}</span>
     </div>
   `).join('');
 

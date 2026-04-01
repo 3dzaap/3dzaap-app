@@ -433,34 +433,22 @@ const STATUS_LABELS = {
   done:       () => i18n.getNestedTranslation('status.done')
 };
 
-function fmtCurrency(v) {
-  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const currencyMap = {
-    'pt-PT': { code: 'EUR', symbol: '€', locale: 'pt-PT' },
-    'pt-BR': { code: 'BRL', symbol: 'R$', locale: 'pt-BR' },
-    'en':    { code: 'USD', symbol: '$', locale: 'en-US' },
-    'es':    { code: 'EUR', symbol: '€', locale: 'es-ES' },
-    'en-GB': { code: 'GBP', symbol: '£', locale: 'en-GB' }
-  };
-  const cfg = currencyMap[lang] || currencyMap['pt-PT'];
-  const num = parseFloat(v || 0).toLocaleString(cfg.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return cfg.symbol + ' ' + num;
-}
+// Removed local fmtCurrency — now using global version from utils.js
 
 function animateValue(id, start, end, duration) {
   const obj = document.getElementById(id);
   if (!obj) return;
-  if (start === end) { obj.textContent = fmtEur(end); return; }
+  if (start === end) { obj.textContent = fmtCurrency(end); return; }
   
   const range = end - start;
   let current = start;
   const timer = setInterval(() => {
     current += (range / (duration / 16)); // ~60fps
     if ((range > 0 && current >= end) || (range < 0 && current <= end)) {
-      obj.textContent = fmtEur(end);
+      obj.textContent = fmtCurrency(end);
       clearInterval(timer);
     } else {
-      obj.textContent = fmtEur(current);
+      obj.textContent = fmtCurrency(current);
     }
   }, 16);
 }
@@ -485,7 +473,8 @@ async function loadUserData() {
   // Update currency headers
   ['finThTotal','finThTotal2'].forEach(function(id){
     var el=document.getElementById(id);
-    if(el) el.textContent=(t('financial.th_total')||'Total') + ' ('+((_cfg&&_cfg._currSymbol)||'€')+')';
+    const sym = getCurrencySymbol();
+    if(el) el.textContent=(t('financial.th_total')||'Total') + ' ('+ sym +')';
   });
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
@@ -589,7 +578,7 @@ function renderAll() {
       .map(s => `<tr>
         <td>${typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s)}</td>
         <td class="r">${statusGroups[s].count}</td>
-        <td class="r">${fmtEur(statusGroups[s].total)}</td>
+        <td class="r">${fmtCurrency(statusGroups[s].total)}</td>
       </tr>`).join('');
   }
 
@@ -600,7 +589,7 @@ function renderAll() {
     ? `<div style="display:flex;flex-direction:column;gap:8px">
         <div style="font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--dark)">${done.length}</div>
         <div style="font-size:.82rem;color:var(--muted)">${done.length===1 ? t('financial.done_orders_1') : t('financial.done_orders_n')}</div>
-        <div style="font-size:.9rem;font-weight:700;color:#15803d;font-family:var(--mono)">${fmtEur(done.reduce((s,o)=>s+(o.total||0),0))}</div>
+        <div style="font-size:.9rem;font-weight:700;color:#15803d;font-family:var(--mono)">${fmtCurrency(done.reduce((s,o)=>s+(o.total||0),0))}</div>
         <div style="font-size:.78rem;color:var(--muted)">${t('financial.done_total')}</div>
        </div>`
     : `<div style="color:var(--subtle);font-size:.84rem">${t('financial.done_none')}</div>`;
@@ -623,7 +612,7 @@ function renderAll() {
         <td style="font-weight:600">${escH(o.clientName||'—')}</td>
         <td>${renderStatusBadge(o.status)}</td>
         <td>${renderPayBadge(o.paymentStatus)}</td>
-        <td class="r" style="font-weight:700">${fmtEur(o.total||0)}</td>
+        <td class="r" style="font-weight:700">${fmtCurrency(o.total||0)}</td>
         <td style="color:var(--muted);font-size:.78rem">${fmtDate(o.createdAt)}</td>
       </tr>`).join('');
     const mobFin = document.getElementById('mobFinList');
@@ -637,7 +626,7 @@ function renderAll() {
             <span class="mob-fin-date">${fmtDate(o.createdAt)}</span>
           </div>
         </div>
-        <div class="mob-fin-right"><div class="mob-fin-total">${fmtEur(o.total||0)}</div></div>
+        <div class="mob-fin-right"><div class="mob-fin-total">${fmtCurrency(o.total||0)}</div></div>
       </div>`).join('');
   }
 }
@@ -657,12 +646,13 @@ function exportCSVFinanceiro() {
   const periodOrders = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo);
   if (!periodOrders.length) { showToast((t('financial.empty_period')||'Sem pedidos neste período'),'err'); return; }
   const sep = ';';
-  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),(t('financial.th_payment')||'Pagamento'),((t('financial.th_total')||'Total')+' ('+(_cfg&&_cfg._currSymbol||'€')+')'),(t('financial.th_date')||'Data Criação'),'Data Pagamento','Itens'];
+  const sym = getCurrencySymbol();
+  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),(t('financial.th_payment')||'Pagamento'),((t('financial.th_total')||'Total')+' ('+ sym +')'),(t('financial.th_date')||'Data Criação'),'Data Pagamento','Itens'];
   const rows = periodOrders.map(o => [
     o.orderNumber||'', o.clientName||'',
     t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?(t('financial.status_paid')||'Pago'):(t('financial.status_pend')||'Pendente'),
     (o.total||0).toFixed(2), o.createdAt||'', o.paymentDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description} (${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
   dlCSV(csv, `financeiro_${_periodo}.csv`);
@@ -673,12 +663,13 @@ function exportCSVOrcamento() {
   const pendentes = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo && o.paymentStatus === 'pendente');
   if (!pendentes.length) { showToast((t('financial.empty_period')||'Sem orçamentos pendentes neste período'),'err'); return; }
   const sep = ';';
-  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),((t('financial.th_total')||'Total')+' ('+(_cfg&&_cfg._currSymbol||'€')+')'),(t('financial.th_date')||'Data Criação'),'Prazo Entrega','Itens','Observações'];
+  const sym = getCurrencySymbol();
+  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),((t('financial.th_total')||'Total')+' ('+ sym +')'),(t('financial.th_date')||'Data Criação'),'Prazo Entrega','Itens','Observações'];
   const rows = pendentes.map(o => [
     o.orderNumber||'', o.clientName||'',
     t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, (o.total||0).toFixed(2),
     o.createdAt||'', o.dueDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description} (${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
     o.notes||'',
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');

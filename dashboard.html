@@ -707,27 +707,7 @@ function renderGreeting() {
   document.getElementById('greetingText').textContent = tpl.replace('{period}', period).replace('{name}', firstName);
 }
 
-// ── HELPERS ────────────────────────────
 // fmtCurrency is provided by utils.js (supports EUR, BRL, USD, GBP via _cfg)
-// Fallback for cases where utils.js is not yet loaded:
-if (typeof fmtCurrency === 'undefined') {
-  window.fmtCurrency = function(v) {
-    const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-    const currencyMap = {
-      'pt-PT': { code: 'EUR', locale: 'pt-PT' },
-      'pt-BR': { code: 'BRL', locale: 'pt-BR' },
-      'en':    { code: 'USD', locale: 'en-US' },
-      'es':    { code: 'EUR', locale: 'es-ES' },
-      'en-GB': { code: 'GBP', locale: 'en-GB' }
-    };
-    const cfg = currencyMap[lang] || currencyMap['pt-PT'];
-    try {
-      return new Intl.NumberFormat(cfg.locale, { style: 'currency', currency: cfg.code, minimumFractionDigits: 2 }).format(parseFloat(v || 0));
-    } catch(e) {
-      return parseFloat(v || 0).toFixed(2);
-    }
-  };
-}
 
 function animateValue(id, start, end, duration) {
   const obj = document.getElementById(id);
