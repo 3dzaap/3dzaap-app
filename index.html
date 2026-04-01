@@ -68,6 +68,37 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 @keyframes orb1{from{transform:translate(0,0)}to{transform:translate(-100px,100px) scale(1.1)}}
 @keyframes orb2{from{transform:translate(0,0)}to{transform:translate(120px,-80px) scale(1.2)}}
 
+/* ── UTILS ──────────────────────────── */
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px}
+.gc{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:var(--rm);font-family:var(--f);font-size:.95rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:all .3s var(--ease);position:relative;overflow:hidden;white-space:nowrap}
+.btn-p{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 6px 20px rgba(59,143,212,0.3)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(59,143,212,0.4)}
+.btn-g{background:rgba(255,255,255,0.8);color:var(--dark);border:1.5px solid var(--border);box-shadow:var(--sh)}
+.btn-g:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+
+/* Animations */
+.fu{opacity:0;transform:translateY(30px);transition:opacity 0.8s var(--ease), transform 0.8s var(--ease)}
+.fu.vis{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.1s}.d2{transition-delay:0.2s}.d3{transition-delay:0.3s}.d4{transition-delay:0.4s}
+
+/* ── NAVBAR ─────────────────────────── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:12px 0;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);transition:all 0.3s}
+.nav.scrolled{padding:8px 0;box-shadow:var(--sh)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between}
+.nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nlogo img{height:40px;width:40px;border-radius:10px}
+.nlogo span{font-size:1.4rem;font-weight:900}
+.nlinks{display:flex;align-items:center;gap:8px}
+.nlinks a{padding:8px 16px;border-radius:var(--r);color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:600;transition:all 0.2s}
+.nlinks a:hover{color:var(--blue);background:var(--blue-g)}
+.nact{display:flex;align-items:center;gap:12px}
+
+/* Lang select */
+.lang-select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--glass);font-family:var(--f);font-size:0.8rem;font-weight:600;cursor:pointer;outline:none}
+
 /* ── HERO ───────────────────────────── */
 .hero{padding:180px 0 100px;text-align:center;position:relative;overflow:hidden}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:rgba(255,255,255,0.8);border:1.5px solid var(--border);border-radius:30px;font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:24px;box-shadow:var(--sh);backdrop-filter:blur(10px)}
@@ -83,6 +114,64 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .hero-mockup{border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:6px solid white;position:relative;z-index:2;background:white;transition:transform 0.5s var(--ease)}
 .hero-visual:hover .hero-mockup{transform:rotateX(2deg) translateY(-5px)}
 .hero-mockup img{width:100%;display:block}
+
+/* CSS Dashboard Mockup */
+.mockup-css {
+  display: flex; height: 500px; text-align: left; background: #fff;
+}
+.mockup-css * { box-sizing: border-box; }
+.mock-sidebar {
+  width: 140px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 16px 10px;
+}
+.mock-logo { display:flex; gap:6px; align-items:center; margin-bottom: 24px; padding-left: 4px; }
+.ml-icon { width:18px; height:18px; background:var(--blue); border-radius:4px; }
+.ml-text { width:40px; height:8px; background:#cbd5e1; border-radius:4px; }
+.mock-nav { display:flex; flex-direction:column; gap:8px; }
+.mn-item { height:24px; border-radius:6px; background: transparente; display: flex; align-items: center; padding: 0 8px; gap: 8px; }
+.mn-item::before { content:''; display:block; width:12px; height:12px; border-radius:3px; background:#cbd5e1; }
+.mn-item::after { content:''; display:block; width:45px; height:6px; border-radius:3px; background:#e2e8f0; }
+.mn-item.active { background: rgba(59,143,212,0.1); border: 1px solid rgba(59,143,212,0.2); }
+.mn-item.active::before { background: var(--blue); }
+.mn-item.active::after { background: var(--blue-lt); }
+
+.mock-main { flex: 1; display: flex; flex-direction: column; background: #f1f5f9; overflow: hidden; }
+.mock-topbar { height: 44px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; }
+.mt-left { width: 60px; height: 8px; background: #cbd5e1; border-radius: 4px; }
+.mt-right { display: flex; align-items: center; gap: 8px; }
+.mt-pill { width: 24px; height: 24px; border-radius: 50%; background: var(--orange); }
+
+.mock-content { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.mock-health { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.mh-info { flex: 1; }
+.mh-title { width: 80px; height: 6px; background: #cbd5e1; border-radius: 3px; margin-bottom: 8px; }
+.mh-score { width: 50px; height: 24px; background: var(--dark); border-radius: 4px; margin-bottom: 12px; }
+.mh-bars { display: flex; flex-direction: column; gap: 6px; }
+.mh-bar { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; width: 80%; }
+.mh-bar::after { content: ''; display: block; height: 100%; width: 60%; background: var(--success); border-radius: 3px; }
+.mh-bar:nth-child(2)::after { width: 85%; background: var(--warning); }
+.mh-bar:nth-child(3)::after { width: 40%; background: var(--blue); }
+.mh-ring { width: 64px; height: 64px; border-radius: 50%; border: 6px solid #e2e8f0; border-top-color: var(--success); border-right-color: var(--success); transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; }
+.mh-ring::after { content: ''; display: block; width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+
+.mock-stats { display: flex; gap: 12px; }
+.ms-card { flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.ms-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+.ms-lines { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.ms-l1 { width: 60%; height: 8px; background: var(--dark); border-radius: 4px; }
+.ms-l2 { width: 40%; height: 5px; background: #cbd5e1; border-radius: 3px; }
+
+.mock-table { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; flex: 1; display: flex; flex-direction: column; }
+.m-row { display: flex; padding: 10px 16px; border-bottom: 1px solid #f1f5f9; align-items: center; justify-content: space-between; }
+.m-row.header { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 16px; }
+.m-col.h1 { width: 50px; height: 5px; background: #94a3b8; border-radius: 2px; }
+.m-col.h2 { width: 40px; height: 5px; background: #94a3b8; border-radius: 2px; }
+.m-col.h3 { width: 30px; height: 5px; background: #94a3b8; border-radius: 2px; }
+.m-col.c1 { width: 70px; height: 8px; background: var(--dark); border-radius: 4px; }
+.m-col.badge { padding: 3px 8px; border-radius: 12px; height: 16px; width: 50px; }
+.badge.b1 { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); }
+.badge.b2 { background: rgba(245,148,58,0.15); border: 1px solid rgba(245,148,58,0.3); }
+.badge.b3 { background: rgba(59,143,212,0.15); border: 1px solid rgba(59,143,212,0.3); }
+.m-col.c3 { width: 30px; height: 8px; background: #cbd5e1; border-radius: 4px; }
 
 /* Floating Cards */
 .fcard-ui {
@@ -272,8 +361,53 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
         </div>
       </div>
 
-      <div class="hero-mockup">
-        <img src="mockup-hero.png" alt="3DZAAP Dashboard Mockup">
+      <div class="hero-mockup mockup-css">
+         <div class="mock-sidebar">
+            <div class="mock-logo">
+               <div class="ml-icon"></div>
+               <div class="ml-text"></div>
+            </div>
+            <div class="mock-nav">
+               <div class="mn-item active"></div>
+               <div class="mn-item"></div>
+               <div class="mn-item"></div>
+               <div class="mn-item"></div>
+               <div class="mn-item"></div>
+            </div>
+         </div>
+         <div class="mock-main">
+            <div class="mock-topbar">
+               <div class="mt-left"></div>
+               <div class="mt-right">
+                  <div class="mt-pill"></div>
+               </div>
+            </div>
+            <div class="mock-content">
+               <div class="mock-health">
+                  <div class="mh-info">
+                     <div class="mh-title"></div>
+                     <div class="mh-score"></div>
+                     <div class="mh-bars">
+                        <div class="mh-bar"></div>
+                        <div class="mh-bar"></div>
+                        <div class="mh-bar"></div>
+                     </div>
+                  </div>
+                  <div class="mh-ring"></div>
+               </div>
+               <div class="mock-stats">
+                  <div class="ms-card"><div class="ms-icon" style="background:var(--blue-g);color:var(--blue)">📦</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
+                  <div class="ms-card"><div class="ms-icon" style="background:var(--orange-g);color:var(--orange)">⏱</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
+                  <div class="ms-card"><div class="ms-icon" style="background:var(--purple-g);color:var(--purple)">💰</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
+               </div>
+               <div class="mock-table">
+                  <div class="m-row header"><div class="m-col h1"></div><div class="m-col h2"></div><div class="m-col h3"></div></div>
+                  <div class="m-row"><div class="m-col c1"></div><div class="m-col badge b1"></div><div class="m-col c3"></div></div>
+                  <div class="m-row"><div class="m-col c1" style="width:50px"></div><div class="m-col badge b2"></div><div class="m-col c3"></div></div>
+                  <div class="m-row"><div class="m-col c1" style="width:80px"></div><div class="m-col badge b3"></div><div class="m-col c3"></div></div>
+               </div>
+            </div>
+         </div>
       </div>
     </div>
   </div>
