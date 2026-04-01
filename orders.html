@@ -691,8 +691,7 @@ function updateCurrencyLabels() {
   // Header currency symbols
   ['statPendingVal', 'statPaidVal', 'oGrandTotal'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && (el.textContent === '—' || el.textContent === '— 0,00' || el.textContent.includes('R$'))) {
-       // Only update if it looks like a placeholder or old currency
+    if (el) {
        const val = parseFloat(el.getAttribute('data-last-val') || 0);
        el.textContent = fmtCurrency(val);
     }
@@ -1701,12 +1700,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // ── EXPORT CSV ─────────────────────────
 function exportCSV() {
   if (!orders.length) { showToast('Sem pedidos para exportar','err'); return; }
-  const headers = ['Nº','Cliente','Email','Telefone','Estado','Pagamento',('Total ('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Data Criação','Prazo','Data Pagamento','Itens','Observações'];
+  const sym = getCurrencySymbol();
+  const headers = ['Nº','Cliente','Email','Telefone','Estado','Pagamento',(`Total (${sym})`),'Data Criação','Prazo','Data Pagamento','Itens','Observações'];
   const rows = orders.map(o => [
     o.orderNumber, o.clientName, o.clientEmail||'', o.clientPhone||'',
     STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?'Pago':'Pendente',
     (o.total||0).toFixed(2), o.createdAt||'', o.dueDate||'', o.paymentDate||'',
-    (o.items||[]).map(i=>`${i.description}(${i.quantity}x${((_cfg&&_cfg._currSymbol)||'€')}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
+    (o.items||[]).map(i=>`${i.description}(${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
     o.notes||'',
   ]);
   const csv = [headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');

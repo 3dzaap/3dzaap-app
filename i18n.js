@@ -79,9 +79,12 @@ const i18n = {
             }
         });
 
-        document.body.classList.remove(...this.supportedLocales.map(l => `lang-${l}`));
-        document.body.classList.add(`lang-${this.currentLocale}`);
-        window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: this.currentLocale } }));
+        // Só disparar o evento se for Tradução Completa de Documento para evitar recursion Loops no orders.html
+        if (root === document) {
+            document.body.classList.remove(...this.supportedLocales.map(l => `lang-${l}`));
+            document.body.classList.add(`lang-${this.currentLocale}`);
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: this.currentLocale } }));
+        }
     },
 
     /**

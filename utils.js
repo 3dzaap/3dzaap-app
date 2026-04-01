@@ -54,28 +54,22 @@ function loadCfg(session) {
 // ── FORMATTERS ────────────────────────────────────────────────
 function getCurrencyConfig() {
   const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const force = window.forceLocaleCurrency === true;
   
-  // A regra de Ouro: a MOEDA vêm da BD (_cfg.currency) caso exista, 
-  // para respeitar o plano do Cliente no SaaS e não criar hardcodes baseados no UI language.
-  if (_cfg && _cfg.currency && !force) {
-    const currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
-    return {
-      symbol: currMap[_cfg.currency] || '€',
-      code:   _cfg.currency,
-      locale: lang // Garantimos que a formatação numérica sim acompanha o idioma da interface
-    };
-  }
+  // Regras de Símbolo solicitadas:
+  // En: $ | PT e ES: € | BR: R$ | UK: £
+  const map = {
+    'en':    { symbol: '$',  code: 'USD', locale: 'en-US' },
+    'pt-PT': { symbol: '€',  code: 'EUR', locale: 'pt-PT' },
+    'es':    { symbol: '€',  code: 'EUR', locale: 'es-ES' },
+    'pt-BR': { symbol: 'R$', code: 'BRL', locale: 'pt-BR' },
+    'en-GB': { symbol: '£',  code: 'GBP', locale: 'en-GB' }
+  };
   
-  // Fallback baseado no idioma caso a BD não devolva configurações
-  if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
-  if (lang === 'pt-PT') return { symbol: '€',  code: 'EUR', locale: 'pt-PT' };
-  if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
-  if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
-  if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
+  // Fallback para EN base caso não coincida exactamente
+  if (map[lang]) return map[lang];
+  if (lang.startsWith('en')) return map['en'];
   
-  // Default de segurança (Europeu)
-  return { symbol: '€', code: 'EUR', locale: 'pt-PT' };
+  return map['pt-PT']; // Default de segurança
 }
 
 function getCurrencySymbol() {
