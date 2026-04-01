@@ -51,32 +51,52 @@ function loadCfg(session) {
 }
 
 // ── FORMATTERS ────────────────────────────────────────────────
+function getCurrencyConfig() {
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const force = window.forceLocaleCurrency === true;
+  
+  // 1. If explicit config exists and not forced, use it
+  if (_cfg && _cfg.currency && !force) {
+    const currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
+    const locMap  = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
+    return {
+      symbol: currMap[_cfg.currency] || '€',
+      code:   _cfg.currency,
+      locale: locMap[_cfg.currency] || _cfg._locale || 'pt-PT'
+    };
+  }
+
+  // 2. Fallback based on interface language (i18n sync)
+  if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
+  if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
+  if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
+  if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
+  
+  // Default pt-PT / EUR
+  return { symbol: '€', code: 'EUR', locale: 'pt-PT' };
+}
+
 function getCurrencySymbol() {
-  if (_cfg && _cfg._currSymbol) return _cfg._currSymbol;
-  // Fallback to browser lang if no config loaded
-  var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  if (locale === 'pt-BR') return 'R$';
-  if (locale === 'en-GB') return '£';
-  if (locale.startsWith('en')) return '$';
-  return '€';
+  return getCurrencyConfig().symbol;
+}
+
+function getCurrencyCode() {
+  return getCurrencyConfig().code;
 }
 
 function fmtCurrency(v) {
   var val = parseFloat(v || 0);
-  var locale = _cfg && _cfg._locale ? _cfg._locale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
-  var code = _cfg && _cfg._currCode ? _cfg._currCode : 'EUR';
+  const conf = getCurrencyConfig();
 
   try {
-    return new Intl.NumberFormat(locale, {
+    return new Intl.NumberFormat(conf.locale, {
       style: 'currency',
-      currency: code,
+      currency: conf.code,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(val);
   } catch (e) {
-    // Fallback manual if Intl fails
-    var sym = getCurrencySymbol();
-    return sym + ' ' + val.toLocaleString(locale, { minimumFractionDigits: 2 });
+    return conf.symbol + ' ' + val.toLocaleString(conf.locale, { minimumFractionDigits: 2 });
   }
 }
 
