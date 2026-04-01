@@ -723,6 +723,7 @@ function renderOrders(keepExpandId) {
   const filterCountEl = document.getElementById('filterCount');
   filterCountEl.setAttribute('data-i18n', countKey);
   filterCountEl.setAttribute('data-i18n-n', filtered.length);
+  // Initial render with current i18n
   filterCountEl.textContent = i18n.getNestedTranslation(countKey, {n: filtered.length});
 
   const emptyEl = document.getElementById('tableEmpty');
@@ -769,10 +770,17 @@ function renderOrders(keepExpandId) {
     const nextStatus = STATUS_NEXT[o.status];
     const canAdvance = nextStatus !== null;
 
+    const itemsCountKey = its.length === 1 ? 'orders.table.th_items_1' : 'orders.table.th_items_n';
+
     rows.push(`
       <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber||'—')}</span></td>
-        <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub" data-i18n="${its.length===1?'orders.filters.count_1':'orders.filters.count_n'}" data-i18n-n="${its.length}">${i18n.getNestedTranslation(its.length===1?'orders.filters.count_1':'orders.filters.count_n',{n:its.length}) || `${its.length} item(s)`}</div></td>
+        <td>
+          <div class="ord-client">${escH(o.clientName)}</div>
+          <div class="ord-date-sub" data-i18n="${itemsCountKey}" data-i18n-n="${its.length}">
+            ${i18n.getNestedTranslation(itemsCountKey, {n: its.length})}
+          </div>
+        </td>
         <td>${renderStatusBadge(o.status)}</td>
         <td>${renderPaymentBadge(o.paymentStatus)}</td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
@@ -871,7 +879,12 @@ function renderOrders(keepExpandId) {
     if (btn) btn.classList.add('open');
     if (row) row.classList.add('expanded-row');
   }
-  i18n.translatePage();
+
+  // Optimized translation: only scan the relevant cards
+  const container = document.getElementById('ordTable');
+  const mContainer = document.getElementById('mobCardList');
+  i18n.translatePage(container);
+  i18n.translatePage(mContainer);
 }
 
 function toggleExpand(id) {

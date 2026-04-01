@@ -36,8 +36,9 @@ const i18n = {
         }
     },
 
-    translatePage() {
-        const elements = document.querySelectorAll('[data-i18n]');
+    translatePage(root = document) {
+        if (!root) return;
+        const elements = root.querySelectorAll('[data-i18n]');
         elements.forEach(el => {
             let key = el.getAttribute('data-i18n');
             let target = null;
@@ -51,7 +52,20 @@ const i18n = {
                 }
             }
 
-            const translation = this.getNestedTranslation(key);
+            // Extract variables from data attributes
+            let vars = {};
+            try {
+                const rawVars = el.getAttribute('data-i18n-vars');
+                if (rawVars) vars = JSON.parse(rawVars);
+                
+                // Shortcut for common 'n' variable
+                const n = el.getAttribute('data-i18n-n');
+                if (n !== null) vars.n = n;
+            } catch (e) {
+                // Silently fail if vars aren't valid JSON
+            }
+
+            const translation = this.getNestedTranslation(key, vars);
             if (translation) {
                 if (target) {
                     el.setAttribute(target, translation);

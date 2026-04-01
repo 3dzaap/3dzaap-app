@@ -69,11 +69,12 @@ function getCurrencyConfig() {
   
   // Fallback baseado no idioma caso a BD não devolva configurações
   if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
+  if (lang === 'pt-PT') return { symbol: '€',  code: 'EUR', locale: 'pt-PT' };
   if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
   if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
   if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
   
-  // Default de segurança
+  // Default de segurança (Europeu)
   return { symbol: '€', code: 'EUR', locale: 'pt-PT' };
 }
 
