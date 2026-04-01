@@ -520,15 +520,15 @@ let editingId = null;
 let _items = []; // modal items buffer
 
 const STATUS_LABELS = {
-  orcamento:  () => i18n.getNestedTranslation('status.orcamento'),
-  modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
-  validacao:  () => i18n.getNestedTranslation('status.validacao'),
-  aprovado:   () => i18n.getNestedTranslation('status.aprovado'),
-  printing:   () => i18n.getNestedTranslation('status.printing'),
-  done:       () => i18n.getNestedTranslation('status.done'),
-  pendente:   () => i18n.getNestedTranslation('status.pendente'),
-  pago:       () => i18n.getNestedTranslation('status.pago'),
-  fila:       () => i18n.getNestedTranslation('status.aprovado') // fallback
+  orcamento:  () => i18n.getNestedTranslation('status.orcamento') || 'Orçamento',
+  modelagem:  () => i18n.getNestedTranslation('status.modelagem') || 'Modelagem',
+  validacao:  () => i18n.getNestedTranslation('status.validacao') || 'Validação',
+  aprovado:   () => i18n.getNestedTranslation('status.aprovado') || 'Aprovado',
+  printing:   () => i18n.getNestedTranslation('status.printing') || 'Printing',
+  done:       () => i18n.getNestedTranslation('status.done')       || 'Concluído',
+  pendente:   () => i18n.getNestedTranslation('status.pendente') || 'Pendente',
+  pago:       () => i18n.getNestedTranslation('status.pago')     || 'Pago',
+  fila:       () => i18n.getNestedTranslation('status.aprovado') || 'Na Fila'
 };
 const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
 
@@ -540,7 +540,9 @@ function renderStatusBadge(status) {
 }
 function renderPaymentBadge(pay) {
   const p = (pay === 'null' || !pay) ? 'pendente' : pay;
-  const label = p === 'pago' ? i18n.getNestedTranslation('status.pago') : i18n.getNestedTranslation('status.pendente');
+  const label = p === 'pago' 
+    ? (i18n.getNestedTranslation('status.pago') || 'Pago')
+    : (i18n.getNestedTranslation('status.pendente') || 'Pendente');
   return `<span class="badge bp-${p}"><span class="badge-dot"></span>${label}</span>`;
 }
 
@@ -605,6 +607,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateStats(); 
     }
   }, 120);
+
+  // Sync on locale change directly without reloading if needed
+  window.addEventListener('languageChanged', () => {
+    renderOrders();
+    updateStats();
+  });
 });
 
 // ── USER DATA ──────────────────────────
@@ -766,7 +774,7 @@ function renderOrders(keepExpandId) {
     rows.push(`
       <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber||'—')}</span></td>
-        <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub" data-i18n="${its.length===1?'orders.filters.count_1':'orders.filters.count_n'}" data-i18n-n="${its.length}">${i18n.getNestedTranslation(its.length===1?'orders.filters.count_1':'orders.filters.count_n',{n:its.length})}</div></td>
+        <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub" data-i18n="${its.length===1?'orders.filters.count_1':'orders.filters.count_n'}" data-i18n-n="${its.length}">${i18n.getNestedTranslation(its.length===1?'orders.filters.count_1':'orders.filters.count_n',{n:its.length}) || `${its.length} item(s)`}</div></td>
         <td>${renderStatusBadge(o.status)}</td>
         <td>${renderPaymentBadge(o.paymentStatus)}</td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
@@ -924,9 +932,9 @@ function updateStats() {
   document.getElementById('statPaidVal').setAttribute('data-last-val', paidVal);
   
   animateValue('statPendingVal', 0, pendingVal, 800, true);
-  document.getElementById('statPendingCount').textContent = i18n.getNestedTranslation(pending.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: pending.length});
+  document.getElementById('statPendingCount').textContent = i18n.getNestedTranslation(pending.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: pending.length}) || `${pending.length} pedido(s)`;
   animateValue('statPaidVal', 0, paidVal, 800, true);
-  document.getElementById('statPaidCount').textContent = i18n.getNestedTranslation(paid.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: paid.length});
+  document.getElementById('statPaidCount').textContent = i18n.getNestedTranslation(paid.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: paid.length}) || `${paid.length} pedido(s)`;
   
   updateCurrencyLabels();
 }

@@ -56,8 +56,17 @@ function getCurrencyConfig() {
   const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
   const force = window.forceLocaleCurrency === true;
   
-  // 1. If explicit config exists and not forced, use it
-  if (_cfg && _cfg.currency && !force) {
+  // 1. Se forceLocaleCurrency estiver activo ou se o idioma for mudado pela UI
+  // vamos sempre usar a moeda correspondente ao idioma para consistência.
+  if (force || lang) {
+    if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
+    if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
+    if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
+    if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
+  }
+  
+  // 2. Fallback para configuração da empresa, caso exista
+  if (_cfg && _cfg.currency) {
     const currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
     const locMap  = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
     return {
@@ -66,12 +75,6 @@ function getCurrencyConfig() {
       locale: locMap[_cfg.currency] || _cfg._locale || 'pt-PT'
     };
   }
-
-  // 2. Fallback based on interface language (i18n sync)
-  if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
-  if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
-  if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
-  if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
   
   // Default pt-PT / EUR
   return { symbol: '€', code: 'EUR', locale: 'pt-PT' };
