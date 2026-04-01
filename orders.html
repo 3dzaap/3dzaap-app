@@ -1445,11 +1445,16 @@ async function saveOrder() {
       if (idx > -1) orders[idx] = saved;
       showToast('✅ Pedido actualizado!','ok');
     } else {
+      const nextNumVal = (lastOrderNumber || 0) + 1;
+      const nextFormatted = 'IMP-' + String(nextNumVal).padStart(4, '0');
       const newOrder = {
-        createdAt: base.createdAt || new Date().toISOString().split('T')[0],
         ...base,
+        orderNumber:  nextFormatted,
+        orderNumeric: nextNumVal,
+        createdAt:    base.createdAt || new Date().toISOString().split('T')[0],
       };
       const saved = await DB.saveOrder(newOrder);
+      lastOrderNumber = nextNumVal;
       orders.unshift(saved);
       showToast(i18n.getNestedTranslation('orders.toasts.saved'),'ok');
       // Auto-expense: se veio da calculadora, registar custo de material
