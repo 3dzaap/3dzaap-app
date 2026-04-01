@@ -434,19 +434,19 @@
       <div class="stats-row">
         <div class="stat-mini">
           <div class="stat-mini-icon si-blue">🖨️</div>
-          <div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl">Total de impressoras</div></div>
+          <div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.total">Total de impressoras</div></div>
         </div>
         <div class="stat-mini">
           <div class="stat-mini-icon si-green">✅</div>
-          <div><div class="stat-mini-val" id="statOperacional">0</div><div class="stat-mini-lbl">Operacionais</div></div>
+          <div><div class="stat-mini-val" id="statOperacional">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.operational">Operacionais</div></div>
         </div>
         <div class="stat-mini">
           <div class="stat-mini-icon si-orange">🔧</div>
-          <div><div class="stat-mini-val" id="statManutencao">0</div><div class="stat-mini-lbl">Em manutenção</div></div>
+          <div><div class="stat-mini-val" id="statManutencao">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.maintenance">Em manutenção</div></div>
         </div>
         <div class="stat-mini">
           <div class="stat-mini-icon si-purple">⏱️</div>
-          <div><div class="stat-mini-val" id="statTotalHours">0h</div><div class="stat-mini-lbl">Horas totais acumuladas</div></div>
+          <div><div class="stat-mini-val" id="statTotalHours">0h</div><div class="stat-mini-lbl" data-i18n="printers.stats.total_hours">Horas totais acumuladas</div></div>
         </div>
       </div>
 
@@ -454,8 +454,8 @@
       <div id="printersEmpty" class="table-card" style="display:none">
         <div class="table-empty">
           <div class="table-empty-icon">🖨️</div>
-          <h3>Sem impressoras ainda</h3>
-          <p>Adiciona a tua primeira impressora clicando em <strong>＋ Nova impressora</strong> acima.</p>
+          <h3 data-i18n="printers.empty_title">Sem impressoras ainda</h3>
+          <p data-i18n="printers.empty_desc">Adiciona a tua primeira impressora clicando em <strong>＋ Nova impressora</strong> acima.</p>
         </div>
       </div>
       <div class="printers-grid" id="printersGrid"></div>
@@ -693,13 +693,24 @@
 let printers = [];
 let _editingPrinterId = null;
 let _detailPrinterId  = null;
-const STATUS_LABELS = { operacional:'Operacional', manutencao:'Em manutenção', inativa:'Inativa' };
-const TYPE_LABELS   = { fdm:'FDM', resina:'Resina' };
-const MAINT_LABELS  = {
-  lubrificacao:'Lubrificação', limpeza:'Limpeza',
-  substituicao_nozzle:'Nozzle', substituicao_belt:'Correia',
-  substituicao_peca:'Peça', calibracao:'Calibração',
-  reparacao:'Reparação', outro:'Outro',
+const STATUS_LABELS = { 
+  operacional: () => i18n.getNestedTranslation('status.operacional'), 
+  manutencao:  () => i18n.getNestedTranslation('status.manutencao'), 
+  inativa:     () => i18n.getNestedTranslation('status.inativa') 
+};
+const TYPE_LABELS = { 
+  fdm: 'FDM', 
+  resina: () => i18n.getNestedTranslation('modal_mat.resin') 
+};
+const MAINT_LABELS = {
+  lubrificacao: () => i18n.getNestedTranslation('printers.maint_types.lubrificacao'),
+  limpeza:      () => i18n.getNestedTranslation('printers.maint_types.limpeza'),
+  substituicao_nozzle: () => i18n.getNestedTranslation('printers.maint_types.substituicao_nozzle'),
+  substituicao_belt:   () => i18n.getNestedTranslation('printers.maint_types.substituicao_belt'),
+  substituicao_peca:   () => i18n.getNestedTranslation('printers.maint_types.substituicao_peca'),
+  calibracao:   () => i18n.getNestedTranslation('printers.maint_types.calibracao'),
+  reparacao:    () => i18n.getNestedTranslation('printers.maint_types.reparacao'),
+  outro:        () => i18n.getNestedTranslation('printers.maint_types.outro'),
 };
 
 // ── INIT ───────────────────────────────
@@ -754,9 +765,9 @@ function _initBrandSelect() {
   const pBrand = document.getElementById('pBrand');
   if (!pBrand) return;
   const brands = [...new Set(printerModels.map(m => m.brand))].sort();
-  const options = ['<option value="">— Selecionar fabricante —</option>']
+  const options = [`<option value="" data-i18n="printers.modal.lbl_brand_placeholder">— ${i18n.getNestedTranslation('printers.modal.lbl_brand')} —</option>`]
                 .concat(brands.map(b => `<option value="${b}">${b}</option>`))
-                .concat(['<option value="Outro">Outro (personalizado)…</option>']);
+                .concat([`<option value="Outro" data-i18n="printers.modal.lbl_custom_model_opt">${i18n.getNestedTranslation('printers.modal.lbl_custom_model')}…</option>`]);
   pBrand.innerHTML = options.join('');
 }
 
@@ -783,7 +794,7 @@ function renderPrinters() {
       <div style="height:180px;background:var(--bg-card-s);position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border)">
         ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${escH(p.model)}" style="width:100%;height:100%;object-fit:contain;padding:16px;">` : `<div style="font-size:3rem;background:var(--bg-card);width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:0.6">🖨️</div>`}
         <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px">
-          <span class="printer-type-badge pt-${p.printerType}" style="backdrop-filter:blur(4px)">${TYPE_LABELS[p.printerType]||p.printerType}</span>
+          <span class="printer-type-badge pt-${p.printerType}" style="backdrop-filter:blur(4px)">${typeof TYPE_LABELS[p.printerType]==='function'?TYPE_LABELS[p.printerType]():(TYPE_LABELS[p.printerType]||p.printerType)}</span>
         </div>
       </div>
 
@@ -803,21 +814,21 @@ function renderPrinters() {
 
         ${(p.powerPrint || p.powerStandby) ? `
         <div style="margin-top:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase" data-i18n="printers.card.power_consumption">
             <span style="color:#d4a045">⚡</span> Consumo Elétrico
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:66px;text-align:center;border:1px solid var(--border)">
                 <div style="color:#d4a045;font-weight:800;font-size:13px">${p.powerPrint||0}W</div>
-                <div style="font-size:9px;color:var(--text-muted)">A imprimir</div>
+                <div style="font-size:9px;color:var(--text-muted)" data-i18n="printers.card.printing">A imprimir</div>
              </div>
-             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:66px;text-align:center;border:1px solid var(--border)">
                 <div style="color:#4cd681;font-weight:800;font-size:13px">${p.powerStandby||0}W</div>
-                <div style="font-size:9px;color:var(--text-muted)">Standby</div>
+                <div style="font-size:9px;color:var(--text-muted)" data-i18n="printers.card.standby">Standby</div>
              </div>
-             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:6px;text-align:center;border:1px solid var(--border)">
+             <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:66px;text-align:center;border:1px solid var(--border)">
                 <div style="color:#8b86e8;font-weight:800;font-size:13px">${p.powerMax||0}W</div>
-                <div style="font-size:9px;color:var(--text-muted)">Max.</div>
+                <div style="font-size:9px;color:var(--text-muted)" data-i18n="printers.card.max">Max.</div>
              </div>
           </div>
         </div>
@@ -829,8 +840,8 @@ function renderPrinters() {
 
         <div class="printer-hours-wrap" style="margin-top:10px">
           <div class="printer-hours-labels">
-            <span class="printer-hours-used">${p.hoursUsed||0}h usadas</span>
-            <span class="printer-hours-total">de ${p.lifeHours||5000}h globais</span>
+            <span class="printer-hours-used">${p.hoursUsed||0}h <span data-i18n="printers.card.hours_used">${i18n.getNestedTranslation('printers.card.hours_used')}</span></span>
+            <span class="printer-hours-total"><span data-i18n="orders.table.due">${i18n.getNestedTranslation('orders.table.due')}</span> ${p.lifeHours||5000}h <span data-i18n="printers.card.max_life">${i18n.getNestedTranslation('printers.card.max_life')}</span></span>
           </div>
           <div class="printer-hours-bar">
             <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
@@ -841,16 +852,16 @@ function renderPrinters() {
       <div class="printer-card-stats" style="padding:10px 14px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:12px;background:var(--bg-lighter)">
         <div class="printer-stat">
           <span class="printer-stat-val">${(p.maintenances||[]).length}</span>
-          <span class="printer-stat-lbl">Revisões</span>
+          <span class="printer-stat-lbl" data-i18n="printers.stats.revisions">Revisões</span>
         </div>
         <div class="printer-stat">
           <span class="printer-stat-val">${totalMaintCost > 0 ? fmtEur(totalMaintCost) : '—'}</span>
-          <span class="printer-stat-lbl">Custo Total</span>
+          <span class="printer-stat-lbl" data-i18n="printers.card.total_cost">Custo Total</span>
         </div>
       </div>
 
       <div class="printer-card-actions" onclick="event.stopPropagation()" style="justify-content:space-between;padding:10px 14px">
-        <span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span>
+        <span class="badge bs-${p.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[p.status]==='function'?STATUS_LABELS[p.status]():(STATUS_LABELS[p.status]||p.status)}</span>
         <div style="display:flex;gap:4px">
           <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar">✏️</button>
           <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar">🗑️</button>
@@ -858,6 +869,7 @@ function renderPrinters() {
       </div>
     </div>`;
   }).join('');
+  i18n.translatePage();
 }
 
 // Returns HTML chip for maintenance alert
@@ -871,12 +883,12 @@ function _maintAlertChip(p) {
   const threshold = Math.round(interval * 0.20); // alert at 20%
 
   if (hoursUntilNext <= 0) {
-    return `<div class="printer-alert-chip warn">⚠️ Manutenção em atraso (${Math.abs(hoursUntilNext)}h)</div>`;
+    return `<div class="printer-alert-chip warn">⚠️ ${i18n.getNestedTranslation('printers.card.maint_overdue', {h: Math.abs(hoursUntilNext)})}</div>`;
   }
   if (hoursUntilNext <= threshold) {
-    return `<div class="printer-alert-chip warn">🔧 Manutenção em ${hoursUntilNext}h</div>`;
+    return `<div class="printer-alert-chip warn">🔧 ${i18n.getNestedTranslation('printers.card.maint_upcoming', {h: hoursUntilNext})}</div>`;
   }
-  return `<div class="printer-alert-chip ok">✅ Próxima manutenção em ${hoursUntilNext}h</div>`;
+  return `<div class="printer-alert-chip ok">✅ ${i18n.getNestedTranslation('printers.card.maint_next', {h: hoursUntilNext})}</div>`;
 }
 
 function _hoursPercent(p) {
@@ -1040,12 +1052,12 @@ function updateModelSelect() {
 
   sel.innerHTML = '';
   if (!models.length) {
-    sel.innerHTML = `<option value="">— Sem modelos ${type === 'resina' ? 'Resina' : 'FDM'} para este fabricante —</option>`;
+    sel.innerHTML = `<option value="">— ${i18n.getNestedTranslation('printers.modal.no_models', {type: type === 'resina' ? i18n.getNestedTranslation('modal_mat.resin') : 'FDM'})} —</option>`;
     return;
   }
-  sel.innerHTML = '<option value="">— Selecionar modelo —</option>' +
+  sel.innerHTML = `<option value="">— ${i18n.getNestedTranslation('printers.modal.lbl_model')} —</option>` +
     models.map(m => `<option value="${m.name}">${m.name}</option>`).join('') +
-    '<option value="__custom__">Outro (personalizado)…</option>';
+    `<option value="__custom__">${i18n.getNestedTranslation('printers.modal.lbl_custom_model')}…</option>`;
 }
 
 function onModelSelectChange() {
@@ -1080,7 +1092,14 @@ function openPrinterModal(id = null) {
   document.getElementById('detailModalOverlay').classList.remove('open');
 
   _editingPrinterId = id;
-  document.getElementById('printerModalTitle').textContent = id ? '✏️ Editar Impressora' : '＋ Nova Impressora';
+  const titleEl = document.getElementById('printerModalTitle');
+  if (id) {
+    titleEl.setAttribute('data-i18n', 'printers.modal.title_edit');
+    titleEl.textContent = i18n.getNestedTranslation('printers.modal.title_edit');
+  } else {
+    titleEl.setAttribute('data-i18n', 'printers.modal.title_new');
+    titleEl.textContent = i18n.getNestedTranslation('printers.modal.title_new');
+  }
 
   if (id) {
     const p = printers.find(x => x.id === id);
@@ -1286,8 +1305,8 @@ function _warrantyBadge(dateStr) {
   if (!dateStr) return '';
   const diff = new Date(dateStr) - new Date();
   const days = Math.round(diff / 86400000);
-  if (days < 0)  return `<span class="badge" style="background:rgba(239,68,68,.1);color:#dc2626;border-color:rgba(239,68,68,.3);font-size:.62rem">expirada</span>`;
-  if (days <= 30) return `<span class="badge" style="background:rgba(245,158,11,.1);color:#b45309;border-color:rgba(245,158,11,.3);font-size:.62rem">${days}d restantes</span>`;
+  if (days < 0)  return `<span class="badge" style="background:rgba(239,68,68,.1);color:#dc2626;border-color:rgba(239,68,68,.3);font-size:.62rem" data-i18n="status.expirada">${i18n.getNestedTranslation('status.expirada')}</span>`;
+  if (days <= 30) return `<span class="badge" style="background:rgba(245,158,11,.1);color:#b45309;border-color:rgba(245,158,11,.3);font-size:.62rem">${days}d <span data-i18n="status.restantes">${i18n.getNestedTranslation('status.restantes')}</span></span>`;
   return '';
 }
 
@@ -1295,17 +1314,21 @@ function _renderMaintList(p) {
   const list = document.getElementById('maintList');
   const maints = (p.maintenances || []).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
   if (!maints.length) {
-    list.innerHTML = `<div class="maint-empty">Sem manutenções registadas ainda.</div>`;
+    list.innerHTML = `<div class="maint-empty" data-i18n="printers.details.empty_maint">${i18n.getNestedTranslation('printers.details.empty_maint')}</div>`;
     return;
   }
-  list.innerHTML = maints.map((m, idx) => `
+  list.innerHTML = maints.map((m, idx) => {
+    const typeLbl = typeof MAINT_LABELS[m.type] === 'function' ? MAINT_LABELS[m.type]() : (MAINT_LABELS[m.type] || m.type);
+    return `
     <div class="maint-row">
       <span class="maint-row-date">${fmtDate(m.date)}</span>
-      <span class="maint-row-type">${MAINT_LABELS[m.type]||m.type}</span>
-      <span class="maint-row-desc">${escH(m.description||'')}</span>
+      <span class="maint-row-type">${typeLbl}</span>
+      <span class="maint-row-desc">${escH(m.description || '')}</span>
       <span class="maint-row-cost">${m.cost ? fmtEur(m.cost) : '—'}</span>
-      <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="Eliminar">🗑️</button>
-    </div>`).join('');
+      <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="${i18n.getNestedTranslation('printers.card.btn_delete')}">🗑️</button>
+    </div>`;
+  }).join('');
+  i18n.translatePage();
 }
 
 function closeDetailModal() {
@@ -1347,21 +1370,21 @@ async function saveMaintenance() {
           date:        date,
           value:       cost,
           category:    'manutencao',
-          description: `Manutenção ${TYPE_LABELS[p.printerType]||''} ${p.brand} ${p.model} — ${MAINT_LABELS[type]||type}`,
+          description: `${i18n.getNestedTranslation('printers.card.maintenance')} ${typeof TYPE_LABELS[p.printerType]==='function'?TYPE_LABELS[p.printerType]():p.printerType} ${p.brand} ${p.model} — ${typeof MAINT_LABELS[type]==='function'?MAINT_LABELS[type]():type}`,
         });
-        showToast('🔧 Manutenção registada + despesa lançada no Financeiro!', 'ok');
+        showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_expense'), 'ok');
       } catch(e) {
-        showToast('🔧 Manutenção registada (despesa não lançada: ' + e.message + ')', 'ok');
+        showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
       }
     } else {
-      showToast('🔧 Manutenção registada!', 'ok');
+      showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
     }
 
     // Re-open detail modal with fresh data
     openDetailModal(p.id);
     renderPrinters();
     updateStats();
-  } catch(e) { showToast('Erro ao guardar: ' + e.message, 'err'); }
+  } catch(e) { showToast('Error: ' + e.message, 'err'); }
 }
 
 async function deleteMaintenance(printerId, maintIdx) {

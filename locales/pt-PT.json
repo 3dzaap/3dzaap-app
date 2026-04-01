@@ -502,7 +502,9 @@
       "printing": "Produção",
       "done": "Concluído",
       "pendente": "Pendente",
-      "pago": "Pago"
+      "pago": "Pago",
+      "expirada": "Expirada",
+      "restantes": "d restantes"
     }
   },
   "orders": {
@@ -538,7 +540,25 @@
       "empty_title": "Sem pedidos ainda",
       "empty_desc": "Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.",
       "empty_search": "Nenhum registo corresponde aos filtros actuais.",
-      "empty_search_desc": "Tenta ajustar os teus filtros de pesquisa."
+      "empty_search_desc": "Nenhum pedido corresponde aos filtros actuais.",
+      "th_items_n": "{n} itens",
+      "th_items_1": "1 item"
+    },
+    "details": {
+      "email": "Email",
+      "phone": "Telefone",
+      "created": "Data criação",
+      "due": "Prazo entrega",
+      "printer": "Impressora",
+      "est_time": "Tempo estimado",
+      "notes": "Observações",
+      "items_title": "Artigos do pedido",
+      "total": "Total",
+      "actions_done": "✅ Pedido concluído",
+      "actions_advance": "Avançar",
+      "receipt": "Recibo",
+      "tracking": "Tracking",
+      "delete": "Eliminar"
     },
     "modal": {
       "title_new": "＋ Novo Pedido",
@@ -627,9 +647,15 @@
       "empty_desc": "Adiciona o teu primeiro material clicando em <strong>＋ Novo Material</strong> acima.",
       "th_name": "Nome",
       "th_brand": "Marca",
+      "th_type": "Tipo",
       "th_stock": "Stock",
+      "th_in_use": "Em uso",
+      "th_new": "Novas",
+      "th_total": "Total",
       "th_price": "Preço",
-      "th_status": "Estado"
+      "th_pack": "Pack",
+      "th_status": "Estado",
+      "th_expiry": "Validade"
     },
     "modal_pack": {
       "title": "📦 Adicionar Pack de Materiais",
@@ -674,6 +700,92 @@
       "hint_expiry": "Resinas têm validade — normalmente 12-24 meses",
       "btn_save": "💾 Guardar",
       "btn_cancel": "Cancelar"
+    }
+  },
+  "printers": {
+    "title": "Impressoras",
+    "subtitle": "Gere o parque de impressoras — estado, horas e manutenções",
+    "btn_new": "＋ Nova impressora",
+    "stats": {
+      "total": "Total de impressoras",
+      "operational": "Operacionais",
+      "maintenance": "Em manutenção",
+      "total_hours": "Horas totais acumuladas",
+      "revisions": "Revisões"
+    },
+    "empty_title": "Sem impressoras ainda",
+    "empty_desc": "Adiciona a tua primeira impressora clicando em <strong>＋ Nova impressora</strong> acima.",
+    "card": {
+      "hours_used": "horas usadas",
+      "max_life": "vida máx",
+      "maintenance": "Manutenção",
+      "maint_ok": "Manutenção em dia",
+      "maint_req": "Manutenção necessária",
+      "maint_overdue": "Manutenção em atraso ({h}h)",
+      "maint_upcoming": "Manutenção em {h}h",
+      "maint_next": "Próxima manutenção em {h}h",
+      "price": "Preço",
+      "total_cost": "Custo Total",
+      "power_consumption": "Consumo Elétrico",
+      "printing": "A imprimir",
+      "standby": "Standby",
+      "max": "Máx.",
+      "btn_edit": "Editar",
+      "btn_delete": "Eliminar"
+    },
+    "modal": {
+      "title_new": "＋ Nova Impressora",
+      "title_edit": "✏️ Editar Impressora",
+      "section_id": "🖨️ Identificação",
+      "lbl_brand": "Fabricante",
+      "lbl_type": "Tipo",
+      "lbl_model": "Modelo",
+      "lbl_custom_model": "Modelo personalizado",
+      "lbl_status": "Estado",
+      "lbl_custom_name": "Nome personalizado",
+      "hint_custom_name": "Se preenchido, substitui a exibição do modelo.",
+      "section_mms": "🎨 Sistema Multi-Material",
+      "lbl_mms_system": "Sistema",
+      "lbl_mms_qty": "Quantidade de unidades",
+      "section_purchase": "💰 Compra e Vida Útil",
+      "lbl_price": "Preço de compra",
+      "lbl_life": "Vida útil estimada (horas)",
+      "lbl_purchase_date": "Data de compra",
+      "lbl_warranty": "Garantia até",
+      "section_maint": "🔧 Manutenção Preventiva",
+      "lbl_maint_interval": "Intervalo de manutenção (horas)",
+      "lbl_last_maint": "Horas na última manutenção",
+      "lbl_notes": "Notas",
+      "placeholder_notes": "Configurações especiais, observações…",
+      "btn_save": "💾 Guardar",
+      "btn_cancel": "Cancelar"
+    },
+    "details": {
+      "title": "🖨️ Impressora",
+      "history_title": "🔧 Histórico de manutenções",
+      "add_maint_title": "＋ Registar manutenção",
+      "lbl_type": "Tipo",
+      "lbl_date": "Data",
+      "lbl_cost": "Custo",
+      "lbl_hours": "Horas no contador",
+      "lbl_desc": "Descrição",
+      "btn_register": "🔧 Registar",
+      "btn_close": "Fechar",
+      "empty_maint": "Sem histórico de manutenção ainda."
+    },
+    "maint_types": {
+      "outro": "Outro",
+      "lubrificacao": "Lubrificação",
+      "limpeza": "Limpeza",
+      "substituicao_nozzle": "Substituição de nozzle",
+      "substituicao_belt": "Substituição de correia",
+      "substituicao_peca": "Substituição de peça",
+      "calibracao": "Calibração",
+      "reparacao": "Reparação"
+    },
+    "toasts": {
+      "maint_saved": "Manutenção registada!",
+      "maint_expense": "Manutenção registada + despesa lançada no Financeiro!"
     }
   }
 }

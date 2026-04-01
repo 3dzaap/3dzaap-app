@@ -1227,28 +1227,28 @@ function renderTable() {
   if (isFDM) {
     thead.innerHTML = `<tr>
       <th onclick="sortBy('colorName')" id="th-colorName" data-i18n="materials.table.th_name">Nome <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('type')" id="th-type" data-i18n="materials.modal_pack.lbl_type">Tipo <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('type')" id="th-type" data-i18n="materials.table.th_type">Tipo <span class="th-sort">↕</span></th>
       <th onclick="sortBy('brand')" id="th-brand" data-i18n="materials.table.th_brand">Marca <span class="th-sort">↕</span></th>
       <th onclick="sortBy('rollSize')" id="th-rollSize" data-i18n="materials.table.th_stock">Stock <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.modal_mat.lbl_in_use">Em uso <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.modal_mat.lbl_new_auto">Novas <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('total')" id="th-total" data-i18n="materials.modal_mat.lbl_total_fdm">Total <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.table.th_in_use">Em uso <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.table.th_new">Novas <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('total')" id="th-total" data-i18n="materials.table.th_total">Total <span class="th-sort">↕</span></th>
       <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel" data-i18n="materials.table.th_price">Preço</span> <span class="th-sort">↕</span></th>
-      <th data-i18n="materials.btn_pack">Pack</th>
+      <th data-i18n="materials.table.th_pack">Pack</th>
       <th data-i18n="materials.table.th_status">Estado</th><th></th></tr>`;
   } else {
     thead.innerHTML = `<tr>
-      <th onclick="sortBy('colorName')" id="th-colorName">Cor <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('type')" id="th-type">Tipo <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('brand')" id="th-brand">Marca <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('rollSize')" id="th-rollSize">Frasco <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('newRolls')" id="th-newRolls">Novos <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/L</span> <span class="th-sort">↕</span></th>
-      <th>Validade</th>
-      <th>Pack</th>
-      <th>Estado</th><th></th></tr>`;
+      <th onclick="sortBy('colorName')" id="th-colorName" data-i18n="materials.table.th_name">Cor <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('type')" id="th-type" data-i18n="materials.table.th_type">Tipo <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('brand')" id="th-brand" data-i18n="materials.table.th_brand">Marca <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('rollSize')" id="th-rollSize" data-i18n="materials.table.th_stock">Frasco <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.table.th_in_use">Em uso <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.table.th_new">Novos <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('total')" id="th-total" data-i18n="materials.table.th_total">Total <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel" data-i18n="materials.table.th_price">Preço</span> <span class="th-sort">↕</span></th>
+      <th data-i18n="materials.table.th_expiry">Validade</th>
+      <th data-i18n="materials.table.th_pack">Pack</th>
+      <th data-i18n="materials.table.th_status">Estado</th><th></th></tr>`;
   }
 
   // Update price column header with currency
@@ -1303,7 +1303,7 @@ function renderTable() {
         <div class="mob-fil-meta">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))} · ${escH(m.rollSize||'—')} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
         <div class="mob-fil-steppers">
           <div class="mob-fil-step-group">
-            <div class="mob-fil-step-lbl">Em uso</div>
+            <div class="mob-fil-step-lbl" data-i18n="materials.modal_mat.lbl_in_use">Em uso</div>
             <div class="mob-fil-stepper">
               <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',-1)">−</button>
               <span class="stepper-val" id="msv-inUse-${m.id}">${m.inUse||0}</span>
@@ -1311,7 +1311,7 @@ function renderTable() {
             </div>
           </div>
           <div class="mob-fil-step-group">
-            <div class="mob-fil-step-lbl">Total ${unitWord}</div>
+            <div class="mob-fil-step-lbl">${isFDM ? `<span data-i18n="materials.modal_mat.lbl_total_fdm">Total bobinas</span>` : `<span data-i18n="materials.modal_mat.lbl_total_bottles">Total frascos</span>`}</div>
             <div class="mob-fil-stepper">
               <button class="stepper-btn" onclick="stepField(event,'${m.id}','total',-1)">−</button>
               <span class="stepper-val" id="msv-total-${m.id}">${m.total||0}</span>
@@ -1328,6 +1328,7 @@ function renderTable() {
       </div>`;
     }).join('');
   }
+  if (window.i18n) i18n.translatePage();
 }
 
 // ══════════════════════════════════════
