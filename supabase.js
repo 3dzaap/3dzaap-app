@@ -732,6 +732,8 @@ function _mapFilamentToDB(f) {
 }
 
 function _mapOrderFromDB(row) {
+  const status = row.status || row.order_status;
+  const pay    = row.payment_status || row.paymentStatus;
   return {
     id:            row.id,
     orderNumber:   row.order_number,
@@ -742,8 +744,8 @@ function _mapOrderFromDB(row) {
     items:         row.items         || [],
     description:   row.description   || '',
     total:         parseFloat(row.total || 0),
-    status:        row.status,
-    paymentStatus: row.payment_status,
+    status:        (status === 'null' || !status) ? 'orcamento' : status,
+    paymentStatus: (pay === 'null' || !pay) ? 'pendente' : pay,
     createdAt:     row.created_at,
     dueDate:       row.due_date      || '',
     paymentDate:   row.payment_date  || '',
@@ -768,8 +770,8 @@ function _mapOrderToDB(o) {
     items:           o.items        || [],
     description:     o.description  || '',
     total:           parseFloat(o.total) || 0,
-    status:          o.status,
-    payment_status:  o.paymentStatus,
+    status:          (o.status === 'null' || !o.status) ? 'orcamento' : o.status,
+    payment_status:  (o.paymentStatus === 'null' || !o.paymentStatus) ? 'pendente' : o.paymentStatus,
     due_date:        o.dueDate      || null,
     payment_date:    o.paymentDate  || null,
     notes:           o.notes        || null,

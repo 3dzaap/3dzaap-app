@@ -533,6 +533,17 @@ const STATUS_LABELS = {
 const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
 
 // ── HELPERS ────────────────────────────
+function renderStatusBadge(status) {
+  const s = (status === 'null' || !status) ? 'orcamento' : status;
+  const label = typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s] || s);
+  return `<span class="badge bs-${s}"><span class="badge-dot"></span>${label}</span>`;
+}
+function renderPaymentBadge(pay) {
+  const p = (pay === 'null' || !pay) ? 'pendente' : pay;
+  const label = p === 'pago' ? i18n.getNestedTranslation('status.pago') : i18n.getNestedTranslation('status.pendente');
+  return `<span class="badge bp-${p}"><span class="badge-dot"></span>${label}</span>`;
+}
+
 function animateValue(id, start, end, duration, isCurrency = false) {
   const obj = document.getElementById(id);
   if (!obj) return;
@@ -579,13 +590,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Ensure render runs after i18n/cfg
   let attempt = 0;
   const iv = setInterval(() => {
-    if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length) {
+    // Wait for both i18n AND company config (_cfg) to be ready
+    const cfgReady = window._3dzaap_cfg_ready || (window._cfg && window._cfg.currency);
+    const i18nReady = window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length;
+    
+    if (i18nReady && cfgReady) {
       clearInterval(iv);
       renderOrders();
       updateStats();
     }
-    if (++attempt > 20) { clearInterval(iv); renderOrders(); updateStats(); }
-  }, 100);
+    if (++attempt > 25) { 
+      clearInterval(iv); 
+      renderOrders(); 
+      updateStats(); 
+    }
+  }, 120);
 });
 
 // ── USER DATA ──────────────────────────
@@ -748,8 +767,8 @@ function renderOrders(keepExpandId) {
       <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber||'—')}</span></td>
         <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub" data-i18n="${its.length===1?'orders.filters.count_1':'orders.filters.count_n'}" data-i18n-n="${its.length}">${i18n.getNestedTranslation(its.length===1?'orders.filters.count_1':'orders.filters.count_n',{n:its.length})}</div></td>
-        <td><span class="badge bs-${o.status || 'orcamento'}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status || 'orcamento']==='function'?STATUS_LABELS[o.status || 'orcamento']():(STATUS_LABELS[o.status || 'orcamento']||o.status || 'orcamento')}</span></td>
-        <td><span class="badge bp-${o.paymentStatus || 'pendente'}"><span class="badge-dot"></span>${(o.paymentStatus || 'pendente')==='pago'?i18n.getNestedTranslation('status.pago'):i18n.getNestedTranslation('status.pendente')}</span></td>
+        <td>${renderStatusBadge(o.status)}</td>
+        <td>${renderPaymentBadge(o.paymentStatus)}</td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
@@ -800,10 +819,6 @@ function renderOrders(keepExpandId) {
       const nextStatus = STATUS_NEXT[o.status];
       const canAdvance = !!nextStatus;
 
-      const badgePay = o.paymentStatus === 'pago' 
-        ? `<span class="badge bp-pago"><span class="badge-dot"></span>${i18n.getNestedTranslation('status.pago')}</span>`
-        : `<span class="badge bp-pendente"><span class="badge-dot"></span>${i18n.getNestedTranslation('status.pendente')}</span>`;
-
       return `<div class="mob-ord-card" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
@@ -811,8 +826,8 @@ function renderOrders(keepExpandId) {
         </div>
         <div class="mob-ord-client">${escH(o.clientName)}</div>
         <div class="mob-ord-meta">
-          <span class="badge bs-${o.status || 'orcamento'}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status || 'orcamento']==='function'?STATUS_LABELS[o.status || 'orcamento']():(STATUS_LABELS[o.status || 'orcamento']||o.status || 'orcamento')}</span>
-          ${badgePay}
+          ${renderStatusBadge(o.status)}
+          ${renderPaymentBadge(o.paymentStatus)}
           ${o.dueDate?`<span class="mob-ord-date"><span data-i18n="orders.table.due">${i18n.getNestedTranslation('orders.table.due')}</span>: ${fmtDate(o.dueDate)}</span>`:''}
         </div>
         <div class="mob-ord-expand" id="mce-${o.id}">

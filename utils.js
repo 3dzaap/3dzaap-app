@@ -48,6 +48,7 @@ function loadCfg(session) {
   _cfg._dateFmt    = _cfg.dateFmt    || 'DD/MM/YYYY';
   _cfg._weightUnit = _cfg.weightUnit || 'g';
   _cfg._margin     = parseFloat(_cfg.margin) || 30;
+  window._3dzaap_cfg_ready = true;
 }
 
 // ── FORMATTERS ────────────────────────────────────────────────

@@ -823,9 +823,10 @@ function parseToISO(s) {
 
 // ── CSV NORMALISATION HELPERS ──────────────────────────────
 function normStatus(s) {
-  if (!s) return 'orcamento';
+  var val = (s || '').toLowerCase().trim();
+  if (!val || val === 'null') return 'orcamento';
   var map = {
-    'orçamento':'orcamento','orcamento':'orcamento','orcamento':'orcamento',
+    'orçamento':'orcamento','orcamento':'orcamento',
     'modelagem':'modelagem',
     'validação':'validacao','validacao':'validacao',
     'aprovado':'aprovado',
@@ -833,12 +834,11 @@ function normStatus(s) {
     'done':'done','concluído':'done','concluido':'done','entregue':'done',
     'cancelado':'cancelado','cancelled':'cancelado',
   };
-  var key = (s||'').toLowerCase().trim();
-  return map[key] || key || 'orcamento';
+  return map[val] || val || 'orcamento';
 }
 function normPayment(s) {
-  if (!s) return 'pendente';
-  var low = (s||'').toLowerCase().trim();
+  var low = (s || '').toLowerCase().trim();
+  if (!low || low === 'null') return 'pendente';
   if (low === 'pago' || low === 'paid' || low === 'paga') return 'pago';
   if (low.includes('aguard') || low.includes('pend') || low === 'pendente') return 'pendente';
   return 'pendente';
