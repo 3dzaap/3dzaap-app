@@ -819,10 +819,10 @@ function calcHealthScore() {
     const margin = totalRevenue > 0 ? ((totalRevenue - estimatedCost) / totalRevenue) * 100 : null;
     if (margin !== null) {
       var marginTarget=(_cfg&&_cfg._margin)||30;
-    if (margin >= marginTarget) { marginScore = 25; insights.push({t:'ok',  icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — acima do objetivo de ${marginTarget}%.`}); }
-      else if (margin >= marginTarget*0.67) { marginScore = 18; insights.push({t:'warn', icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — considera rever o preço dos materiais.`}); }
-      else if (margin >= marginTarget*0.33) { marginScore = 10; insights.push({t:'warn', icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — atenção aos custos de produção.`}); }
-      else                   { marginScore = 0;  insights.push({t:'bad',  icon:'💰', msg:`Margem estimada ${Math.round(margin)}% — revê urgentemente a tua precificação.`}); }
+    if (margin >= marginTarget) { marginScore = 25; insights.push({t:'ok',  icon:'💰', key:'margin_ok', vars:{m:Math.round(margin),t:marginTarget}}); }
+      else if (margin >= marginTarget*0.67) { marginScore = 18; insights.push({t:'warn', icon:'💰', key:'margin_warn1', vars:{m:Math.round(margin)}}); }
+      else if (margin >= marginTarget*0.33) { marginScore = 10; insights.push({t:'warn', icon:'💰', key:'margin_warn2', vars:{m:Math.round(margin)}}); }
+      else                   { marginScore = 0;  insights.push({t:'bad',  icon:'💰', key:'margin_bad', vars:{m:Math.round(margin)}}); }
     }
   }
   score += marginScore;
@@ -846,12 +846,12 @@ function calcHealthScore() {
       return !isNaN(created) && ((now - created) / 86400000) > avgDays;
     }).length;
     const totalLate = late + lateByAvg;
-    if (totalLate === 0)      { lateScore = 25; insights.push({t:'ok',  icon:'📦', msg:'Nenhum pedido em atraso. Óptimo ritmo de entrega!'}); }
-    else if (totalLate === 1) { lateScore = 15; insights.push({t:'warn', icon:'📦', msg:`1 pedido possivelmente em atraso — verifica as datas de entrega.`}); }
-    else if (totalLate === 2) { lateScore = 8;  insights.push({t:'warn', icon:'📦', msg:`${totalLate} pedidos em atraso — os teus clientes podem estar à espera.`}); }
-    else                      { lateScore = 0;  insights.push({t:'bad',  icon:'📦', msg:`${totalLate} pedidos em atraso — risco alto para a reputação do negócio.`}); }
+    if (totalLate === 0)      { lateScore = 25; insights.push({t:'ok',  icon:'📦', key:'late_ok'}); }
+    else if (totalLate === 1) { lateScore = 15; insights.push({t:'warn', icon:'📦', key:'late_warn1'}); }
+    else if (totalLate === 2) { lateScore = 8;  insights.push({t:'warn', icon:'📦', key:'late_warnN', vars:{n:totalLate}}); }
+    else                      { lateScore = 0;  insights.push({t:'bad',  icon:'📦', key:'late_badN', vars:{n:totalLate}}); }
   } else if (openOrders.length === 0) {
-    insights.push({t:'ok', icon:'📦', msg:'Sem pedidos em aberto. Pronto para novos trabalhos!'});
+    insights.push({t:'ok', icon:'📦', key:'late_none'});
   }
   score += lateScore;
 
@@ -864,15 +864,15 @@ function calcHealthScore() {
   } else if (alertFils.length === 0) {
     stockScore = 20;
     if(_cfg.notifStockOut !== false || _cfg.notifStockLow !== false)
-      insights.push({t:'ok', icon:'🎨', msg:'Stock de filamentos em boa ordem.'});
+      insights.push({t:'ok', icon:'🎨', key:'stock_ok'});
   } else if (alertFils.length <= 2) {
     stockScore = 12;
     if(_cfg.notifStockLow !== false)
-      insights.push({t:'warn', icon:'🎨', msg:`${alertFils.length} filamento(s) com stock baixo — repõe antes de receber novos pedidos.`});
+      insights.push({t:'warn', icon:'🎨', key:'stock_warnN', vars:{n:alertFils.length}});
   } else {
     stockScore = 0;
     if(_cfg.notifStockOut !== false)
-      insights.push({t:'bad',  icon:'🎨', msg:`${alertFils.length} filamentos em alerta — risco de não conseguires cumprir pedidos.`});
+      insights.push({t:'bad',  icon:'🎨', key:'stock_badN', vars:{n:alertFils.length}});
   }
   score += stockScore;
 
@@ -885,13 +885,13 @@ function calcHealthScore() {
   if (totalMonth === 0) {
     payScore = 20; // sem dados = máximo
   } else if (pendRate === 0) {
-    payScore = 20; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', msg:'Todos os pedidos deste mês estão pagos.'});
+    payScore = 20; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', key:'pay_ok_all'});
   } else if (pendRate < 0.2) {
-    payScore = 14; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', msg:`${Math.round(pendRate*100)}% dos pedidos pendentes de pagamento — dentro do normal.`});
+    payScore = 14; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', key:'pay_ok_some', vars:{p:Math.round(pendRate*100)}});
   } else if (pendRate < 0.5) {
-    payScore = 6;  if(_cfg.notifOverdue!==false) insights.push({t:'warn', icon:'💳', msg:`${Math.round(pendRate*100)}% dos pedidos sem pagamento recebido — acompanha os clientes.`});
+    payScore = 6;  if(_cfg.notifOverdue!==false) insights.push({t:'warn', icon:'💳', key:'pay_warn', vars:{p:Math.round(pendRate*100)}});
   } else {
-    payScore = 0;  if(_cfg.notifOverdue!==false) insights.push({t:'bad',  icon:'💳', msg:`Mais de metade dos pedidos sem pagamento — cashflow em risco.`});
+    payScore = 0;  if(_cfg.notifOverdue!==false) insights.push({t:'bad',  icon:'💳', key:'pay_bad'});
   }
   score += payScore;
 
@@ -904,9 +904,10 @@ function calcHealthScore() {
     trendScore = 10; // sem histórico = máximo
   } else {
     const change = (revThis - revPrev) / revPrev;
-    if (change >= 0)    { trendScore = 10; insights.push({t:'ok',  icon:'📈', msg:`Receita ${change>0?'+'+Math.round(change*100)+'%':'estável'} face ao mês anterior.`}); }
-    else if (change > -0.2) { trendScore = 5; insights.push({t:'warn', icon:'📉', msg:`Receita ${Math.round(change*100)}% face ao mês anterior — mês mais fraco.`}); }
-    else                { trendScore = 0; insights.push({t:'bad',  icon:'📉', msg:`Receita ${Math.round(change*100)}% face ao mês anterior — verifica a tua pipeline.`}); }
+    if (change === 0) { trendScore = 10; insights.push({t:'ok', icon:'📈', key:'rev_stable'}); }
+    else if (change > 0) { trendScore = 10; insights.push({t:'ok', icon:'📈', key:'rev_up', vars:{p:Math.round(change*100)}}); }
+    else if (change > -0.2) { trendScore = 5; insights.push({t:'warn', icon:'📉', key:'rev_warn', vars:{p:Math.round(change*100)*-1}}); }
+    else { trendScore = 0; insights.push({t:'bad', icon:'📉', key:'rev_bad', vars:{p:Math.round(change*100)*-1}}); }
   }
   score += trendScore;
 
@@ -967,9 +968,13 @@ function calcHealthScore() {
   // Insights — limit to top 3 most actionable
   const priority = ['bad','warn','ok'];
   insights.sort((a,b) => priority.indexOf(a.t) - priority.indexOf(b.t));
-  insightsEl.innerHTML = insights.slice(0,3).map(i =>
-    `<div class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${i.msg}</span></div>`
-  ).join('');
+  insightsEl.innerHTML = insights.slice(0,3).map(i => {
+    let msg = t('dash.health.insights.' + i.key) || i.key;
+    if (i.vars) {
+      for (const [k, v] of Object.entries(i.vars)) msg = msg.replace(`{${k}}`, v);
+    }
+    return `<div class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${msg}</span></div>`;
+  }).join('');
 
   // Due date tip — show if more than 30% of open orders have no due_date
   if (missingDueDates && ordersWithoutDue.length > 0) {
@@ -1303,7 +1308,7 @@ function navigate(page) {
   }
 
   if (page === 'billing') {
-    showToast('Assinatura — brevemente disponível 🚀','');
+    window.location.href = 'settings.html?tab=assinatura';
     return false;
   }
   if (page === 'settings') {
