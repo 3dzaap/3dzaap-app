@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Skeuomorphism UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Georgia:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --leather-dark:  #2c1810;
+    --leather-mid:   #5c3320;
+    --leather-light: #8b4513;
+    --linen:         #f5f0e8;
+    --linen-dark:    #e8ddc8;
+    --linen-border:  #c8b89a;
+    --ink:           #2c2416;
+    --ink-faint:     #6b5a42;
+    --metal-light:   #e8e8e8;
+    --metal-mid:     #c0c0c0;
+    --metal-dark:    #888;
+    --green-felt:    #2d5a1b;
+    --green-felt2:   #3a7524;
+    --amber:         #d4850a;
+    --amber-light:   #f0a020;
+    --red:           #8b1a1a;
+    --gold:          #c8a040;
+    --gold-light:    #e8c060;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-color: #1a0e08;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(255,255,255,.015) 24px, rgba(255,255,255,.015) 25px),
+      repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(255,255,255,.015) 24px, rgba(255,255,255,.015) 25px),
+      linear-gradient(160deg, #2c1810 0%, #1a0e08 40%, #0d0805 100%);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── Leather texture on body ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23000' opacity='.05'/%3E%3Ccircle cx='1' cy='1' r='.5' fill='%23fff' opacity='.03'/%3E%3Ccircle cx='3' cy='3' r='.5' fill='%23fff' opacity='.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ── App Layout ── */
+  .app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+  /* ── Sidebar — Polished wood ── */
+  .sidebar {
+    width: 230px; flex-shrink: 0;
+    background: linear-gradient(180deg, #3d2010 0%, #2c1810 30%, #1e1008 100%);
+    border-right: 3px solid;
+    border-image: linear-gradient(180deg, var(--gold), var(--leather-mid), var(--gold)) 1;
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 20px 14px;
+    box-shadow: 4px 0 20px rgba(0,0,0,.5), inset -2px 0 6px rgba(255,200,80,.05);
+  }
+
+  .brand {
+    padding: 10px 8px 24px;
+    border-bottom: 1px solid rgba(200,160,64,.2);
+    margin-bottom: 10px;
+  }
+  .brand-logo {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: linear-gradient(145deg, var(--gold-light), var(--gold), var(--amber));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 800; color: var(--leather-dark);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.3) inset,
+      0 -2px 0 rgba(0,0,0,.3) inset,
+      2px 4px 10px rgba(0,0,0,.5);
+    margin-bottom: 8px;
+    letter-spacing: -.5px;
+  }
+  .brand-name { font-size: 1.05rem; font-weight: 700; color: var(--gold-light); letter-spacing: .5px; }
+  .brand-sub  { font-size: .62rem; color: var(--gold); opacity: .7; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 6px;
+    font-size: .82rem; font-weight: 500; color: rgba(240,210,140,.6);
+    cursor: pointer; transition: all .15s; text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover {
+    background: rgba(200,160,64,.12);
+    color: var(--gold-light);
+    border-color: rgba(200,160,64,.15);
+  }
+  .nav-item.active {
+    background: linear-gradient(180deg, rgba(200,160,64,.18), rgba(200,160,64,.08));
+    color: var(--gold-light);
+    border-color: rgba(200,160,64,.3);
+    box-shadow: 0 1px 0 rgba(255,200,80,.1) inset, 0 2px 6px rgba(0,0,0,.3);
+  }
+  .nav-icon { font-size: .95rem; width: 20px; text-align: center; }
+  .nav-sep { height: 1px; background: rgba(200,160,64,.15); margin: 10px 0; }
+
+  /* ── Main ── */
+  .main {
+    flex: 1; padding: 24px 28px;
+    display: flex; flex-direction: column; gap: 20px;
+    overflow-y: auto;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,.04) 27px, rgba(0,0,0,.04) 28px),
+      linear-gradient(160deg, #f5f0e8 0%, #ede5d0 100%);
+  }
+
+  /* ── Topbar — Brushed metal ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, var(--metal-light) 0%, var(--metal-mid) 50%, var(--metal-light) 100%);
+    border-radius: 10px;
+    border: 1px solid var(--metal-dark);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.9) inset,
+      0 -1px 0 rgba(0,0,0,.2) inset,
+      0 4px 12px rgba(0,0,0,.25);
+  }
+  .topbar-title {
+    font-size: 1rem; font-weight: 700; color: var(--ink);
+    text-shadow: 0 1px 0 rgba(255,255,255,.8);
+    letter-spacing: .3px;
+  }
+  .metal-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(145deg, #f0f0f0, #c8c8c8);
+    border: 1px solid #aaa;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,.25), 0 1px 0 rgba(255,255,255,.8) inset;
+    transition: all .1s;
+  }
+  .metal-btn:active {
+    box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.4) inset;
+    transform: translateY(1px);
+  }
+
+  /* ── Paper cards ── */
+  .paper {
+    background: linear-gradient(145deg, #faf7f2, #f0ebe0);
+    border: 1px solid var(--linen-border);
+    border-radius: 6px;
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.9) inset,
+      0 -1px 0 rgba(0,0,0,.08) inset,
+      2px 4px 16px rgba(0,0,0,.15),
+      0 0 0 1px rgba(0,0,0,.04);
+  }
+
+  /* ── Green felt card ── */
+  .felt {
+    background:
+      repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px),
+      linear-gradient(145deg, var(--green-felt2), var(--green-felt));
+    border: 3px solid var(--leather-light);
+    border-radius: 8px;
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.08) inset,
+      0 4px 20px rgba(0,0,0,.3);
+    color: #d4e8c8;
+  }
+
+  /* ── Stats row ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  .stat-card {
+    padding: 18px 16px;
+    position: relative;
+  }
+  .stat-card-inner { display: flex; flex-direction: column; gap: 6px; }
+  .stat-num  { font-size: 1.8rem; font-weight: 800; color: var(--ink); line-height: 1; }
+  .stat-lbl  { font-size: .72rem; color: var(--ink-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-pill {
+    display: inline-block; font-size: .65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; width: fit-content;
+  }
+  .pill-up   { background: #d4edda; color: #1a5c2a; border: 1px solid #a8d5b5; }
+  .pill-down { background: #fde8e8; color: #8b1a1a; border: 1px solid #f0b0b0; }
+  .pill-neu  { background: #e8f0fd; color: #1a3c8b; border: 1px solid #a8c0f0; }
+
+  .stat-divider {
+    position: absolute; top: 12%; right: 0; width: 1px; height: 76%;
+    background: linear-gradient(180deg, transparent, var(--linen-border), transparent);
+  }
+
+  /* ── Ledger/notebook style ── */
+  .ledger-line {
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ledger-line:last-child { border-bottom: none; }
+  .ledger-num  { font-size: .75rem; color: var(--ink-faint); width: 70px; font-weight: 600; }
+  .ledger-name { flex: 1; font-size: .85rem; font-weight: 500; color: var(--ink); }
+  .ledger-val  { font-size: .85rem; font-weight: 700; color: var(--ink); }
+  .status-stamp {
+    font-size: .62rem; font-weight: 800; padding: 2px 7px; border-radius: 4px;
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .stamp-done   { background: #d4edda; color: #1a5c2a; border: 1px solid #a8d5b5; }
+  .stamp-print  { background: #dde8fd; color: #1a3c8b; border: 1px solid #a8c0f0; }
+  .stamp-quote  { background: #fff3cd; color: #7a5a00; border: 1px solid #e8d080; }
+
+  /* ── Health gauge ── */
+  .gauge-wrap { display: flex; align-items: center; gap: 24px; }
+  .gauge {
+    position: relative; width: 130px; height: 130px; flex-shrink: 0;
+  }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge-bg   { fill: none; stroke: rgba(0,0,0,.08); stroke-width: 10; }
+  .gauge-fg   { fill: none; stroke: var(--green-felt2); stroke-width: 10; stroke-linecap: round;
+                stroke-dasharray: 326; stroke-dashoffset: 60; transition: stroke-dashoffset 1s ease; }
+  .gauge-num  {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.7rem; color: var(--ink);
+    line-height: 1;
+  }
+  .gauge-sub  { font-size: .65rem; color: var(--ink-faint); font-weight: 600; }
+
+  /* ── Rivets decoration ── */
+  .rivet {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #e8e8e8, #888);
+    box-shadow: 0 1px 2px rgba(0,0,0,.4);
+    display: inline-block;
+  }
+  .rivets-row { display: flex; gap: 6px; margin-bottom: 4px; }
+
+  /* ── Section headers ── */
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px 0;
+    font-size: .82rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--ink-faint);
+  }
+  .section-rule {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--linen-border), transparent);
+  }
+
+  /* ── Typewriter header ── */
+  .tw-header {
+    font-family: 'Courier New', monospace;
+    font-size: .68rem; letter-spacing: 1px; color: var(--ink-faint);
+    padding: 14px 18px 8px;
+    border-bottom: 2px solid var(--linen-border);
+    display: flex; justify-content: space-between;
+  }
+
+  /* ── Content grid ── */
+  .content-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+
+  /* ── Actions ── */
+  .actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .action-btn {
+    padding: 14px 12px; text-align: center; cursor: pointer;
+    background: linear-gradient(180deg, #fdfaf5 0%, #ede5d0 100%);
+    border: 1px solid var(--linen-border);
+    border-radius: 8px;
+    box-shadow: 0 3px 0 var(--linen-border), 0 4px 8px rgba(0,0,0,.1), 0 1px 0 rgba(255,255,255,.9) inset;
+    transition: all .1s;
+  }
+  .action-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--linen-border), 0 2px 4px rgba(0,0,0,.1), 0 1px 0 rgba(255,255,255,.9) inset;
+  }
+  .action-ic  { font-size: 1.4rem; margin-bottom: 6px; }
+  .action-lbl { font-size: .78rem; font-weight: 700; color: var(--ink); }
+  .action-sub { font-size: .65rem; color: var(--ink-faint); margin-top: 2px; }
+
+  /* ── Greeting ── */
+  .greeting { padding: 4px 0; }
+  .greeting h1 {
+    font-size: 1.5rem; font-weight: 800; color: var(--ink);
+    text-shadow: 0 1px 0 rgba(255,255,255,.6);
+  }
+  .greeting p { font-size: .85rem; color: var(--ink-faint); margin-top: 2px; }
+
+  /* ── Topbar right ── */
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .avatar-skeuo {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(145deg, var(--gold-light), var(--amber));
+    border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 800; color: var(--leather-dark);
+    box-shadow: 0 2px 4px rgba(0,0,0,.25), 0 1px 0 rgba(255,255,255,.6) inset;
+  }
+
+  .page-label {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 7px 16px; border-radius: 4px;
+    font-size: .72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    background: linear-gradient(145deg, var(--gold-light), var(--amber));
+    color: var(--leather-dark); z-index: 999;
+    box-shadow: 0 2px 0 rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,.4) inset;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .content-grid { grid-template-columns: 1fr; }
+    .actions-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">3D</div>
+      <div class="brand-name">3DZAAP</div>
+      <div class="brand-sub">Studio Pro</div>
+    </div>
+    <a class="nav-item active" href="#"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="#"><span class="nav-icon">📐</span> Calculadora</a>
+    <a class="nav-item" href="#"><span class="nav-icon">📦</span> Pedidos</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🎨</span> Materiais</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🖨️</span> Impressoras</a>
+    <div class="nav-sep"></div>
+    <a class="nav-item" href="#"><span class="nav-icon">💰</span> Financeiro</a>
+    <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Definições</a>
+    <div style="flex:1"></div>
+    <a class="nav-item" href="#" style="color:rgba(220,100,80,.7)"><span class="nav-icon">🚪</span> Sair</a>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">📋 Dashboard — Painel de Controlo</div>
+      <div class="topbar-right">
+        <div class="metal-btn">🔔</div>
+        <div class="metal-btn">❓</div>
+        <div class="avatar-skeuo">BA</div>
+      </div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting">
+      <h1>📅 Bom dia, Breno</h1>
+      <p>Quarta-feira, 1 de Abril de 2026 · Aqui está o resumo da tua actividade</p>
+    </div>
+
+    <!-- Stats (Paper cards) -->
+    <div class="stats-row">
+      <div class="stat-card paper">
+        <div class="rivets-row"><div class="rivet"></div><div class="rivet"></div></div>
+        <div class="stat-lbl">Fluxo de Caixa</div>
+        <div class="stat-num">€ 4.380</div>
+        <div class="stat-pill pill-up">▲ +18% vs mês ant.</div>
+        <div class="stat-divider"></div>
+      </div>
+      <div class="stat-card paper">
+        <div class="rivets-row"><div class="rivet"></div><div class="rivet"></div></div>
+        <div class="stat-lbl">Pedidos Activos</div>
+        <div class="stat-num">12</div>
+        <div class="stat-pill pill-up">▲ +2 esta semana</div>
+        <div class="stat-divider"></div>
+      </div>
+      <div class="stat-card paper">
+        <div class="rivets-row"><div class="rivet"></div><div class="rivet"></div></div>
+        <div class="stat-lbl">Eficiência da Frota</div>
+        <div class="stat-num">80%</div>
+        <div class="stat-pill pill-neu">4/5 online</div>
+        <div class="stat-divider"></div>
+      </div>
+      <div class="stat-card paper">
+        <div class="rivets-row"><div class="rivet"></div><div class="rivet"></div></div>
+        <div class="stat-lbl">Alertas de Stock</div>
+        <div class="stat-num">2</div>
+        <div class="stat-pill pill-down">▼ Reabastecimento</div>
+      </div>
+    </div>
+
+    <!-- Actions (Physical buttons) -->
+    <div class="actions-row">
+      <div class="action-btn"><div class="action-ic">📐</div><div class="action-lbl">Novo Cálculo</div><div class="action-sub">Calcular custo</div></div>
+      <div class="action-btn"><div class="action-ic">📦</div><div class="action-lbl">Novo Pedido</div><div class="action-sub">Registar cliente</div></div>
+      <div class="action-btn"><div class="action-ic">🎨</div><div class="action-lbl">Materiais</div><div class="action-sub">Actualizar stock</div></div>
+      <div class="action-btn"><div class="action-ic">📊</div><div class="action-lbl">Financeiro</div><div class="action-sub">Ver receitas</div></div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="content-grid">
+      <!-- Health gauge on felt -->
+      <div class="felt">
+        <div class="section-header" style="color:rgba(200,230,180,.7)">
+          ⚡ Saúde do Negócio <div class="section-rule" style="background:linear-gradient(90deg, rgba(200,230,180,.3), transparent)"></div>
+        </div>
+        <div style="padding: 18px 18px 20px; display:flex; flex-direction:column; gap:12px;">
+          <div class="gauge-wrap">
+            <div class="gauge">
+              <svg width="130" height="130" viewBox="0 0 130 130">
+                <circle class="gauge-bg" cx="65" cy="65" r="52"/>
+                <circle class="gauge-fg" cx="65" cy="65" r="52"/>
+              </svg>
+              <div class="gauge-num">82<div class="gauge-sub">PONTOS</div></div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.9rem; font-weight:800; color:#d4e8c8; margin-bottom:10px">Negócio Saudável 💚</div>
+              <div style="font-size:.78rem; color:rgba(200,230,160,.7); line-height:1.7">
+                ✅ Margem excelente de 38%<br>
+                ✅ Sem pedidos em atraso<br>
+                ⚠️ 2 materiais com stock baixo
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders — Ledger style -->
+      <div class="paper" style="overflow:hidden">
+        <div class="tw-header">
+          <span>REGISTO DE PEDIDOS</span>
+          <span>1 ABR 2026</span>
+        </div>
+        <div class="ledger-line" style="background:rgba(0,0,0,.025); font-size:.68rem; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.5px">
+          <div style="width:70px">Nº</div>
+          <div style="flex:1">Cliente</div>
+          <div>Estado</div>
+          <div style="width:60px; text-align:right">Total</div>
+        </div>
+        <div class="ledger-line">
+          <div class="ledger-num">PED-041</div>
+          <div class="ledger-name">João Ferreira</div>
+          <div class="status-stamp stamp-print">Impressão</div>
+          <div class="ledger-val" style="width:60px; text-align:right">€&nbsp;87</div>
+        </div>
+        <div class="ledger-line">
+          <div class="ledger-num">PED-040</div>
+          <div class="ledger-name">Maria Costa</div>
+          <div class="status-stamp stamp-done">Concluído</div>
+          <div class="ledger-val" style="width:60px; text-align:right">€&nbsp;142</div>
+        </div>
+        <div class="ledger-line">
+          <div class="ledger-num">PED-039</div>
+          <div class="ledger-name">TechLab Lda.</div>
+          <div class="status-stamp stamp-quote">Orçamento</div>
+          <div class="ledger-val" style="width:60px; text-align:right">€&nbsp;320</div>
+        </div>
+        <div class="ledger-line">
+          <div class="ledger-num">PED-038</div>
+          <div class="ledger-name">André Sousa</div>
+          <div class="status-stamp stamp-done">Concluído</div>
+          <div class="ledger-val" style="width:60px; text-align:right">€&nbsp;55</div>
+        </div>
+        <div style="padding:10px 14px; text-align:right; font-size:.72rem; color:var(--ink-faint); border-top:1px solid var(--linen-border)">
+          Ver todos os registos →
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page-label">Skeuomorphism</div>
+
+</body>
+</html>
