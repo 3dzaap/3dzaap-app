@@ -11,18 +11,17 @@
 
 <style>
 :root{
-  --blue:#3B8FD4; --blue-d:#2a6fb0; --blue-dd:#1a4f80; --blue-lt:#72B8F0; --blue-g:rgba(59,143,212,0.10);
-  --orange:#F5943A; --orange-d:#d4762a; --orange-lt:#FFB870; --orange-g:rgba(245,148,58,0.12);
-  --black:#0D1117; --dark:#1a2332; --muted:#4A5568; --subtle:#94A3B8;
-  --border:rgba(255,255,255,0.3); --bdark:rgba(0,0,0,0.09);
-  --glass:rgba(255,255,255,0.45); --glass-s:rgba(255,255,255,0.75);
-  --blur:blur(16px) saturate(1.8); --blur-sm:blur(8px) saturate(1.4);
-  --sh:0 8px 32px rgba(30,60,120,0.08),0 2px 8px rgba(30,60,120,0.04);
-  --sh-lg:0 24px 64px rgba(30,60,120,0.14),0 4px 16px rgba(30,60,120,0.08);
-  --sh-xl:0 40px 100px rgba(30,60,120,0.18);
-  --r:10px; --rm:16px; --rl:24px; --rx:32px; --r2x:44px;
+  --blue:#3B8FD4; --blue-d:#1d4ed8; --blue-g:rgba(59,143,212,0.08);
+  --orange:#F5943A; --orange-d:#c2410c; --amber:#fcd34d;
+  --black:#020617; --dark:#1e293b; --muted:#64748b; --subtle:#94a3b8;
+  --bg-lite:#f8fafc; --white:#ffffff;
+  --border:rgba(15,23,42,0.08); --border-w:rgba(255,255,255,0.1);
+  --sh:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --sh-lg:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --sh-xl:0 35px 60px -15px rgba(0,0,0,0.3);
+  --r:12px; --rm:16px; --rl:24px; --rx:40px;
   --f:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
-  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease:cubic-bezier(0.16, 1, 0.3, 1);
 }
 .b3d{color:var(--blue);font-weight:900}
 .bzp{color:var(--orange);font-weight:900}
@@ -41,14 +40,17 @@
 /* ── PAS SECTION (The Two Paths) ── */
 .pas{padding:100px 0;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(59,143,212,0.05) 100%)}
 .pas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin:48px 0}
-.pas-card{padding:40px;border-radius:var(--rl);background:#fff;border:1.5px solid var(--border);transition:all 0.3s var(--ease);text-align:center}
-.pas-card:hover{transform:translateY(-8px);box-shadow:var(--sh-lg);border-color:rgba(245,148,58,0.3)}
-.pas-icon{font-size:3rem;margin-bottom:20px;display:block}
-.pas-title{font-size:1.4rem;font-weight:800;margin-bottom:12px;color:var(--black)}
-.pas-desc{font-size:1rem;color:var(--muted);line-height:1.6}
-.pas-solution{margin-top:60px;padding:48px;border-radius:var(--rx);background:linear-gradient(135deg,var(--dark),var(--black));color:#fff;text-align:center;box-shadow:var(--sh-xl)}
-.ps-box h3{font-size:2rem;font-weight:900;margin-bottom:16px;color:var(--blue-lt)}
-.ps-box p{font-size:1.2rem;max-width:800px;margin:0 auto;line-height:1.6;opacity:0.9}
+.pas-card{position:relative;padding:48px 40px;border-radius:var(--rl);background:#fff;border:1px solid var(--border);transition:all 0.4s var(--ease);text-align:center;overflow:hidden}
+.pas-card:hover{transform:translateY(-12px);box-shadow:var(--sh-lg);border-color:var(--blue-lt)}
+.pas-card-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 0%, rgba(59,143,212,0.05), transparent 70%);opacity:0;transition:0.4s}
+.pas-card:hover .pas-card-glow{opacity:1}
+.pas-icon{font-size:3.5rem;margin-bottom:24px;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.1))}
+.pas-title{font-size:1.5rem;font-weight:900;margin-bottom:16px;color:var(--black);line-height:1.2}
+.pas-desc{font-size:1.05rem;color:var(--muted);line-height:1.6}
+.pas-solution{margin-top:80px;padding:64px;border-radius:var(--rx);background:linear-gradient(135deg,var(--dark),var(--black));color:#fff;text-align:center;box-shadow:var(--sh-xl);position:relative;overflow:hidden}
+.pas-solution::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)}
+.ps-box h3{font-size:2.4rem;font-weight:900;margin-bottom:20px;color:var(--white)}
+.ps-box p{font-size:1.3rem;max-width:850px;margin:0 auto;line-height:1.6;opacity:0.8;font-weight:300}
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
@@ -100,15 +102,14 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .lang-select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--glass);font-family:var(--f);font-size:0.8rem;font-weight:600;cursor:pointer;outline:none}
 
 /* ── HERO ───────────────────────────── */
-.hero{padding:180px 0 100px;text-align:center;position:relative;overflow:hidden}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:rgba(255,255,255,0.8);border:1.5px solid var(--border);border-radius:30px;font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:24px;box-shadow:var(--sh);backdrop-filter:blur(10px)}
-.eyebrow .dot{width:8px;height:8px;background:var(--blue);border-radius:50%;display:inline-block;animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(59,143,212,0.4)}70%{box-shadow:0 0 0 10px rgba(59,143,212,0)}100%{box-shadow:0 0 0 0 rgba(59,143,212,0)}}
+.hero{padding:160px 0 100px;text-align:center;position:relative;background: radial-gradient(circle at 50% -20%, rgba(59,143,212,0.08) 0%, transparent 60%)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#fff;border:1px solid var(--border);border-radius:100px;font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:32px;box-shadow:var(--sh);text-transform:uppercase;letter-spacing:1px}
+.eyebrow .dot{width:6px;height:6px;background:var(--blue);border-radius:50%;display:inline-block;animation:pulse 2s infinite}
 
-.headline{font-size:clamp(2.8rem, 6vw, 4.8rem);font-weight:950;line-height:1.05;letter-spacing:-3px;margin-bottom:24px;color:var(--black)}
-.hl-grad{background:linear-gradient(135deg, var(--blue), #6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.25rem;color:var(--muted);max-width:750px;margin:0 auto 48px;line-height:1.6}
-.hero-ctas{display:flex;gap:20px;justify-content:center;margin-bottom:64px}
+.headline{font-size:clamp(3rem, 7vw, 5.2rem);font-weight:900;line-height:0.95;letter-spacing:-4px;margin-bottom:28px;color:var(--black)}
+.hl-grad{background:linear-gradient(to right, var(--blue), #6366f1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:inline-block}
+.hero-sub{font-size:1.4rem;color:var(--muted);max-width:800px;margin:0 auto 56px;line-height:1.5;font-weight:400}
+.hero-ctas{display:flex;gap:16px;justify-content:center;margin-bottom:80px}
 
 .hero-visual{position:relative;max-width:1100px;margin:0 auto;perspective:1000px}
 .hero-mockup{border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:6px solid white;position:relative;z-index:2;background:white;transition:transform 0.5s var(--ease)}
@@ -219,11 +220,11 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .ssub{color:var(--muted);max-width:600px;margin:0 auto}
 
 .fgrid{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px}
-.fcard{padding:32px;transition:all 0.3s var(--ease);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px}
-.fcard:hover{transform:translateY(-8px);border-color:var(--blue-lt)}
-.ficon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;background:var(--blue-g);color:var(--blue)}
-.ftit{font-size:1.2rem;font-weight:800}
-.fdesc{font-size:0.95rem;color:var(--muted);line-height:1.6}
+.fcard{background:#fff;border:1px solid var(--border);padding:40px;border-radius:var(--rl);transition:all 0.4s var(--ease);display:flex;flex-direction:column;gap:16px;box-shadow:var(--sh)}
+.fcard:hover{transform:translateY(-8px);box-shadow:var(--sh-lg);border-color:var(--blue-lt)}
+.ficon{font-size:2.5rem;margin-bottom:8px;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.05))}
+.ftit{font-size:1.35rem;font-weight:800;color:var(--black);letter-spacing:-0.5px}
+.fdesc{font-size:1rem;color:var(--muted);line-height:1.6;font-weight:400}
 
 /* Health Score Card (Special) */
 .fcard-hs{grid-column:1/-1;display:grid;grid-template-columns:1.2fr 0.8fr;gap:40px;align-items:center;background:linear-gradient(135deg, white, #fffcf5);border:2px solid #fceec7}
@@ -243,14 +244,14 @@ input:checked + .ttr + .tth{transform:translateX(24px)}
 .save-badge{background:#e6fffa;color:#2c7a7b;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800}
 
 .pgrid{display:grid;grid-template-columns:repeat(4, 1fr);gap:20px}
-.pcard{padding:40px 24px;text-align:center;display:flex;flex-direction:column;gap:16px}
-.pcard.popular{border:2px solid var(--blue);transform:scale(1.05);z-index:3;background:white}
-.pname{font-size:0.8rem;text-transform:uppercase;font-weight:800;letter-spacing:1px;color:var(--subtle)}
-.pamt-wrap{display:flex;align-items:baseline;justify-content:center;gap:4px}
-.pcur{font-size:1.2rem;font-weight:700}
-.pamt{font-size:3rem;font-weight:900;letter-spacing:-2px}
-.pper{font-size:0.9rem;color:var(--subtle)}
-.pdesc{font-size:0.85rem;color:var(--muted);min-height:45px}
+.pcard{padding:48px 32px;text-align:center;display:flex;flex-direction:column;gap:20px;background:#fff;border-radius:var(--rl);border:1px solid var(--border);transition:all 0.4s var(--ease)}
+.pcard.popular{border:2px solid var(--blue);transform:scale(1.05);z-index:3;box-shadow:var(--sh-lg)}
+.pname{font-size:0.85rem;text-transform:uppercase;font-weight:800;letter-spacing:2px;color:var(--blue)}
+.pamt-wrap{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:8px 0}
+.pcur{font-size:1.4rem;font-weight:800;color:var(--black)}
+.pamt{font-size:3.5rem;font-weight:950;letter-spacing:-3px;color:var(--black)}
+.pper{font-size:1rem;color:var(--muted);font-weight:500}
+.pdesc{font-size:0.95rem;color:var(--muted);min-height:48px;line-height:1.5}
 .pbtn{width:100%}
 
 .pfeatures{list-style:none;text-align:left;margin:20px 0;flex-grow:1;display:flex;flex-direction:column;gap:12px}
@@ -260,16 +261,17 @@ input:checked + .ttr + .tth{transform:translateX(24px)}
 .pfeature.off span{color:var(--subtle)}
 
 /* ── FOOTER ─────────────────────────── */
-footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);color:white;border-top:1px solid rgba(255,255,255,0.1)}
-.fgrid-main{display:grid;grid-template-columns:1.5fr repeat(3, 1fr);gap:40px;margin-bottom:60px}
-.flogo{font-size:1.5rem;font-weight:900;margin-bottom:20px}
+footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black);color:white;border-top:1px solid var(--border-w)}
+.fgrid-main{display:grid;grid-template-columns:1.5fr repeat(3, 1fr);gap:60px;margin-bottom:80px}
+.flogo{font-size:1.8rem;font-weight:900;margin-bottom:24px;letter-spacing:-1px}
 .flogo b{color:var(--blue)}
-.fcol h4{font-size:0.9rem;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;color:var(--blue-lt)}
+.fcol h4{font-size:0.85rem;margin-bottom:28px;text-transform:uppercase;letter-spacing:2px;color:var(--white);font-weight:800}
 .flinks{list-style:none}
-.flinks li{margin-bottom:12px}
-.flinks a{color:rgba(255,255,255,0.6);text-decoration:none;transition:0.2s}
-.flinks a:hover{color:white}
-.fbot{padding-top:40px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:0.8rem;color:rgba(255,255,255,0.4)}
+.flinks li{margin-bottom:16px}
+.flinks a{color:var(--subtle);text-decoration:none;transition:0.3s;font-weight:500;font-size:0.95rem}
+.flinks a:hover{color:var(--white);transform:translateX(5px);display:inline-block}
+.fbot{padding-top:40px;border-top:1px solid var(--border-w);display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;color:var(--muted)}
+.fbrand p{line-height:1.6;max-width:280px}
 
 /* Responsive */
 @media(max-width:960px){
@@ -338,76 +340,24 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
     </div>
     
     <div class="hero-visual fu d4">
+      <div class="hero-mockup shadow-2xl">
+         <img src="3dzaap_hero_premium_1775007960116.png" alt="3DZAAP Intelligence Dashboard" style="width:100%; border-radius:var(--rl)">
+      </div>
+      
       <!-- Floating Elements -->
-      <div class="fcard-ui fc-1">
-        <div class="fc-icon" style="background:#f0f7ff;color:#3b8fd4">💰</div>
+      <div class="fcard-ui fc-1" style="top:5%; left:-10%">
+        <div class="fc-icon" style="background:rgba(59,143,212,0.1);color:var(--blue)">📈</div>
         <div class="fc-info">
-          <div class="fc-label" data-i18n="hero.stat_margin">Lucro Médio</div>
-          <div class="fc-val">+24.5%</div>
+          <div class="fc-label" data-i18n="hero.stat_margin">Eficiência de Produção</div>
+          <div class="fc-val">+38.2%</div>
         </div>
       </div>
-      <div class="fcard-ui fc-2">
-        <div class="fc-icon" style="background:#fff7ed;color:#f5943a">📦</div>
+      <div class="fcard-ui fc-2" style="bottom:10%; right:-8%">
+        <div class="fc-icon" style="background:rgba(245,148,58,0.1);color:var(--orange)">💰</div>
         <div class="fc-info">
-          <div class="fc-label" data-i18n="nav.orders">Pedidos</div>
-          <div class="fc-val">12 Ativos</div>
+          <div class="fc-label" data-i18n="nav.orders">Pedidos Mensais</div>
+          <div class="fc-val">€ 4.250,00</div>
         </div>
-      </div>
-      <div class="fcard-ui fc-3">
-        <div class="fc-icon" style="background:#f0fdf4;color:#22c55e">✅</div>
-        <div class="fc-info">
-          <div class="fc-label">Stock</div>
-          <div class="fc-val">OK</div>
-        </div>
-      </div>
-
-      <div class="hero-mockup mockup-css">
-         <div class="mock-sidebar">
-            <div class="mock-logo">
-               <div class="ml-icon"></div>
-               <div class="ml-text"></div>
-            </div>
-            <div class="mock-nav">
-               <div class="mn-item active"></div>
-               <div class="mn-item"></div>
-               <div class="mn-item"></div>
-               <div class="mn-item"></div>
-               <div class="mn-item"></div>
-            </div>
-         </div>
-         <div class="mock-main">
-            <div class="mock-topbar">
-               <div class="mt-left"></div>
-               <div class="mt-right">
-                  <div class="mt-pill"></div>
-               </div>
-            </div>
-            <div class="mock-content">
-               <div class="mock-health">
-                  <div class="mh-info">
-                     <div class="mh-title"></div>
-                     <div class="mh-score"></div>
-                     <div class="mh-bars">
-                        <div class="mh-bar"></div>
-                        <div class="mh-bar"></div>
-                        <div class="mh-bar"></div>
-                     </div>
-                  </div>
-                  <div class="mh-ring"></div>
-               </div>
-               <div class="mock-stats">
-                  <div class="ms-card"><div class="ms-icon" style="background:var(--blue-g);color:var(--blue)">📦</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
-                  <div class="ms-card"><div class="ms-icon" style="background:var(--orange-g);color:var(--orange)">⏱</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
-                  <div class="ms-card"><div class="ms-icon" style="background:var(--purple-g);color:var(--purple)">💰</div><div class="ms-lines"><div class="ms-l1"></div><div class="ms-l2"></div></div></div>
-               </div>
-               <div class="mock-table">
-                  <div class="m-row header"><div class="m-col h1"></div><div class="m-col h2"></div><div class="m-col h3"></div></div>
-                  <div class="m-row"><div class="m-col c1"></div><div class="m-col badge b1"></div><div class="m-col c3"></div></div>
-                  <div class="m-row"><div class="m-col c1" style="width:50px"></div><div class="m-col badge b2"></div><div class="m-col c3"></div></div>
-                  <div class="m-row"><div class="m-col c1" style="width:80px"></div><div class="m-col badge b3"></div><div class="m-col c3"></div></div>
-               </div>
-            </div>
-         </div>
       </div>
     </div>
   </div>
@@ -443,19 +393,22 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
     
     <div class="pas-grid">
       <div class="pas-card gc fu d1">
-        <span class="pas-icon">💸</span>
-        <h3 class="pas-title" data-i18n="pas.p1.title">Preços "A Olho"</h3>
-        <p class="pas-desc" data-i18n="pas.p1.desc">Cobrar apenas pelo "tempo de impressão" ignora custos de energia, falhas e pós-processamento. Resultado? Trabalhar para não ganhar.</p>
+        <div class="pas-card-glow"></div>
+        <span class="pas-icon">📉</span>
+        <h3 class="pas-title" data-i18n="pas.p1.title">Lucro que Escorre entre os Dedos</h3>
+        <p class="pas-desc" data-i18n="pas.p1.desc">Se cobra apenas pelo tempo de impressão, está a ignorar 40% dos seus custos reais: energia, falhas e depreciação. O resultado? Baixa margem real.</p>
       </div>
       <div class="pas-card gc fu d2">
-        <span class="pas-icon">🧵</span>
-        <h3 class="pas-title" data-i18n="pas.p2.title">Caos do Inventário</h3>
-        <p class="pas-desc" data-i18n="pas.p2.desc">Descobrir que o material acabou a meio de uma peça de 20 horas é frustrante. Mais uma impressão para o lixo.</p>
+        <div class="pas-card-glow"></div>
+        <span class="pas-icon">🕸️</span>
+        <h3 class="pas-title" data-i18n="pas.p2.title">A Armadilha do Inventário</h3>
+        <p class="pas-desc" data-i18n="pas.p2.desc">Ficar sem filamento a meio de uma peça de 30 horas não é apenas chato — é um prejuízo financeiro direto e um compromisso de entrega quebrado.</p>
       </div>
       <div class="pas-card gc fu d3">
-        <span class="pas-icon">🤯</span>
-        <h3 class="pas-title" data-i18n="pas.p3.title">Pedidos Perdidos</h3>
-        <p class="pas-desc" data-i18n="pas.p3.desc">Mensagens no Instagram, WhatsApp e Email. Perde mais tempo a organizar ficheiros do que a produzir.</p>
+        <div class="pas-card-glow"></div>
+        <span class="pas-icon">⚠️</span>
+        <h3 class="pas-title" data-i18n="pas.p3.title">Caos em Multi-canal</h3>
+        <p class="pas-desc" data-i18n="pas.p3.desc">Gerir clientes por WhatsApp, Instagram e Email mata a produtividade. Ficheiros perdidos e prazos esquecidos são os inimigos da escala.</p>
       </div>
     </div>
 
@@ -476,60 +429,60 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
     </div>
 
     <div class="fgrid">
-      <div class="fcard fcard-hs gc fu">
+      <div class="fcard fcard-hs fu">
         <div class="hs-left">
-          <div class="ficon">🏥</div>
-          <h3 class="ftit" data-i18n="modules.health.title">Business Health Score</h3>
-          <p class="fdesc" data-i18n="modules.health.desc">Análise inteligente da saúde do seu negócio baseada em margens, stock e entregas.</p>
+          <div class="ficon">⚡</div>
+          <h3 class="ftit" data-i18n="modules.health.title">Business Intelligence Score</h3>
+          <p class="fdesc" data-i18n="modules.health.desc">Análise algorítmica da saúde do seu estúdio. Antecipe problemas de fluxo de caixa e atrasos antes que aconteçam.</p>
         </div>
         <div class="hs-right">
           <div class="hs-circle">
             <div class="hs-num">82</div>
           </div>
-          <p style="text-align:center; font-weight:700; font-size:0.8rem; margin-top:8px" data-i18n="modules.health.score">Score de Saúde</p>
+          <p style="text-align:center; font-weight:800; font-size:0.85rem; margin-top:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px" data-i18n="modules.health.score">Score de Performance</p>
         </div>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">🧮</div>
-        <h3 class="ftit" data-i18n="modules.calc.title">Calculadora de Custos</h3>
-        <p class="fdesc" data-i18n="modules.calc.desc">Fórmulas precisas que consideram luz, amortização, material e falhas.</p>
+      <div class="fcard fu">
+        <div class="ficon">🎯</div>
+        <h3 class="ftit" data-i18n="modules.calc.title">Cálculo de Margem Real</h3>
+        <p class="fdesc" data-i18n="modules.calc.desc">Não é apenas uma calculadora. É um motor de precisão que considera energia, amortização e risco operacional.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">📦</div>
-        <h3 class="ftit" data-i18n="modules.materials.title">Gestão de Materiais</h3>
-        <p class="fdesc" data-i18n="modules.materials.desc">Inventário em tempo real com avisos automáticos de stock baixo.</p>
+      <div class="fcard fu">
+        <div class="ficon">💎</div>
+        <h3 class="ftit" data-i18n="modules.materials.title">Controlo de Ativos</h3>
+        <p class="fdesc" data-i18n="modules.materials.desc">Gestão preditiva de filamentos e resinas. Saiba exatamente quanto lucro tem parado nas prateleiras.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">📋</div>
-        <h3 class="ftit" data-i18n="modules.orders.title">Gestão de Pedidos</h3>
-        <p class="fdesc" data-i18n="modules.orders.desc">Pipeline visual completo, desde o orçamento inicial até ao envio.</p>
+      <div class="fcard fu">
+        <div class="ficon">🚀</div>
+        <h3 class="ftit" data-i18n="modules.orders.title">Pipeline de Alta Vazão</h3>
+        <p class="fdesc" data-i18n="modules.orders.desc">Do primeiro contacto ao envio. Um fluxo visual desenhado para eliminar gargalos e acelerar entregas.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">📈</div>
-        <h3 class="ftit" data-i18n="modules.finance.title">Relatórios Financeiros</h3>
-        <p class="fdesc" data-i18n="modules.finance.desc">Visualize faturamento e lucro líquido de forma clara e objetiva.</p>
+      <div class="fcard fu">
+        <div class="ficon">🏛️</div>
+        <h3 class="ftit" data-i18n="modules.finance.title">Visão de Admin</h3>
+        <p class="fdesc" data-i18n="modules.finance.desc">Relatórios de nível empresarial. Visualize o seu EBITDA e a rentabilidade por máquina de forma instantânea.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">🖨️</div>
-        <h3 class="ftit" data-i18n="modules.printers.title">Gestão de Impressoras</h3>
-        <p class="fdesc" data-i18n="modules.printers.desc">Monitorize a produtividade e a manutenção das suas máquinas.</p>
+      <div class="fcard fu">
+        <div class="ficon">⚙️</div>
+        <h3 class="ftit" data-i18n="modules.printers.title">Gestão de Parque 3D</h3>
+        <p class="fdesc" data-i18n="modules.printers.desc">Monitorize a OEE (Overall Equipment Effectiveness) das suas impressoras e preveja manutenções críticas.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">🎨</div>
-        <h3 class="ftit" data-i18n="modules.branding.title">Personalização</h3>
-        <p class="fdesc" data-i18n="modules.branding.desc">Interface e documentos com o seu logótipo e cores corporativas.</p>
+      <div class="fcard fu">
+        <div class="ficon">🏅</div>
+        <h3 class="ftit" data-i18n="modules.branding.title">Branding Pro</h3>
+        <p class="fdesc" data-i18n="modules.branding.desc">A sua marca em destaque. Recibos, orçamentos e portal do cliente personalizados com a sua identidade visual.</p>
       </div>
 
-      <div class="fcard gc fu">
-        <div class="ficon">☁️</div>
-        <h3 class="ftit" data-i18n="modules.backoffice.title">Backoffice e Backup</h3>
-        <p class="fdesc" data-i18n="modules.backoffice.desc">Seus dados exportáveis em CSV e backups garantidos diariamente.</p>
+      <div class="fcard fu">
+        <div class="ficon">🛡️</div>
+        <h3 class="ftit" data-i18n="modules.backoffice.title">Segurança Industrial</h3>
+        <p class="fdesc" data-i18n="modules.backoffice.desc">Backups redundantes e isolamento de dados. A sua propriedade intelectual protegida com padrões bancários.</p>
       </div>
     </div>
   </div>
@@ -538,8 +491,9 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
 <section id="pricing" class="pricing">
   <div class="wrap">
     <div class="sec-hdr">
-      <h2 class="stit" data-i18n="pricing.title">Planos Transparentes</h2>
-      <p class="ssub" data-i18n="pricing.subtitle">Escolha o plano que melhor se adapta à fase do seu negócio.</p>
+      <span class="eyebrow" style="margin-bottom:16px" data-i18n="pricing.title">Investimento</span>
+      <h2 class="stit">Planos Criados para Escalar</h2>
+      <p class="ssub" data-i18n="pricing.subtitle">Cresça sem limites. Escolha o nível de inteligência que o seu estúdio precisa hoje.</p>
     </div>
 
     <div class="ptog fu">
@@ -627,27 +581,28 @@ footer{position:relative;z-index:10;padding:80px 0 40px;background:var(--dark);c
   </div>
 </section>
 
-<section id="faq" class="features" style="background:#fff">
+<section id="faq" class="features" style="background:#fff; border-top:1px solid var(--border)">
   <div class="wrap">
-    <div class="sec-hdr">
-      <h2 class="stit" data-i18n="faq.title">Perguntas Frequentes</h2>
+    <div class="sec-hdr fu">
+      <span class="eyebrow" style="margin-bottom:16px" data-i18n="nav.faq">Dúvidas</span>
+      <h2 class="stit" data-i18n="faq.title">Respostas para a sua Escala</h2>
     </div>
     <div class="fgrid">
-      <div class="fcard gc fu">
-        <h3 class="ftit" data-i18n="faq.q1">Preciso de cartão de crédito para testar?</h3>
-        <p class="fdesc" data-i18n="faq.a1">Não. O nosso trial de 14 dias é totalmente gratuito e não exige qualquer dado de pagamento para começar.</p>
+      <div class="fcard fu">
+        <h3 class="ftit" data-i18n="faq.q1">Preciso de cartão para o trial?</h3>
+        <p class="fdesc" data-i18n="faq.a1">Absolutamente não. Acreditamos tanto no impacto do 3DZAAP que oferecemos 14 dias de acesso total sem qualquer barreira de pagamento.</p>
       </div>
-      <div class="fcard gc fu">
-        <h3 class="ftit" data-i18n="faq.q2">Os meus dados estão seguros?</h3>
-        <p class="fdesc" data-i18n="faq.a2">Sim, utilizamos encriptação de ponta e isolamento de dados (RLS) via Supabase para garantir que apenas você acede às suas informações.</p>
+      <div class="fcard fu">
+        <h3 class="ftit" data-i18n="faq.q2">A minha Propriedade Intelectual está segura?</h3>
+        <p class="fdesc" data-i18n="faq.a2">Sim. Utilizamos encriptação AES-256 e protocolos de isolamento de dados. Os seus ficheiros e orçamentos são apenas seus.</p>
       </div>
-      <div class="fcard gc fu">
-        <h3 class="ftit" data-i18n="faq.q3">Posso cancelar a qualquer momento?</h3>
-        <p class="fdesc" data-i18n="faq.a3">Com certeza. Não existem contratos de fidelização. Pode cancelar a sua subscrição diretamente nas definições a qualquer momento.</p>
+      <div class="fcard fu">
+        <h3 class="ftit" data-i18n="faq.q3">Existe fidelização nos planos?</h3>
+        <p class="fdesc" data-i18n="faq.a3">Liberdade total. Pode cancelar ou alterar o seu plano a qualquer momento diretamente no seu painel de controlo.</p>
       </div>
-      <div class="fcard gc fu">
-        <h3 class="ftit" data-i18n="faq.q4">Como funciona o suporte técnico?</h3>
-        <p class="fdesc" data-i18n="faq.a4">Oferecemos suporte prioritário via WhatsApp e Email para todos os planos pagos, e documentação completa para todos os utilizadores.</p>
+      <div class="fcard fu">
+        <h3 class="ftit" data-i18n="faq.q4">Como funciona o onboarding?</h3>
+        <p class="fdesc" data-i18n="faq.a4">Assim que entrar, terá um guia passo-a-passo. Planos Business incluem uma sessão estratégica individual para configuração personalizada.</p>
       </div>
     </div>
   </div>
