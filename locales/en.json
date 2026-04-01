@@ -493,6 +493,187 @@
     "gate_btn": "Back to Dashboard",
     "toast_err_load": "Error loading orders:",
     "toast_no_orders": "No orders to export",
-    "toast_csv_exp": "📄 CSV exported!"
+    "toast_csv_exp": "📄 CSV exported!",
+    "status": {
+      "orcamento": "Quote",
+      "modelagem": "Modeling",
+      "validacao": "Validation",
+      "aprovado": "Confirmed",
+      "printing": "Printing",
+      "done": "Completed",
+      "pendente": "Pending",
+      "pago": "Paid"
+    }
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Manage the order pipeline — quotes, printing, and delivery",
+    "btn_csv": "📄 Export CSV",
+    "btn_new": "＋ New Order",
+    "stats": {
+      "total": "Total orders",
+      "in_progress": "In progress",
+      "pending_val": "Pending value",
+      "paid_val": "Received value",
+      "n_orders": "{n} orders",
+      "1_order": "1 order"
+    },
+    "filters": {
+      "search_placeholder": "Search by no., client, description...",
+      "status_all": "All statuses",
+      "pay_all": "All payments",
+      "pay_pend": "Pending",
+      "pay_paid": "Paid",
+      "count_n": "{n} orders",
+      "count_1": "1 order"
+    },
+    "table": {
+      "no": "No.",
+      "client": "Client",
+      "status": "Status",
+      "payment": "Payment",
+      "total": "Total",
+      "created": "Created",
+      "due": "Due Date",
+      "empty_title": "No orders yet",
+      "empty_desc": "Create your first order by clicking <strong>＋ New Order</strong> above.",
+      "empty_search": "No records match current filters.",
+      "empty_search_desc": "Try adjusting your search filters."
+    },
+    "modal": {
+      "title_new": "＋ New Order",
+      "title_edit": "✏️ Edit Order",
+      "section_client": "👤 Client Data",
+      "lbl_name": "Client name",
+      "lbl_email": "Email",
+      "lbl_phone": "Phone",
+      "opt": "(optional)",
+      "req": "*",
+      "section_items": "📦 Order Items",
+      "th_desc": "Description",
+      "th_qty": "Qty",
+      "th_mat": "Material",
+      "th_price": "Unit Price",
+      "btn_add": "＋ Add Item",
+      "grand_total": "Order total",
+      "section_status": "📋 Status & Dates",
+      "lbl_status": "Order status",
+      "lbl_payment": "Payment",
+      "lbl_created": "Creation date",
+      "lbl_due": "Due date",
+      "lbl_notes": "Notes",
+      "placeholder_notes": "Additional notes...",
+      "btn_save": "💾 Save",
+      "btn_cancel": "Cancel",
+      "tip_material": "If you don't select a material, consumption won't be deducted from stock automatically."
+    },
+    "confirm": {
+      "delete_title": "Delete order?",
+      "delete_msg": "This action cannot be undone. All order data will be lost.",
+      "btn_confirm": "Confirm",
+      "btn_cancel": "Cancel"
+    },
+    "receipt": {
+      "btn_print": "🖨️ Print / PDF",
+      "btn_close": "✕ Close"
+    },
+    "printing": {
+      "modal_title": "🖨️ Start Printing",
+      "modal_desc": "Before moving to <strong>Printing</strong>, specify the printer and estimated time.",
+      "lbl_printer": "Printer",
+      "no_printer": "— do not assign printer —",
+      "hint_printers": "Only operational printers appear.",
+      "manage_link": "Manage printers →",
+      "lbl_time": "Estimated print time (hours)",
+      "hint_time": "Will be automatically accumulated on the printer counter when the order is completed.",
+      "btn_confirm": "🖨️ Advance to Printing"
+    },
+    "toasts": {
+      "saved": "✅ Order saved!",
+      "deleted": "🗑️ Order deleted!",
+      "status_updated": "🔄 Status updated to {s}",
+      "pay_updated": "💰 Payment updated to {p}",
+      "tracking_sent": "✅ Tracking link sent!",
+      "err_tracking": "Error generating tracking link."
+    }
+  },
+  "materials": {
+    "title": "Materials",
+    "subtitle": "Manage your FDM filament and SLA/MSLA resin stock",
+    "btn_csv": "📄 Export CSV",
+    "btn_pack": "＋ Pack",
+    "btn_new": "＋ Material",
+    "toggle_fdm": "FDM Filaments",
+    "toggle_resin": "SLA/MSLA Resins",
+    "stats": {
+      "total": "Total",
+      "in_stock": "In stock",
+      "low_stock": "Low stock",
+      "out_of_stock": "Out of stock"
+    },
+    "filters": {
+      "search_placeholder": "Search...",
+      "type_all": "All types",
+      "brand_all": "All brands",
+      "status_all": "All statuses",
+      "status_green": "In stock",
+      "status_orange": "Low stock",
+      "status_red": "Out of stock",
+      "count_n": "{n} items",
+      "count_1": "1 item"
+    },
+    "table": {
+      "empty_title": "No materials yet",
+      "empty_desc": "Add your first material by clicking <strong>＋ New Material</strong> above.",
+      "th_name": "Name",
+      "th_brand": "Brand",
+      "th_stock": "Stock",
+      "th_price": "Price",
+      "th_status": "Status"
+    },
+    "modal_pack": {
+      "title": "📦 Add Material Pack",
+      "section_id": "🏷️ Pack Identification",
+      "lbl_id": "Pack ID",
+      "hint_auto": "generated automatically",
+      "lbl_price": "Total pack price",
+      "section_material": "📋 Material (same for all colors)",
+      "lbl_class": "Class",
+      "fdm": "Filament",
+      "resin": "Resin",
+      "lbl_type": "Type",
+      "lbl_variation": "Variation",
+      "lbl_size_fdm": "Spool size",
+      "lbl_size_resin": "Bottle size",
+      "lbl_brands": "Brand(s)",
+      "placeholder_brand": "Add brand...",
+      "section_colors": "🎨 Pack Colors",
+      "btn_add_color": "＋ Add color",
+      "summary": "{n} colors · Avg cost {c}/unit",
+      "btn_save": "💾 Save Pack",
+      "btn_cancel": "Cancel",
+      "warn_cost": "Warning: the sum of the unit costs ({s}) differs from the pack price ({p})."
+    },
+    "modal_mat": {
+      "title_new": "＋ New Material",
+      "title_edit": "✏️ Edit Material",
+      "section_color": "🎨 Material Color",
+      "lbl_color_name": "Color name",
+      "placeholder_color": "Ex: Smoke Grey",
+      "section_id": "📋 Identification",
+      "lbl_type_fdm": "Filament type",
+      "lbl_type_resin": "Resin type",
+      "lbl_wavelength": "Wavelength (nm)",
+      "section_stock": "📦 Stock",
+      "lbl_total_fdm": "Total spools",
+      "lbl_in_use": "In use",
+      "lbl_new_auto": "New (auto)",
+      "hint_in_use": "Open spools",
+      "hint_new": "Total − In use",
+      "lbl_expiry": "Expiry date",
+      "hint_expiry": "Resins have a lifespan — usually 12-24 months",
+      "btn_save": "💾 Save",
+      "btn_cancel": "Cancel"
+    }
   }
 }

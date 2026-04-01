@@ -286,7 +286,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a><span>›</span><strong>💰 Financeiro</strong>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="nav.financial">💰 Financeiro</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -383,13 +383,13 @@
           <table class="fin-status-table">
             <thead><tr><th data-i18n="financial.th_status">Estado</th><th class="r" data-i18n="financial.th_qty">Qtd</th><th class="r" id="finThTotal">Total</th></tr></thead>
             <tbody id="statusTableBody">
-              <tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:20px">A carregar…</td></tr>
+              <tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:20px" data-i18n="settings.team.loading">A carregar…</td></tr>
             </tbody>
           </table>
         </div>
         <div class="fin-card">
           <div class="fin-card-title" data-i18n="financial.card_done">✅ Pedidos Concluídos</div>
-          <div id="doneStats" style="font-size:.84rem;color:var(--muted)">A carregar…</div>
+          <div id="doneStats" style="font-size:.84rem;color:var(--muted)" data-i18n="settings.team.loading">A carregar…</div>
         </div>
       </div>
 
@@ -425,8 +425,12 @@ let expenses = [];
 let _periodo = '';
 
 const STATUS_LABELS = {
-  orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação',
-  aprovado:'Aprovado', printing:'Printing', done:'Concluído'
+  orcamento:  () => i18n.getNestedTranslation('status.orcamento'),
+  modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
+  validacao:  () => i18n.getNestedTranslation('status.validacao'),
+  aprovado:   () => i18n.getNestedTranslation('status.aprovado'),
+  printing:   () => i18n.getNestedTranslation('status.printing'),
+  done:       () => i18n.getNestedTranslation('status.done')
 };
 
 function fmtCurrency(v) {
@@ -559,11 +563,11 @@ function renderAll() {
   const media     = periodOrders.length ? total / periodOrders.length : 0;
 
   animateValue('kpiTotal', 0, total, 800);
-  document.getElementById('kpiTotalSub').textContent    = `${periodOrders.length} ` + (periodOrders.length === 1 ? t('financial.kpi_total_sub_1') : t('financial.kpi_total_sub_n'));
+  document.getElementById('kpiTotalSub').textContent    = i18n.getNestedTranslation(periodOrders.length === 1 ? 'financial.kpi_total_sub_1' : 'financial.kpi_total_sub_n', {n: periodOrders.length});
   animateValue('kpiPago', 0, pago, 800);
-  document.getElementById('kpiPagoSub').textContent     = `${pagos.length} ` + (pagos.length === 1 ? t('financial.kpi_rcvd_sub_1') : t('financial.kpi_rcvd_sub_n'));
+  document.getElementById('kpiPagoSub').textContent     = i18n.getNestedTranslation(pagos.length === 1 ? 'financial.kpi_rcvd_sub_1' : 'financial.kpi_rcvd_sub_n', {n: pagos.length});
   animateValue('kpiPendente', 0, pendente, 800);
-  document.getElementById('kpiPendenteSub').textContent = `${pendentes.length} ` + (pendentes.length === 1 ? t('financial.kpi_pend_sub_1') : t('financial.kpi_pend_sub_n'));
+  document.getElementById('kpiPendenteSub').textContent = i18n.getNestedTranslation(pendentes.length === 1 ? 'financial.kpi_pend_sub_1' : 'financial.kpi_pend_sub_n', {n: pendentes.length});
   animateValue('kpiMedia', 0, media, 800);
   document.getElementById('kpiMediaSub').textContent    = t('financial.kpi_avg_sub');
 
@@ -583,7 +587,7 @@ function renderAll() {
     tbody.innerHTML = statusOrder
       .filter(s => statusGroups[s])
       .map(s => `<tr>
-        <td>${STATUS_LABELS[s]||s}</td>
+        <td>${typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s)}</td>
         <td class="r">${statusGroups[s].count}</td>
         <td class="r">${fmtEur(statusGroups[s].total)}</td>
       </tr>`).join('');
@@ -640,7 +644,8 @@ function renderAll() {
 
 function renderStatusBadge(s) {
   const cls = {orcamento:'bs-orcamento',modelagem:'bs-modelagem',validacao:'bs-validacao',aprovado:'bs-aprovado',printing:'bs-printing',done:'bs-done'};
-  return `<span class="badge ${cls[s]||'bs-orcamento'}"><span class="badge-dot"></span>${t('orders.status.'+s) || STATUS_LABELS[s] || s}</span>`;
+  const label = typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s);
+  return `<span class="badge ${cls[s]||'bs-orcamento'}"><span class="badge-dot"></span>${label}</span>`;
 }
 function renderPayBadge(s) {
   return s==='pago'

@@ -399,9 +399,9 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a>
         <span>›</span>
-        <strong id="topbarTitle">🎨 Materiais</strong>
+        <strong id="topbarTitle" data-i18n="materials.title">🎨 Materiais</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -453,13 +453,13 @@
     <div class="page">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 id="pageTitle">🎨 Materiais</h1>
-          <p id="pageSubtitle">Gere o teu stock de materiais FDM e resinas SLA/MSLA</p>
+          <h1 id="pageTitle" data-i18n="materials.title">🎨 Materiais</h1>
+          <p id="pageSubtitle" data-i18n="materials.subtitle">Gere o teu stock de materiais FDM e resinas SLA/MSLA</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
-          <button class="btn btn-ghost" onclick="openPackModal()">＋ Pack</button>
-          <button class="btn btn-primary" id="btnNew" onclick="openModal()">＋ Material</button>
+          <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="materials.btn_csv">📄 Exportar CSV</button>
+          <button class="btn btn-ghost" onclick="openPackModal()" data-i18n="materials.btn_pack">＋ Pack</button>
+          <button class="btn btn-primary" id="btnNew" onclick="openModal()" data-i18n="materials.btn_new">＋ Material</button>
         </div>
       </div>
 
@@ -467,12 +467,12 @@
       <div class="material-toggle">
         <button class="mat-btn fdm active" id="toggleFDM" onclick="setView('fdm')">
           <span class="mat-btn-icon">🧵</span>
-          Filamentos FDM
+          <span data-i18n="materials.toggle_fdm">Filamentos FDM</span>
           <span class="mat-btn-count" id="countFDM">0</span>
         </button>
         <button class="mat-btn resin" id="toggleResin" onclick="setView('resin')">
           <span class="mat-btn-icon">🧪</span>
-          Resinas SLA/MSLA
+          <span data-i18n="materials.toggle_resin">Resinas SLA/MSLA</span>
           <span class="mat-btn-count" id="countResin">0</span>
         </button>
       </div>
@@ -483,7 +483,7 @@
           <div class="stat-mini-icon si-blue" id="statIcon">🎨</div>
           <div>
             <div class="stat-mini-val" id="statTotal">0</div>
-            <div class="stat-mini-lbl">Total · <span id="statUnit">0 kg</span></div>
+            <div class="stat-mini-lbl"><span data-i18n="materials.stats.total">Total</span> · <span id="statUnit">0 kg</span></div>
           </div>
           <div class="stat-tooltip" id="tipTotal"></div>
         </div>
@@ -491,7 +491,7 @@
           <div class="stat-mini-icon si-green">✅</div>
           <div>
             <div class="stat-mini-val" id="statStock">0</div>
-            <div class="stat-mini-lbl">Em stock</div>
+            <div class="stat-mini-lbl" data-i18n="materials.stats.in_stock">Em stock</div>
           </div>
           <div class="stat-tooltip" id="tipStock"></div>
         </div>
@@ -499,7 +499,7 @@
           <div class="stat-mini-icon si-orange">🟠</div>
           <div>
             <div class="stat-mini-val" id="statLow">0</div>
-            <div class="stat-mini-lbl">Stock baixo</div>
+            <div class="stat-mini-lbl" data-i18n="materials.stats.low_stock">Stock baixo</div>
           </div>
           <div class="stat-tooltip" id="tipLow"></div>
         </div>
@@ -507,7 +507,7 @@
           <div class="stat-mini-icon si-red">❌</div>
           <div>
             <div class="stat-mini-val" id="statEmpty">0</div>
-            <div class="stat-mini-lbl" id="statEmptyLbl">Esgotados</div>
+            <div class="stat-mini-lbl" id="statEmptyLbl" data-i18n="materials.stats.out_of_stock">Esgotados</div>
           </div>
           <div class="stat-tooltip" id="tipEmpty"></div>
         </div>
@@ -517,20 +517,20 @@
       <div class="filters-bar">
         <div class="filter-search-wrap">
           <span class="filter-search-icon">🔍</span>
-          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar…" oninput="applyFilters()">
+          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar…" oninput="applyFilters()" data-i18n="[placeholder]materials.filters.search_placeholder">
         </div>
         <div class="filter-sep"></div>
         <select id="filterType" class="filter-select" onchange="applyFilters()">
-          <option value="">Todos os tipos</option>
+          <option value="" data-i18n="materials.filters.type_all">Todos os tipos</option>
         </select>
         <select id="filterBrand" class="filter-select" onchange="applyFilters()">
-          <option value="">Todas as marcas</option>
+          <option value="" data-i18n="materials.filters.brand_all">Todas as marcas</option>
         </select>
         <select id="filterStatus" class="filter-select" onchange="applyFilters()">
-          <option value="">Todos os estados</option>
-          <option value="green">Em stock</option>
-          <option value="orange">Stock baixo</option>
-          <option value="red">Esgotado</option>
+          <option value="" data-i18n="materials.filters.status_all">Todos os estados</option>
+          <option value="green" data-i18n="materials.filters.status_green">Em stock</option>
+          <option value="orange" data-i18n="materials.filters.status_orange">Stock baixo</option>
+          <option value="red" data-i18n="materials.filters.status_red">Esgotado</option>
         </select>
         <span class="filter-count" id="filterCount">0 itens</span>
       </div>
@@ -540,8 +540,8 @@
         <div class="table-wrap">
           <div class="table-empty" id="tableEmpty" style="display:flex">
             <div class="table-empty-icon">🎨</div>
-            <h3>Sem materiais ainda</h3>
-            <p>Adiciona o teu primeiro material clicando em <strong>＋ Novo material</strong> acima.</p>
+            <h3 data-i18n="materials.table.empty_title">Sem materiais ainda</h3>
+            <p data-i18n="materials.table.empty_desc">Adiciona o teu primeiro material clicando em <strong>＋ Novo material</strong> acima.</p>
           </div>
           <table class="fil-table" id="filTable" style="display:none">
             <thead id="tableHead"></thead>
@@ -564,45 +564,45 @@
     <div class="modal-body">
 
       <!-- Identificação do pack -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div>Identificação do Pack</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div><span data-i18n="materials.modal_pack.section_id">Identificação do Pack</span></div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">ID do Pack</label>
+          <label class="form-label" data-i18n="materials.modal_pack.lbl_id">ID do Pack</label>
           <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border-input)">
             <span style="font-family:var(--mono);font-size:.92rem;font-weight:700;color:var(--blue)" id="pkIdDisplay">Pack-001</span>
-            <span style="font-size:.74rem;color:var(--subtle)">gerado automaticamente</span>
+            <span style="font-size:.74rem;color:var(--subtle)" data-i18n="materials.modal_pack.hint_auto">gerado automaticamente</span>
           </div>
           <input type="hidden" id="pkName">
         </div>
         <div class="form-group">
-          <label class="form-label">Preço total do pack <span style="color:var(--danger)">*</span></label>
+          <label class="form-label" data-i18n="materials.modal_pack.lbl_price">Preço total do pack <span style="color:var(--danger)">*</span></label>
           <input type="number" id="pkPrice" class="form-input mono" value="0" min="0" step="0.01" oninput="pkRecalcCosts()">
         </div>
       </div>
 
       <!-- Tipo de material -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div>Material (igual para todas as cores)</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div><span data-i18n="materials.modal_pack.section_material">Material (igual para todas as cores)</span></div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Classe</label>
+          <label class="form-label" data-i18n="materials.modal_pack.lbl_class">Classe</label>
           <div class="material-toggle" style="margin-bottom:0">
-            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')">🧵 Filamento</button>
-            <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')">🧪 Resina</button>
+            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')">🧵 <span data-i18n="materials.modal_pack.fdm">Filamento</span></button>
+            <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')">🧪 <span data-i18n="materials.modal_pack.resin">Resina</span></button>
           </div>
         </div>
       </div>
       <div id="pkFdmFields">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Tipo</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_type">Tipo</label>
             <select id="pkType" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Variação</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_variation">Variação</label>
             <select id="pkVariation" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Tamanho da bobina</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_size_fdm">Tamanho da bobina</label>
             <select id="pkRollSize" class="form-select"></select>
           </div>
         </div>
@@ -610,30 +610,30 @@
       <div id="pkResinFields" style="display:none">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Tipo</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_type">Tipo</label>
             <select id="pkRType" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Variação</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_variation">Variação</label>
             <select id="pkRVariation" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Tamanho do frasco</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_size_resin">Tamanho do frasco</label>
             <select id="pkBottleSize" class="form-select"></select>
           </div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group" style="flex:1">
-          <label class="form-label">Marca(s)</label>
+          <label class="form-label" data-i18n="materials.modal_pack.lbl_brands">Marca(s)</label>
           <div class="brand-tag-input-wrapper">
             <div class="brand-tag-select-row">
               <select id="pkBrandSelect" class="form-select" onchange="pkAddBrand()">
-                <option value="">Adicionar marca...</option>
+                <option value="" data-i18n="materials.modal_pack.placeholder_brand">Adicionar marca...</option>
               </select>
             </div>
             <div class="brand-tags" id="pkBrandTags">
-              <span class="brand-tags-empty" id="pkBrandTagsEmpty">Nenhuma marca selecionada</span>
+              <span class="brand-tags-empty" id="pkBrandTagsEmpty" data-i18n="materials.modal_pack.no_brands">Nenhuma marca selecionada</span>
             </div>
           </div>
           <input type="hidden" id="pkBrand">
@@ -641,17 +641,17 @@
       </div>
 
       <!-- Lista de cores -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-green">🎨</div>Cores do Pack</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green">🎨</div><span data-i18n="materials.modal_pack.section_colors">Cores do Pack</span></div>
       <div id="pkColorList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()">＋ Adicionar cor</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()" data-i18n="materials.modal_pack.btn_add_color">＋ Adicionar cor</button>
       <div id="pkCostWarning" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(245,148,58,0.1);border:1px solid rgba(245,148,58,0.35);border-radius:8px;font-size:.8rem;color:var(--orange)"></div>
 
     </div>
     <div class="modal-footer">
       <div style="font-size:.8rem;color:var(--muted)" id="pkSummary"></div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="closePackModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="savePack()">💾 Guardar Pack</button>
+        <button class="btn btn-ghost" onclick="closePackModal()" data-i18n="materials.modal_pack.btn_cancel">Cancelar</button>
+        <button class="btn btn-primary" onclick="savePack()" data-i18n="materials.modal_pack.btn_save">💾 Guardar Pack</button>
       </div>
     </div>
   </div>
@@ -668,7 +668,7 @@
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modalBox">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">＋ Novo Material</div>
+      <div class="modal-title" id="modalTitle" data-i18n="materials.modal_mat.title_new">＋ Novo Material</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -676,8 +676,8 @@
       <!-- Material class toggle (só em modo "novo") -->
       <div id="modalMatToggleWrap">
         <div class="modal-mat-toggle">
-          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')">🧵 Filamento FDM</button>
-          <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')">🧪 Resina SLA/MSLA</button>
+          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')">🧵 <span data-i18n="materials.modal_pack.fdm">Filamento FDM</span></button>
+          <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')">🧪 <span data-i18n="materials.modal_pack.resin">Resina SLA/MSLA</span></button>
         </div>
       </div>
 
@@ -688,7 +688,7 @@
         <div class="color-custom-row">
           <div class="color-swatch-preview" id="colorSwatchPreview" style="background:#3B8FD4"></div>
           <input type="color" id="colorPicker" value="#3B8FD4" oninput="onColorPick(this.value)">
-          <input type="text" id="colorName" class="form-input" placeholder="Nome da cor (ex: Cinzento Smoke)">
+          <input type="text" id="colorName" class="form-input" placeholder="Nome da cor (ex: Cinzento Smoke)" data-i18n="[placeholder]materials.modal_mat.placeholder_color">
         </div>
       </div>
 
@@ -698,31 +698,31 @@
       <div id="fdmFields">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Tipo de filamento</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_type_fdm">Tipo de filamento</label>
             <select id="fType" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Variação</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_variation">Variação</label>
             <select id="fVariation" class="form-select"></select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Marca(s)</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_brands">Marca(s)</label>
             <div class="brand-tag-input-wrapper">
               <div class="brand-tag-select-row">
                 <select id="fBrandSelect" class="form-select" onchange="addBrandTag('fdm')">
-                  <option value="">Adicionar marca...</option>
+                  <option value="" data-i18n="materials.modal_pack.placeholder_brand">Adicionar marca...</option>
                 </select>
               </div>
               <div class="brand-tags" id="fBrandTags">
-                <span class="brand-tags-empty" id="fBrandTagsEmpty">Nenhuma marca selecionada</span>
+                <span class="brand-tags-empty" id="fBrandTagsEmpty" data-i18n="materials.modal_pack.no_brands">Nenhuma marca selecionada</span>
               </div>
             </div>
             <input type="hidden" id="fBrand">
           </div>
           <div class="form-group">
-            <label class="form-label">Tamanho da bobina</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_size_fdm">Tamanho da bobina</label>
             <select id="fRollSize" class="form-select"></select>
           </div>
         </div>
@@ -732,44 +732,44 @@
       <div id="resinFields" style="display:none">
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Tipo de resina</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_type_resin">Tipo de resina</label>
             <select id="rType" class="form-select"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Variação</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_variation">Variação</label>
             <select id="rVariation" class="form-select"></select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Marca(s)</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_brands">Marca(s)</label>
             <div class="brand-tag-input-wrapper">
               <div class="brand-tag-select-row">
                 <select id="rBrandSelect" class="form-select" onchange="addBrandTag('resin')">
-                  <option value="">Adicionar marca...</option>
+                  <option value="" data-i18n="materials.modal_pack.placeholder_brand">Adicionar marca...</option>
                 </select>
               </div>
               <div class="brand-tags" id="rBrandTags">
-                <span class="brand-tags-empty" id="rBrandTagsEmpty">Nenhuma marca selecionada</span>
+                <span class="brand-tags-empty" id="rBrandTagsEmpty" data-i18n="materials.modal_pack.no_brands">Nenhuma marca selecionada</span>
               </div>
             </div>
             <input type="hidden" id="rBrand">
           </div>
           <div class="form-group">
-            <label class="form-label">Tamanho do frasco</label>
+            <label class="form-label" data-i18n="materials.modal_pack.lbl_size_resin">Tamanho do frasco</label>
             <select id="rBottleSize" class="form-select"></select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Data de validade <span>(opcional)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_expiry">Data de validade <span data-i18n="materials.modal_mat.opt">(opcional)</span></label>
             <input type="date" id="rExpiry" class="form-input">
-            <div class="form-hint">Resinas têm prazo — normalmente 12-24 meses</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_expiry">Resinas têm prazo — normalmente 12-24 meses</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Wavelength <span>(nm)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_wavelength">Wavelength <span>(nm)</span></label>
             <select id="rWavelength" class="form-select">
-              <option value="">Não especificado</option>
+              <option value="" data-i18n="materials.modal_mat.wavelength_opt_none">Não especificado</option>
               <option value="405">405nm (Standard)</option>
               <option value="365">365nm (UV)</option>
             </select>
@@ -783,28 +783,28 @@
       <div id="fdmStock">
         <div class="form-row three">
           <div class="form-group">
-            <label class="form-label">Total de bobinas</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_total_fdm">Total de bobinas</label>
             <input type="number" id="fTotal" class="form-input mono" value="1" min="0" step="1">
           </div>
           <div class="form-group">
-            <label class="form-label">Em uso</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_in_use">Em uso</label>
             <input type="number" id="fInUse" class="form-input mono" value="0" min="0" step="1">
-            <div class="form-hint">Bobinas abertas</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_in_use">Bobinas abertas</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Novas (auto)</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_new_auto">Novas (auto)</label>
             <input type="number" id="fNewRolls" class="form-input mono" value="1" readonly style="opacity:.6;cursor:not-allowed">
-            <div class="form-hint">Total − Em uso</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_new">Total − Em uso</div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Alerta mínimo <span>(bobinas)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo <span data-i18n="materials.modal_mat.unit_rolls">(bobinas)</span></label>
             <input type="number" id="fAlerta" class="form-input mono" value="0" min="0" step="1">
-            <div class="form-hint">0 = sem alerta</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_alert_none">0 = sem alerta</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Preço por kg <span id="matLabelKg">(/kg)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_price_kg">Preço por kg <span id="matLabelKg">(/kg)</span></label>
             <input type="number" id="fPrice" class="form-input mono" value="25" min="0" step="0.01">
           </div>
         </div>
@@ -814,45 +814,45 @@
       <div id="resinStock" style="display:none">
         <div class="form-row three">
           <div class="form-group">
-            <label class="form-label">Total de frascos</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_total_bottles">Total de frascos</label>
             <input type="number" id="rTotal" class="form-input mono" value="1" min="0" step="1">
           </div>
           <div class="form-group">
-            <label class="form-label">Em uso</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_in_use">Em uso</label>
             <input type="number" id="rInUse" class="form-input mono" value="0" min="0" step="1">
-            <div class="form-hint">Frascos abertos</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_bottles_open">Frascos abertos</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Novos (auto)</label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_new_auto">Novos (auto)</label>
             <input type="number" id="rNewBottles" class="form-input mono" value="1" readonly style="opacity:.6;cursor:not-allowed">
-            <div class="form-hint">Total − Em uso</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_new">Total − Em uso</div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Alerta mínimo <span>(frascos)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo <span data-i18n="materials.modal_mat.unit_bottles">(frascos)</span></label>
             <input type="number" id="rAlerta" class="form-input mono" value="0" min="0" step="1">
-            <div class="form-hint">0 = sem alerta</div>
+            <div class="form-hint" data-i18n="materials.modal_mat.hint_alert_none">0 = sem alerta</div>
           </div>
           <div class="form-group">
-            <label class="form-label">Preço por litro <span id="matLabelL">(/L)</span></label>
+            <label class="form-label" data-i18n="materials.modal_mat.lbl_price_l">Preço por litro <span id="matLabelL">(/L)</span></label>
             <input type="number" id="rPrice" class="form-input mono" value="30" min="0" step="0.01">
           </div>
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div>Notas</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div><span data-i18n="orders.modal.lbl_notes">Notas</span></div>
       <div class="form-row full">
         <div class="form-group">
-          <label class="form-label">Notas <span>(opcional)</span></label>
-          <input type="text" id="fNotes" class="form-input" placeholder="Ex: NF disponível, comprado na Amazon…">
+          <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Notas</span> <span data-i18n="materials.modal_mat.opt">(opcional)</span></label>
+          <input type="text" id="fNotes" class="form-input" placeholder="Ex: NF disponível, comprado na Amazon…" data-i18n="[placeholder]materials.modal_mat.placeholder_notes">
         </div>
       </div>
 
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btnSave" onclick="saveMaterial()">💾 Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()" data-i18n="materials.modal_mat.btn_cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveMaterial()" data-i18n="materials.modal_mat.btn_save">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -861,11 +861,11 @@
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
     <div class="confirm-icon">🗑️</div>
-    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-title" id="confirmTitle" data-i18n="materials.confirm_delete_title">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()">Cancelar</button>
-      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">Eliminar</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()" data-i18n="materials.modal_mat.btn_cancel">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn" data-i18n="orders.confirm.btn_confirm">Eliminar</button>
     </div>
   </div>
 </div>
@@ -1005,13 +1005,14 @@ function setView(cls) {
   document.getElementById('pageSubtitle').textContent = isFDM
     ? 'Gere o teu stock de materiais — tipos, cores, marcas e bobinas'
     : 'Gere o teu stock de resinas — tipos, frascos e datas de validade';
-  document.getElementById('topbarTitle').textContent  = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
   document.getElementById('statIcon').textContent     = isFDM ? '🎨' : '🧪';
-  document.getElementById('statEmptyLbl').textContent = isFDM ? 'Esgotados' : 'Esgotadas';
+  document.getElementById('statEmptyLbl').setAttribute('data-i18n', 'materials.stats.out_of_stock');
+  if (window.i18n) i18n.translatePage();
 
   // btn add — cor muda
   const btnNew = document.getElementById('btnNew');
-  btnNew.textContent = isFDM ? '＋ Material' : '＋ Resina';
+  btnNew.setAttribute('data-i18n', isFDM ? 'materials.btn_new' : 'materials.modal_mat.title_new_resin');
+  if (window.i18n) i18n.translatePage();
   btnNew.classList.toggle('resin-mode', !isFDM);
 
   // rebuild filter selects
@@ -1025,11 +1026,11 @@ function rebuildFilterSelects() {
   const brands = isFDM ? FDM_BRANDS : RESIN_BRANDS;
 
   const ft = document.getElementById('filterType');
-  ft.innerHTML = '<option value="">Todos os tipos</option>';
+  ft.innerHTML = `<option value="" data-i18n="materials.filters.type_all">${i18n.getNestedTranslation('materials.filters.type_all')}</option>`;
   types.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; ft.appendChild(o); });
 
   const fb = document.getElementById('filterBrand');
-  fb.innerHTML = '<option value="">Todas as marcas</option>';
+  fb.innerHTML = `<option value="" data-i18n="materials.filters.brand_all">${i18n.getNestedTranslation('materials.filters.brand_all')}</option>`;
   brands.forEach(b => { const o = document.createElement('option'); o.value=b; o.textContent=b; fb.appendChild(o); });
 }
 
@@ -1134,7 +1135,7 @@ function getStatus(m) {
 }
 
 function statusLabel(s) {
-  return {green:'Em stock', orange:'Stock baixo', red:'Esgotado'}[s] || s;
+  return i18n.getNestedTranslation('materials.filters.status_' + s);
 }
 
 function renderBadge(m) {
@@ -1202,7 +1203,7 @@ function renderTable() {
     return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
   });
 
-  document.getElementById('filterCount').textContent = `${filtered.length} ${isFDM ? 'filamento' : 'resina'}${filtered.length !== 1 ? 's' : ''}`;
+  document.getElementById('filterCount').textContent = i18n.getNestedTranslation(filtered.length === 1 ? 'materials.filters.count_1' : 'materials.filters.count_n', {n: filtered.length});
 
   const emptyEl = document.getElementById('tableEmpty');
   const tableEl = document.getElementById('filTable');
@@ -1212,8 +1213,8 @@ function renderTable() {
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = allMaterials.filter(m=>(m.materialClass||m.material_class||'fdm')===currentView).length
-      ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum material corresponde aos filtros.</p>`
-      : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3>Sem ${isFDM?'filamentos':'resinas'} ainda</h3><p>Clica em <strong>＋ ${isFDM?'Novo filamento':'Nova resina'}</strong> para adicionar.</p>`;
+      ? `<div class="table-empty-icon">🔍</div><h3 data-i18n="orders.table.empty_search">Sem resultados</h3><p data-i18n="materials.table.no_results_desc">Nenhum material corresponde aos filtros.</p>`
+      : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3 data-i18n="materials.table.empty_title">Sem materiais ainda</h3><p data-i18n="materials.table.empty_desc">Clica em <strong>＋ Novo material</strong> para adicionar.</p>`;
     tableEl.style.display = 'none';
     const mfc = document.getElementById('mobFilList'); if (mfc) mfc.innerHTML = '';
     return;
@@ -1225,16 +1226,16 @@ function renderTable() {
   // Build headers
   if (isFDM) {
     thead.innerHTML = `<tr>
-      <th onclick="sortBy('colorName')" id="th-colorName">Cor <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('type')" id="th-type">Tipo <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('brand')" id="th-brand">Marca <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('rollSize')" id="th-rollSize">Bobina <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('inUse')" id="th-inUse">Em uso <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('newRolls')" id="th-newRolls">Novas <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('total')" id="th-total">Total <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel">/kg</span> <span class="th-sort">↕</span></th>
-      <th>Pack</th>
-      <th>Estado</th><th></th></tr>`;
+      <th onclick="sortBy('colorName')" id="th-colorName" data-i18n="materials.table.th_name">Nome <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('type')" id="th-type" data-i18n="materials.modal_pack.lbl_type">Tipo <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('brand')" id="th-brand" data-i18n="materials.table.th_brand">Marca <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('rollSize')" id="th-rollSize" data-i18n="materials.table.th_stock">Stock <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.modal_mat.lbl_in_use">Em uso <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.modal_mat.lbl_new_auto">Novas <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('total')" id="th-total" data-i18n="materials.modal_mat.lbl_total_fdm">Total <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('price')" id="th-price"><span id="thPriceLabel" data-i18n="materials.table.th_price">Preço</span> <span class="th-sort">↕</span></th>
+      <th data-i18n="materials.btn_pack">Pack</th>
+      <th data-i18n="materials.table.th_status">Estado</th><th></th></tr>`;
   } else {
     thead.innerHTML = `<tr>
       <th onclick="sortBy('colorName')" id="th-colorName">Cor <span class="th-sort">↕</span></th>
@@ -1403,7 +1404,8 @@ function openModal(id = null) {
     modalClass = mc;
     // Hide the class toggle in edit mode — class cannot change
     document.getElementById('modalMatToggleWrap').style.display = 'none';
-    document.getElementById('modalTitle').textContent = mc === 'fdm' ? '✏️ Editar Material' : '✏️ Editar Resina';
+    document.getElementById('modalTitle').setAttribute('data-i18n', 'materials.modal_mat.title_edit');
+    if (window.i18n) i18n.translatePage();
 
     // Populate colour
     selectedColor = m.colorHex || '#3B8FD4';
@@ -1490,8 +1492,9 @@ function closeModal() {
 function setModalClass(cls) {
   modalClass = cls;
   document.getElementById('mToggleFDM').classList.toggle('active', cls === 'fdm');
-  document.getElementById('mToggleResin').classList.toggle('active', cls === 'resin');
-  document.getElementById('modalTitle').textContent = cls === 'fdm' ? '＋ Novo Material' : '＋ Nova Resina';
+  document.getElementById('mToggleResin').classList.toggle('active', cls === '樹脂');
+  document.getElementById('modalTitle').setAttribute('data-i18n', cls === 'fdm' ? 'materials.modal_mat.title_new' : 'materials.modal_mat.title_new_resin');
+  if (window.i18n) i18n.translatePage();
   applyModalClass();
 }
 
@@ -1573,11 +1576,11 @@ async function saveMaterial() {
       const saved = await DB.saveFilament({ ...prev, ...record, id: editingId });
       const idx = allMaterials.findIndex(m => m.id === editingId);
       if (idx > -1) allMaterials[idx] = saved;
-      showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} actualizado!`, 'ok');
+      showToast(i18n.getNestedTranslation('materials.toasts.saved'), 'ok');
     } else {
       const saved = await DB.saveFilament(record);
       allMaterials.unshift(saved);
-      showToast(`✅ ${isFDM ? 'Filamento' : 'Resina'} adicionado!`, 'ok');
+      showToast(i18n.getNestedTranslation('materials.toasts.saved'), 'ok');
     }
     updateToggleCounts();
     applyFilters();
@@ -1592,8 +1595,9 @@ function confirmDelete(id) {
   const m = allMaterials.find(x => x.id === id);
   if (!m) return;
   const mc = m.materialClass || m.material_class || 'fdm';
-  document.getElementById('confirmTitle').textContent = `Eliminar ${mc === 'fdm' ? 'filamento' : 'resina'}?`;
-  document.getElementById('confirmMsg').textContent   = `Vai eliminar "${m.colorName} ${m.type} (${Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'')})" permanentemente.`;
+  document.getElementById('confirmTitle').setAttribute('data-i18n', 'materials.confirm_delete_title');
+  document.getElementById('confirmMsg').textContent = i18n.getNestedTranslation('materials.confirm_delete_msg', {m: `${m.colorName} ${m.type}`});
+  if (window.i18n) i18n.translatePage();
   document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); deleteMaterial(id); };
   document.getElementById('confirmOverlay').classList.add('open');
 }

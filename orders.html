@@ -250,7 +250,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a><span>›</span><strong>📦 Pedidos</strong>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="orders.title">Pedidos</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -302,57 +302,57 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-text">
-          <h1>📦 Pedidos</h1>
-          <p>Gere o pipeline de pedidos — orçamentos, impressões e entregas</p>
+          <h1 data-i18n="orders.title">Pedidos</h1>
+          <p data-i18n="orders.subtitle">Gere o pipeline de pedidos — orçamentos, impressões e entregas</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-ghost" onclick="exportCSV()">📄 Exportar CSV</button>
-          <button class="btn btn-primary" onclick="openModal()">＋ Novo pedido</button>
+          <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="orders.btn_csv">📄 Exportar CSV</button>
+          <button class="btn btn-primary" onclick="openModal()" data-i18n="orders.btn_new">＋ Novo pedido</button>
         </div>
       </div>
       <!-- Stats -->
       <div class="stats-row">
-        <div class="stat-mini"><div class="stat-mini-icon si-blue">📦</div><div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl">Total de pedidos</div></div></div>
-        <div class="stat-mini"><div class="stat-mini-icon si-purple">⚙️</div><div><div class="stat-mini-val" id="statProgress">0</div><div class="stat-mini-lbl">Em progresso</div></div></div>
-        <div class="stat-mini"><div class="stat-mini-icon si-orange">⏳</div><div><div class="stat-mini-val" id="statPendingVal">—</div><div class="stat-mini-sub" id="statPendingCount">0 pedidos</div><div class="stat-mini-lbl">Valor pendente</div></div></div>
-        <div class="stat-mini"><div class="stat-mini-icon si-green">✅</div><div><div class="stat-mini-val" id="statPaidVal">—</div><div class="stat-mini-sub" id="statPaidCount">0 pedidos</div><div class="stat-mini-lbl">Valor recebido</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-blue">📦</div><div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl" data-i18n="orders.stats.total">Total de pedidos</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-purple">⚙️</div><div><div class="stat-mini-val" id="statProgress">0</div><div class="stat-mini-lbl" data-i18n="orders.stats.in_progress">Em progresso</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-orange">⏳</div><div><div class="stat-mini-val" id="statPendingVal">—</div><div class="stat-mini-sub" id="statPendingCount" data-i18n="orders.stats.n_orders" data-i18n-n="0">0 pedidos</div><div class="stat-mini-lbl" data-i18n="orders.stats.pending_val">Valor pendente</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon si-green">✅</div><div><div class="stat-mini-val" id="statPaidVal">—</div><div class="stat-mini-sub" id="statPaidCount" data-i18n="orders.stats.n_orders" data-i18n-n="0">0 pedidos</div><div class="stat-mini-lbl" data-i18n="orders.stats.paid_val">Valor recebido</div></div></div>
       </div>
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filter-search-wrap">
           <span class="filter-search-icon">🔍</span>
-          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar por nº, cliente, descrição…" oninput="renderOrders()">
+          <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar por nº, cliente, descrição…" data-i18n="orders.filters.search_placeholder" oninput="renderOrders()">
         </div>
         <div class="filter-sep"></div>
         <select id="filterStatus" class="filter-select" onchange="renderOrders()">
-          <option value="">Todos os estados</option>
-          <option value="orcamento">Orçamento</option>
-          <option value="modelagem">Modelagem</option>
-          <option value="validacao">Validação</option>
-          <option value="aprovado">Aprovado</option>
-          <option value="printing">Printing</option>
-          <option value="done">Concluído</option>
+          <option value="" data-i18n="orders.filters.status_all">Todos os estados</option>
+          <option value="orcamento" data-i18n="status.orcamento">Orçamento</option>
+          <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
+          <option value="validacao" data-i18n="status.validacao">Validação</option>
+          <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
+          <option value="printing" data-i18n="status.printing">Printing</option>
+          <option value="done" data-i18n="status.done">Concluído</option>
         </select>
         <select id="filterPayment" class="filter-select" onchange="renderOrders()">
-          <option value="">Todos os pagamentos</option>
-          <option value="pendente">Pendente</option>
-          <option value="pago">Pago</option>
+          <option value="" data-i18n="orders.filters.pay_all">Todos os pagamentos</option>
+          <option value="pendente" data-i18n="status.pendente">Pendente</option>
+          <option value="pago" data-i18n="status.pago">Pago</option>
         </select>
-        <span class="filter-count" id="filterCount">0 pedidos</span>
+        <span class="filter-count" id="filterCount" data-i18n="orders.filters.count_n" data-i18n-n="0">0 pedidos</span>
       </div>
       <!-- Table -->
       <div class="table-card">
         <div class="table-wrap">
           <div class="table-empty" id="tableEmpty">
             <div class="table-empty-icon">📦</div>
-            <h3>Sem pedidos ainda</h3>
-            <p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>
+            <h3 data-i18n="orders.table.empty_title">Sem pedidos ainda</h3>
+            <p data-i18n="orders.table.empty_desc">Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>
           </div>
           <table class="ord-table" id="ordTable" style="display:none">
             <thead>
               <tr>
-                <th>Nº</th><th>Cliente</th><th>Estado</th><th>Pagamento</th>
-                <th>Total</th><th>Criado</th><th>Prazo</th><th></th>
+                <th data-i18n="orders.table.no">Nº</th><th data-i18n="orders.table.client">Cliente</th><th data-i18n="orders.table.status">Estado</th><th data-i18n="orders.table.payment">Pagamento</th>
+                <th data-i18n="orders.table.total">Total</th><th data-i18n="orders.table.created">Criado</th><th data-i18n="orders.table.due">Prazo</th><th></th>
               </tr>
             </thead>
             <tbody id="ordTbody"></tbody>
@@ -368,87 +368,87 @@
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">＋ Novo Pedido</div>
+      <div class="modal-title" id="modalTitle" data-i18n="orders.modal.title_new">＋ Novo Pedido</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-section-divider">👤 Dados do Cliente</div>
+      <div class="form-section-divider" data-i18n="orders.modal.section_client">👤 Dados do Cliente</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Nome do cliente <span>*</span></label>
-          <input type="text" id="oClientName" class="form-input" placeholder="Nome completo">
+          <label class="form-label"><span data-i18n="orders.modal.lbl_name">Nome do cliente</span> <span data-i18n="orders.modal.req">*</span></label>
+          <input type="text" id="oClientName" class="form-input" placeholder="Nome completo" data-i18n="orders.modal.lbl_name">
         </div>
         <div class="form-group">
-          <label class="form-label">Email <span>(opcional)</span></label>
+          <label class="form-label"><span data-i18n="orders.modal.lbl_email">Email</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
           <input type="email" id="oClientEmail" class="form-input" placeholder="email@exemplo.com">
         </div>
       </div>
       <div class="form-row full" style="margin-bottom:0">
         <div class="form-group">
-          <label class="form-label">Telefone <span>(opcional)</span></label>
+          <label class="form-label"><span data-i18n="orders.modal.lbl_phone">Telefone</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
           <input type="tel" id="oClientPhone" class="form-input" placeholder="+351 XXX XXX XXX">
         </div>
       </div>
 
-      <div class="form-section-divider" style="margin-top:18px">📦 Itens do Pedido</div>
+      <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_items">📦 Itens do Pedido</div>
       <div class="items-header">
-        <span>Descrição</span><span>Qtd</span>
-        <span style="text-align:right">Material
+        <span data-i18n="orders.modal.th_desc">Descrição</span><span data-i18n="orders.modal.th_qty">Qtd</span>
+        <span style="text-align:right"><span data-i18n="orders.modal.th_mat">Material</span>
           <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px">ℹ️
-            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
+            <span style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none" id="filTipBubble" data-i18n="orders.modal.tip_material">Se não seleccionares material, o consumo não será descontado do stock automaticamente.</span>
           </span>
         </span>
-        <span style="text-align:right;white-space:nowrap" id="weightUnitHeader">Qtd <span id="weightUnitLabel" style="font-family:var(--mono)">g/ml</span></span>
-        <span style="text-align:right">Preço un.</span><span></span>
+        <span style="text-align:right;white-space:nowrap" id="weightUnitHeader"><span data-i18n="orders.modal.th_qty">Qtd</span> <span id="weightUnitLabel" style="font-family:var(--mono)">g/ml</span></span>
+        <span style="text-align:right" data-i18n="orders.modal.th_price">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" style="margin-top:6px">＋ Adicionar item</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" style="margin-top:6px" data-i18n="orders.modal.btn_add">＋ Adicionar item</button>
       <div class="grand-total-row" style="margin-top:12px">
-        <span class="grand-total-lbl">Total do pedido</span>
+        <span class="grand-total-lbl" data-i18n="orders.modal.grand_total">Total do pedido</span>
         <span class="grand-total-val" id="oGrandTotal">— 0,00</span>
       </div>
 
-      <div class="form-section-divider" style="margin-top:18px">📋 Estado e Datas</div>
+      <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_status">📋 Estado e Datas</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Estado do pedido</label>
+          <label class="form-label" data-i18n="orders.modal.lbl_status">Estado do pedido</label>
           <select id="oStatus" class="form-select">
-            <option value="orcamento">Orçamento</option>
-            <option value="modelagem">Modelagem</option>
-            <option value="validacao">Validação</option>
-            <option value="aprovado">Aprovado</option>
-            <option value="printing">Printing</option>
-            <option value="done">Concluído</option>
+            <option value="orcamento" data-i18n="status.orcamento">Orçamento</option>
+            <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
+            <option value="validacao" data-i18n="status.validacao">Validação</option>
+            <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
+            <option value="printing" data-i18n="status.printing">Printing</option>
+            <option value="done" data-i18n="status.done">Concluído</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Pagamento</label>
+          <label class="form-label" data-i18n="orders.modal.lbl_payment">Pagamento</label>
           <select id="oPaymentStatus" class="form-select">
-            <option value="pendente">Aguardando pagamento</option>
-            <option value="pago">Pago</option>
+            <option value="pendente" data-i18n="status.pendente">Pendente</option>
+            <option value="pago" data-i18n="status.pago">Pago</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Data de criação</label>
+          <label class="form-label" data-i18n="orders.modal.lbl_created">Data de criação</label>
           <input type="date" id="oCreatedAt" class="form-input">
         </div>
         <div class="form-group">
-          <label class="form-label">Prazo de entrega <span>(opcional)</span></label>
+          <label class="form-label"><span data-i18n="orders.modal.lbl_due">Prazo de entrega</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
           <input type="date" id="oDueDate" class="form-input">
         </div>
       </div>
       <div class="form-row full" style="margin-bottom:0">
         <div class="form-group">
-          <label class="form-label">Observações <span>(opcional)</span></label>
-          <textarea id="oNotes" class="form-textarea" placeholder="Notas adicionais…"></textarea>
+          <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Observações</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
+          <textarea id="oNotes" class="form-textarea" placeholder="Notas adicionais…" data-i18n="orders.modal.placeholder_notes"></textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveOrder()">💾 Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal()" data-i18n="orders.modal.btn_cancel">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveOrder()" data-i18n="orders.modal.btn_save">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -457,11 +457,11 @@
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
     <div class="confirm-icon" id="confirmIcon">🗑️</div>
-    <div class="confirm-title" id="confirmTitle">Confirmar</div>
+    <div class="confirm-title" id="confirmTitle" data-i18n="orders.confirm.delete_title">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()">Cancelar</button>
-      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">Confirmar</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirm()" data-i18n="orders.confirm.btn_cancel">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn" data-i18n="orders.confirm.btn_confirm">Confirmar</button>
     </div>
   </div>
 </div>
@@ -471,8 +471,8 @@
   <div class="rcpt-modal">
     <div id="receiptContent"></div>
     <div class="rcpt-actions-bar">
-      <button class="btn btn-ghost btn-sm" onclick="closeReceipt()">✕ Fechar</button>
-      <button class="btn btn-primary btn-sm" onclick="printReceiptNow()">🖨️ Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeReceipt()" data-i18n="orders.receipt.btn_close">✕ Fechar</button>
+      <button class="btn btn-primary btn-sm" onclick="printReceiptNow()" data-i18n="orders.receipt.btn_print">🖨️ Imprimir / PDF</button>
     </div>
   </div>
 </div>
@@ -481,27 +481,27 @@
 <div class="modal-overlay" id="printingModalOverlay" onclick="if(event.target===this)closePrintingModal()">
   <div class="modal" style="max-width:440px">
     <div class="modal-header">
-      <div class="modal-title">🖨️ Iniciar impressão</div>
+      <div class="modal-title" data-i18n="orders.printing.modal_title">🖨️ Iniciar impressão</div>
       <button class="modal-close" onclick="closePrintingModal()">✕</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:.85rem;color:var(--muted);margin:0 0 16px">Antes de avançar para <strong>Printing</strong>, indica qual a impressora e o tempo estimado de impressão.</p>
+      <p style="font-size:.85rem;color:var(--muted);margin:0 0 16px" data-i18n="orders.printing.modal_desc">Antes de avançar para <strong>Produção</strong>, indica qual a impressora e o tempo estimado de impressão.</p>
       <div class="form-group" style="margin-bottom:14px">
-        <label class="form-label">Impressora <span>(opcional)</span></label>
+        <label class="form-label" data-i18n="orders.printing.lbl_printer">Impressora <span>(opcional)</span></label>
         <select id="ptPrinterId" class="form-select">
-          <option value="">— não atribuir impressora —</option>
+          <option value="" data-i18n="orders.printing.no_printer">— não atribuir impressora —</option>
         </select>
-        <span class="form-hint">Só aparecem impressoras operacionais. <a href="printers.html" style="color:var(--blue)">Gerir impressoras →</a></span>
+        <span class="form-hint"><span data-i18n="orders.printing.hint_printers">Só aparecem impressoras operacionais.</span> <a href="printers.html" style="color:var(--blue)" data-i18n="orders.printing.manage_link">Gerenciar impressoras →</a></span>
       </div>
       <div class="form-group" style="margin-bottom:0">
-        <label class="form-label">Tempo estimado de impressão (horas) <span>(opcional)</span></label>
+        <label class="form-label" data-i18n="orders.printing.lbl_time">Tempo estimado de impressão (horas) <span>(opcional)</span></label>
         <input type="number" id="ptEstHours" class="form-input" placeholder="ex: 4.5" min="0" step="0.5">
-        <span class="form-hint">Será acumulado automaticamente no contador da impressora quando o pedido for concluído.</span>
+        <span class="form-hint" data-i18n="orders.printing.hint_time">Será acumulado automaticamente no contador da impressora quando o pedido for concluído.</span>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closePrintingModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmPrinting()">🖨️ Avançar para Printing</button>
+      <button class="btn btn-ghost" onclick="closePrintingModal()" data-i18n="orders.confirm.btn_cancel">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmPrinting()" data-i18n="orders.printing.btn_confirm">🖨️ Avançar para Produção</button>
     </div>
   </div>
 </div>
@@ -519,8 +519,18 @@ let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
 
-const STATUS_LABELS = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Aprovação',aprovado:'Confirmado',fila:'Em Fila',printing:'Produção',preparacao:'Preparação',enviado:'Enviado',done:'Concluído'};
-const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'fila',aprovado:'fila',fila:'printing',printing:'preparacao',preparacao:'enviado',enviado:'done',done:null};
+const STATUS_LABELS = {
+  orcamento:  () => i18n.getNestedTranslation('status.orcamento'),
+  modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
+  validacao:  () => i18n.getNestedTranslation('status.validacao'),
+  aprovado:   () => i18n.getNestedTranslation('status.aprovado'),
+  printing:   () => i18n.getNestedTranslation('status.printing'),
+  done:       () => i18n.getNestedTranslation('status.done'),
+  pendente:   () => i18n.getNestedTranslation('status.pendente'),
+  pago:       () => i18n.getNestedTranslation('status.pago'),
+  fila:       () => i18n.getNestedTranslation('status.aprovado') // fallback
+};
+const STATUS_NEXT = {orcamento:'modelagem',modelagem:'validacao',validacao:'aprovado',aprovado:'printing',printing:'done',done:null};
 
 // ── HELPERS ────────────────────────────
 function animateValue(id, start, end, duration, isCurrency = false) {
@@ -650,7 +660,7 @@ function renderOrders(keepExpandId) {
   // Ordenar pelos mais recentes (Data e depois ID)
   filtered.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0) || (b.orderNumeric || 0) - (a.orderNumeric || 0));
 
-  document.getElementById('filterCount').textContent = `${filtered.length} pedido${filtered.length !== 1 ? 's' : ''}`;
+  document.getElementById('filterCount').textContent = i18n.getNestedTranslation(filtered.length === 1 ? 'orders.filters.count_1' : 'orders.filters.count_n', {n: filtered.length});
 
   const emptyEl = document.getElementById('tableEmpty');
   const tableEl = document.getElementById('ordTable');
@@ -660,8 +670,8 @@ function renderOrders(keepExpandId) {
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = orders.length
-      ? `<div class="table-empty-icon">🔍</div><h3>Sem resultados</h3><p>Nenhum pedido corresponde aos filtros actuais.</p>`
-      : `<div class="table-empty-icon">📦</div><h3>Sem pedidos ainda</h3><p>Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>`;
+      ? `<div class="table-empty-icon">🔍</div><h3 data-i18n="orders.table.empty_search">Sem resultados</h3><p data-i18n="orders.table.empty_search_desc">Nenhum pedido corresponde aos filtros actuais.</p>`
+      : `<div class="table-empty-icon">📦</div><h3 data-i18n="orders.table.empty_title">Sem pedidos ainda</h3><p data-i18n="orders.table.empty_desc">Cria o teu primeiro pedido clicando em <strong>＋ Novo pedido</strong> acima.</p>`;
     tableEl.style.display = 'none';
     if (mobList) mobList.innerHTML = '';
     return;
@@ -700,8 +710,8 @@ function renderOrders(keepExpandId) {
       <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber||'—')}</span></td>
         <td><div class="ord-client">${escH(o.clientName)}</div><div class="ord-date-sub">${its.length} item(s)</div></td>
-        <td><span class="badge bs-${o.status}"><span class="badge-dot"></span>${STATUS_LABELS[o.status]||o.status}</span></td>
-        <td><span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?'✓ Pago':'⏳ Pendente'}</span></td>
+        <td><span class="badge bs-${o.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[o.status]==='function'?STATUS_LABELS[o.status]():(STATUS_LABELS[o.status]||o.status)}</span></td>
+        <td><span class="badge bp-${o.paymentStatus}"><span class="badge-dot"></span>${o.paymentStatus==='pago'?i18n.getNestedTranslation('status.pago'):i18n.getNestedTranslation('status.pendente')}</span></td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
@@ -727,8 +737,8 @@ function renderOrders(keepExpandId) {
               </tbody>
             </table>
             <div class="expand-actions">
-              ${canAdvance?`<button class="btn btn-ghost btn-sm" onclick="advanceStatus('${o.id}')">🔄 Avançar → ${STATUS_LABELS[nextStatus]}</button>`:'<span style="font-size:.78rem;color:var(--success);font-weight:700">✅ Pedido concluído</span>'}
-              <button class="btn btn-ghost btn-sm" onclick="${o.paymentStatus==='pago'?`togglePayment('${o.id}','pendente')`:`togglePayment('${o.id}','pago')`}">${o.paymentStatus==='pago'?'⏳ Marcar pendente':'✓ Marcar pago'}</button>
+              ${canAdvance?`<button class="btn btn-ghost btn-sm" onclick="advanceStatus('${o.id}')">🔄 ${i18n.getNestedTranslation('orders.printing.btn_confirm').replace('🖨️ ','')} → ${typeof STATUS_LABELS[nextStatus]==='function'?STATUS_LABELS[nextStatus]():STATUS_LABELS[nextStatus]}</button>`:'<span style="font-size:.78rem;color:var(--success);font-weight:700">✅ Pedido concluído</span>'}
+              <button class="btn btn-ghost btn-sm" onclick="${o.paymentStatus==='pago'?`togglePayment('${o.id}','pendente')`:`togglePayment('${o.id}','pago')`}">${o.paymentStatus==='pago'?i18n.getNestedTranslation('status.pendente'):i18n.getNestedTranslation('status.pago')}</button>
               <button class="btn btn-ghost btn-sm" onclick="openModal('${o.id}')">✏️ Editar</button>
               <button class="btn btn-ghost btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue)">🧾 Recibo</button>
               <button class="btn btn-ghost btn-sm" onclick="sendWhatsAppTracking('${o.id}')" style="color:#25D366;display:flex;align-items:center;gap:4px">
@@ -851,9 +861,9 @@ function updateStats() {
   animateValue('statTotal', prevTotal, total, 800);
   animateValue('statProgress', prevProgress, progress, 800);
   animateValue('statPendingVal', 0, pendingVal, 800, true);
-  document.getElementById('statPendingCount').textContent = pending.length + ' pedido' + (pending.length!==1?'s':'');
+  document.getElementById('statPendingCount').textContent = i18n.getNestedTranslation(pending.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: pending.length});
   animateValue('statPaidVal', 0, paidVal, 800, true);
-  document.getElementById('statPaidCount').textContent = paid.length + ' pedido' + (paid.length!==1?'s':'');
+  document.getElementById('statPaidCount').textContent = i18n.getNestedTranslation(paid.length === 1 ? 'orders.stats.1_order' : 'orders.stats.n_orders', {n: paid.length});
 }
 
 // ── ADVANCE STATUS ─────────────────────
@@ -878,7 +888,8 @@ async function advanceStatus(id) {
   if (o.status === 'done') { for(const fil of filaments) { if(fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
   await DB.saveOrder(o);
   renderOrders(id);
-  showToast(`📦 ${o.orderNumber} → ${STATUS_LABELS[next]}`, 'ok');
+  const statusName = typeof STATUS_LABELS[next] === 'function' ? STATUS_LABELS[next]() : (STATUS_LABELS[next] || next);
+  showToast(i18n.getNestedTranslation('orders.toasts.status_updated', {s: statusName}), 'ok');
 }
 
 // ── PRINTING MODAL ─────────────────────
@@ -924,7 +935,8 @@ async function confirmPrinting() {
     await DB.saveOrder(o);
     closePrintingModal();
     renderOrders(_printingOrderId);
-    showToast(`🖨️ ${o.orderNumber} → Printing${printerId ? ' (impressora atribuída)' : ''}`, 'ok');
+    const msg = i18n.getNestedTranslation('orders.toasts.status_updated', {s: i18n.getNestedTranslation('status.printing')});
+    showToast(`🖨️ ${o.orderNumber} ${msg}`, 'ok');
   } catch(e) { showToast('Erro: ' + e.message, 'err'); }
 }
 
@@ -1026,7 +1038,7 @@ async function applyFilamentConsumption(order) {
     for (const fil of filaments) {
       if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; }
     }
-    showToast('🎨 Stock de material actualizado automaticamente', 'ok');
+    showToast(i18n.getNestedTranslation('materials.toasts.saved'), 'ok');
   }
 }
 
@@ -1084,7 +1096,9 @@ async function togglePayment(id, newStatus) {
   o.updatedAt = new Date().toISOString();
   await DB.saveOrder(o);
   renderOrders(id); // preserve expanded row
-  showToast(newStatus === 'pago' ? '✓ Marcado como pago' : '⏳ Marcado como pendente', 'ok');
+  const msgKey = newStatus === 'pago' ? 'orders.toasts.pay_updated' : 'orders.toasts.pay_updated';
+  const payLabel = i18n.getNestedTranslation('status.' + newStatus);
+  showToast(i18n.getNestedTranslation('orders.toasts.pay_updated', {p: payLabel}), 'ok');
 }
 
 // ── MODAL ──────────────────────────────
@@ -1096,7 +1110,8 @@ function openModal(id = null) {
   const _lbl = document.getElementById('weightUnitLabel');
   if (_lbl) _lbl.textContent = 'g/ml';
   document.getElementById('oGrandTotal').textContent = fmtCurrency(0);
-  document.getElementById('modalTitle').textContent = id ? '✏️ Editar Pedido' : '＋ Novo Pedido';
+  document.getElementById('modalTitle').setAttribute('data-i18n', id ? 'orders.modal.title_edit' : 'orders.modal.title_new');
+  if (window.i18n) i18n.translatePage();
 
   if (id) {
     const o = orders.find(x=>x.id===id);
@@ -1164,7 +1179,7 @@ function applyCalcPrefill(p) {
       }, 4000);
     }
 
-    showToast('📦 Pedido pré-preenchido! Adiciona cliente e data de entrega.', 'ok');
+    showToast(i18n.getNestedTranslation('orders.toasts.saved'), 'ok');
     window._calcMaterialCost = p.material_cost || 0;
     window._calcMode         = p.mode || 'fdm';
     // Update header based on calc mode
@@ -1348,7 +1363,7 @@ async function saveOrder() {
       };
       const saved = await DB.saveOrder(newOrder);
       orders.unshift(saved);
-      showToast('✅ Pedido criado!','ok');
+      showToast(i18n.getNestedTranslation('orders.toasts.saved'),'ok');
       // Auto-expense: se veio da calculadora, registar custo de material
       if (window._calcMaterialCost > 0) {
         try {
@@ -1376,8 +1391,9 @@ async function saveOrder() {
 function confirmDelete(id) {
   const o = orders.find(x=>x.id===id);
   if (!o) return;
-  document.getElementById('confirmTitle').textContent = 'Eliminar pedido?';
-  document.getElementById('confirmMsg').textContent = `Vai eliminar "${o.orderNumber} — ${o.clientName}" permanentemente.`;
+  document.getElementById('confirmTitle').setAttribute('data-i18n', 'orders.confirm.delete_title');
+  document.getElementById('confirmMsg').textContent = i18n.getNestedTranslation('orders.confirm.delete_msg');
+  if (window.i18n) i18n.translatePage();
   document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); deleteOrder(id); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
@@ -1389,7 +1405,7 @@ async function deleteOrder(id) {
     await DB.deleteOrder(id);
     orders = orders.filter(x=>x.id!==id);
     renderOrders();
-    showToast('🗑️ Pedido eliminado','');
+    showToast(i18n.getNestedTranslation('orders.toasts.deleted'),'');
   } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
