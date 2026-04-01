@@ -56,27 +56,24 @@ function getCurrencyConfig() {
   const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
   const force = window.forceLocaleCurrency === true;
   
-  // 1. Se forceLocaleCurrency estiver activo ou se o idioma for mudado pela UI
-  // vamos sempre usar a moeda correspondente ao idioma para consistência.
-  if (force || lang) {
-    if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
-    if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
-    if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
-    if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
-  }
-  
-  // 2. Fallback para configuração da empresa, caso exista
-  if (_cfg && _cfg.currency) {
+  // A regra de Ouro: a MOEDA vêm da BD (_cfg.currency) caso exista, 
+  // para respeitar o plano do Cliente no SaaS e não criar hardcodes baseados no UI language.
+  if (_cfg && _cfg.currency && !force) {
     const currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
-    const locMap  = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
     return {
       symbol: currMap[_cfg.currency] || '€',
       code:   _cfg.currency,
-      locale: locMap[_cfg.currency] || _cfg._locale || 'pt-PT'
+      locale: lang // Garantimos que a formatação numérica sim acompanha o idioma da interface
     };
   }
   
-  // Default pt-PT / EUR
+  // Fallback baseado no idioma caso a BD não devolva configurações
+  if (lang === 'pt-BR') return { symbol: 'R$', code: 'BRL', locale: 'pt-BR' };
+  if (lang === 'en-GB') return { symbol: '£',  code: 'GBP', locale: 'en-GB' };
+  if (lang === 'es')    return { symbol: '€',  code: 'EUR', locale: 'es-ES' };
+  if (lang.startsWith('en')) return { symbol: '$', code: 'USD', locale: 'en-US' };
+  
+  // Default de segurança
   return { symbol: '€', code: 'EUR', locale: 'pt-PT' };
 }
 

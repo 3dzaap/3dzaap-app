@@ -342,12 +342,6 @@ const DB = {
     
     // Check if it's a new order without a number (e.g. from Calculator)
     const isNew = !order.id || _isLocalId(order.id);
-    if (isNew && (!order.orderNumeric || order.orderNumeric === 0)) {
-       const lastStored = await this.getLastOrderNumber();
-       const next = lastStored + 1;
-       order.orderNumeric = next;
-       order.orderNumber  = `IMP-${String(next).padStart(4,'0')}`;
-    }
 
     const row   = _mapOrderToDB(order);
     if (!isNew) {
@@ -762,8 +756,6 @@ function _mapOrderFromDB(row) {
 
 function _mapOrderToDB(o) {
   const row = {
-    order_number:    o.orderNumber || `IMP-${String(o.orderNumeric || 0).padStart(4,'0')}`,
-    order_numeric:   parseInt(o.orderNumeric || 0),
     client_name:     o.clientName,
     client_email:    o.clientEmail  || null,
     client_phone:    o.clientPhone  || null,
@@ -782,7 +774,14 @@ function _mapOrderToDB(o) {
     expires_at:      o.expiresAt    || null,
     is_quote:        o.isQuote      || false,
   };
-  if (o.createdAt) row.created_at = o.createdAt;
+  
+  // Optional columns (Let DB triggers/defaults handle these if new)
+  if (o.orderNumber)  row.order_number  = o.orderNumber;
+  if (o.orderNumeric) row.order_numeric = parseInt(o.orderNumeric || 0);
+  if (o.shareToken)   row.share_token   = o.shareToken;
+  if (o.passphrase)   row.passphrase    = o.passphrase;
+  if (o.createdAt)    row.created_at    = o.createdAt;
+  
   return row;
 }
 

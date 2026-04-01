@@ -675,9 +675,7 @@ async function loadData() {
 
 // saveOrders e saveFilaments removidos — writes feitos directamente via DB.saveOrder / DB.saveFilament
 
-// ── ORDER NUMBERS ──────────────────────
-function getNextOrderNumber() { lastOrderNumber += 1; return lastOrderNumber; }
-function fmtOrderNum(n) { return 'PED-' + String(n).padStart(4,'0'); }
+// ── ORDER NUMBERS DELEGATED TO DB ──
 
 // Update unit labels based on currency configuration
 function updateCurrencyLabels() {
@@ -1427,10 +1425,7 @@ async function saveOrder() {
       if (idx > -1) orders[idx] = saved;
       showToast('✅ Pedido actualizado!','ok');
     } else {
-      const num = getNextOrderNumber();
       const newOrder = {
-        orderNumber: fmtOrderNum(num),
-        orderNumeric: num,
         createdAt: base.createdAt || new Date().toISOString().split('T')[0],
         ...base,
       };
