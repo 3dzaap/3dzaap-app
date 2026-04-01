@@ -14,6 +14,8 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── PACK BADGE ─────────────────────────────────────────────── */
@@ -391,7 +393,6 @@
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
-<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
   
@@ -431,7 +432,7 @@
                 onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
                 aria-label="Ajuda">?</button>
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
-                <div class="gc-popover-title">Contacte-nos</div>
+                <div class="gc-popover-title" data-i18n="nav.help_title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt="">
                   WhatsApp
@@ -532,7 +533,7 @@
           <option value="orange" data-i18n="materials.filters.status_orange">Stock baixo</option>
           <option value="red" data-i18n="materials.filters.status_red">Esgotado</option>
         </select>
-        <span class="filter-count" id="filterCount">0 itens</span>
+        <span class="filter-count" id="filterCount">0 <span data-i18n="materials.filters.count_n">itens</span></span>
       </div>
 
       <!-- Table -->
@@ -558,7 +559,7 @@
 <div class="modal-overlay" id="packOverlay" onclick="if(event.target===this)closePackModal()">
   <div class="modal" id="packBox" style="max-width:680px">
     <div class="modal-header">
-      <div class="modal-title">📦 Adicionar Pack de Materiais</div>
+      <div class="modal-title" data-i18n="materials.modal_pack.title">📦 Adicionar Pack de Materiais</div>
       <button class="modal-close" onclick="closePackModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -1609,7 +1610,7 @@ async function deleteMaterial(id) {
     allMaterials = allMaterials.filter(m => m.id !== id);
     updateToggleCounts();
     applyFilters();
-    showToast('🗑️ Eliminado', '');
+    showToast('🗑️ ' + i18n.getNestedTranslation('materials.toasts.deleted'), '');
   } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
@@ -1640,7 +1641,7 @@ function stepField(e, id, field, delta) {
 // ══════════════════════════════════════
 function exportCSV() {
   const list = allMaterials.filter(m => (m.materialClass||m.material_class||'fdm') === currentView);
-  if (!list.length) { showToast('Sem dados para exportar', 'err'); return; }
+  if (!list.length) { showToast(i18n.getNestedTranslation('materials.toasts.no_data'), 'err'); return; }
   const isFDM = currentView === 'fdm';
   const headers = isFDM
     ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas', (getCurrencySymbol() + '/kg'), 'Estado','Notas']
@@ -1657,7 +1658,7 @@ function exportCSV() {
   const b  = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
   const a  = Object.assign(document.createElement('a'), {href:URL.createObjectURL(b), download:`${isFDM?'filamentos':'resinas'}_${ts}.csv`, style:'display:none'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  showToast('📄 CSV exportado!', 'ok');
+  showToast(t('materials.toasts.csv_exported'), 'ok');
 }
 
 // ══════════════════════════════════════
@@ -1665,10 +1666,10 @@ function exportCSV() {
 // ══════════════════════════════════════
 function showUpgradeNotice(module) {
   const msgs = {
-    materials: `⚠️ Limite do plano Starter atingido (${window._materialLimit} materiais).\nFaz upgrade para Pro para registos ilimitados.`,
-    printers:  `⚠️ Limite do plano Starter atingido (${window._printerLimit} impressora).\nFaz upgrade para Pro para impressoras ilimitadas.`,
+    materials: t('materials.limits.materials_reached', { count: window._materialLimit }),
+    printers:  t('materials.limits.printers_reached', { count: window._printerLimit }),
   };
-  const msg = msgs[module] || '⚠️ Limite do teu plano atingido. Faz upgrade para continuar.';
+  const msg = msgs[module] || t('materials.limits.global_reached');
   showToast(msg, 'err');
   // Banner persistente de upgrade
   let banner = document.getElementById('upgradeBanner');
@@ -1679,10 +1680,10 @@ function showUpgradeNotice(module) {
     banner.innerHTML = `
       <div style="font-size:1.4rem">🔒</div>
       <div style="flex:1">
-        <div style="font-weight:800;font-size:.88rem;color:var(--dark)">Limite do plano Starter</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Faz upgrade para <strong>Pro</strong> e remove todos os limites.</div>
+        <div style="font-weight:800;font-size:.88rem;color:var(--dark)">${t('materials.limits.banner_title')}</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${t('materials.limits.banner_desc')}</div>
       </div>
-      <a href="billing.html" style="padding:8px 14px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap">Ver planos</a>
+      <a href="billing.html" style="padding:8px 14px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap">${t('materials.limits.btn_plans')}</a>
       <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px">✕</button>
     `;
     document.body.appendChild(banner);
@@ -1986,8 +1987,8 @@ function pkRenderRows() {
       </div>
       <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
         <span class="pk-override-toggle" onclick="pkToggleOverride(${i})">
-          ${showOverride ? '🔒' : '🌐'} ${showOverride ? 'Override individual' : 'Herda marca/tamanho do pack'}
-          <span style="font-size:.65rem;opacity:.6">(clica para ${showOverride ? 'remover' : 'personalizar'})</span>
+          ${showOverride ? '🔒' : '🌐'} ${showOverride ? i18n.getNestedTranslation('materials.modal_pack.override_on') : i18n.getNestedTranslation('materials.modal_pack.override_off')}
+          <span style="font-size:.65rem;opacity:.6">(${i18n.getNestedTranslation('materials.modal_pack.override_hint')})</span>
         </span>
       </div>
       ${showOverride ? `
@@ -2204,10 +2205,8 @@ function showPackSiblings(event, packId) {
     </div>
   `).join('');
 
-  const totalCost = siblings.reduce((s,m) => s+(m.price||0), 0);
-  const sym = getCurrencySymbol();
   document.getElementById('packPopoverMeta').textContent =
-    `${siblings.length} cor${siblings.length!==1?'es':''} · Total: ${sym}${totalCost.toFixed(2)}`;
+    t('materials.popover.pack_meta', { count: siblings.length, total: totalCost.toFixed(2), symbol: sym });
 
   // Position near click
   const rect = event.target.getBoundingClientRect();
@@ -2225,7 +2224,6 @@ function showPackSiblings(event, packId) {
 }
 
 </script>
-<script src="i18n.js"></script>
 
 <script>
 // Close help popover on outside click

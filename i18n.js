@@ -149,3 +149,4 @@ const i18n = {
 
 document.addEventListener('DOMContentLoaded', () => i18n.init());
 window.i18n = i18n;
+window.t = (key, vars) => i18n.getNestedTranslation(key, vars);

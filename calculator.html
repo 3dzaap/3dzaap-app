@@ -15,8 +15,9 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- 3DZAAP data layer -->
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
@@ -541,7 +542,6 @@
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
 <div class="layout">
-<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 
@@ -554,9 +554,9 @@
     <!-- Topbar: só breadcrumb -->
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a>
         <span>›</span>
-        <strong>📐 Calculadora</strong>
+        <strong data-i18n="calc.title">📐 Calculadora</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -1501,29 +1501,29 @@ function _buildClientMsg(){
   // Professional WhatsApp formatting
   const lines=[
     '━━━━━━━━━━━━━━━━━━━━',
-    '📄 *ORÇAMENTO DE IMPRESSÃO 3D*',
+    '📄 *' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
     '━━━━━━━━━━━━━━━━━━━━',
-    ...(clientName ? ['👋 *Olá, ' + clientName + '!*', ''] : []),
+    ...(clientName ? ['👋 *' + i18n.getNestedTranslation('calc.wa.greeting', {name: clientName}) + '*', ''] : []),
     '🏢 *'+companyName+'*',
-    '📅 *Data:* '+date,
+    '📅 *' + i18n.getNestedTranslation('calc.wa.date') + ':* '+date,
     '',
-    '📐 *Peça:* '+(name || 'Impressão 3D Customizada'),
-    '🖨️ *Tecnologia:* '+modeLabel,
-    '🔢 *Quantidade:* '+qty+' un.',
+    '📐 *' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
+    '🖨️ *' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
+    '🔢 *' + i18n.getNestedTranslation('calc.wa.qty') + ':* '+qty+' ' + i18n.getNestedTranslation('calc.qty_unit'),
     '',
     '------------------------------------',
-    '📝 *DETALHE TÉCNICO:*',
-    i.mode==='resin' ? '• Volume est.: '+i.resinVolume+'ml' : '• Peso est.: '+i.partWeight+'g',
-    '• Tempo est.: '+i.printTime+'h',
+    '📝 *' + i18n.getNestedTranslation('calc.wa.tech_detail') + ':*',
+    i.mode==='resin' ? '• ' + i18n.getNestedTranslation('calc.wa.est_vol') + ': '+i.resinVolume+'ml' : '• ' + i18n.getNestedTranslation('calc.wa.est_weight') + ': '+i.partWeight+'g',
+    '• ' + i18n.getNestedTranslation('calc.wa.est_time') + ': '+i.printTime+'h',
     '------------------------------------',
     '',
-    '💰 *VALORES:*',
-    '• Preço Unitário: '+sym+' '+r.unitPrice.toFixed(2),
-    '• *TOTAL: '+sym+' '+r.finalPrice.toFixed(2)+'*',
+    '💰 *' + i18n.getNestedTranslation('calc.wa.values') + ':*',
+    '• ' + i18n.getNestedTranslation('calc.wa.unit_price') + ': '+sym+' '+r.unitPrice.toFixed(2),
+    '• *' + i18n.getNestedTranslation('calc.wa.total') + ': '+sym+' '+r.finalPrice.toFixed(2)+'*',
     '',
     '━━━━━━━━━━━━━━━━━━━━',
-    '⏳ Válido por 7 dias.',
-    '🚀 Gerado via 3DZAAP',
+    '⏳ ' + i18n.getNestedTranslation('calc.wa.validity'),
+    '🚀 ' + i18n.getNestedTranslation('calc.wa.powered_by'),
     '━━━━━━━━━━━━━━━━━━━━'
   ];
 
@@ -1548,18 +1548,18 @@ function copyForClient(){
     if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
   };
   if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(txt).then(()=>{showToast('📋 Orçamento copiado!','ok');flash();}).catch(()=>fbClientCopy(txt));
+    navigator.clipboard.writeText(txt).then(()=>{showToast('📋 ' + i18n.getNestedTranslation('calc.toasts.saved'),'ok');flash();}).catch(()=>fbClientCopy(txt));
   }else{fbClientCopy(txt);}
 }
 
 async function sendWhatsApp(){
   const i=getInputs(); const r=computeResults(i);
-  if(r.finalPrice===0){showToast('Calcula primeiro antes de enviar','err');return;}
+  if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.no_values'),'err');return;}
   
   const btn=document.getElementById('waBtn');
   const orig=btn.innerHTML;
   btn.disabled=true;
-  btn.innerHTML='<span>⏳ A gerar link...</span>';
+  btn.innerHTML='<span>⏳ ' + i18n.getNestedTranslation('calc.toasts.generating_link') + '...</span>';
 
   const waWin = window.open('', '_blank');
 
@@ -1652,7 +1652,11 @@ function toggleSidebar(){
 }
 
 // ── HELPERS ────────────────────────────
-function pf(id){return parseFloat((document.getElementById(id)||{}).value)||0;}
+function pf(id){
+  let val = (document.getElementById(id)||{}).value;
+  if(typeof val === 'string') val = val.replace(',', '.');
+  return parseFloat(val) || 0;
+}
 function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
 function setSl(id,v,mn,mx){const el=document.getElementById(id);if(el)el.value=Math.min(mx,Math.max(mn,v));}
 function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
@@ -1666,7 +1670,6 @@ function dlCSV(csv,fn){
 
 
 </script>
-<script src="i18n.js"></script>
 
 <script>
 // Close help popover on outside click

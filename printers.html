@@ -14,6 +14,8 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos de printers.html ─────────────────── */
@@ -358,7 +360,6 @@
 <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
-<script src="utils.js"></script>
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 
@@ -369,7 +370,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a><span>›</span><strong>🖨️ Impressoras</strong>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="printers.title">🖨️ Impressoras</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -399,7 +400,7 @@
                 onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
                 aria-label="Ajuda">?</button>
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
-                <div class="gc-popover-title">Contacte-nos</div>
+                <div class="gc-popover-title" data-i18n="nav.help_title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt="">
                   WhatsApp
@@ -422,11 +423,11 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-text">
-          <h1>🖨️ Impressoras</h1>
-          <p>Gere o parque de impressoras — estado, horas e manutenções</p>
+          <h1 data-i18n="printers.title">🖨️ Impressoras</h1>
+          <p data-i18n="printers.subtitle">Gere o parque de impressoras — estado, horas e manutenções</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-primary" onclick="openPrinterModal()">＋ Nova impressora</button>
+          <button class="btn btn-primary" onclick="openPrinterModal()" data-i18n="printers.btn_new">＋ Nova impressora</button>
         </div>
       </div>
 
@@ -470,16 +471,16 @@
 <div class="modal-overlay" id="printerModalOverlay" onclick="if(event.target===this)closePrinterModal()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="printerModalTitle">＋ Nova Impressora</div>
+      <div class="modal-title" id="printerModalTitle" data-i18n="printers.modal.title_new">＋ Nova Impressora</div>
       <button class="modal-close" onclick="closePrinterModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-section-divider">🖨️ Identificação</div>
+      <div class="form-section-divider" data-i18n="printers.modal.section_id">🖨️ Identificação</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Fabricante <span>*</span></label>
+          <label class="form-label"><span data-i18n="printers.modal.lbl_brand">Fabricante</span> <span>*</span></label>
           <select id="pBrand" class="form-select" onchange="onBrandChange()">
-            <option value="">— Selecionar fabricante —</option>
+            <option value="" data-i18n="printers.modal.lbl_brand_placeholder">— Selecionar fabricante —</option>
             <option value="Bambu Lab">Bambu Lab</option>
             <option value="Prusa Research">Prusa Research</option>
             <option value="Creality">Creality</option>
@@ -499,20 +500,20 @@
             <option value="BCN3D">BCN3D</option>
             <option value="Stratasys">Stratasys</option>
             <option value="MakerBot">MakerBot</option>
-            <option value="Outro">Outro…</option>
+            <option value="Outro" data-i18n="printers.modal.lbl_custom_model">Outro…</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Tipo <span>*</span></label>
+          <label class="form-label"><span data-i18n="printers.modal.lbl_type">Tipo</span> <span>*</span></label>
           <select id="pType" class="form-select" onchange="onTypeChange()">
-            <option value="fdm">FDM</option>
-            <option value="resina">Resina (SLA/DLP/MSLA)</option>
+            <option value="fdm" data-i18n="materials.modal.fdm">FDM</option>
+            <option value="resina" data-i18n="materials.modal.resin">Resina (SLA/DLP/MSLA)</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group" id="pModelSelectGroup">
-          <label class="form-label">Modelo <span>*</span></label>
+          <label class="form-label" data-i18n="printers.modal.lbl_model">Modelo <span>*</span></label>
           <select id="pModelSelect" class="form-select" onchange="onModelSelectChange()">
             <option value="">— Selecionar fabricante primeiro —</option>
           </select>
@@ -522,11 +523,11 @@
           <input type="text" id="pModelCustom" class="form-input" placeholder="ex: X1 Carbon, MK4…">
         </div>
         <div class="form-group">
-          <label class="form-label">Estado</label>
+          <label class="form-label" data-i18n="printers.modal.lbl_status">Estado</label>
           <select id="pStatus" class="form-select">
-            <option value="operacional">Operacional</option>
-            <option value="manutencao">Em manutenção</option>
-            <option value="inativa">Inativa</option>
+            <option value="operacional" data-i18n="printers.card.operational">Operacional</option>
+            <option value="manutencao" data-i18n="printers.card.maintenance">Em manutenção</option>
+            <option value="inativa" data-i18n="printers.card.inactive">Inativa</option>
           </select>
         </div>
       </div>
@@ -537,7 +538,7 @@
         <div class="form-group">
           <label class="form-label">Nome personalizado <span>(opcional)</span></label>
           <input type="text" id="pCustomName" class="form-input" placeholder="Ex: Bambu da Sala, Resina Pequena, Ender da Garagem…">
-          <span class="form-hint">Se preenchido, substitui a exibição do modelo em toda a aplicação. Útil quando tens várias impressoras do mesmo modelo.</span>
+          <span class="form-hint" data-i18n="printers.modal.hint_custom_name">Se preenchido, substitui a exibição do modelo em toda a aplicação. Útil quando tens várias impressoras do mesmo modelo.</span>
         </div>
       </div>
 
@@ -578,15 +579,15 @@
         </div>
       </div>
 
-      <div class="form-section-divider" style="margin-top:18px">🔧 Manutenção preventiva</div>
+      <div class="form-section-divider" style="margin-top:18px" data-i18n="printers.modal.section_maint">🔧 Manutenção preventiva</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Intervalo de manutenção (horas)</label>
+          <label class="form-label" data-i18n="printers.modal.lbl_maint_interval">Intervalo de manutenção (horas)</label>
           <input type="number" id="pMaintIntervalHours" class="form-input" placeholder="500" min="0">
-          <span class="form-hint">Alerta quando faltar menos de 20% do intervalo</span>
+          <span class="form-hint" data-i18n="printers.modal.hint_maint_threshold">Alerta quando faltar menos de 20% do intervalo</span>
         </div>
         <div class="form-group">
-          <label class="form-label">Horas na última manutenção</label>
+          <label class="form-label" data-i18n="printers.modal.lbl_last_maint">Horas na última manutenção</label>
           <input type="number" id="pLastMaintHours" class="form-input" placeholder="0" min="0">
         </div>
       </div>
@@ -599,7 +600,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closePrinterModal()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closePrinterModal()" data-i18n="orders.modal.btn_cancel">Cancelar</button>
       <button class="btn btn-primary" onclick="savePrinter()">💾 Guardar</button>
     </div>
   </div>
@@ -694,13 +695,13 @@ let printers = [];
 let _editingPrinterId = null;
 let _detailPrinterId  = null;
 const STATUS_LABELS = { 
-  operacional: () => i18n.getNestedTranslation('status.operacional'), 
-  manutencao:  () => i18n.getNestedTranslation('status.manutencao'), 
-  inativa:     () => i18n.getNestedTranslation('status.inativa') 
+  operacional: () => i18n.getNestedTranslation('printers.card.operational'), 
+  manutencao:  () => i18n.getNestedTranslation('printers.card.maintenance'), 
+  inativa:     () => i18n.getNestedTranslation('printers.card.inactive') 
 };
 const TYPE_LABELS = { 
   fdm: 'FDM', 
-  resina: () => i18n.getNestedTranslation('modal_mat.resin') 
+  resina: () => t('materials.modal.resin') 
 };
 const MAINT_LABELS = {
   lubrificacao: () => i18n.getNestedTranslation('printers.maint_types.lubrificacao'),
@@ -765,9 +766,9 @@ function _initBrandSelect() {
   const pBrand = document.getElementById('pBrand');
   if (!pBrand) return;
   const brands = [...new Set(printerModels.map(m => m.brand))].sort();
-  const options = [`<option value="" data-i18n="printers.modal.lbl_brand_placeholder">— ${i18n.getNestedTranslation('printers.modal.lbl_brand')} —</option>`]
+  const options = [`<option value="" data-i18n="printers.modal.lbl_brand_placeholder">— ${i18n.getNestedTranslation('printers.modal.lbl_brand_placeholder')} —</option>`]
                 .concat(brands.map(b => `<option value="${b}">${b}</option>`))
-                .concat([`<option value="Outro" data-i18n="printers.modal.lbl_custom_model_opt">${i18n.getNestedTranslation('printers.modal.lbl_custom_model')}…</option>`]);
+                .concat([`<option value="Outro" data-i18n="printers.modal.lbl_custom_model">${i18n.getNestedTranslation('printers.modal.lbl_custom_model')}…</option>`]);
   pBrand.innerHTML = options.join('');
 }
 
@@ -814,8 +815,8 @@ function renderPrinters() {
 
         ${(p.powerPrint || p.powerStandby) ? `
         <div style="margin-top:12px">
-          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase" data-i18n="printers.card.power_consumption">
-            <span style="color:#d4a045">⚡</span> Consumo Elétrico
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase">
+            <span style="color:#d4a045">⚡</span> <span data-i18n="printers.card.power_consumption">Consumo Elétrico</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
              <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:66px;text-align:center;border:1px solid var(--border)">
@@ -883,12 +884,12 @@ function _maintAlertChip(p) {
   const threshold = Math.round(interval * 0.20); // alert at 20%
 
   if (hoursUntilNext <= 0) {
-    return `<div class="printer-alert-chip warn">⚠️ ${i18n.getNestedTranslation('printers.card.maint_overdue', {h: Math.abs(hoursUntilNext)})}</div>`;
+    return `<div class="printer-alert-chip warn">⚠️ ${t('printers.card.maint_overdue', {h: Math.abs(hoursUntilNext)})}</div>`;
   }
   if (hoursUntilNext <= threshold) {
-    return `<div class="printer-alert-chip warn">🔧 ${i18n.getNestedTranslation('printers.card.maint_upcoming', {h: hoursUntilNext})}</div>`;
+    return `<div class="printer-alert-chip warn">🔧 ${t('printers.card.maint_upcoming', {h: hoursUntilNext})}</div>`;
   }
-  return `<div class="printer-alert-chip ok">✅ ${i18n.getNestedTranslation('printers.card.maint_next', {h: hoursUntilNext})}</div>`;
+  return `<div class="printer-alert-chip ok">✅ ${t('printers.card.maint_next', {h: hoursUntilNext})}</div>`;
 }
 
 function _hoursPercent(p) {
@@ -995,7 +996,7 @@ function onMmsSystemChange() {
   _updateSlotsHint();
 
   if (sys.chainable) {
-    hint.textContent = '💡 Permite ligar várias unidades em série.';
+    hint.textContent = t('printers.modal.hint_mms_chain');
     hint.style.display = '';
   } else {
     hint.style.display = 'none';
@@ -1198,8 +1199,8 @@ async function savePrinter() {
   const brand    = brandSel === 'Outro' ? (document.getElementById('pModelCustom').dataset.brand || 'Outro') : brandSel;
   const model    = _resolveModel();
 
-  if (!brandSel || brandSel === '') { showToast('⚠️ Seleciona um fabricante', 'err'); return; }
-  if (!model)                        { showToast('⚠️ Seleciona ou escreve um modelo', 'err'); return; }
+  if (!brandSel || brandSel === '') { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_brand'), 'err'); return; }
+  if (!model)                        { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_model'), 'err'); return; }
 
   const data = {
     brand:              brandSel === 'Outro' ? 'Outro' : brandSel,
@@ -1237,11 +1238,11 @@ async function savePrinter() {
       const saved = await DB.savePrinter(merged);
       const idx = printers.findIndex(p => p.id === _editingPrinterId);
       if (idx > -1) printers[idx] = saved;
-      showToast('✅ Impressora actualizada!', 'ok');
+      showToast('✅ ' + i18n.getNestedTranslation('printers.toasts.updated'), 'ok');
     } else {
       const saved = await DB.savePrinter({ ...data, hoursUsed: 0, maintenances: [] });
       printers.unshift(saved);
-      showToast('✅ Impressora criada!', 'ok');
+      showToast('✅ ' + i18n.getNestedTranslation('printers.toasts.saved'), 'ok');
     }
     closePrinterModal();
     renderPrinters();
@@ -1265,9 +1266,9 @@ function openDetailModal(id) {
     : '';
 
   document.getElementById('detailSummary').innerHTML = `
-    ${p.customName ? `<div style="grid-column:1/-1"><div class="detail-field-lbl">Nome personalizado</div><div class="detail-field-val" style="color:var(--blue)">${escH(p.customName)}</div></div>` : ''}
-    <div><div class="detail-field-lbl">Tipo</div><div class="detail-field-val">${TYPE_LABELS[p.printerType]||p.printerType}</div></div>
-    <div><div class="detail-field-lbl">Estado</div><div class="detail-field-val"><span class="badge bs-${p.status}"><span class="badge-dot"></span>${STATUS_LABELS[p.status]||p.status}</span></div></div>
+    ${p.customName ? `<div style="grid-column:1/-1"><div class="detail-field-lbl" data-i18n="printers.modal.lbl_custom_name">Nome personalizado</div><div class="detail-field-val" style="color:var(--blue)">${escH(p.customName)}</div></div>` : ''}
+    <div><div class="detail-field-lbl" data-i18n="printers.modal.lbl_type">Tipo</div><div class="detail-field-val">${typeof TYPE_LABELS[p.printerType]==='function'?TYPE_LABELS[p.printerType]():(TYPE_LABELS[p.printerType]||p.printerType)}</div></div>
+    <div><div class="detail-field-lbl" data-i18n="printers.modal.lbl_status">Estado</div><div class="detail-field-val"><span class="badge bs-${p.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[p.status]==='function'?STATUS_LABELS[p.status]():(STATUS_LABELS[p.status]||p.status)}</span></div></div>
     <div><div class="detail-field-lbl">Preço de compra</div><div class="detail-field-val">${p.price ? fmtCurrency(p.price) : '—'}</div></div>
     <div><div class="detail-field-lbl">Data de compra</div><div class="detail-field-val">${p.purchaseDate ? fmtDate(p.purchaseDate) : '—'}</div></div>
     ${warrantyHtml}
@@ -1343,7 +1344,7 @@ async function saveMaintenance() {
 
   const type = document.getElementById('mType').value;
   const date = document.getElementById('mDate').value;
-  if (!date) { showToast('⚠️ Data é obrigatória', 'err'); return; }
+  if (!date) { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_date'), 'err'); return; }
 
   const cost         = parseFloat(document.getElementById('mCost').value) || null;
   const description  = document.getElementById('mDesc').value.trim() || null;
