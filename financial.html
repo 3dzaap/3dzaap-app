@@ -338,73 +338,73 @@
 
       <div class="page-header">
         <div class="page-header-text">
-          <h1>💰 Financeiro</h1>
-          <p>Relatório de receitas e desempenho por período</p>
+          <h1 data-i18n="financial.title">💰 Financeiro</h1>
+          <p data-i18n="financial.subtitle">Relatório de receitas e desempenho por período</p>
         </div>
         <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="exportCSVFinanceiro()">📄 CSV Financeiro</button>
-          <button class="btn btn-ghost" onclick="exportCSVOrcamento()">📋 CSV Orçamento</button>
+          <button class="btn btn-ghost" onclick="exportCSVFinanceiro()" data-i18n="financial.btn_csv_fin">📄 CSV Financeiro</button>
+          <button class="btn btn-ghost" onclick="exportCSVOrcamento()" data-i18n="financial.btn_csv_orc">📋 CSV Orçamento</button>
         </div>
       </div>
 
       <div class="fin-period-bar">
-        <label for="periodoInput">📅 Período:</label>
+        <label for="periodoInput" data-i18n="financial.lbl_period">📅 Período:</label>
         <input type="month" id="periodoInput" onchange="renderAll()">
-        <button class="btn btn-ghost btn-sm" onclick="setToday()">Mês actual</button>
+        <button class="btn btn-ghost btn-sm" onclick="setToday()" data-i18n="financial.btn_month">Mês actual</button>
         <span id="periodoLabel" style="font-size:.78rem;color:var(--subtle);margin-left:4px"></span>
       </div>
 
       <div class="fin-kpi-grid">
         <div class="fin-kpi accent">
-          <div class="fin-kpi-lbl">Total Faturado</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Total Faturado</div>
           <div class="fin-kpi-val" id="kpiTotal">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiTotalSub">0 pedidos</div>
         </div>
         <div class="fin-kpi green">
-          <div class="fin-kpi-lbl">Recebido</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_rcvd">Recebido</div>
           <div class="fin-kpi-val" id="kpiPago">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPagoSub">0 pagos</div>
         </div>
         <div class="fin-kpi orange">
-          <div class="fin-kpi-lbl">A Receber</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_pend">A Receber</div>
           <div class="fin-kpi-val" id="kpiPendente">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPendenteSub">0 pendentes</div>
         </div>
         <div class="fin-kpi">
-          <div class="fin-kpi-lbl">Valor Médio</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_avg">Valor Médio</div>
           <div class="fin-kpi-val" id="kpiMedia">— 0,00</div>
-          <div class="fin-kpi-sub" id="kpiMediaSub">por pedido</div>
+          <div class="fin-kpi-sub" id="kpiMediaSub" data-i18n="financial.kpi_avg_sub">por pedido</div>
         </div>
       </div>
 
       <div class="fin-grid">
         <div class="fin-card">
-          <div class="fin-card-title">📊 Distribuição por estado</div>
+          <div class="fin-card-title" data-i18n="financial.card_status">📊 Distribuição por estado</div>
           <table class="fin-status-table">
-            <thead><tr><th>Estado</th><th class="r">Qtd</th><th class="r" id="finThTotal">Total</th></tr></thead>
+            <thead><tr><th data-i18n="financial.th_status">Estado</th><th class="r" data-i18n="financial.th_qty">Qtd</th><th class="r" id="finThTotal">Total</th></tr></thead>
             <tbody id="statusTableBody">
               <tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:20px">A carregar…</td></tr>
             </tbody>
           </table>
         </div>
         <div class="fin-card">
-          <div class="fin-card-title">✅ Pedidos Concluídos</div>
+          <div class="fin-card-title" data-i18n="financial.card_done">✅ Pedidos Concluídos</div>
           <div id="doneStats" style="font-size:.84rem;color:var(--muted)">A carregar…</div>
         </div>
       </div>
 
       <div class="fin-card">
-        <div class="fin-card-title">📋 Todos os pedidos do período</div>
+        <div class="fin-card-title" data-i18n="financial.card_all">📋 Todos os pedidos do período</div>
         <div class="table-wrap">
           <div id="ordersEmpty" class="fin-empty" style="display:none">
             <div class="fin-empty-icon">📋</div>
-            <p>Sem pedidos neste período.</p>
+            <p data-i18n="financial.empty_period">Sem pedidos neste período.</p>
           </div>
           <table class="fin-orders-table" id="ordersTable" style="display:none">
             <thead>
               <tr>
-                <th>Nº</th><th>Cliente</th><th>Estado</th><th>Pagamento</th>
-                <th class="r" id="finThTotal2">Total</th><th>Data</th>
+                <th data-i18n="financial.th_num">Nº</th><th data-i18n="financial.th_client">Cliente</th><th data-i18n="financial.th_status">Estado</th><th data-i18n="financial.th_payment">Pagamento</th>
+                <th class="r" id="finThTotal2">Total</th><th data-i18n="financial.th_date">Data</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody"></tbody>
@@ -418,6 +418,7 @@
 </div>
 <div class="toast" id="toast"></div>
 <script>
+const t = (k) => window.i18n ? (window.i18n.getNestedTranslation(k) || k) : k;
 
 let orders = [];
 let expenses = [];
@@ -480,7 +481,7 @@ async function loadUserData() {
   // Update currency headers
   ['finThTotal','finThTotal2'].forEach(function(id){
     var el=document.getElementById(id);
-    if(el) el.textContent='Total ('+((_cfg&&_cfg._currSymbol)||'€')+')';
+    if(el) el.textContent=(t('financial.th_total')||'Total') + ' ('+((_cfg&&_cfg._currSymbol)||'€')+')';
   });
   const fullName = (session.fname && session.lname)
     ? session.fname + ' ' + session.lname
@@ -500,11 +501,11 @@ async function applyFeatureGating() {
       document.body.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;font-family:var(--font,sans-serif);text-align:center;padding:24px">
           <div style="font-size:3rem">🔒</div>
-          <div style="font-size:1.2rem;font-weight:800;color:var(--dark,#1e293b)">Módulo Financeiro — Plano Business</div>
-          <div style="font-size:.9rem;color:var(--muted);max-width:360px">O teu plano <strong>${plan}</strong> n&atilde;o inclui este m&oacute;dulo. Faz upgrade para Business para aceder ao financeiro.</div>
+          <div style="font-size:1.2rem;font-weight:800;color:var(--dark,#1e293b)">${t('financial.gate_title')||'Módulo Financeiro — Plano Business'}</div>
+          <div style="font-size:.9rem;color:var(--muted);max-width:360px">${(t('financial.gate_desc')||'').replace('{p}', plan)}</div>
           <a href="dashboard.html" class="btn btn-primary" style="margin-top:16px; align-self:flex-start">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Voltar ao Dashboard
+            ${t('financial.gate_btn')||'Voltar ao Dashboard'}
           </a>
         </div>`;
       return;
@@ -526,7 +527,7 @@ async function loadOrders() {
     orders = await DB.getOrders();
   } catch(e) {
     orders = [];
-    showToast('Erro ao carregar pedidos: ' + e.message, 'err');
+    showToast((t('financial.toast_err_load')||'Erro ao carregar pedidos:') + ' ' + e.message, 'err');
   }
   renderAll();
 }
@@ -544,7 +545,8 @@ function renderAll() {
   if (!_periodo) return;
 
   const [y, m] = _periodo.split('-').map(Number);
-  const label = new Date(y, m-1, 1).toLocaleDateString('pt-PT', {month:'long', year:'numeric'});
+  const loc = window.i18n ? window.i18n.currentLocale : 'pt-PT';
+  const label = new Date(y, m-1, 1).toLocaleDateString(loc, {month:'long', year:'numeric'});
   document.getElementById('periodoLabel').textContent = label;
 
   const periodOrders = orders.filter(o => (o.createdAt || '').slice(0, 7) === _periodo);
@@ -557,13 +559,13 @@ function renderAll() {
   const media     = periodOrders.length ? total / periodOrders.length : 0;
 
   animateValue('kpiTotal', 0, total, 800);
-  document.getElementById('kpiTotalSub').textContent    = `${periodOrders.length} pedido${periodOrders.length!==1?'s':''}`;
+  document.getElementById('kpiTotalSub').textContent    = `${periodOrders.length} ` + (periodOrders.length === 1 ? t('financial.kpi_total_sub_1') : t('financial.kpi_total_sub_n'));
   animateValue('kpiPago', 0, pago, 800);
-  document.getElementById('kpiPagoSub').textContent     = `${pagos.length} pago${pagos.length!==1?'s':''}`;
+  document.getElementById('kpiPagoSub').textContent     = `${pagos.length} ` + (pagos.length === 1 ? t('financial.kpi_rcvd_sub_1') : t('financial.kpi_rcvd_sub_n'));
   animateValue('kpiPendente', 0, pendente, 800);
-  document.getElementById('kpiPendenteSub').textContent = `${pendentes.length} pendente${pendentes.length!==1?'s':''}`;
+  document.getElementById('kpiPendenteSub').textContent = `${pendentes.length} ` + (pendentes.length === 1 ? t('financial.kpi_pend_sub_1') : t('financial.kpi_pend_sub_n'));
   animateValue('kpiMedia', 0, media, 800);
-  document.getElementById('kpiMediaSub').textContent    = 'por pedido';
+  document.getElementById('kpiMediaSub').textContent    = t('financial.kpi_avg_sub');
 
   // Status distribution
   const statusGroups = {};
@@ -576,7 +578,7 @@ function renderAll() {
   const statusOrder = ['orcamento','modelagem','validacao','aprovado','printing','done'];
   const tbody = document.getElementById('statusTableBody');
   if (!periodOrders.length) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:16px">Sem pedidos neste período</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:16px">${t('financial.empty_period')}</td></tr>`;
   } else {
     tbody.innerHTML = statusOrder
       .filter(s => statusGroups[s])
@@ -593,11 +595,11 @@ function renderAll() {
   doneEl.innerHTML = done.length
     ? `<div style="display:flex;flex-direction:column;gap:8px">
         <div style="font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--dark)">${done.length}</div>
-        <div style="font-size:.82rem;color:var(--muted)">pedido${done.length!==1?'s':''} concluído${done.length!==1?'s':''}</div>
+        <div style="font-size:.82rem;color:var(--muted)">${done.length===1 ? t('financial.done_orders_1') : t('financial.done_orders_n')}</div>
         <div style="font-size:.9rem;font-weight:700;color:#15803d;font-family:var(--mono)">${fmtEur(done.reduce((s,o)=>s+(o.total||0),0))}</div>
-        <div style="font-size:.78rem;color:var(--muted)">total em pedidos concluídos</div>
+        <div style="font-size:.78rem;color:var(--muted)">${t('financial.done_total')}</div>
        </div>`
-    : '<div style="color:var(--subtle);font-size:.84rem">Nenhum pedido concluído neste período.</div>';
+    : `<div style="color:var(--subtle);font-size:.84rem">${t('financial.done_none')}</div>`;
 
   // Orders table
   const tableEl = document.getElementById('ordersTable');
@@ -638,45 +640,45 @@ function renderAll() {
 
 function renderStatusBadge(s) {
   const cls = {orcamento:'bs-orcamento',modelagem:'bs-modelagem',validacao:'bs-validacao',aprovado:'bs-aprovado',printing:'bs-printing',done:'bs-done'};
-  return `<span class="badge ${cls[s]||'bs-orcamento'}"><span class="badge-dot"></span>${STATUS_LABELS[s]||s}</span>`;
+  return `<span class="badge ${cls[s]||'bs-orcamento'}"><span class="badge-dot"></span>${t('orders.status.'+s) || STATUS_LABELS[s] || s}</span>`;
 }
 function renderPayBadge(s) {
   return s==='pago'
-    ? '<span class="badge bp-pago"><span class="badge-dot"></span>Pago</span>'
-    : '<span class="badge bp-pendente"><span class="badge-dot"></span>Pendente</span>';
+    ? `<span class="badge bp-pago"><span class="badge-dot"></span>${t('financial.status_paid')||'Pago'}</span>`
+    : `<span class="badge bp-pendente"><span class="badge-dot"></span>${t('financial.status_pend')||'Pendente'}</span>`;
 }
 
 function exportCSVFinanceiro() {
   const periodOrders = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo);
-  if (!periodOrders.length) { showToast('Sem pedidos neste período','err'); return; }
+  if (!periodOrders.length) { showToast((t('financial.empty_period')||'Sem pedidos neste período'),'err'); return; }
   const sep = ';';
-  const hdr = ['Nº','Cliente','Estado','Pagamento',('Total ('+(_cfg&&_cfg._currSymbol||'€')+')'),'Data Criação','Data Pagamento','Itens'];
+  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),(t('financial.th_payment')||'Pagamento'),((t('financial.th_total')||'Total')+' ('+(_cfg&&_cfg._currSymbol||'€')+')'),(t('financial.th_date')||'Data Criação'),'Data Pagamento','Itens'];
   const rows = periodOrders.map(o => [
     o.orderNumber||'', o.clientName||'',
-    STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?'Pago':'Pendente',
+    t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?(t('financial.status_paid')||'Pago'):(t('financial.status_pend')||'Pendente'),
     (o.total||0).toFixed(2), o.createdAt||'', o.paymentDate||'',
     (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
   dlCSV(csv, `financeiro_${_periodo}.csv`);
-  showToast('📄 CSV Financeiro exportado!', 'ok');
+  showToast(t('financial.toast_csv_exp')||'📄 CSV Financeiro exportado!', 'ok');
 }
 
 function exportCSVOrcamento() {
   const pendentes = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo && o.paymentStatus === 'pendente');
-  if (!pendentes.length) { showToast('Sem orçamentos pendentes neste período','err'); return; }
+  if (!pendentes.length) { showToast((t('financial.empty_period')||'Sem orçamentos pendentes neste período'),'err'); return; }
   const sep = ';';
-  const hdr = ['Nº','Cliente','Estado',('Total ('+(_cfg&&_cfg._currSymbol||'€')+')'),'Data Criação','Prazo Entrega','Itens','Observações'];
+  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),((t('financial.th_total')||'Total')+' ('+(_cfg&&_cfg._currSymbol||'€')+')'),(t('financial.th_date')||'Data Criação'),'Prazo Entrega','Itens','Observações'];
   const rows = pendentes.map(o => [
     o.orderNumber||'', o.clientName||'',
-    STATUS_LABELS[o.status]||o.status, (o.total||0).toFixed(2),
+    t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, (o.total||0).toFixed(2),
     o.createdAt||'', o.dueDate||'',
     (o.items||[]).map(i=>`${i.description} (${i.quantity}x${(_cfg&&_cfg._currSymbol)||"€"}${(i.unitPrice||0).toFixed(2)})`).join(' | '),
     o.notes||'',
   ]);
   const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
   dlCSV(csv, `orcamentos_${_periodo}.csv`);
-  showToast('📋 CSV Orçamento exportado!', 'ok');
+  showToast(t('financial.toast_csv_exp')||'📋 CSV Orçamento exportado!', 'ok');
 }
 
 function toggleUserMenu() { Sidebar._toggleUserMenu(); }
