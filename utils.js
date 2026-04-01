@@ -33,29 +33,40 @@ var _cfg = {};
 
 function loadCfg(session) {
   _cfg = (session && session.config) ? session.config : {};
-  var currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
-  _cfg._currSymbol = currMap[_cfg.currency] || '€';
-  _cfg._currCode   = _cfg.currency || 'EUR';
-  var locMap = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
-  _cfg._locale     = locMap[_cfg.currency] || 'pt-PT';
+  if (_cfg.currency) {
+    var currMap = { 'EUR':'€', 'BRL':'R$', 'USD':'$', 'GBP':'£' };
+    _cfg._currSymbol = currMap[_cfg.currency] || '€';
+    _cfg._currCode   = _cfg.currency;
+    var locMap = { 'EUR':'pt-PT', 'BRL':'pt-BR', 'USD':'en-US', 'GBP':'en-GB' };
+    _cfg._locale     = locMap[_cfg.currency] || 'pt-PT';
+  }
   _cfg._dateFmt    = _cfg.dateFmt    || 'DD/MM/YYYY';
   _cfg._weightUnit = _cfg.weightUnit || 'g';
   _cfg._margin     = parseFloat(_cfg.margin) || 30;
 }
 
 // ── FORMATTERS ────────────────────────────────────────────────
+function getCurrencySymbol() {
+  var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  var sym = _cfg && _cfg._currSymbol ? _cfg._currSymbol : null;
+  if (window.forceLocaleCurrency) sym = null;
+  if (!sym) {
+    if (locale === 'pt-BR') return 'R$';
+    if (locale === 'en-GB') return '£';
+    if (locale.startsWith('en')) return '$';
+    return '€';
+  }
+  return sym;
+}
+
 function fmtCurrency(v) {
   var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  var sym = (_cfg && _cfg._currSymbol) || '€';
+  var sym = getCurrencySymbol();
   
-  // Se _cfg não tiver símbolo (ainda não carregado), tentamos adivinhar pelo idioma
-  if(!(_cfg && _cfg._currSymbol)) {
-    if(locale === 'pt-BR') sym = 'R$';
-    else if(locale === 'en-GB') sym = '£';
-    else if(locale.startsWith('en')) sym = '$';
+  var loc = (_cfg && _cfg._locale) ? _cfg._locale : locale;
+  if (window.forceLocaleCurrency) {
+    loc = locale;
   }
-  
-  var loc = (_cfg && _cfg._locale) || locale;
   return sym + ' ' + parseFloat(v || 0).toLocaleString(loc, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2

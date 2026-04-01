@@ -11,6 +11,7 @@
 (function(){
   var t = localStorage.getItem('3dzaap_theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
+  window.forceLocaleCurrency = true;
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1043,13 +1044,7 @@ async function loadCompanyDefaults(){
 
 
 function updateCurrencyLabels() {
-  var locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  var sym = (_cfg && _cfg._currSymbol) || '€';
-  if(!(_cfg && _cfg._currSymbol)) {
-    if(locale === 'pt-BR') sym = 'R$';
-    else if(locale === 'en-GB') sym = '£';
-    else if(locale.startsWith('en')) sym = '$';
-  }
+  var sym = getCurrencySymbol();
   var el;
   if ((el = document.getElementById('labelFilPrice')))   el.textContent = sym + '/kg';
   if ((el = document.getElementById('labelResinPrice'))) el.textContent = sym + '/L';
@@ -1422,7 +1417,7 @@ function closeConfirm(){document.getElementById('confirmModal').classList.remove
 function exportCalcCSV(){
   var i=getInputs();var r=computeResults(i);
   var name=document.getElementById('printName').value.trim();
-  var sym=(_cfg&&_cfg._currSymbol)||'€';
+  var sym=getCurrencySymbol();
   var modeLabel=i.mode==='resin'?'Resina':'FDM';
   var rows=[['Campo','Valor'],['Nome',name||'—'],['Quantidade',i.qty||1]]
     .concat(i.mode==='resin'
@@ -1470,7 +1465,7 @@ function criarPedido(){
 function copyResults(){
   const i=getInputs();const r=computeResults(i);
   const name=document.getElementById('printName').value.trim();
-  const sym=(_cfg&&_cfg._currSymbol)||'€';
+  const sym=getCurrencySymbol();
   const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
   const W=26; // column width for alignment
   const row=(lbl,val)=>lbl.padEnd(W)+sym+val;
@@ -1499,7 +1494,7 @@ function _buildClientMsg(){
   const i=getInputs(); const r=computeResults(i);
   const clientName=(document.getElementById('clientName')||{value:''}).value.trim();
   const name=(document.getElementById('printName').value||'').trim();
-  const sym=(_cfg&&_cfg._currSymbol)||'€';
+  const sym=getCurrencySymbol();
   const qty=i.qty||1;
   const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
   const date=new Date().toLocaleDateString(i18n.currentLocale,{day:'2-digit',month:'long',year:'numeric'});
