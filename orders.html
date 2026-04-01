@@ -1604,10 +1604,10 @@ async function sendWhatsAppTracking(id) {
     let token = o.shareToken;
     let passphrase = o.passphrase;
 
-    // Generate token if it doesn't exist
-    if (!token) {
-      token = crypto.randomUUID();
-      passphrase = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
+    // Generate token and passphrase if missing
+    if (!token || !passphrase) {
+      if (!token) token = crypto.randomUUID();
+      if (!passphrase) passphrase = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
       
       const expiry = new Date();
       expiry.setDate(expiry.getDate() + 7);

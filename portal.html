@@ -363,7 +363,7 @@ body {
   <!-- Loading State -->
   <div class="portal-loading" id="loadingState">
     <div class="spinner"></div>
-    <p>A carregar o seu pedido...</p>
+    <p data-i18n="portal.loading">A carregar o seu pedido...</p>
   </div>
 </div>
 
@@ -371,15 +371,15 @@ body {
 <div class="pin-overlay" id="pinOverlay" style="display:none">
   <div class="pin-card" id="pinCard">
     <div class="pin-icon">🔐</div>
-    <div class="pin-title">Acesso Restrito</div>
-    <div class="pin-desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
+    <div class="pin-title" data-i18n="portal.pin_title">Acesso Restrito</div>
+    <div class="pin-desc" data-i18n="portal.pin_desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
     <div class="pin-input-group">
       <input type="password" maxlength="1" class="pin-field" id="p1" inputmode="numeric">
       <input type="password" maxlength="1" class="pin-field" id="p2" inputmode="numeric">
       <input type="password" maxlength="1" class="pin-field" id="p3" inputmode="numeric">
       <input type="password" maxlength="1" class="pin-field" id="p4" inputmode="numeric">
     </div>
-    <p id="pinError" style="color:var(--danger);font-size:.8rem;font-weight:600;display:none;margin-top:-10px;margin-bottom:10px">Código incorreto. Tente novamente.</p>
+    <p id="pinError" style="color:var(--danger);font-size:.8rem;font-weight:600;display:none;margin-top:-10px;margin-bottom:10px" data-i18n="portal.pin_err">Código incorreto. Tente novamente.</p>
   </div>
 </div>
 
@@ -389,13 +389,18 @@ body {
 </div>
 
 <script>
+const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : k;
+
 let _order = null;
 let _company = null;
 const _token = new URLSearchParams(window.location.search).get('t');
 
 async function init() {
+  // Wait for i18n to be ready before rendering
+  if (window.i18n) await window.i18n.init();
+
   if (!_token) {
-    renderError('Link inválido', 'Não forneceu o token de acesso necessário.', '🔍');
+    renderError(t('portal.err_secure_title'), t('portal.err_token_desc'), '🔍');
     return;
   }
 
@@ -404,10 +409,15 @@ async function init() {
     _order = data.order;
     _company = data;
     
-    // Check if we already have a valid PIN in session
+    // Check stored PIN
     const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
+    
+    // Enforcement: Always show PIN screen if a passphrase exists
     if (_order.passphrase && _order.passphrase !== storedPin) {
       showPinScreen();
+    } else if (!_order.passphrase) {
+      // Security fall-through for very old orders without PIN
+      renderError(t('portal.err_secure_title'), t('portal.err_secure_desc'), '🔒');
     } else {
       renderPortal();
     }
@@ -496,60 +506,65 @@ function renderPortal() {
           <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${_company.companyName}</div>
         </div>
         <div class="rcpt-header-right">
-          <div class="rcpt-title">${isPaid ? 'Recibo de Pagamento' : 'Ordem de Serviço'}</div>
+          <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid') : t('portal.rcpt_title_os')}</div>
           <div class="rcpt-number">${_order.orderNumber}</div>
-          <div class="rcpt-date">Emitido em ${new Date().toLocaleDateString('pt-PT')}</div>
+          <div class="rcpt-date">${t('portal.issued_at')} ${new Date().toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>
         </div>
       </div>
 
       <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
-         <span><span class="rcpt-dot"></span>${isPaid ? '✅ Pagamento Confirmado' : '⏳ Aguarda Pagamento'}</span>
-         <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusLabels[_order.status] || _order.status}</span></span>
+         <span><span class="rcpt-dot"></span>${isPaid ? '✅ ' + t('portal.status_paid') : '⏳ ' + t('portal.status_awaiting')}</span>
+         <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('portal.order_status')}: <span style="opacity:1;font-size:.68rem">${t('status.' + _order.status) || _order.status}</span></span>
       </div>
       
       <div class="rcpt-body">
-        <div class="rcpt-section-label">Dados do Cliente</div>
+        <div class="rcpt-section-label">${t('portal.client_data')}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div>
-            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">NOME</div>
+            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">${t('portal.lbl_name')}</div>
             <div style="font-weight:600;font-size:.9rem;color:var(--black)">${_order.clientName}</div>
           </div>
           <div>
-            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">DATA CRIAÇÃO</div>
-            <div style="font-weight:600;font-size:.9rem;color:var(--black)">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div>
+            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">${t('portal.lbl_created_at')}</div>
+            <div style="font-weight:600;font-size:.9rem;color:var(--black)">${new Date(_order.createdAt).toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>
           </div>
         </div>
 
-        <div class="rcpt-section-label">Itens do Pedido</div>
+        <div class="rcpt-section-label">${t('portal.order_items')}</div>
         <table class="rcpt-table">
           <thead>
             <tr>
-              <th>Descrição</th>
-              <th style="width:60px;text-align:right">Qtd</th>
-              <th style="width:100px;text-align:right;padding-right:0">Total</th>
+              <th>${t('portal.th_desc')}</th>
+              <th style="width:60px;text-align:right">${t('portal.th_qty')}</th>
+              <th style="width:100px;text-align:right;padding-right:0">${t('portal.th_total')}</th>
             </tr>
           </thead>
           <tbody>
-            ${_order.items.map(item => `
-              <tr>
-                <td>
-                  <strong>${item.description}</strong><br>
-                  <span style="font-size:.7rem;color:var(--muted)">${item.material || ''} ${item.weight ? item.weight+'g' : ''}</span>
-                </td>
-                <td class="r">${item.qty}</td>
-                <td class="r bold">${parseFloat(item.total).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}€</td>
-              </tr>
-            `).join('')}
+            ${_order.items.map(item => {
+              const qty = item.quantity || item.qty || 1;
+              const unit = item.unitPrice || 0;
+              const rowTotal = qty * unit;
+              return `
+                <tr>
+                  <td>
+                    <strong>${item.description}</strong><br>
+                    <span style="font-size:.7rem;color:var(--muted)">${item.material || ''} ${item.weightG || item.weight ? (item.weightG || item.weight)+'g' : ''}</span>
+                  </td>
+                  <td class="r">${qty}</td>
+                  <td class="r bold">${fmtCurrency(rowTotal)}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
 
         <div class="rcpt-grand" style="background:var(--bg-grand-total);border-radius:8px;padding:9px 14px">
-          <span style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase">Total</span>
-          <span style="font-size:1.1rem;font-weight:800;color:var(--blue)">${parseFloat(_order.total).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}€</span>
+          <span style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase">${t('portal.total')}</span>
+          <span style="font-size:1.1rem;font-weight:800;color:var(--blue)">${fmtCurrency(_order.total || 0)}</span>
         </div>
         
         ${_order.notes ? `
-          <div class="rcpt-section-label">📌 Observações</div>
+          <div class="rcpt-section-label">📌 ${t('portal.notes')}</div>
           <div style="font-size:.8rem;color:var(--muted);line-height:1.5">${_order.notes}</div>
         ` : ''}
 
@@ -583,13 +598,13 @@ function renderPortal() {
 
 function renderTracker() {
   const steps = [
-    { k: 'orcamento',  l: 'Orçamento', i: '⏳' },
-    { k: 'modelagem',  l: 'Modelagem', i: '📐' },
-    { k: 'validacao',  l: 'Aprovação', i: '✅' },
-    { k: 'fila',       l: 'Em Fila',   i: '📦' },
-    { k: 'printing',   l: 'Produção',  i: '🖨️' },
-    { k: 'preparacao', l: 'Preparação',i: '🧹' },
-    { k: 'done',       l: 'Concluído', i: '🏁' }
+    { k: 'orcamento',  l: t('status.orcamento'), i: '⏳' },
+    { k: 'modelagem',  l: t('status.modelagem'), i: '📐' },
+    { k: 'validacao',  l: t('status.validacao'), i: '✅' },
+    { k: 'fila',       l: t('status.fila'),      i: '📦' },
+    { k: 'printing',   l: t('status.printing'),  i: '🖨️' },
+    { k: 'preparacao', l: t('status.preparacao'),i: '🧹' },
+    { k: 'done',       l: t('status.done'),      i: '🏁' }
   ];
   
   // Mapping current order status to one of the 7 steps
@@ -620,7 +635,7 @@ function renderTracker() {
 
   return `
     <div class="tracker-card">
-      <div class="tracker-title">🚀 Acompanhamento do Pedido</div>
+      <div class="tracker-title">🚀 ${t('portal.tracker_title')}</div>
       <div class="steps-container">
         <div class="steps">
           <div class="step-line-active" style="width: ${stepPercent}%"></div>
@@ -628,7 +643,7 @@ function renderTracker() {
         </div>
       </div>
       <div style="text-align:center;font-size:.85rem;color:var(--subtle);margin-top:24px;font-weight:700;letter-spacing:1px">
-        ESTADO ATUAL: <strong style="color:var(--blue)">${steps[stepIdx].l.toUpperCase()}</strong>
+        ${t('portal.curr_status')}: <strong style="color:var(--blue)">${(steps[stepIdx].l||'').toUpperCase()}</strong>
       </div>
     </div>
   `;
@@ -643,21 +658,21 @@ function renderButtons() {
   
   if (status === 'orcamento') {
     html += `
-      <button class="btn-portal btn-decline" onclick="handleAction('decline')">❌ Declinar</button>
-      <button class="btn-portal btn-approve" onclick="handleAction('approve')">✅ Aprovar Orçamento Inicial</button>
+      <button class="btn-portal btn-decline" onclick="handleAction('decline')">❌ ${t('portal.btn_decline')}</button>
+      <button class="btn-portal btn-approve" onclick="handleAction('approve')">✅ ${t('portal.btn_approve_budget')}</button>
     `;
   } else if (status === 'validacao') {
     html += `
-      <button class="btn-portal btn-decline" onclick="handleAction('decline')">❌ Rejeitar Modelo</button>
-      <button class="btn-portal btn-approve" onclick="handleAction('approve')">✅ Aprovar Modelo e Valor Final</button>
+      <button class="btn-portal btn-decline" onclick="handleAction('decline')">❌ ${t('portal.btn_reject_model')}</button>
+      <button class="btn-portal btn-approve" onclick="handleAction('approve')">✅ ${t('portal.btn_approve_final')}</button>
     `;
   } else if (status === 'declined') {
-    html += `<div style="color:var(--danger);font-weight:700">O pedido foi declinado pelo cliente.</div>`;
+    html += `<div style="color:var(--danger);font-weight:700">${t('portal.status_declined_msg')}</div>`;
   } else {
     // Show Print button if approved or further along
     html += `
-      <button class="btn-portal btn-print" onclick="printPortalReceipt()">🖨️ PDF / Impressão</button>
-      <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:var(--blue)">📱 Falar no WhatsApp</button>
+      <button class="btn-portal btn-print" onclick="printPortalReceipt()">🖨️ ${t('portal.btn_print')}</button>
+      <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:var(--blue)">📱 ${t('portal.btn_whatsapp')}</button>
     `;
   }
   
@@ -666,7 +681,7 @@ function renderButtons() {
 
 async function handleAction(action) {
   if (action === 'approve') {
-    const confirm = window.confirm('Ao aprovar, confirma os detalhes deste orçamento e autoriza o início da produção. Vamos avançar?');
+    const confirm = window.confirm(t('portal.confirm_approve'));
     if (!confirm) return;
   }
   
@@ -677,14 +692,14 @@ async function handleAction(action) {
     await DB.respondToQuote(_token, action);
     
     if (action === 'approve') {
-      alert('Orçamento Aprovado com sucesso! Agora pode acompanhar a produção através deste mesmo link.');
+      alert(t('portal.alert_approved'));
       window.location.reload();
     } else {
-      alert('Orçamento declinado.');
+      alert(t('portal.alert_declined'));
       window.location.reload();
     }
   } catch (err) {
-    alert('Erro: ' + err.message);
+    alert(t('portal.alert_err') + ': ' + err.message);
   }
 }
 
@@ -722,7 +737,7 @@ function renderError(title, msg, icon) {
       <div class="error-icon">${icon}</div>
       <h1>${title}</h1>
       <p style="color:var(--muted);max-width:300px;margin:10px auto">${msg}</p>
-      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">Voltar ao site</a>
+      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">${t('portal.btn_back_home')}</a>
     </div>
   `;
 }
