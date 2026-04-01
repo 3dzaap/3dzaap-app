@@ -22,6 +22,8 @@
   --r:12px; --rm:16px; --rl:24px; --rx:40px;
   --f:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
   --ease:cubic-bezier(0.16, 1, 0.3, 1);
+  --glass:rgba(255,255,255,0.7); --glass-s:rgba(255,255,255,0.9);
+  --blur:blur(12px) saturate(180%);
 }
 .b3d{color:var(--blue);font-weight:900}
 .bzp{color:var(--orange);font-weight:900}
@@ -87,8 +89,8 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .d1{transition-delay:0.1s}.d2{transition-delay:0.2s}.d3{transition-delay:0.3s}.d4{transition-delay:0.4s}
 
 /* ── NAVBAR ─────────────────────────── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:999;padding:12px 0;background:var(--glass-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);transition:all 0.3s}
-.nav.scrolled{padding:8px 0;box-shadow:var(--sh)}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 0;background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid var(--border);transition:all 0.4s var(--ease)}
+.nav.scrolled{padding:10px 0;background:var(--white);box-shadow:var(--sh-lg);border-bottom:none}
 .nav .wrap{display:flex;align-items:center;justify-content:space-between}
 .nlogo{display:flex;align-items:center;gap:12px;text-decoration:none}
 .nlogo img{height:40px;width:40px;border-radius:10px}
