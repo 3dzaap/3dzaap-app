@@ -1537,10 +1537,12 @@ async function printReceipt(id) {
   document.getElementById('receiptContent').innerHTML = `
     <div class="rcpt-header">
       <div class="rcpt-logo">
+        <img src="logo.jpg" alt="3DZAAP" style="height:38px;width:auto;object-fit:contain;border-radius:20%">
         ${logoUrl
-          ? `<img src="${logoUrl}" alt="${escH(companyName)}" style="height:38px;width:auto;object-fit:contain;border-radius:22%">`
-          : `<div style="font-weight:900;font-size:1.05rem;color:#fff;font-family:'Outfit',sans-serif"><span style="color:#F5943A">3D</span>ZAAP</div>`}
-        <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${escH(companyName)}</div>
+          ? `<div style="border-left:1.5px solid rgba(255,255,255,0.2); height:24px; margin:0 8px"></div>
+             <img src="${logoUrl}" alt="${escH(companyName)}" style="height:34px;width:auto;object-fit:contain;border-radius:22%">`
+          : ''}
+        <div style="font-size:.65rem;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-left:4px">${escH(companyName)}</div>
       </div>
       <div class="rcpt-header-right">
         <div class="rcpt-title">${isPaid ? 'Recibo de Pagamento' : 'Ordem de Serviço'}</div>
@@ -1583,7 +1585,7 @@ async function printReceipt(id) {
     ${sigRow}
     <div class="rcpt-footer">
       <div>
-        <div class="rcpt-brand"><span style="color:#F5943A">3D</span><span>ZAAP</span></div>
+        <div class="rcpt-brand"><span style="color:#3b8fd4">3D</span><span style="color:#F5943A">ZAAP</span></div>
         <div class="rcpt-tagline">Printing Manager</div>
       </div>
       <div class="rcpt-thanks">Obrigado pela sua confiança! 🙏</div>
