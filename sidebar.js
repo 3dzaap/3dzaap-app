@@ -40,6 +40,7 @@ const Sidebar = (() => {
     {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
+        { id: 'settings', i18nKey: 'nav.settings', href: 'settings.html', icon: '⚙️', label: 'Definições', lockId: 'navLockSettings' },
         { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '🛡️', label: 'Admin', superAdmin: true },
       ]
     },
