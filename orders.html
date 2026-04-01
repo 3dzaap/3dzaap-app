@@ -1235,6 +1235,10 @@ function closeModal() {
 function applyCalcPrefill(p) {
   openModal(null);
   setTimeout(() => {
+    if (p.client_name) {
+      const cnInput = document.getElementById('oClientName');
+      if (cnInput) cnInput.value = p.client_name;
+    }
     const firstRow = document.querySelector('#orderItemsList .item-row');
     if (firstRow) {
       const inputs = firstRow.querySelectorAll('input.item-input');
@@ -1424,6 +1428,10 @@ async function saveOrder() {
     notes: document.getElementById('oNotes').value.trim(),
     updatedAt: new Date().toISOString(),
   };
+
+  // Remove potential null orderNumber to allow DB default/trigger to fire
+  delete base.orderNumber;
+  delete base.order_number;
   if (base.paymentStatus === 'pago' && !base.paymentDate) base.paymentDate = new Date().toISOString().split('T')[0];
 
   try {

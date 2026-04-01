@@ -1445,6 +1445,7 @@ function criarPedido(){
     ?'Impressão '+modeLabel+' — '+i.resinVolume+'mL × '+(i.qty||1)+'un.'
     :'Impressão '+modeLabel+' — '+i.partWeight+'g × '+(i.qty||1)+'un.');
   var payload={
+    client_name:(document.getElementById('clientName').value||'').trim(),
     description:desc,
     unit_price:parseFloat(r.unitPrice.toFixed(2)),
     quantity:i.qty||1,
