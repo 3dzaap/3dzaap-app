@@ -547,7 +547,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <h2>Tudo pronto!</h2>
         <div class="company-pill" id="successCompanyPill"></div>
         <p>A tua conta foi criada com sucesso.<br>O teu trial de 14 dias começa agora.</p>
-        <button class="btn-primary" onclick="window.location.href='dashboard.html'">
+        
+        <div id="waActivationWrap" style="margin-bottom:20px; background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2); border-radius:16px; padding:16px">
+          <div style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase; margin-bottom:8px">🚀 Ativação Prioritária</div>
+          <p style="font-size:0.82rem; color:#15803d; margin-bottom:12px">Queres começar a faturar já? Envia uma mensagem para o nosso suporte técnico.</p>
+          <button class="btn-primary" id="waActivateBtn" style="background:linear-gradient(135deg,#25D366,#128C7E); box-shadow:0 6px 16px rgba(37,211,102,0.25); margin-top:0">
+            <span class="btn-label">Falar no WhatsApp</span>
+          </button>
+        </div>
+
+        <button class="btn-primary" onclick="window.location.href='dashboard.html'" style="margin-top:0">
           <span class="btn-label">Ir para o dashboard →</span>
           <div class="spinner"></div>
         </button>
@@ -787,7 +796,18 @@ async function finishOnboarding() {
       toast('✅ Verifica o teu email para confirmar a conta.', 'ok');
     } else {
       toast('Conta criada com sucesso! 🎉', 'ok');
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+      
+      // Configure WhatsApp Activation Button
+      const waBtn = document.getElementById('waActivateBtn');
+      if (waBtn) {
+        const msg = `Olá! Acabei de criar conta no 3DZAAP para a empresa "${STATE.form.companyName}" (${STATE.form.email}). Gostaria de ativar o Plano ${STATE.plan.toUpperCase()} agora.`;
+        waBtn.onclick = () => window.open(`https://wa.me/351938925645?text=${encodeURIComponent(msg)}`);
+      }
+
+      // Se for Trial, podemos redirecionar logo. Se for plano pago, deixamos ele clicar no WA se quiser.
+      if (STATE.plan === 'trial') {
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 3000);
+      }
     }
 
   } catch(err) {

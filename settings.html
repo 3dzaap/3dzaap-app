@@ -729,12 +729,17 @@ function loadData() {
   
   if (cfg.themeAuto) document.getElementById('prefThemeAuto').checked = true;
   const theme = cfg.theme || 'light';
-  document.querySelector(`input[name="prefTheme"][value="${theme}"]`).checked = true;
+  if (document.querySelector(`input[name="prefTheme"][value="${theme}"]`)) {
+    document.querySelector(`input[name="prefTheme"][value="${theme}"]`).checked = true;
+  }
 
   // logo_url comes from companies.logo_url column (Opção B)
   if (_session.logo_url) showLogoPreview(_session.logo_url);
   if (_session.signature) showSigPreview(_session.signature);
   
+  // Custom WhatsApp Context
+  updateWhatsAppLinks();
+
   updateSubTab();
   loadTeam();
   renderPricing();
@@ -742,6 +747,7 @@ function loadData() {
   // Language Change Listener for Dynamic Prices
   window.addEventListener('languageChanged', (e) => {
     renderPricing(e.detail.locale);
+    updateWhatsAppLinks();
   });
 
   // Deep-linking: ?tab=name
@@ -753,6 +759,27 @@ function loadData() {
       if (btn) btn.click();
     }
   }, 50);
+}
+
+function updateWhatsAppLinks() {
+  const email = _session.user_email || _session.email || '';
+  const company = _session.companyName || '';
+  const lang = window.i18n ? window.i18n.currentLocale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
+  
+  const baseMsg = {
+    'pt-PT': `Olá! Sou o ${company} (${email}) e quero ativar o plano `,
+    'pt-BR': `Olá! Sou o ${company} (${email}) e quero ativar o plano `,
+    'en': `Hi! I'm from ${company} (${email}) and I want to activate the `,
+    'es': `¡Hola! Soy de ${company} (${email}) y quiero activar el plan `
+  }[lang] || `Olá! Sou o ${company} (${email}) e quero ativar o plano `;
+
+  const starterBtn = document.querySelector('#card-starter .btn');
+  const proBtn = document.querySelector('#card-pro .btn');
+  const businessBtn = document.querySelector('#card-business .btn');
+
+  if (starterBtn) starterBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Starter')}')`);
+  if (proBtn) proBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Pro')}')`);
+  if (businessBtn) businessBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Business')}')`);
 }
 
 function showLogoPreview(src) {
