@@ -962,7 +962,7 @@ async function loadUserData() {
   const session = await Auth.getSession();
   if (!session) return;
   loadCfg(session);
-  var sym=((_cfg&&_cfg._currSymbol)||'€');
+  var sym = getCurrencySymbol();
   var kg=document.getElementById('matLabelKg'); if(kg) kg.textContent='('+sym+'/kg)';
   var L=document.getElementById('matLabelL');   if(L)  L.textContent='('+sym+'/L)';
   const fullName = (session.fname && session.lname)
@@ -1253,7 +1253,7 @@ function renderTable() {
 
   // Update price column header with currency
   var thPL = document.getElementById('thPriceLabel');
-  if (thPL) thPL.textContent = ((_cfg&&_cfg._currSymbol)||'€') + (isFDM ? '/kg' : '/L');
+  if (thPL) thPL.textContent = getCurrencySymbol() + (isFDM ? '/kg' : '/L');
   tbody.innerHTML = filtered.map(m => {
     const newUnits = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0));
     const price    = m.price ? fmtEur(m.price) : '—';
@@ -1393,7 +1393,7 @@ function openModal(id = null) {
   editingId = id;
   const isEdit = id !== null;
   // Update currency labels every time modal opens
-  var _sym = ((_cfg&&_cfg._currSymbol)||'€');
+  var _sym = getCurrencySymbol();
   var _kg = document.getElementById('matLabelKg'); if(_kg) _kg.textContent='('+_sym+'/kg)';
   var _L  = document.getElementById('matLabelL');  if(_L)  _L.textContent='('+_sym+'/L)';
 
@@ -1642,8 +1642,8 @@ function exportCSV() {
   if (!list.length) { showToast('Sem dados para exportar', 'err'); return; }
   const isFDM = currentView === 'fdm';
   const headers = isFDM
-    ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas',(((_cfg&&_cfg._currSymbol)||'€')+'/kg'),'Estado','Notas']
-    : ['ID','Cor','Hex','Tipo','Variação','Marca','Frasco','Total','Em Uso','Novos',(((_cfg&&_cfg._currSymbol)||'€')+'/L'),'Validade','Estado','Notas'];
+    ? ['ID','Cor','Hex','Tipo','Variação','Marca','Bobina','Total','Em Uso','Novas', (getCurrencySymbol() + '/kg'), 'Estado','Notas']
+    : ['ID','Cor','Hex','Tipo','Variação','Marca','Frasco','Total','Em Uso','Novos', (getCurrencySymbol() + '/L'), 'Validade','Estado','Notas'];
   const rows = list.map(m => {
     const base = [m.id, m.colorName, m.colorHex, m.type, m.variation, m.brand,
       m.rollSize, m.total, m.inUse, Math.max(0,(m.total||0)-(m.inUse||0)),
@@ -1957,7 +1957,7 @@ function pkRemoveColorRow(idx) {
 
 function pkRenderRows() {
   const container = document.getElementById('pkColorList');
-  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  const sym = getCurrencySymbol();
   const isFDM = _pkClass === 'fdm';
   const sizeLabel = isFDM ? 'Bobina' : 'Frasco';
   const brandOptions = (isFDM ? FDM_BRANDS : RESIN_BRANDS)
@@ -2094,7 +2094,7 @@ function pkCheckCostBalance() {
   const warn = document.getElementById('pkCostWarning');
   if (total > 0 && Math.abs(sumCosts - total) > 0.02) {
     warn.style.display = '';
-    const sym = ((_cfg&&_cfg._currSymbol)||'€');
+    const sym = getCurrencySymbol();
     warn.textContent = `⚠️ A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
   } else {
     warn.style.display = 'none';
@@ -2104,7 +2104,7 @@ function pkCheckCostBalance() {
 function pkUpdateSummary() {
   const n = _pkColorRows.length;
   const total = parseFloat(document.getElementById('pkPrice').value) || 0;
-  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  const sym = getCurrencySymbol();
   document.getElementById('pkSummary').textContent =
     `${n} cor${n !== 1 ? 'es' : ''} · Total: ${sym}${total.toFixed(2)}` +
     (n > 0 ? ` · ${sym}${(total/n).toFixed(2)}/cor` : '');
@@ -2204,7 +2204,7 @@ function showPackSiblings(event, packId) {
   `).join('');
 
   const totalCost = siblings.reduce((s,m) => s+(m.price||0), 0);
-  const sym = ((_cfg&&_cfg._currSymbol)||'€');
+  const sym = getCurrencySymbol();
   document.getElementById('packPopoverMeta').textContent =
     `${siblings.length} cor${siblings.length!==1?'es':''} · Total: ${sym}${totalCost.toFixed(2)}`;
 
