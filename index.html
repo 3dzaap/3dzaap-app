@@ -103,6 +103,39 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 /* Lang select */
 .lang-select{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--glass);font-family:var(--f);font-size:0.8rem;font-weight:600;cursor:pointer;outline:none}
 
+/* ── MOBILE NAV ─────────────────────── */
+.nav-toggle {
+  display: none; width: 40px; height: 40px; border-radius: 10px;
+  background: var(--blue-g); border: 1px solid rgba(59,143,212,0.2);
+  color: var(--blue); cursor: pointer; align-items: center; justify-content: center;
+  font-size: 1.2rem; transition: 0.2s;
+}
+.nav-toggle:hover { background: rgba(59,143,212,0.15); }
+
+.nav-mobile {
+  position: fixed; top: 0; right: -100%; width: 280px; height: 100vh;
+  background: var(--white); z-index: 2000; padding: 80px 24px;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s var(--ease);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.nav-mobile.open { right: 0; }
+.nav-mobile a {
+  padding: 14px 20px; border-radius: var(--r); color: var(--dark);
+  text-decoration: none; font-size: 1rem; font-weight: 700; transition: 0.2s;
+  border: 1px solid transparent;
+}
+.nav-mobile a:hover { background: var(--blue-g); color: var(--blue); border-color: rgba(59,143,212,0.1); }
+.nav-m-close {
+  position: absolute; top: 20px; right: 20px; width: 36px; height: 36px;
+  border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.nav-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+  z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s;
+}
+.nav-overlay.open { opacity: 1; pointer-events: auto; }
+
 /* ── HERO ───────────────────────────── */
 .hero{padding:160px 0 100px;text-align:center;position:relative;background: radial-gradient(circle at 50% -20%, rgba(59,143,212,0.08) 0%, transparent 60%)}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#fff;border:1px solid var(--border);border-radius:100px;font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:32px;box-shadow:var(--sh);text-transform:uppercase;letter-spacing:1px}
@@ -278,17 +311,33 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
 .fbrand p{line-height:1.6;max-width:280px}
 
 /* Responsive */
+@media(max-width:1100px){
+  .fcard-ui { display: none; } /* Hide complex floating UI on smaller screens to peak performance and avoid overflow */
+  .pgrid { grid-template-columns: repeat(2,1fr); }
+}
 @media(max-width:960px){
-  .nlinks{display:none}
-  .pgrid{grid-template-columns:repeat(2,1fr)}
-  .fcard-hs{grid-template-columns:1fr}
-  .fgrid-main{grid-template-columns:1fr 1fr}
+  .nlinks { display:none; }
+  .nav-toggle { display: flex; }
+  .fcard-hs { grid-template-columns: 1fr; }
+  .fgrid-main { grid-template-columns: 1fr 1fr; }
+  .pas-grid { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:680px){
+  .headline { font-size: 3.2rem; letter-spacing: -2px; }
+  .hero { padding: 120px 0 60px; }
+  .hero-sub { font-size: 1.1rem; }
+  .t-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .pas-grid { grid-template-columns: 1fr; }
+  .pas-solution { padding: 40px 24px; }
+  .ps-box h3 { font-size: 1.8rem; }
+  .ps-box p { font-size: 1rem; }
 }
 @media(max-width:600px){
   .pgrid {grid-template-columns: 1fr;}
   .stats-grid {grid-template-columns: 1fr;}
   .hero-ctas {flex-direction: column;}
   .fgrid-main {grid-template-columns: 1fr;}
+  .nact .btn { display: none; } /* Hide dashboard buttons on very small nav, keep in hamburger */
 }
 </style>
 </head>
@@ -324,9 +373,23 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
       </select>
       <a href="auth-onboarding.html" class="btn btn-g" data-i18n="nav.login">Entrar</a>
       <a href="auth-onboarding.html?mode=signup" class="btn btn-p" data-i18n="nav.get_started">Começar Grátis</a>
+      <button class="nav-toggle" onclick="toggleMobileMenu()">☰</button>
     </div>
   </div>
 </nav>
+
+<!-- Mobile Menu Drawer -->
+<div class="nav-overlay" id="navOverlay" onclick="toggleMobileMenu()"></div>
+<div class="nav-mobile" id="navMobile">
+  <button class="nav-m-close" onclick="toggleMobileMenu()">✕</button>
+  <a href="#features" onclick="toggleMobileMenu()" data-i18n="nav.features">Funcionalidades</a>
+  <a href="#pricing" onclick="toggleMobileMenu()" data-i18n="nav.pricing">Preços</a>
+  <a href="#about" onclick="toggleMobileMenu()">Quem Somos</a>
+  <a href="#faq" onclick="toggleMobileMenu()" data-i18n="nav.faq">FAQ</a>
+  <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 10px 0;">
+  <a href="auth-onboarding.html" class="btn btn-g" style="justify-content: center;" data-i18n="nav.login">Entrar</a>
+  <a href="auth-onboarding.html?mode=signup" class="btn btn-p" style="justify-content: center;" data-i18n="nav.get_started">Começar Grátis</a>
+</div>
 
 <section class="hero">
   <div class="wrap">
@@ -819,7 +882,20 @@ function switchLegalTab(tab){document.querySelectorAll('.lt-btn').forEach((t,i)=
 // Scroll Animation
 const obs=new IntersectionObserver(ents=>{ents.forEach(en=>{if(en.isIntersecting)en.target.classList.add('vis');});},{threshold:0.1});
 document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
-window.onscroll=()=>{const n=document.getElementById('nav');if(window.scrollY>50)n.classList.add('scrolled');else n.classList.remove('scrolled');};
+function toggleMobileMenu() {
+  const nav = document.getElementById('navMobile');
+  const overlay = document.getElementById('navOverlay');
+  nav.classList.toggle('open');
+  overlay.classList.toggle('open');
+  document.body.style.overflow = nav.classList.contains('open') ? 'hidden' : '';
+}
+
+// Navbar scroll effect
+window.onscroll = () => {
+  const n = document.getElementById('nav');
+  if (window.scrollY > 50) n.classList.add('scrolled');
+  else n.classList.remove('scrolled');
+};
 </script>
 </body>
 </html>

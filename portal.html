@@ -61,14 +61,18 @@ body {
 }
 
 .steps-container {
-  padding: 0 20px;
+  padding: 0 10px;
   margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .steps { 
   display: flex; 
   justify-content: space-between; 
   position: relative; 
+  min-width: 480px; /* Force minimum width for tracker to avoid overlap */
+  padding: 10px 0;
 }
 
 .steps::before {
@@ -211,7 +215,8 @@ body {
 }
 .rcpt-section-label:first-child { margin-top: 0; }
 
-.rcpt-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.rcpt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
+.rcpt-table { width: 100%; border-collapse: collapse; min-width: 500px; }
 .rcpt-table th { text-align: left; font-size: .68rem; font-weight: 800; color: var(--subtle); padding: 10px 12px; background: var(--bg-table-head); border-radius: 6px; }
 .rcpt-table td { padding: 14px 12px; border-bottom: 1px solid var(--border-input); font-size: .9rem; color: var(--black); }
 .rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .85rem; }
