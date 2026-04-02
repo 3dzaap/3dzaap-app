@@ -794,97 +794,58 @@ function calcHealthScore() {
   let   score     = 0;
   let   missingDueDates = false;
 
-  // ── 1. MARGEM MÉDIA (25 pts) ────────────────────────────────
-  // Estimada via: pedidos concluídos com payment_status=pago este mês
-  // Custo proxy: soma filamentCost estimada (price * peso médio 50g)
-  // Se sem dados suficientes → máximo
-  const doneOrders = orders.filter(o => o.status === 'concluido' || o.status === 'done' || o.status === 'entregue');
-  let   marginScore = 25; // benefício da dúvida
-  if (doneOrders.length >= 2) {
-    const totalRevenue = doneOrders.reduce((s,o) => s + parseFloat(o.total||0), 0);
-    // Custo proxy: usa price do filamento mais barato ou 25€/kg default, 50g/peça
-    const avgFilPrice = filaments.length
-      ? filaments.reduce((s,f) => s + parseFloat(f.price||25), 0) / filaments.length
-      : 25;
-    const estimatedCost = doneOrders.length * (avgFilPrice / 1000) * 50; // 50g por peça estimado
-    const margin = totalRevenue > 0 ? ((totalRevenue - estimatedCost) / totalRevenue) * 100 : null;
-    if (margin !== null) {
-      var marginTarget=(_cfg&&_cfg._margin)||30;
-    if (margin >= marginTarget) { marginScore = 25; insights.push({t:'ok',  icon:'💰', key:'margin_ok', vars:{m:Math.round(margin),t:marginTarget}}); }
-      else if (margin >= marginTarget*0.67) { marginScore = 18; insights.push({t:'warn', icon:'💰', key:'margin_warn1', vars:{m:Math.round(margin)}}); }
-      else if (margin >= marginTarget*0.33) { marginScore = 10; insights.push({t:'warn', icon:'💰', key:'margin_warn2', vars:{m:Math.round(margin)}}); }
-      else                   { marginScore = 0;  insights.push({t:'bad',  icon:'💰', key:'margin_bad', vars:{m:Math.round(margin)}}); }
-    }
-  }
-  score += marginScore;
+  // ── 1. SETUP INICIAL (80 pts) ──────────────────────────────
+  const printers   = state.printers || [];
+  const hasPrinter = printers.length > 0;
+  const hasMat     = filaments.length > 0;
+  
+  // Verificações de Branding e Config
+  const hasLogo  = !!(state.company && state.company.logo_url);
+  const hasSig   = !!(state.company && state.company.signature_url);
+  // Consideramos configurado se algum valor for diferente do default do onboarding ou se houver flag
+  const isConfigured = _cfg && (_cfg.electricityPrice !== 0.22 || _cfg.profitMargin !== 30 || _cfg.setup_done === true);
 
-  // ── 2. PEDIDOS EM ATRASO (25 pts) ──────────────────────────
-  const openOrders = orders.filter(o => o.status !== 'concluido' && o.status !== 'done' && o.status !== 'entregue' && o.status !== 'cancelado');
-  const ordersWithDue = openOrders.filter(o => o.dueDate || o.due_date);
-  const ordersWithoutDue = openOrders.filter(o => !o.dueDate && !o.due_date);
-  if (ordersWithoutDue.length > 0) missingDueDates = true;
+  // Pontuação Setup
+  if (hasPrinter) { score += 20; insights.push({t:'ok', icon:'🖨️', key:'setup_printers_ok'}); }
+  else { insights.push({t:'bad', icon:'🖨️', key:'setup_printers_miss'}); }
 
-  let lateScore = 25; // máximo se sem due_date
-  if (ordersWithDue.length > 0) {
-    const late = ordersWithDue.filter(o => {
-      const d = new Date(o.dueDate || o.due_date);
-      return !isNaN(d) && d < now;
-    }).length;
-    // Prazo médio estimado: 7 dias após criação para pedidos sem due_date
-    const avgDays = 7;
-    const lateByAvg = ordersWithoutDue.filter(o => {
-      const created = new Date(o.createdAt || o.created_at);
-      return !isNaN(created) && ((now - created) / 86400000) > avgDays;
-    }).length;
-    const totalLate = late + lateByAvg;
-    if (totalLate === 0)      { lateScore = 25; insights.push({t:'ok',  icon:'📦', key:'late_ok'}); }
-    else if (totalLate === 1) { lateScore = 15; insights.push({t:'warn', icon:'📦', key:'late_warn1'}); }
-    else if (totalLate === 2) { lateScore = 8;  insights.push({t:'warn', icon:'📦', key:'late_warnN', vars:{n:totalLate}}); }
-    else                      { lateScore = 0;  insights.push({t:'bad',  icon:'📦', key:'late_badN', vars:{n:totalLate}}); }
-  } else if (openOrders.length === 0) {
-    insights.push({t:'ok', icon:'📦', key:'late_none'});
-  }
-  score += lateScore;
+  if (hasMat) { score += 20; insights.push({t:'ok', icon:'🎨', key:'setup_materials_ok'}); }
+  else { insights.push({t:'bad', icon:'🎨', key:'setup_materials_miss'}); }
 
-  // ── 3. STOCK CRÍTICO (20 pts) ───────────────────────────────
-  const alertFils  = filaments.filter(f => getFilamentStatus(f) !== 'green');
-  const critFils   = filaments.filter(f => getFilamentStatus(f) === 'red');
-  let   stockScore = 20;
-  if (filaments.length === 0) {
-    stockScore = 20; // sem dados = máximo
-  } else if (alertFils.length === 0) {
-    stockScore = 20;
-    if(_cfg.notifStockOut !== false || _cfg.notifStockLow !== false)
-      insights.push({t:'ok', icon:'🎨', key:'stock_ok'});
-  } else if (alertFils.length <= 2) {
-    stockScore = 12;
-    if(_cfg.notifStockLow !== false)
-      insights.push({t:'warn', icon:'🎨', key:'stock_warnN', vars:{n:alertFils.length}});
-  } else {
-    stockScore = 0;
-    if(_cfg.notifStockOut !== false)
-      insights.push({t:'bad',  icon:'🎨', key:'stock_badN', vars:{n:alertFils.length}});
-  }
-  score += stockScore;
+  if (isConfigured) { score += 20; insights.push({t:'ok', icon:'⚡', key:'setup_configs_ok'}); }
+  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss'}); }
 
-  // ── 4. PAGAMENTOS PENDENTES (20 pts) ───────────────────────
-  const monthOrders = orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
-  const totalMonth  = monthOrders.length;
-  const paidMonth   = monthOrders.filter(o => o.paymentStatus === 'pago').length;
-  const pendRate    = totalMonth > 0 ? (totalMonth - paidMonth) / totalMonth : 0;
-  let   payScore    = 20;
-  if (totalMonth === 0) {
-    payScore = 20; // sem dados = máximo
-  } else if (pendRate === 0) {
-    payScore = 20; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', key:'pay_ok_all'});
-  } else if (pendRate < 0.2) {
-    payScore = 14; if(_cfg.notifOverdue!==false) insights.push({t:'ok',  icon:'✅', key:'pay_ok_some', vars:{p:Math.round(pendRate*100)}});
-  } else if (pendRate < 0.5) {
-    payScore = 6;  if(_cfg.notifOverdue!==false) insights.push({t:'warn', icon:'💳', key:'pay_warn', vars:{p:Math.round(pendRate*100)}});
-  } else {
-    payScore = 0;  if(_cfg.notifOverdue!==false) insights.push({t:'bad',  icon:'💳', key:'pay_bad'});
+  if (hasLogo) { score += 10; insights.push({t:'ok', icon:'🖼️', key:'setup_logo_ok'}); }
+  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss'}); }
+
+  if (hasSig) { score += 10; insights.push({t:'ok', icon:'✍️', key:'setup_sig_ok'}); }
+  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss'}); }
+
+  // ── 2. PERFORMANCE OPERACIONAL (20 pts) ────────────────────
+  // Margens (5 pts)
+  const doneOrders = orders.filter(o => ['concluido','done','entregue'].includes(o.status));
+  let perfScore = 0;
+  if (doneOrders.length >= 1) {
+    perfScore += 5; // básico por ter atividade
   }
-  score += payScore;
+
+  // Atrasos (5 pts)
+  const openOrders = orders.filter(o => !['concluido','done','entregue','cancelado'].includes(o.status));
+  const late = openOrders.filter(o => {
+    const d = new Date(o.dueDate || o.due_date);
+    return !isNaN(d) && d < now;
+  }).length;
+  if (openOrders.length > 0 && late === 0) perfScore += 5;
+
+  // Stock (5 pts)
+  const critFils = filaments.filter(f => getFilamentStatus(f) === 'red');
+  if (hasMat && critFils.length === 0) perfScore += 5;
+
+  // Pagamentos (5 pts)
+  const pendOrders = orders.filter(o => o.paymentStatus !== 'pago').length;
+  if (orders.length > 0 && pendOrders === 0) perfScore += 5;
+
+  score += perfScore;
 
   // ── 5. TENDÊNCIA DE RECEITA (10 pts) ───────────────────────
   const revThis = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);

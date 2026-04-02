@@ -333,10 +333,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="step-dot active" id="dot1">1</div>
         <div class="step-line" id="line1"></div>
         <div class="step-dot" id="dot2">2</div>
-        <div class="step-line" id="line2"></div>
-        <div class="step-dot" id="dot3">3</div>
-        <div class="step-line" id="line3"></div>
-        <div class="step-dot" id="dot4">4</div>
       </div>
 
       <!-- STEP 1 -->
@@ -377,6 +373,37 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             </select>
           </div>
         </div>
+
+        <!-- Branding Uploads -->
+        <div class="row">
+          <div class="field">
+            <label>Logótipo <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <label for="logoUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s">
+                🖼️ Upload
+                <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadBrandingFile(this, 'logo')">
+              </label>
+              <div id="logoPreviewWrap" style="display:none;align-items:center;gap:8px">
+                <img id="logoPreview" style="height:32px;width:auto;border-radius:4px;border:1px solid rgba(0,0,0,.1);background:#fff;padding:2px">
+                <span style="font-size:.7rem;cursor:pointer;color:var(--muted)" onclick="clearBrandingFile('logo')">✕</span>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Assinatura <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s">
+                ✍️ Upload
+                <input type="file" id="sigUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadBrandingFile(this, 'sig')">
+              </label>
+              <div id="sigPreviewWrap" style="display:none;align-items:center;gap:8px">
+                <img id="sigPreview" style="height:32px;width:auto;border-radius:4px;border:1px solid rgba(0,0,0,.1);background:#fff;padding:2px">
+                <span style="font-size:.7rem;cursor:pointer;color:var(--muted)" onclick="clearBrandingFile('sig')">✕</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button class="btn-primary" id="step1Btn">
           <span class="btn-label">Continuar →</span>
           <div class="spinner"></div>
@@ -423,8 +450,8 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <div class="plan-feat">+ Financeiro<br>Marca própria<br>Multi-user</div>
           </div>
         </div>
-        <button class="btn-primary" id="step2Btn" style="margin-top:16px">
-          <span class="btn-label">Confirmar plano →</span>
+        <button class="btn-primary" id="finishBtn" style="margin-top:16px" onclick="finishOnboarding()">
+          <span class="btn-label">🚀 Finalizar e entrar no Dashboard</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
@@ -432,155 +459,6 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </div>
       </div>
 
-      <!-- STEP 3: INFRASTRUCTURE (Reordered from 4) -->
-      <div class="step-panel" id="step3">
-        <div class="steps-header">
-          <div class="steps-title">🏗️ O teu equipamento</div>
-          <div class="steps-sub">Adiciona a tua impressora e o teu 1º filamento</div>
-        </div>
-        
-        <div class="field">
-          <label>A tua 1ª Impressora 3D</label>
-          <div class="field-wrap">
-            <span class="ico">🖨️</span>
-            <select class="inp" id="initPrinterSelect" style="appearance:none;cursor:pointer" onchange="onPrinterSelect(this.value)">
-              <option value="">A carregar catálogo...</option>
-            </select>
-          </div>
-          <input type="text" class="inp" id="initPrinterName" placeholder="Ou escreve o nome se não estiver na lista" style="margin-top:8px; display:none;">
-        </div>
-
-        <div style="background:rgba(59,143,212,.06);border-radius:12px;padding:16px;border:1.5px solid rgba(59,143,212,.15);margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <label style="font-size:.82rem;font-weight:700;color:var(--dark);margin:0">O teu 1º Filamento</label>
-            <button class="btn-primary" style="margin:0;padding:6px 12px;font-size:.75rem;height:auto;width:auto" onclick="openFilamentModal()">
-              ＋ Criar
-            </button>
-          </div>
-
-          <div id="filSummary" style="font-size:.85rem;color:var(--muted);background:#fff;padding:10px;border-radius:8px;border:1px solid var(--bdark);display:flex;align-items:center;gap:10px">
-            <div id="filColorDot" style="width:16px;height:16px;border-radius:50%;background:#3B8FD4;border:1.5px solid rgba(0,0,0,.1)"></div>
-            <span id="filNameDisplay">PLA Basic — Preto</span>
-          </div>
-
-          <div class="row" style="margin-top:12px">
-            <div class="field" style="margin-bottom:0">
-              <label>Custo (€/kg)</label>
-              <div class="field-wrap">
-                <span class="ico">💰</span>
-                <input type="number" class="inp" id="initFilPrice" value="25" min="1" step="0.5">
-              </div>
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label>Stock (kg)</label>
-              <div class="field-wrap">
-                <span class="ico">⚖️</span>
-                <input type="number" class="inp" id="initFilStock" value="1" min="0.1" step="0.1">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-primary" id="step3Btn">
-          <span class="btn-label">Continuar para configurações →</span>
-          <div class="spinner"></div>
-        </button>
-        <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
-        </div>
-      </div>
-
-      <!-- STEP 4: CONFIGURATION (Reordered from 3) -->
-      <div class="step-panel" id="step4">
-        <div class="steps-header">
-          <div class="steps-title">⚙️ Configuração rápida</div>
-          <div class="steps-sub">Defaults da calculadora (editável depois)</div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Margem de lucro (%)</label>
-            <div class="field-wrap"><span class="ico">📈</span>
-              <input type="number" class="inp" id="cfgMargin" value="30" min="0" max="200" step="1">
-            </div>
-          </div>
-          <div class="field">
-            <label>Taxa de falhas (%)</label>
-            <div class="field-wrap"><span class="ico">⚠️</span>
-              <input type="number" class="inp" id="cfgFailure" value="5" min="0" max="50" step="1">
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Eletricidade (€/kWh)</label>
-          <div class="field-wrap"><span class="ico">⚡</span>
-            <input type="number" class="inp" id="cfgElec" value="0.22" min="0.01" step="0.01">
-          </div>
-        </div>
-        
-        <div class="field" style="margin-top:12px">
-          <label>Assinatura para recibos <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-            <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s" onmouseover="this.style.background='rgba(59,143,212,.12)'" onmouseout="this.style.background='rgba(59,143,212,.06)'">
-              📎 Carregar imagem
-              <input type="file" id="sigUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadSignature(this)">
-            </label>
-            <div id="sigPreviewWrap" style="display:none;align-items:center;gap:8px">
-              <img id="sigPreview" style="height:40px;width:auto;border-radius:6px;border:1px solid rgba(0,0,0,.1);background:#fff;padding:2px">
-              <span style="font-size:.75rem;cursor:pointer;color:var(--muted)" onclick="clearSignature()">✕ Remover</span>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-primary" id="finishBtn">
-          <span class="btn-label">🚀 Finalizar e entrar no Dashboard</span>
-          <div class="spinner"></div>
-        </button>
-        <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(3)">← Voltar</span>
-        </div>
-      </div>
-
-      <!-- INLINE FILAMENT MODAL (Materials Style) -->
-      <div id="filModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px">
-        <div class="card" style="max-width:420px;padding:28px;position:relative">
-          <button style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)" onclick="closeFilamentModal()">✕</button>
-          
-          <div class="form-title" style="font-size:1.2rem;margin-bottom:20px">＋ Novo Material 🧵</div>
-          
-          <div class="color-section" style="margin-bottom:20px">
-            <div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">🎨 Cor do filamento</div>
-            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px" id="onboardColorPresets">
-              <!-- Presets do Materials -->
-              <div class="color-dot" style="background:#000000;width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:var(--sh)" onclick="setFilColor('#000000')"></div>
-              <div class="color-dot" style="background:#FFFFFF;width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid #eee" onclick="setFilColor('#FFFFFF')"></div>
-              <div class="color-dot" style="background:#555555;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#555555')"></div>
-              <div class="color-dot" style="background:#FF0000;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FF0000')"></div>
-              <div class="color-dot" style="background:#008000;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#008000')"></div>
-              <div class="color-dot" style="background:#3B8FD4;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#3B8FD4')"></div>
-              <div class="color-dot" style="background:#FFD700;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FFD700')"></div>
-              <div class="color-dot" style="background:#FF8C00;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FF8C00')"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.03);padding:10px;border-radius:10px;border:1px solid var(--bdark)">
-              <div id="onboardColorPreview" style="width:34px;height:34px;border-radius:8px;background:#3B8FD4;border:1.5px solid rgba(0,0,0,.1);flex-shrink:0"></div>
-              <input type="color" id="modalFilColor" style="width:0;height:0;padding:0;border:none;visibility:hidden;position:absolute" oninput="setFilColor(this.value)">
-              <button class="btn-primary" style="margin:0;padding:6px 10px;font-size:.7rem;height:auto;width:auto;background:var(--bg-card);color:var(--dark);border:1px solid var(--border)" onclick="document.getElementById('modalFilColor').click()">Personalizar</button>
-              <input type="text" id="modalFilColorHex" class="inp" style="height:34px;font-size:.8rem;font-family:var(--mono);text-align:center;padding:0" value="#3B8FD4" oninput="setFilColor(this.value)">
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Nome / Identificação</label>
-            <div class="field-wrap">
-              <span class="ico">🧵</span>
-              <input type="text" class="inp" id="modalFilName" placeholder="Ex: PLA Basic - Preto">
-            </div>
-          </div>
-
-          <button class="btn-primary" onclick="closeFilamentModal()" style="margin-top:20px;box-shadow:0 10px 20px rgba(59,143,212,0.2)">
-            Guardar Material
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- ═══ SUCCESS PANEL ═══ -->
@@ -623,12 +501,7 @@ const STATE = {
   billing:      'monthly',   // 'monthly' ou 'yearly'
   form:         {},          // dados do utilizador (step signup)
   signatureB64: null,
-  filament: {
-    name: 'PLA Basic — Preto',
-    color: '#000000',
-    price: 25,
-    stock: 1
-  },
+  logoB64:      null,
   // Mutex: garante que cada operação async corre uma única vez
   loginBusy:    false,
   signupBusy:   false,
@@ -665,12 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('signupBtn').addEventListener('click', doSignup);
   document.getElementById('resetBtn').addEventListener('click',  doReset);
   document.getElementById('step1Btn').addEventListener('click',  () => goStep(2));
-  document.getElementById('step2Btn').addEventListener('click',  () => goStep(3)); // Vai para Equipamento
-  document.getElementById('step3Btn').addEventListener('click',  () => goStep(4)); // Vai para Config
   document.getElementById('finishBtn').addEventListener('click', finishOnboarding);
-
-  // Inicializar catálogo
-  loadPrinterModels();
 
   // Enter — apenas em campos relevantes, nunca durante onboarding
   document.addEventListener('keydown', e => {
@@ -774,32 +642,17 @@ function goStep(n) {
     STATE.form.companyName = name;
     STATE.form.slug        = slug;
   }
-  if (n === 3) {
-    // Escolha de Plano
-    STATE.form.plan = STATE.plan;
-    STATE.form.billing = STATE.billing;
-  }
-  if (n === 4) {
-    // Validação Passo 3 (Equipamento)
-    const pSel = document.getElementById('initPrinterSelect').value;
-    const pName = document.getElementById('initPrinterName').value.trim();
-    if (!pSel && !pName) { toast('Escolhe ou indica uma impressora','err'); return; }
-    STATE.form.initPrinter = { name: pSel || pName };
-    STATE.form.initFilament = {
-      name:  STATE.filament.name,
-      color: STATE.filament.color,
-      price: +document.getElementById('initFilPrice').value || 25,
-      stock: +document.getElementById('initFilStock').value || 1
-    };
-  }
   setStep(n);
 }
 
 function setStep(n) {
   STATE.step = n;
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('step' + i);
-    if(el) el.classList.toggle('active', i === n);
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  const p = document.getElementById('step' + n);
+  if(p) p.classList.add('active');
+
+  // Dots
+  for (let i = 1; i <= 2; i++) {
     const d = document.getElementById('dot' + i);
     if(!d) continue;
     d.classList.remove('active', 'done');
@@ -807,29 +660,27 @@ function setStep(n) {
     else if (i === n){ d.classList.add('active'); d.textContent = i;   }
     else             { d.textContent = i; }
   }
-  for (let i = 1; i <= 3; i++) {
-    const l = document.getElementById('line' + i);
-    if(l) l.classList.toggle('done', i < n);
-  }
+  const l = document.getElementById('line1');
+  if(l) l.classList.toggle('done', n > 1);
 }
 
 // ══════════════════════════════════════════════════════════════
 //  FINISH — única chamada a Auth.register, mutex rigoroso
 // ══════════════════════════════════════════════════════════════
 async function finishOnboarding() {
-  // Mutex estrito — bloqueia qualquer nova chamada enquanto estiver a processar
   if (STATE.finishBusy) return;
   STATE.finishBusy = true;
 
   const btn = setBusy('finishBtn', true);
 
+  // Defaults base (serão pontuados no Health Score se não alterados)
   const config = {
-    filamentPrice:    +STATE.form.initFilament.price || 25,
-    printerPrice:     600, // Default base
+    filamentPrice:    25,
+    printerPrice:     600,
     printerLife:      5000,
-    electricityPrice: +document.getElementById('cfgElec').value     || 0.22,
-    profitMargin:     +document.getElementById('cfgMargin').value   || 30,
-    failureRate:      +document.getElementById('cfgFailure').value  || 5,
+    electricityPrice: 0.22,
+    profitMargin:     30,
+    failureRate:      5,
   };
 
   try {
@@ -840,12 +691,12 @@ async function finishOnboarding() {
       pass:        STATE.form.pass,
       companyName: STATE.form.companyName,
       slug:        STATE.form.slug,
+      country:     document.getElementById('companyCountry').value,
       plan:        STATE.plan,
       billing:     STATE.billing,
       config,
-      signature:   STATE.signatureB64 || null,
-      initFilament: STATE.form.initFilament,
-      initPrinter:  STATE.form.initPrinter,
+      logo:        STATE.logoB64 || null,
+      signature:   STATE.signatureB64 || null
     });
 
     document.getElementById('onboardingPanel').style.display = 'none';
@@ -967,107 +818,36 @@ function toggleBilling() {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  EQUIPAMENTO (PASSO 3)
+//  BRANDING
 // ══════════════════════════════════════════════════════════════
-async function loadPrinterModels() {
-  try {
-    const models = await DB.getPrinterModels();
-    const sel = document.getElementById('initPrinterSelect');
-    sel.innerHTML = '<option value="">-- Seleciona um modelo --</option>';
-    models.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.brand + ' ' + m.name;
-      opt.textContent = m.brand + ' ' + m.name;
-      sel.appendChild(opt);
-    });
-    const other = document.createElement('option');
-    other.value = 'other';
-    other.textContent = '+ Outro modelo (escrever nome)';
-    sel.appendChild(other);
-  } catch(e) {
-    console.error('Erro ao carregar catálogo:', e);
-  }
-}
-
-function onPrinterSelect(v) {
-  const custom = document.getElementById('initPrinterName');
-  custom.style.display = (v === 'other') ? 'block' : 'none';
-}
-
-function openFilamentModal() {
-  document.getElementById('filModal').style.display = 'flex';
-  document.getElementById('modalFilName').value = STATE.filament.name;
-}
-
-function closeFilamentModal() {
-  const name = document.getElementById('modalFilName').value.trim();
-  if (name) STATE.filament.name = name;
-  document.getElementById('filModal').style.display = 'none';
-  document.getElementById('filNameDisplay').textContent = STATE.filament.name;
-  document.getElementById('filColorDot').style.background = STATE.filament.color;
-}
-
-function setFilColor(hex) {
-  if (!hex) return;
-  STATE.filament.color = hex;
-  document.getElementById('modalFilColorHex').value = hex.toUpperCase();
-  document.getElementById('onboardColorPreview').style.background = hex;
-  
-  // Highlight selected preset
-  document.querySelectorAll('#onboardColorPresets .color-dot').forEach(d => {
-    const bg = d.style.backgroundColor;
-    // Simple hex match
-    d.style.boxShadow = (hex.toLowerCase() === rgbToHex(bg).toLowerCase()) ? '0 0 0 3px rgba(59,143,212,0.4)' : '';
-    d.style.transform = (hex.toLowerCase() === rgbToHex(bg).toLowerCase()) ? 'scale(1.15)' : '';
-  });
-}
-
-function rgbToHex(rgb) {
-  if (!rgb) return '';
-  if (rgb.startsWith('#')) return rgb;
-  const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  if (!match) return rgb;
-  const r = parseInt(match[1]), g = parseInt(match[2]), b = parseInt(match[3]);
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-// ══════════════════════════════════════════════════════════════
-//  SLUG
-// ══════════════════════════════════════════════════════════════
-function generateSlug(val) {
-  const slug = val.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim().replace(/\s+/g, '-')
-    .replace(/-+/g, '-').substring(0, 40);
-  document.getElementById('companySlug').value = slug;
-  document.getElementById('slugPreview').textContent = slug ? 'app.3dzaap.com/' + slug : '';
-}
-function validateSlugInput(val) {
-  const clean = val.toLowerCase().replace(/[^a-z0-9-]/g, '');
-  if (val !== clean) document.getElementById('companySlug').value = clean;
-  document.getElementById('slugPreview').textContent = clean ? 'app.3dzaap.com/' + clean : '';
-}
-
-// ══════════════════════════════════════════════════════════════
-//  ASSINATURA
-// ══════════════════════════════════════════════════════════════
-function loadSignature(input) {
+function loadBrandingFile(input, type) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    STATE.signatureB64 = e.target.result;
-    document.getElementById('sigPreview').src = STATE.signatureB64;
-    document.getElementById('sigPreviewWrap').style.display = 'flex';
+    const b64 = e.target.result;
+    if (type === 'logo') {
+      STATE.logoB64 = b64;
+      document.getElementById('logoPreview').src = b64;
+      document.getElementById('logoPreviewWrap').style.display = 'flex';
+    } else {
+      STATE.signatureB64 = b64;
+      document.getElementById('sigPreview').src = b64;
+      document.getElementById('sigPreviewWrap').style.display = 'flex';
+    }
   };
   reader.readAsDataURL(file);
 }
-function clearSignature() {
-  STATE.signatureB64 = null;
-  document.getElementById('sigUpload').value = '';
-  document.getElementById('sigPreviewWrap').style.display = 'none';
-  document.getElementById('sigPreview').src = '';
+function clearBrandingFile(type) {
+  if (type === 'logo') {
+    STATE.logoB64 = null;
+    document.getElementById('logoUpload').value = '';
+    document.getElementById('logoPreviewWrap').style.display = 'none';
+  } else {
+    STATE.signatureB64 = null;
+    document.getElementById('sigUpload').value = '';
+    document.getElementById('sigPreviewWrap').style.display = 'none';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
