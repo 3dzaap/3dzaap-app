@@ -454,7 +454,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <label style="font-size:.82rem;font-weight:700;color:var(--dark);margin:0">O teu 1º Filamento</label>
             <button class="btn-primary" style="margin:0;padding:6px 12px;font-size:.75rem;height:auto;width:auto" onclick="openFilamentModal()">
-              🔍 Escolher/Criar
+              ＋ Criar
             </button>
           </div>
 
@@ -540,26 +540,45 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </div>
       </div>
 
-      <!-- INLINE FILAMENT MODAL -->
-      <div id="filModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px">
-        <div class="card" style="max-width:380px;padding:24px">
-          <div class="form-title" style="font-size:1.1rem">Configurar Filamento 🧵</div>
-          <div class="field" style="margin-top:16px">
-            <label>Nome / Cor</label>
-            <input type="text" class="inp" id="modalFilName" placeholder="PLA Basic — Preto" style="padding-left:14px">
-          </div>
-          <div class="field">
-            <label>Cor visual</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <div class="color-dot" style="background:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:var(--sh)" onclick="setFilColor('#000')"></div>
-              <div class="color-dot" style="background:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid #ccc" onclick="setFilColor('#fff')"></div>
-              <div class="color-dot" style="background:#ff0000;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#ff0000')"></div>
-              <div class="color-dot" style="background:#008000;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#008000')"></div>
-              <div class="color-dot" style="background:#3B8FD4;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#3B8FD4')"></div>
-              <input type="color" id="modalFilColor" style="width:24px;height:24px;padding:0;border:none;background:none;cursor:pointer" oninput="setFilColor(this.value)">
+      <!-- INLINE FILAMENT MODAL (Materials Style) -->
+      <div id="filModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px">
+        <div class="card" style="max-width:420px;padding:28px;position:relative">
+          <button style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted)" onclick="closeFilamentModal()">✕</button>
+          
+          <div class="form-title" style="font-size:1.2rem;margin-bottom:20px">＋ Novo Material 🧵</div>
+          
+          <div class="color-section" style="margin-bottom:20px">
+            <div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">🎨 Cor do filamento</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px" id="onboardColorPresets">
+              <!-- Presets do Materials -->
+              <div class="color-dot" style="background:#000000;width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:var(--sh)" onclick="setFilColor('#000000')"></div>
+              <div class="color-dot" style="background:#FFFFFF;width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid #eee" onclick="setFilColor('#FFFFFF')"></div>
+              <div class="color-dot" style="background:#555555;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#555555')"></div>
+              <div class="color-dot" style="background:#FF0000;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FF0000')"></div>
+              <div class="color-dot" style="background:#008000;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#008000')"></div>
+              <div class="color-dot" style="background:#3B8FD4;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#3B8FD4')"></div>
+              <div class="color-dot" style="background:#FFD700;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FFD700')"></div>
+              <div class="color-dot" style="background:#FF8C00;width:28px;height:28px;border-radius:50%;cursor:pointer" onclick="setFilColor('#FF8C00')"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.03);padding:10px;border-radius:10px;border:1px solid var(--bdark)">
+              <div id="onboardColorPreview" style="width:34px;height:34px;border-radius:8px;background:#3B8FD4;border:1.5px solid rgba(0,0,0,.1);flex-shrink:0"></div>
+              <input type="color" id="modalFilColor" style="width:0;height:0;padding:0;border:none;visibility:hidden;position:absolute" oninput="setFilColor(this.value)">
+              <button class="btn-primary" style="margin:0;padding:6px 10px;font-size:.7rem;height:auto;width:auto;background:var(--bg-card);color:var(--dark);border:1px solid var(--border)" onclick="document.getElementById('modalFilColor').click()">Personalizar</button>
+              <input type="text" id="modalFilColorHex" class="inp" style="height:34px;font-size:.8rem;font-family:var(--mono);text-align:center;padding:0" value="#3B8FD4" oninput="setFilColor(this.value)">
             </div>
           </div>
-          <button class="btn-primary" onclick="closeFilamentModal()" style="margin-top:10px">Guardar</button>
+
+          <div class="field">
+            <label>Nome / Identificação</label>
+            <div class="field-wrap">
+              <span class="ico">🧵</span>
+              <input type="text" class="inp" id="modalFilName" placeholder="Ex: PLA Basic - Preto">
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="closeFilamentModal()" style="margin-top:20px;box-shadow:0 10px 20px rgba(59,143,212,0.2)">
+            Guardar Material
+          </button>
         </div>
       </div>
     </div>
@@ -989,10 +1008,27 @@ function closeFilamentModal() {
 }
 
 function setFilColor(hex) {
+  if (!hex) return;
   STATE.filament.color = hex;
-  document.querySelectorAll('.color-dot').forEach(d => {
-    d.style.borderColor = (d.style.background === hex || d.onclick?.toString().includes(hex)) ? 'var(--blue)' : '#fff';
+  document.getElementById('modalFilColorHex').value = hex.toUpperCase();
+  document.getElementById('onboardColorPreview').style.background = hex;
+  
+  // Highlight selected preset
+  document.querySelectorAll('#onboardColorPresets .color-dot').forEach(d => {
+    const bg = d.style.backgroundColor;
+    // Simple hex match
+    d.style.boxShadow = (hex.toLowerCase() === rgbToHex(bg).toLowerCase()) ? '0 0 0 3px rgba(59,143,212,0.4)' : '';
+    d.style.transform = (hex.toLowerCase() === rgbToHex(bg).toLowerCase()) ? 'scale(1.15)' : '';
   });
+}
+
+function rgbToHex(rgb) {
+  if (!rgb) return '';
+  if (rgb.startsWith('#')) return rgb;
+  const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  if (!match) return rgb;
+  const r = parseInt(match[1]), g = parseInt(match[2]), b = parseInt(match[3]);
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 // ══════════════════════════════════════════════════════════════

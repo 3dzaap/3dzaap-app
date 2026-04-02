@@ -1,8 +1,9 @@
 // ============================================================
-// supabase.js — Camada de dados 3DZAAP  v2.2 (Merged)
+// supabase.js — Camada de dados 3DZAAP  v2.2.1-fix-onboarding
 // Correcções: Suporte a Impressoras, Filamentos (packId/kg),
 // Mappers alinhados e Activity Log completo.
 // ============================================================
+console.info('[3DZAAP] supabase.js v2.2.1-fix-onboarding inicializado.');
 
 const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqZ2dzbmR4YXRlemdxbGpsaHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjE0MTgsImV4cCI6MjA4OTA5NzQxOH0.zVzA2siKsix8tOK44H5U-cZK1Wdd_4u_sY1g2JgGYUA';
@@ -558,6 +559,7 @@ const DB = {
 
   // ── PRINTER MODELS (CATALOG) ────────────────────────────────
   async getPrinterModels() {
+    // MÉTODO GLOBAL — NÃO CHAMA _ensureCompany
     const { data, error } = await _sb
       .from('printer_models').select('*')
       .order('brand', { ascending: true })
