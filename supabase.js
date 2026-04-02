@@ -558,7 +558,6 @@ const DB = {
 
   // ── PRINTER MODELS (CATALOG) ────────────────────────────────
   async getPrinterModels() {
-    await _ensureCompany();
     const { data, error } = await _sb
       .from('printer_models').select('*')
       .order('brand', { ascending: true })

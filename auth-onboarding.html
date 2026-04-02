@@ -114,11 +114,19 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .plan-card.selected{border-color:var(--blue);background:rgba(59,143,212,.08);box-shadow:0 0 0 3px rgba(59,143,212,.15)}
 .plan-card.recommended{border-color:var(--orange)}
 .plan-card.recommended.selected{background:rgba(245,148,58,.08);box-shadow:0 0 0 3px rgba(245,148,58,.15)}
-.plan-badge{position:absolute;top:-1px;right:12px;background:linear-gradient(135deg,var(--orange),var(--orange-d));color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:0 0 6px 6px}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--orange),var(--orange-d));color:#fff;font-size:.65rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:2px 10px;border-radius:20px;box-shadow:0 2px 8px rgba(245,148,58,.3);z-index:2}
 .plan-name{font-size:.9rem;font-weight:800;margin-bottom:2px}
 .plan-price{font-family:var(--mono);font-size:1.05rem;font-weight:700;color:var(--blue);margin-bottom:6px}
 .plan-price.free{color:var(--success)}
-.plan-price small{font-size:.65rem;color:var(--muted);font-family:var(--f);font-weight:500}
+.plan-price small{font-size:.62rem;color:var(--subtle);font-family:var(--f);font-weight:500;display:block;margin-top:-2px}
+.plan-toggle-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 20px}
+.pt-lbl{font-size:.8rem;font-weight:700;color:var(--muted)}
+.pt-lbl.active{color:var(--blue)}
+.pt-sw{position:relative;width:44px;height:24px;background:#e2e8f0;border-radius:100px;cursor:pointer;transition:.3s}
+.pt-sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.pt-sw.on{background:var(--blue)}
+.pt-sw.on::after{left:23px}
+.pt-disc{font-size:.68rem;font-weight:700;color:var(--success);background:rgba(34,197,94,.1);padding:2px 7px;border-radius:100px}
 .plan-feat{font-size:.72rem;color:var(--muted);line-height:1.5}
 .plan-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--bdark);position:absolute;top:12px;right:12px;background:transparent;transition:all .2s;display:flex;align-items:center;justify-content:center}
 .plan-card.selected .plan-check{border-color:var(--blue);background:var(--blue)}
@@ -382,30 +390,36 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="steps-sub">Todos os planos incluem 14 dias de trial grátis</div>
         </div>
         <div class="trial-info">🎁 <span>14 dias grátis em qualquer plano — sem cartão necessário</span></div>
+        <div class="plan-toggle-wrap">
+          <span class="pt-lbl" id="lbl-mon">Mensal</span>
+          <div class="pt-sw" id="planToggle" onclick="toggleBilling()"></div>
+          <span class="pt-lbl" id="lbl-ann">Anual</span>
+          <span class="pt-disc">Destaque: -20%</span>
+        </div>
         <div class="plan-grid">
           <div class="plan-card" id="plan-trial" onclick="selectPlan('trial')">
             <div class="plan-check"></div>
             <div class="plan-name">Trial</div>
-            <div class="plan-price free">Grátis <small>14 dias</small></div>
+            <div class="plan-price free" id="pr-trial">Grátis <small>14 dias</small></div>
             <div class="plan-feat">Todos os módulos<br>1 utilizador<br>Sem cartão</div>
           </div>
           <div class="plan-card selected" id="plan-starter" onclick="selectPlan('starter')">
             <div class="plan-check"></div>
             <div class="plan-name">Starter</div>
-            <div class="plan-price">€9,90 <small>/mês</small></div>
+            <div class="plan-price" id="pr-starter">€9,90 <small id="sm-starter">/mês</small></div>
             <div class="plan-feat">Calculadora<br>Filamentos<br>1 utilizador</div>
           </div>
           <div class="plan-card recommended" id="plan-pro" onclick="selectPlan('pro')">
             <div class="plan-badge">Popular</div>
             <div class="plan-check"></div>
             <div class="plan-name">Pro</div>
-            <div class="plan-price">€19,90 <small>/mês</small></div>
+            <div class="plan-price" id="pr-pro">€19,90 <small id="sm-pro">/mês</small></div>
             <div class="plan-feat">+ Pedidos<br>Pipeline completo<br>Recibos PDF</div>
           </div>
           <div class="plan-card" id="plan-business" onclick="selectPlan('business')">
             <div class="plan-check"></div>
             <div class="plan-name">Business</div>
-            <div class="plan-price">€39,90 <small>/mês</small></div>
+            <div class="plan-price" id="pr-business">€39,90 <small id="sm-business">/mês</small></div>
             <div class="plan-feat">+ Financeiro<br>Marca própria<br>Multi-user</div>
           </div>
         </div>
@@ -418,87 +432,38 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </div>
       </div>
 
-      <!-- STEP 3 -->
+      <!-- STEP 3: INFRASTRUCTURE (Reordered from 4) -->
       <div class="step-panel" id="step3">
         <div class="steps-header">
-          <div class="steps-title">⚙️ Configuração rápida</div>
-          <div class="steps-sub">Defaults da calculadora (editável depois)</div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Preço filamento (€/kg)</label>
-            <div class="field-wrap"><span class="ico">🧵</span>
-              <input type="number" class="inp" id="cfgFilament" value="25" min="1" step="0.5">
-            </div>
-          </div>
-          <div class="field">
-            <label>Preço impressora (€)</label>
-            <div class="field-wrap"><span class="ico">🖨️</span>
-              <input type="number" class="inp" id="cfgPrinter" value="600" min="50" step="50">
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Vida útil (horas)</label>
-            <div class="field-wrap"><span class="ico">⏱️</span>
-              <input type="number" class="inp" id="cfgLife" value="5000" min="100" step="100">
-            </div>
-          </div>
-          <div class="field">
-            <label>Eletricidade (€/kWh)</label>
-            <div class="field-wrap"><span class="ico">⚡</span>
-              <input type="number" class="inp" id="cfgElec" value="0.22" min="0.01" step="0.01">
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label>Margem de lucro (%)</label>
-            <div class="field-wrap"><span class="ico">📈</span>
-              <input type="number" class="inp" id="cfgMargin" value="30" min="0" max="200" step="1">
-            </div>
-          </div>
-          <div class="field">
-            <label>Taxa de falhas (%)</label>
-            <div class="field-wrap"><span class="ico">⚠️</span>
-              <input type="number" class="inp" id="cfgFailure" value="5" min="0" max="50" step="1">
-            </div>
-          </div>
-        </div>
-        <button class="btn-primary" id="step3Btn">
-          <span class="btn-label">Quase pronto →</span>
-          <div class="spinner"></div>
-        </button>
-        <div style="text-align:center;margin-top:10px">
-          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
-        </div>
-      </div>
-
-      <!-- STEP 4 [NEW] -->
-      <div class="step-panel" id="step4">
-        <div class="steps-header">
           <div class="steps-title">🏗️ O teu equipamento</div>
-          <div class="steps-sub">Opcional — adiciona agora ou depois</div>
+          <div class="steps-sub">Adiciona a tua impressora e o teu 1º filamento</div>
         </div>
         
         <div class="field">
           <label>A tua 1ª Impressora 3D</label>
           <div class="field-wrap">
             <span class="ico">🖨️</span>
-            <input type="text" class="inp" id="initPrinterName" placeholder="Ex: Creality Ender 3 / Bambu Lab X1">
+            <select class="inp" id="initPrinterSelect" style="appearance:none;cursor:pointer" onchange="onPrinterSelect(this.value)">
+              <option value="">A carregar catálogo...</option>
+            </select>
           </div>
+          <input type="text" class="inp" id="initPrinterName" placeholder="Ou escreve o nome se não estiver na lista" style="margin-top:8px; display:none;">
         </div>
 
-        <div style="background:rgba(59,143,212,.06);border-radius:12px;padding:12px 14px;border:1px solid rgba(59,143,212,.1);margin-bottom:16px">
-          <div class="field" style="margin-bottom:8px">
-            <label>O teu 1º Filamento (Cor/Nome)</label>
-            <div class="field-wrap">
-              <span class="ico">🧵</span>
-              <input type="text" class="inp" id="initFilName" placeholder="Ex: PLA Preto / PETG Branco">
-            </div>
+        <div style="background:rgba(59,143,212,.06);border-radius:12px;padding:16px;border:1.5px solid rgba(59,143,212,.15);margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <label style="font-size:.82rem;font-weight:700;color:var(--dark);margin:0">O teu 1º Filamento</label>
+            <button class="btn-primary" style="margin:0;padding:6px 12px;font-size:.75rem;height:auto;width:auto" onclick="openFilamentModal()">
+              🔍 Escolher/Criar
+            </button>
           </div>
-          <div class="row" style="margin-top:10px">
+
+          <div id="filSummary" style="font-size:.85rem;color:var(--muted);background:#fff;padding:10px;border-radius:8px;border:1px solid var(--bdark);display:flex;align-items:center;gap:10px">
+            <div id="filColorDot" style="width:16px;height:16px;border-radius:50%;background:#3B8FD4;border:1.5px solid rgba(0,0,0,.1)"></div>
+            <span id="filNameDisplay">PLA Basic — Preto</span>
+          </div>
+
+          <div class="row" style="margin-top:12px">
             <div class="field" style="margin-bottom:0">
               <label>Custo (€/kg)</label>
               <div class="field-wrap">
@@ -516,7 +481,43 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           </div>
         </div>
 
-        <div class="field" style="margin-top:4px">
+        <button class="btn-primary" id="step3Btn">
+          <span class="btn-label">Continuar para configurações →</span>
+          <div class="spinner"></div>
+        </button>
+        <div style="text-align:center;margin-top:10px">
+          <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(2)">← Voltar</span>
+        </div>
+      </div>
+
+      <!-- STEP 4: CONFIGURATION (Reordered from 3) -->
+      <div class="step-panel" id="step4">
+        <div class="steps-header">
+          <div class="steps-title">⚙️ Configuração rápida</div>
+          <div class="steps-sub">Defaults da calculadora (editável depois)</div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Margem de lucro (%)</label>
+            <div class="field-wrap"><span class="ico">📈</span>
+              <input type="number" class="inp" id="cfgMargin" value="30" min="0" max="200" step="1">
+            </div>
+          </div>
+          <div class="field">
+            <label>Taxa de falhas (%)</label>
+            <div class="field-wrap"><span class="ico">⚠️</span>
+              <input type="number" class="inp" id="cfgFailure" value="5" min="0" max="50" step="1">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Eletricidade (€/kWh)</label>
+          <div class="field-wrap"><span class="ico">⚡</span>
+            <input type="number" class="inp" id="cfgElec" value="0.22" min="0.01" step="0.01">
+          </div>
+        </div>
+        
+        <div class="field" style="margin-top:12px">
           <label>Assinatura para recibos <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
           <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
             <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s" onmouseover="this.style.background='rgba(59,143,212,.12)'" onmouseout="this.style.background='rgba(59,143,212,.06)'">
@@ -531,11 +532,34 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         </div>
 
         <button class="btn-primary" id="finishBtn">
-          <span class="btn-label">🚀 Entrar no dashboard</span>
+          <span class="btn-label">🚀 Finalizar e entrar no Dashboard</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
           <span style="font-size:.75rem;color:var(--muted);cursor:pointer" onclick="setStep(3)">← Voltar</span>
+        </div>
+      </div>
+
+      <!-- INLINE FILAMENT MODAL -->
+      <div id="filModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px">
+        <div class="card" style="max-width:380px;padding:24px">
+          <div class="form-title" style="font-size:1.1rem">Configurar Filamento 🧵</div>
+          <div class="field" style="margin-top:16px">
+            <label>Nome / Cor</label>
+            <input type="text" class="inp" id="modalFilName" placeholder="PLA Basic — Preto" style="padding-left:14px">
+          </div>
+          <div class="field">
+            <label>Cor visual</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="color-dot" style="background:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid #fff;box-shadow:var(--sh)" onclick="setFilColor('#000')"></div>
+              <div class="color-dot" style="background:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid #ccc" onclick="setFilColor('#fff')"></div>
+              <div class="color-dot" style="background:#ff0000;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#ff0000')"></div>
+              <div class="color-dot" style="background:#008000;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#008000')"></div>
+              <div class="color-dot" style="background:#3B8FD4;width:24px;height:24px;border-radius:50%;cursor:pointer" onclick="setFilColor('#3B8FD4')"></div>
+              <input type="color" id="modalFilColor" style="width:24px;height:24px;padding:0;border:none;background:none;cursor:pointer" oninput="setFilColor(this.value)">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="closeFilamentModal()" style="margin-top:10px">Guardar</button>
         </div>
       </div>
     </div>
@@ -577,13 +601,26 @@ const STATE = {
   tab:          'login',
   step:         1,
   plan:         'starter',
+  billing:      'monthly',   // 'monthly' ou 'yearly'
   form:         {},          // dados do utilizador (step signup)
   signatureB64: null,
+  filament: {
+    name: 'PLA Basic — Preto',
+    color: '#000000',
+    price: 25,
+    stock: 1
+  },
   // Mutex: garante que cada operação async corre uma única vez
   loginBusy:    false,
   signupBusy:   false,
   finishBusy:   false,
   resetBusy:    false,
+};
+
+const PRICES = {
+  starter:  { monthly: 9.90,  yearly: 7.90 },
+  pro:      { monthly: 19.90, yearly: 15.90 },
+  business: { monthly: 39.90, yearly: 31.90 }
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -609,9 +646,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('signupBtn').addEventListener('click', doSignup);
   document.getElementById('resetBtn').addEventListener('click',  doReset);
   document.getElementById('step1Btn').addEventListener('click',  () => goStep(2));
-  document.getElementById('step2Btn').addEventListener('click',  () => goStep(3));
-  document.getElementById('step3Btn').addEventListener('click',  () => goStep(4));
+  document.getElementById('step2Btn').addEventListener('click',  () => goStep(3)); // Vai para Equipamento
+  document.getElementById('step3Btn').addEventListener('click',  () => goStep(4)); // Vai para Config
   document.getElementById('finishBtn').addEventListener('click', finishOnboarding);
+
+  // Inicializar catálogo
+  loadPrinterModels();
 
   // Enter — apenas em campos relevantes, nunca durante onboarding
   document.addEventListener('keydown', e => {
@@ -716,7 +756,22 @@ function goStep(n) {
     STATE.form.slug        = slug;
   }
   if (n === 3) {
+    // Escolha de Plano
     STATE.form.plan = STATE.plan;
+    STATE.form.billing = STATE.billing;
+  }
+  if (n === 4) {
+    // Validação Passo 3 (Equipamento)
+    const pSel = document.getElementById('initPrinterSelect').value;
+    const pName = document.getElementById('initPrinterName').value.trim();
+    if (!pSel && !pName) { toast('Escolhe ou indica uma impressora','err'); return; }
+    STATE.form.initPrinter = { name: pSel || pName };
+    STATE.form.initFilament = {
+      name:  STATE.filament.name,
+      color: STATE.filament.color,
+      price: +document.getElementById('initFilPrice').value || 25,
+      stock: +document.getElementById('initFilStock').value || 1
+    };
   }
   setStep(n);
 }
@@ -750,24 +805,15 @@ async function finishOnboarding() {
   const btn = setBusy('finishBtn', true);
 
   const config = {
-    filamentPrice:    +document.getElementById('cfgFilament').value || 25,
-    printerPrice:     +document.getElementById('cfgPrinter').value  || 600,
-    printerLife:      +document.getElementById('cfgLife').value     || 5000,
+    filamentPrice:    +STATE.form.initFilament.price || 25,
+    printerPrice:     600, // Default base
+    printerLife:      5000,
     electricityPrice: +document.getElementById('cfgElec').value     || 0.22,
     profitMargin:     +document.getElementById('cfgMargin').value   || 30,
     failureRate:      +document.getElementById('cfgFailure').value  || 5,
   };
 
   try {
-    const initPrinter = {
-      name: document.getElementById('initPrinterName').value.trim()
-    };
-    const initFilament = {
-      name:  document.getElementById('initFilName').value.trim(),
-      price: document.getElementById('initFilPrice').value,
-      stock: document.getElementById('initFilStock').value
-    };
-
     const result = await Auth.register({
       fname:       STATE.form.fname,
       lname:       STATE.form.lname,
@@ -776,10 +822,11 @@ async function finishOnboarding() {
       companyName: STATE.form.companyName,
       slug:        STATE.form.slug,
       plan:        STATE.plan,
+      billing:     STATE.billing,
       config,
       signature:   STATE.signatureB64 || null,
-      initFilament,
-      initPrinter,
+      initFilament: STATE.form.initFilament,
+      initPrinter:  STATE.form.initPrinter,
     });
 
     document.getElementById('onboardingPanel').style.display = 'none';
@@ -884,6 +931,68 @@ function selectPlan(plan) {
   STATE.plan = plan;
   document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('plan-' + plan).classList.add('selected');
+}
+
+function toggleBilling() {
+  STATE.billing = STATE.billing === 'monthly' ? 'yearly' : 'monthly';
+  const isAnn = STATE.billing === 'yearly';
+  document.getElementById('planToggle').classList.toggle('on', isAnn);
+  document.getElementById('lbl-mon').classList.toggle('active', !isAnn);
+  document.getElementById('lbl-ann').classList.toggle('active', isAnn);
+
+  for (let key in PRICES) {
+    const p = PRICES[key];
+    const val = isAnn ? p.yearly : p.monthly;
+    document.getElementById('pr-' + key).innerHTML = `€${val.toFixed(2).replace('.',',')} <small>/${isAnn?'mês (anual)':'mês'}</small>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EQUIPAMENTO (PASSO 3)
+// ══════════════════════════════════════════════════════════════
+async function loadPrinterModels() {
+  try {
+    const models = await DB.getPrinterModels();
+    const sel = document.getElementById('initPrinterSelect');
+    sel.innerHTML = '<option value="">-- Seleciona um modelo --</option>';
+    models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.brand + ' ' + m.name;
+      opt.textContent = m.brand + ' ' + m.name;
+      sel.appendChild(opt);
+    });
+    const other = document.createElement('option');
+    other.value = 'other';
+    other.textContent = '+ Outro modelo (escrever nome)';
+    sel.appendChild(other);
+  } catch(e) {
+    console.error('Erro ao carregar catálogo:', e);
+  }
+}
+
+function onPrinterSelect(v) {
+  const custom = document.getElementById('initPrinterName');
+  custom.style.display = (v === 'other') ? 'block' : 'none';
+}
+
+function openFilamentModal() {
+  document.getElementById('filModal').style.display = 'flex';
+  document.getElementById('modalFilName').value = STATE.filament.name;
+}
+
+function closeFilamentModal() {
+  const name = document.getElementById('modalFilName').value.trim();
+  if (name) STATE.filament.name = name;
+  document.getElementById('filModal').style.display = 'none';
+  document.getElementById('filNameDisplay').textContent = STATE.filament.name;
+  document.getElementById('filColorDot').style.background = STATE.filament.color;
+}
+
+function setFilColor(hex) {
+  STATE.filament.color = hex;
+  document.querySelectorAll('.color-dot').forEach(d => {
+    d.style.borderColor = (d.style.background === hex || d.onclick?.toString().includes(hex)) ? 'var(--blue)' : '#fff';
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
