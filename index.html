@@ -190,6 +190,8 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 .fc-1 { top: 10%; left: -5%; animation-delay: 0s; }
 .fc-2 { bottom: 20%; right: -5%; animation-delay: 1s; }
 .fc-3 { top: 40%; right: -8%; animation-delay: 2s; }
+.fc-4 { bottom: 35%; left: -8%; animation-delay: 2.5s; }
+.fc-5 { top: 55%; right: -5%; animation-delay: 3s; }
 
 .fc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
 .fc-info { text-align: left; }
@@ -246,8 +248,8 @@ input:checked + .ttr + .tth{transform:translateX(24px)}
 .save-badge{background:#e6fffa;color:#2c7a7b;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800}
 
 .pgrid{display:grid;grid-template-columns:repeat(4, 1fr);gap:20px}
-.pcard{padding:48px 32px;text-align:center;display:flex;flex-direction:column;gap:20px;background:#fff;border-radius:var(--rl);border:1px solid var(--border);transition:all 0.4s var(--ease)}
-.pcard.popular{border:2px solid var(--blue);transform:scale(1.05);z-index:3;box-shadow:var(--sh-lg)}
+.pcard{padding:48px 32px;text-align:center;display:flex;flex-direction:column;gap:20px;background:#fff;border-radius:var(--rl);border:1.5px solid var(--border);transition:all 0.4s var(--ease)}
+.pcard:hover{border-color:var(--blue);transform:scale(1.03);z-index:3;box-shadow:0 20px 40px rgba(59,143,212,0.15)}
 .pname{font-size:0.85rem;text-transform:uppercase;font-weight:800;letter-spacing:2px;color:var(--blue)}
 .pamt-wrap{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:8px 0}
 .pcur{font-size:1.4rem;font-weight:800;color:var(--black)}
@@ -309,6 +311,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
     <div class="nlinks">
       <a href="#features" data-i18n="nav.features">Funcionalidades</a>
       <a href="#pricing" data-i18n="nav.pricing">Preços</a>
+      <a href="#about">Quem Somos</a>
       <a href="#faq" data-i18n="nav.faq">FAQ</a>
     </div>
     <div class="nact">
@@ -338,27 +341,48 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
     <p class="hero-sub fu d2" data-i18n="hero.subtitle">Orçamentos precisos, stock automatizado e gestão profissional de clientes — Tudo num só dashboard para escalar a tua produção.</p>
     <div class="hero-ctas fu d3">
       <a href="auth-onboarding.html?mode=signup" class="btn btn-p btn-lg" data-i18n="hero.cta_primary">Começar 14 dias grátis</a>
-      <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Ver Demonstração</a>
+      <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Explorar Funcionalidades</a>
     </div>
     
     <div class="hero-visual fu d4">
       <div class="hero-mockup shadow-2xl">
-         <img src="3dzaap_hero_premium_1775007960116.png" alt="3DZAAP Intelligence Dashboard" style="width:100%; border-radius:var(--rl)">
+         <img src="images/dashboard-hero.png" alt="3DZAAP Dashboard" style="width:100%; border-radius:var(--rl)">
       </div>
       
       <!-- Floating Elements -->
       <div class="fcard-ui fc-1" style="top:5%; left:-10%">
         <div class="fc-icon" style="background:rgba(59,143,212,0.1);color:var(--blue)">📈</div>
         <div class="fc-info">
-          <div class="fc-label" data-i18n="hero.stat_margin">Eficiência de Produção</div>
-          <div class="fc-val">+38.2%</div>
+          <div class="fc-label">Margem de Lucro</div>
+          <div class="fc-val">+35%</div>
         </div>
       </div>
-      <div class="fcard-ui fc-2" style="bottom:10%; right:-8%">
-        <div class="fc-icon" style="background:rgba(245,148,58,0.1);color:var(--orange)">💰</div>
+      <div class="fcard-ui fc-2" style="bottom:15%; right:-8%">
+        <div class="fc-icon" style="background:rgba(245,148,58,0.1);color:var(--orange)">📦</div>
         <div class="fc-info">
-          <div class="fc-label" data-i18n="nav.orders">Pedidos Mensais</div>
-          <div class="fc-val">€ 4.250,00</div>
+          <div class="fc-label">Stock Controlado</div>
+          <div class="fc-val">Zero ruturas</div>
+        </div>
+      </div>
+      <div class="fcard-ui fc-3" style="top:35%; right:-12%; animation-delay:1.5s">
+        <div class="fc-icon" style="background:rgba(34,197,94,0.1);color:#22c55e">⚡</div>
+        <div class="fc-info">
+          <div class="fc-label">Health Score</div>
+          <div class="fc-val">82/100</div>
+        </div>
+      </div>
+      <div class="fcard-ui fc-4" style="bottom:40%; left:-12%; animation-delay:2.5s">
+        <div class="fc-icon" style="background:rgba(99,102,241,0.1);color:#6366f1">🔄</div>
+        <div class="fc-info">
+          <div class="fc-label">Pipeline Ativo</div>
+          <div class="fc-val">12 pedidos</div>
+        </div>
+      </div>
+      <div class="fcard-ui fc-5" style="top:60%; right:-6%; animation-delay:3s">
+        <div class="fc-icon" style="background:rgba(245,148,58,0.08);color:var(--orange)">🖨️</div>
+        <div class="fc-info">
+          <div class="fc-label">Impressoras</div>
+          <div class="fc-val">3 Online</div>
         </div>
       </div>
     </div>
@@ -369,16 +393,20 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
   <div class="wrap">
     <div class="t-grid">
       <div class="t-item">
-        <span class="t-val" data-i18n="hero.trust_calculations">+5.000</span>
-        <span class="t-lbl" data-i18n="hero.stat_users">Makers Ativos</span>
+        <span class="t-val" data-i18n="hero.trust_calculations">+50</span>
+        <span class="t-lbl" data-i18n="hero.stat_users">Estúdios no Acesso Antecipado</span>
       </div>
       <div class="t-item">
-        <span class="t-val" data-i18n="hero.trust_precision">99%</span>
-        <span class="t-lbl" data-i18n="hero.trust_precision">Precisão de Custo</span>
+        <span class="t-val" data-i18n="hero.trust_precision">99.8%</span>
+        <span class="t-lbl">Precisão Operacional</span>
       </div>
       <div class="t-item">
-        <span class="t-val" data-i18n="hero.trust_time">4h/semana</span>
-        <span class="t-lbl" data-i18n="hero.trust_time">Poupas Tempo</span>
+        <span class="t-val" data-i18n="hero.trust_time">Recupere 5h/semana</span>
+        <span class="t-lbl">Eficiência Operacional</span>
+      </div>
+      <div class="t-item">
+        <span class="t-val">+35%</span>
+        <span class="t-lbl">Rentabilidade Média</span>
       </div>
     </div>
   </div>
@@ -486,6 +514,30 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
         <h3 class="ftit" data-i18n="modules.backoffice.title">Segurança Industrial</h3>
         <p class="fdesc" data-i18n="modules.backoffice.desc">Backups redundantes e isolamento de dados. A sua propriedade intelectual protegida com padrões bancários.</p>
       </div>
+
+      <div class="fcard fu">
+        <div class="ficon">📊</div>
+        <h3 class="ftit">Dashboard Inteligente</h3>
+        <p class="fdesc">Visão geral completa com Health Score, resumos financeiros e alertas em tempo real. Saiba a saúde do seu negócio num relance.</p>
+      </div>
+
+      <div class="fcard fu">
+        <div class="ficon">🌍</div>
+        <h3 class="ftit">Multi-idioma</h3>
+        <p class="fdesc">Interface completa em Português, Inglês e Espanhol com detecção automática. O seu negócio sem barreiras linguísticas.</p>
+      </div>
+
+      <div class="fcard fu">
+        <div class="ficon">📲</div>
+        <h3 class="ftit">Portal do Cliente</h3>
+        <p class="fdesc">Link de tracking com código de acesso exclusivo. O seu cliente acompanha o estado do pedido em tempo real, sem criar conta.</p>
+      </div>
+
+      <div class="fcard fu">
+        <div class="ficon">📄</div>
+        <h3 class="ftit">Recibos e Ordens de Serviço</h3>
+        <p class="fdesc">Documentos profissionais gerados automaticamente com a identidade visual do seu estúdio. Imprima ou envie em PDF.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -544,7 +596,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
         <a href="auth-onboarding.html?mode=signup&plan=starter" class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Escolher Starter</a>
       </div>
 
-      <div class="pcard gc popular fu">
+      <div class="pcard gc fu">
         <span class="pname" data-i18n="pricing.pro.name">Pro</span>
         <div class="pamt-wrap">
           <span class="pcur" id="curr-p">€</span>
@@ -610,155 +662,165 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
   </div>
 </section>
 
+<!-- QUEM SOMOS -->
+<section id="about" class="about-section">
+  <div class="wrap">
+    <div class="sec-hdr fu">
+      <span class="slbl">Quem Somos</span>
+      <h2 class="stit">Construído por Makers, para Makers.</h2>
+      <p class="ssub">O 3DZAAP Print Manager não é apenas mais uma ferramenta — é a missão de profissionalizar a impressão 3D no mundo inteiro.</p>
+    </div>
+    <div class="about-grid fu">
+      <div class="about-story">
+        <p>O <span class="b3d">3D</span><span class="bzp">ZAAP</span> foi criado do zero, pensando nos desafios reais que enfrentamos todos os dias no universo da fabricação digital. Sabemos que gerir um negócio de impressão 3D vai muito além de operar uma máquina — é controlar custos invisíveis, antecipar ruturas de stock, profissionalizar o atendimento ao cliente e, acima de tudo, transformar horas de trabalho em lucro real.</p>
+        <p>A nossa plataforma nasceu da frustração com planilhas desorganizadas, orçamentos feitos "de cabeça" e filamentos que acabam no pior momento. Decidimos criar a solução que sempre quisemos ter: um sistema completo, intuitivo e acessível que coloca o maker no controlo total do seu negócio.</p>
+      </div>
+      <div class="about-values">
+        <div class="about-value-card">
+          <div class="av-icon">🎯</div>
+          <div><h4>Precisão</h4>
+          <p>Cada cálculo importa. O nosso motor de custos considera energia, desgaste, material e risco — para que nunca mais cobre abaixo do justo.</p></div>
+        </div>
+        <div class="about-value-card">
+          <div class="av-icon">🔒</div>
+          <div><h4>Transparência</h4>
+          <p>Sem taxas escondidas, sem letras pequenas. Os seus dados são seus e a nossa plataforma é aberta quanto ao que cobra e ao que oferece.</p></div>
+        </div>
+        <div class="about-value-card">
+          <div class="av-icon">🚀</div>
+          <div><h4>Inovação</h4>
+          <p>Evoluímos constantemente com feedback da comunidade. Cada funcionalidade é pensada para resolver problemas reais de produção.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <div class="fgrid-main">
       <div class="fbrand">
         <div class="flogo"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
-        <p style="color:var(--muted); font-size:0.9rem">
-          O cérebro do seu negócio de impressão 3D.
-        </p>
+        <p style="color:var(--muted);font-size:.9rem;margin-bottom:20px">O cérebro do seu negócio de impressão 3D.</p>
+        <div style="margin-bottom:16px">
+          <a href="mailto:suporte@3dzaap.com" style="display:flex;align-items:center;gap:8px;color:var(--subtle);text-decoration:none;font-size:.88rem;font-weight:500">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            suporte@3dzaap.com</a>
+        </div>
+        <div style="display:flex;gap:12px">
+          <a href="https://instagram.com/3dzaap" target="_blank" title="Instagram" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);color:var(--subtle);border:1px solid rgba(255,255,255,.1);transition:all .3s">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="https://wa.me/351938925645?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20o%203DZAAP." target="_blank" title="WhatsApp" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);color:var(--subtle);border:1px solid rgba(255,255,255,.1);transition:all .3s">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.284l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.768-5.764-5.768zm3.393 8.243c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.513-2.96-2.63-.086-.117-.694-.925-.694-1.764s.432-1.25.586-1.42c.154-.171.335-.214.446-.214.111 0 .221.002.318.006.097.004.213-.037.332.25.119.287.408.996.444 1.069.036.073.06.158.012.256-.048.097-.072.158-.144.243-.072.085-.152.19-.216.256-.064.067-.132.14-.056.27.076.13.338.557.726.903.5.445.921.583 1.051.647.13.064.206.048.284-.04.078-.088.333-.388.421-.52.088-.132.176-.11.297-.064.121.046.767.362.899.428.132.066.219.098.251.154.032.056.032.324-.112.729z"/></svg>
+          </a>
+        </div>
       </div>
       <div class="fcol">
         <h4 data-i18n="nav.features">Funcionalidades</h4>
         <ul class="flinks">
-          <li><a href="#features" data-i18n="modules.calc.title">Calculadora</a></li>
-          <li><a href="#features" data-i18n="modules.materials.title">Filamentos</a></li>
-          <li><a href="#features" data-i18n="modules.orders.title">Pedidos</a></li>
+          <li><a href="#features">Calculadora</a></li>
+          <li><a href="#features">Materiais</a></li>
+          <li><a href="#features">Pedidos</a></li>
+          <li><a href="#features">Dashboard</a></li>
         </ul>
       </div>
       <div class="fcol">
-        <h4 data-i18n="nav.pricing">Preços</h4>
+        <h4>Empresa</h4>
         <ul class="flinks">
           <li><a href="#pricing">Planos</a></li>
-          <li><a href="auth-onboarding.html">Trial</a></li>
+          <li><a href="auth-onboarding.html">Trial Grátis</a></li>
+          <li><a href="#about">Quem Somos</a></li>
         </ul>
       </div>
       <div class="fcol">
-        <h4 data-i18n="nav.faq">FAQ</h4>
+        <h4>Legal</h4>
         <ul class="flinks">
-          <li><a href="mailto:suporte@3dzaap.com" data-i18n="nav.support">Suporte</a></li>
-          <li><a href="admin.html">Admin</a></li>
-          <li><a href="https://wa.me/351938925645?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20o%203DZAAP." target="_blank">WhatsApp</a></li>
-          <li><a href="https://instagram.com/3dzaap" target="_blank">Instagram</a></li>
+          <li><a href="#" onclick="openLegalModal('terms');return false">Termos de Serviço</a></li>
+          <li><a href="#" onclick="openLegalModal('privacy');return false">Privacidade</a></li>
+          <li><a href="mailto:suporte@3dzaap.com">Suporte</a></li>
         </ul>
       </div>
     </div>
     <div class="fbot">
-      <p>&copy; 2026 3DZAAP Manager. All rights reserved.</p>
-      <p>Termos de Serviço | Privacidade</p>
+      <p>&copy; 2026 3DZAAP Manager. Todos os direitos reservados.</p>
+      <p><a href="#" onclick="openLegalModal('terms');return false" style="color:var(--muted);text-decoration:none">Termos</a> · <a href="#" onclick="openLegalModal('privacy');return false" style="color:var(--muted);text-decoration:none">Privacidade</a></p>
     </div>
   </div>
 </footer>
 
+<!-- LEGAL MODAL -->
+<div id="legalOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target===this)closeLegalModal()">
+  <div style="background:#fff;border-radius:var(--rl);max-width:720px;width:92%;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--sh-xl);position:relative;overflow:hidden">
+    <button onclick="closeLegalModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.8rem;color:var(--muted);cursor:pointer;z-index:2;line-height:1">&times;</button>
+    <div id="legalTabs" style="display:flex;border-bottom:1.5px solid var(--border);padding:20px 32px 0">
+      <button class="lt-btn active" onclick="switchLegalTab('terms')" style="background:none;border:none;padding:12px 20px;font-family:var(--f);font-size:.9rem;font-weight:700;color:var(--blue);cursor:pointer;border-bottom:2.5px solid var(--blue)">Termos de Serviço</button>
+      <button class="lt-btn" onclick="switchLegalTab('privacy')" style="background:none;border:none;padding:12px 20px;font-family:var(--f);font-size:.9rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent">Privacidade</button>
+    </div>
+    <div id="legalContent" style="padding:32px;overflow-y:auto;flex:1;font-size:.95rem;color:var(--dark);line-height:1.7"></div>
+  </div>
+</div>
+
+<style>
+.about-section{padding:100px 0;background:linear-gradient(180deg,#fff,rgba(59,143,212,0.03))}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:48px}
+.about-story{display:flex;flex-direction:column;gap:20px}
+.about-story p{font-size:1.05rem;color:var(--muted);line-height:1.8}
+.about-values{display:flex;flex-direction:column;gap:20px}
+.about-value-card{background:#fff;border:1px solid var(--border);border-radius:var(--rm);padding:28px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--sh);transition:all .3s var(--ease)}
+.about-value-card:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);border-color:rgba(59,143,212,.2)}
+.av-icon{font-size:1.8rem;flex-shrink:0}
+.about-value-card h4{font-size:1.1rem;font-weight:800;color:var(--black);margin-bottom:6px}
+.about-value-card p{font-size:.9rem;color:var(--muted);line-height:1.5;margin:0}
+#legalContent h3{font-size:1.15rem;font-weight:800;margin:24px 0 8px;color:var(--black)}
+#legalContent h3:first-child{margin-top:0}
+#legalContent p{margin-bottom:12px}
+#legalContent ul{margin:8px 0 16px 20px}
+#legalContent li{margin-bottom:6px}
+@media(max-width:768px){.about-grid{grid-template-columns:1fr}}
+</style>
+
 <script src="i18n.js"></script>
 <script>
-// ── PRICING — locale-aware ──────────────────────────────────
-const PRICES = {
-  monthly: { starter: 9.90,  pro: 19.90, business: 39.90 },
-  annual:  { starter: 7.90,  pro: 15.90, business: 31.90 }
-};
+const PRICES={monthly:{starter:9.90,pro:19.90,business:39.90},annual:{starter:7.90,pro:15.90,business:31.90}};
+const LOCALE_FMT={'pt-PT':{sym:'€',mult:1,locale:'pt-PT'},'es':{sym:'€',mult:1,locale:'es-ES'},'en':{sym:'$',mult:1,locale:'en-US'},'pt-BR':{sym:'R$',mult:5,locale:'pt-BR'},'en-GB':{sym:'£',mult:1,locale:'en-GB'}};
 
-const LOCALE_FMT = {
-  'pt-PT': { sym: '€', mult: 1,    code: 'EUR', locale: 'pt-PT' },
-  'es':    { sym: '€', mult: 1,    code: 'EUR', locale: 'es-ES' },
-  'en':    { sym: '$', mult: 1,    code: 'USD', locale: 'en-US' },
-  'pt-BR': { sym: 'R$', mult: 5,   code: 'BRL', locale: 'pt-BR' },
-  'en-GB': { sym: '£', mult: 1,    code: 'GBP', locale: 'en-GB' }
-};
-
-function _updatePricingDisplay() {
-  const isAnn = document.getElementById('btog')?.checked;
-  const period = isAnn ? 'annual' : 'monthly';
-  const locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const fmt = LOCALE_FMT[locale] || LOCALE_FMT['pt-PT'];
-
-  // Toggle annual/monthly label
-  document.getElementById('l-ann')?.classList.toggle('on', isAnn);
-  document.getElementById('l-mon')?.classList.toggle('on', !isAnn);
-
-  // Update currency symbols
-  ['curr-s', 'curr-p', 'curr-b'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = fmt.sym;
-  });
-
-  // Update amounts
-  const p = PRICES[period];
-  const fmt2 = v => (v * fmt.mult).toLocaleString(fmt.locale || 'pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  const sp = document.getElementById('sp'); if (sp) sp.textContent = fmt2(p.starter);
-  const pp = document.getElementById('pp'); if (pp) pp.textContent = fmt2(p.pro);
-  const bp = document.getElementById('bp'); if (bp) bp.textContent = fmt2(p.business);
-
-  // Update annual totals
-  const starterTotal = (p.starter * fmt.mult * 12).toFixed(2);
-  const proTotal     = (p.pro * fmt.mult * 12).toFixed(2);
-  const businessTotal = (p.business * fmt.mult * 12).toFixed(2);
-
-  const starterCard = document.getElementById('sp')?.closest('.pcard');
-  const proCard     = document.getElementById('pp')?.closest('.pcard');
-  const businessCard = document.getElementById('bp')?.closest('.pcard');
-
-  if (isAnn) {
-    _setTotalHint(starterCard, `${fmt.sym} ${starterTotal}`);
-    _setTotalHint(proCard, `${fmt.sym} ${proTotal}`);
-    _setTotalHint(businessCard, `${fmt.sym} ${businessTotal}`);
-  } else {
-    _clearTotalHints([starterCard, proCard, businessCard]);
-  }
+function _updatePricingDisplay(){
+  const isAnn=document.getElementById('btog')?.checked;
+  const period=isAnn?'annual':'monthly';
+  const locale=localStorage.getItem('3dzaap_lang')||'pt-PT';
+  const fmt=LOCALE_FMT[locale]||LOCALE_FMT['pt-PT'];
+  document.getElementById('l-ann')?.classList.toggle('on',isAnn);
+  document.getElementById('l-mon')?.classList.toggle('on',!isAnn);
+  ['curr-s','curr-p','curr-b'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=fmt.sym;});
+  const p=PRICES[period];
+  const fmt2=v=>(v*fmt.mult).toLocaleString(fmt.locale||'pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const sp=document.getElementById('sp');if(sp)sp.textContent=fmt2(p.starter);
+  const pp=document.getElementById('pp');if(pp)pp.textContent=fmt2(p.pro);
+  const bp=document.getElementById('bp');if(bp)bp.textContent=fmt2(p.business);
+  const sc=document.getElementById('sp')?.closest('.pcard'),pc=document.getElementById('pp')?.closest('.pcard'),bc=document.getElementById('bp')?.closest('.pcard');
+  if(isAnn){_setTH(sc,`${fmt.sym} ${(p.starter*fmt.mult*12).toFixed(2)}`);_setTH(pc,`${fmt.sym} ${(p.pro*fmt.mult*12).toFixed(2)}`);_setTH(bc,`${fmt.sym} ${(p.business*fmt.mult*12).toFixed(2)}`);}
+  else{[sc,pc,bc].forEach(c=>{if(c){const h=c.querySelector('.annual-total-hint');if(h)h.remove();}});}
 }
+function _setTH(card,text){if(!card)return;let h=card.querySelector('.annual-total-hint');if(!h){h=document.createElement('div');h.className='annual-total-hint';h.style.cssText='font-size:.75rem;color:var(--subtle);margin-top:4px;font-weight:600';card.querySelector('.pamt-wrap').after(h);}const lang=localStorage.getItem('3dzaap_lang')||'pt-PT';h.textContent=`Total: ${text}${lang==='en'||lang==='en-GB'?'/yr':'/ano'}`;}
+function tbill(){_updatePricingDisplay();}
+window.addEventListener('languageChanged',()=>_updatePricingDisplay());
+document.addEventListener('DOMContentLoaded',()=>_updatePricingDisplay());
 
-function _setTotalHint(card, text) {
-  if (!card) return;
-  let hint = card.querySelector('.annual-total-hint');
-  if (!hint) {
-    hint = document.createElement('div');
-    hint.className = 'annual-total-hint';
-    hint.style.cssText = 'font-size: 0.75rem; color: var(--subtle); margin-top: 4px; font-weight: 600;';
-    card.querySelector('.pamt-wrap').after(hint);
-  }
-  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  const label = 'Total: ';
-  const per = lang === 'en' || lang === 'en-GB' ? '/yr' : '/ano';
-  hint.textContent = `${label}${text}${per}`;
-}
-
-function _clearTotalHints(cards) {
-  cards.forEach(card => {
-    if (!card) return;
-    const hint = card.querySelector('.annual-total-hint');
-    if (hint) hint.remove();
-  });
-}
-
-function tbill() { _updatePricingDisplay(); }
-
-// Re-run when language changes
-window.addEventListener('languageChanged', () => _updatePricingDisplay());
-// Run on load
-document.addEventListener('DOMContentLoaded', () => _updatePricingDisplay());
-
-// Scroll Animation (Intersection Observer)
-const obs = new IntersectionObserver((ents) => {
-  ents.forEach(en => {
-    if (en.isIntersecting) {
-      en.target.classList.add('vis');
-    }
-  });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.fu').forEach(el => obs.observe(el));
-
-// Navbar shadow on scroll
-window.onscroll = () => {
-  const navbar = document.getElementById('nav');
-  if (window.scrollY > 50) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
+// ── LEGAL ──
+const LEGAL={
+terms:`<h3>1. Aceitação dos Termos</h3><p>Ao utilizar a plataforma 3DZAAP Print Manager, o utilizador aceita os presentes termos de serviço.</p><h3>2. Descrição do Serviço</h3><p>O 3DZAAP é uma plataforma SaaS para gestão profissional de negócios de impressão 3D, incluindo cálculo de custos, gestão de inventário, pipeline de pedidos e relatórios financeiros.</p><h3>3. Conta e Segurança</h3><p>O utilizador é responsável por manter a confidencialidade das suas credenciais. Cada conta é pessoal e intransmissível.</p><h3>4. Planos e Pagamentos</h3><ul><li>O período de trial é de 14 dias, sem cartão de crédito.</li><li>Planos pagos cobrados mensal ou anualmente.</li><li>Cancelamento a qualquer momento sem penalizações.</li><li>Sem contratos de fidelização.</li></ul><h3>5. Propriedade Intelectual</h3><p>Todos os dados criados pelo utilizador permanecem propriedade exclusiva do utilizador. O 3DZAAP não reivindica qualquer direito sobre o seu conteúdo.</p><h3>6. Disponibilidade</h3><p>Trabalhamos para garantir 99.9% de disponibilidade. Manutenções programadas serão comunicadas com antecedência.</p><h3>7. Alterações</h3><p>Alterações significativas aos termos serão comunicadas por email com 30 dias de antecedência.</p>`,
+privacy:`<h3>1. Compromisso com a Sua Privacidade</h3><p>No 3DZAAP, a proteção dos seus dados pessoais é prioritária. Cumprimos o RGPD (UE) e a LGPD (Brasil).</p><h3>2. Que Dados Recolhemos</h3><ul><li><strong>Dados de conta:</strong> Nome, email e palavra-passe (encriptada).</li><li><strong>Dados de negócio:</strong> Pedidos, materiais, impressoras e clientes.</li><li><strong>Preferências:</strong> Idioma e tema visual.</li></ul><p><strong>Não recolhemos</strong> dados de navegação, cookies de terceiros, nem partilhamos com anunciantes.</p><h3>3. Como Utilizamos os Dados</h3><ul><li>Fornecer e melhorar o serviço.</li><li>Comunicações sobre a sua conta.</li><li>Suporte técnico quando solicitado.</li></ul><h3>4. Segurança</h3><ul><li>Encriptação SSL/TLS em trânsito e em repouso.</li><li>Isolamento por empresa (Row Level Security).</li><li>Infraestrutura na UE com certificação SOC 2.</li><li>Backups redundantes.</li></ul><h3>5. Os Seus Direitos</h3><ul><li><strong>Aceder</strong> aos seus dados pessoais.</li><li><strong>Corrigir</strong> informações incorrectas.</li><li><strong>Eliminar</strong> a conta e todos os dados.</li><li><strong>Exportar</strong> os dados em CSV.</li><li><strong>Revogar</strong> o consentimento.</li></ul><h3>6. Partilha</h3><p><strong>Nunca vendemos os seus dados.</strong> Partilhamos apenas com: Supabase (base de dados) e processadores de pagamento.</p><h3>7. Contacto</h3><p>Questões sobre privacidade: <strong>suporte@3dzaap.com</strong></p>`
 };
+function openLegalModal(tab){document.getElementById('legalOverlay').style.display='flex';switchLegalTab(tab||'terms');document.body.style.overflow='hidden';}
+function closeLegalModal(){document.getElementById('legalOverlay').style.display='none';document.body.style.overflow='';}
+function switchLegalTab(tab){document.querySelectorAll('.lt-btn').forEach((t,i)=>{const active=(tab==='terms'&&i===0)||(tab==='privacy'&&i===1);t.style.color=active?'var(--blue)':'var(--muted)';t.style.borderBottomColor=active?'var(--blue)':'transparent';t.classList.toggle('active',active);});document.getElementById('legalContent').innerHTML=LEGAL[tab]||'';}
+
+// Scroll Animation
+const obs=new IntersectionObserver(ents=>{ents.forEach(en=>{if(en.isIntersecting)en.target.classList.add('vis');});},{threshold:0.1});
+document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
+window.onscroll=()=>{const n=document.getElementById('nav');if(window.scrollY>50)n.classList.add('scrolled');else n.classList.remove('scrolled');};
 </script>
 </body>
 </html>
+
