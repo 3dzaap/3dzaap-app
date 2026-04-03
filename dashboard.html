@@ -427,50 +427,50 @@
         <div class="greeting-date" id="greetingDate"></div>
       </div>
 
-      <!-- Health & CTA Section -->
-      <div class="health-cta-section" style="display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap">
-        <!-- Health Score Card -->
-        <div class="health-card" id="healthCard" style="flex:2;min-width:300px;margin-bottom:0">
-          <div class="health-left">
-            <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
-            <div class="health-score-row">
-              <span class="health-score-number" id="healthNumber">—</span>
-              <span class="health-score-max">/100</span>
-            </div>
-            <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
-            <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
-            <div class="health-insights" id="healthInsights"></div>
-            <div class="health-due-tip" id="healthDueTip" style="display:none">
-              <span>💡</span>
-              <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
-            </div>
+      <!-- Health Score Card -->
+      <div class="health-card" id="healthCard" style="margin-bottom:16px;">
+        <div class="health-left">
+          <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
+          <div class="health-score-row">
+            <span class="health-score-number" id="healthNumber">—</span>
+            <span class="health-score-max">/100</span>
           </div>
-          <div class="health-ring-wrap">
-            <div class="health-ring">
-              <svg viewBox="0 0 96 96">
-                <circle class="health-ring-bg" cx="48" cy="48" r="40"/>
-                <circle class="health-ring-fg" id="healthRingFg" cx="48" cy="48" r="40"
-                  stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke="#22c55e"/>
-              </svg>
-              <div class="health-ring-label">
-                <span id="healthRingNum">—</span>
-                <span class="health-ring-sub" data-i18n="dash.health.points">pontos</span>
-              </div>
-            </div>
-            <div class="health-delta" id="healthDelta"></div>
+          <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
+          <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
+          <div class="health-insights" id="healthInsights"></div>
+          <div class="health-due-tip" id="healthDueTip" style="display:none">
+            <span>💡</span>
+            <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
           </div>
         </div>
-        
-        <!-- Smart CTA Block -->
-        <div class="smart-cta-card" style="flex:1;min-width:260px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--xl);padding:24px;display:flex;flex-direction:column;justify-content:center;box-shadow:var(--sh-sm);animation:fadeUp .6s var(--ease) .2s both;">
-          <h3 style="font-size:1.05rem;font-weight:800;margin-bottom:16px;color:var(--dark)" data-i18n="dash.actions.quick_start">Início Rápido</h3>
-          <a class="btn btn-primary" href="calculator.html" style="width:100%;margin-bottom:12px;justify-content:center;height:48px;font-size:1.05rem">
-            <span style="font-size:1.2rem;margin-right:8px">📐</span> <span data-i18n="dash.actions.calc">Novo Cálculo</span>
-          </a>
-          <a class="btn" style="width:100%;justify-content:center;background:rgba(59,143,212,0.1);color:var(--blue);border:none" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#">
-            <span style="font-size:1.1rem;margin-right:8px">📦</span> <span data-i18n="dash.actions.order">Novo Pedido</span>
-          </a>
+        <div class="health-ring-wrap">
+          <div class="health-ring">
+            <svg viewBox="0 0 96 96">
+              <circle class="health-ring-bg" cx="48" cy="48" r="40"/>
+              <circle class="health-ring-fg" id="healthRingFg" cx="48" cy="48" r="40"
+                stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke="#22c55e"/>
+            </svg>
+            <div class="health-ring-label">
+              <span id="healthRingNum">—</span>
+              <span class="health-ring-sub" data-i18n="dash.health.points">pontos</span>
+            </div>
+          </div>
+          <div class="health-delta" id="healthDelta"></div>
         </div>
+      </div>
+
+      <!-- Quick Actions (Discreet Bar) -->
+      <div class="quick-actions-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;background:var(--bg-card);padding:12px 20px;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh-sm);animation:fadeUp .6s var(--ease) .2s both;">
+        <span style="font-size:0.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-right:8px" data-i18n="dash.actions.quick_start">Início Rápido:</span>
+        <a class="btn btn-primary btn-sm" href="calculator.html" style="height:32px;font-size:0.85rem;padding:0 12px">
+          <span style="margin-right:6px">📐</span> <span data-i18n="dash.actions.calc">Novo Cálculo</span>
+        </a>
+        <a class="btn btn-outline btn-sm" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#" style="height:32px;font-size:0.85rem;padding:0 12px">
+          <span style="margin-right:6px">📦</span> <span data-i18n="dash.actions.order">Novo Pedido</span>
+        </a>
+        <a class="btn btn-outline btn-sm" href="materials.html" style="height:32px;font-size:0.85rem;padding:0 12px">
+          <span style="margin-right:6px">🎨</span> <span data-i18n="dash.actions.mat">Novo Material</span>
+        </a>
       </div>
 
       <!-- Stats Grid (v2.0) -->
@@ -536,7 +536,7 @@
         <!-- To-Do Hub / Recent Orders -->
         <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
           <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:16px">
-            <div class="card-title" data-i18n="dash.cards.action_hub">📋 Foco Hoje</div>
+            <div class="card-title" data-i18n="dash.cards.action_hub">📋 Pedidos em foco para hoje</div>
             <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ir para Pedidos →</a>
           </div>
           <div class="card-body" id="recentOrdersBody" style="padding-top:16px">
