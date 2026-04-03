@@ -427,40 +427,54 @@
         <div class="greeting-date" id="greetingDate"></div>
       </div>
 
-      <!-- Health Score Card -->
-      <div class="health-card" id="healthCard">
-        <div class="health-left">
-          <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
-          <div class="health-score-row">
-            <span class="health-score-number" id="healthNumber">—</span>
-            <span class="health-score-max">/100</span>
-          </div>
-          <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
-          <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
-          <div class="health-insights" id="healthInsights"></div>
-          <div class="health-due-tip" id="healthDueTip" style="display:none">
-            <span>💡</span>
-            <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
-          </div>
-        </div>
-        <div class="health-ring-wrap">
-          <div class="health-ring">
-            <svg viewBox="0 0 96 96">
-              <circle class="health-ring-bg" cx="48" cy="48" r="40"/>
-              <circle class="health-ring-fg" id="healthRingFg" cx="48" cy="48" r="40"
-                stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke="#22c55e"/>
-            </svg>
-            <div class="health-ring-label">
-              <span id="healthRingNum">—</span>
-              <span class="health-ring-sub" data-i18n="dash.health.points">pontos</span>
+      <!-- Health & CTA Section -->
+      <div class="health-cta-section" style="display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap">
+        <!-- Health Score Card -->
+        <div class="health-card" id="healthCard" style="flex:2;min-width:300px;margin-bottom:0">
+          <div class="health-left">
+            <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
+            <div class="health-score-row">
+              <span class="health-score-number" id="healthNumber">—</span>
+              <span class="health-score-max">/100</span>
+            </div>
+            <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
+            <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
+            <div class="health-insights" id="healthInsights"></div>
+            <div class="health-due-tip" id="healthDueTip" style="display:none">
+              <span>💡</span>
+              <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
             </div>
           </div>
-          <div class="health-delta" id="healthDelta"></div>
+          <div class="health-ring-wrap">
+            <div class="health-ring">
+              <svg viewBox="0 0 96 96">
+                <circle class="health-ring-bg" cx="48" cy="48" r="40"/>
+                <circle class="health-ring-fg" id="healthRingFg" cx="48" cy="48" r="40"
+                  stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke="#22c55e"/>
+              </svg>
+              <div class="health-ring-label">
+                <span id="healthRingNum">—</span>
+                <span class="health-ring-sub" data-i18n="dash.health.points">pontos</span>
+              </div>
+            </div>
+            <div class="health-delta" id="healthDelta"></div>
+          </div>
+        </div>
+        
+        <!-- Smart CTA Block -->
+        <div class="smart-cta-card" style="flex:1;min-width:260px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--xl);padding:24px;display:flex;flex-direction:column;justify-content:center;box-shadow:var(--sh-sm);animation:fadeUp .6s var(--ease) .2s both;">
+          <h3 style="font-size:1.05rem;font-weight:800;margin-bottom:16px;color:var(--dark)" data-i18n="dash.actions.quick_start">Início Rápido</h3>
+          <a class="btn btn-primary" href="calculator.html" style="width:100%;margin-bottom:12px;justify-content:center;height:48px;font-size:1.05rem">
+            <span style="font-size:1.2rem;margin-right:8px">📐</span> <span data-i18n="dash.actions.calc">Novo Cálculo</span>
+          </a>
+          <a class="btn" style="width:100%;justify-content:center;background:rgba(59,143,212,0.1);color:var(--blue);border:none" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#">
+            <span style="font-size:1.1rem;margin-right:8px">📦</span> <span data-i18n="dash.actions.order">Novo Pedido</span>
+          </a>
         </div>
       </div>
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
+      <!-- Stats Grid (v2.0) -->
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
         <!-- Financial Health -->
         <div class="stat-card">
           <div class="stat-header">
@@ -475,126 +489,94 @@
           </div>
         </div>
 
-        <!-- Operations & Efficiency -->
+        <!-- Operations (Pipeline Visual) -->
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-icon orange">⚙️</div>
-            <span class="stat-badge badge-neu" id="efficiencyBadge">0%</span>
+            <div class="stat-icon purple" style="background:rgba(99,102,241,.1);color:#6366f1">🔄</div>
+            <span class="stat-badge badge-neu" id="efficiencyBadge" style="background:none;border:none;color:var(--dark);font-weight:700">Total: <span id="statOrders">0</span></span>
           </div>
-          <div class="stat-value" id="statOrders">0</div>
-          <div class="stat-label" data-i18n="dash.stats.active_orders">Pedidos Activos</div>
-          <div style="margin-top: 10px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-bottom:4px">
-              <span data-i18n="dash.stats.fleet_eff">Eficiência da Frota</span>
-              <span id="efficiencyLabel">0/0 online</span>
-            </div>
-            <div style="height:4px; background:rgba(0,0,0,0.05); border-radius:10px; overflow:hidden">
-              <div id="efficiencyBar" style="width:0%; height:100%; background:var(--orange); transition: width 0.5s ease"></div>
-            </div>
+          <div class="stat-value" style="font-size:1.2rem;margin-top:12px;margin-bottom:6px" data-i18n="dash.stats.pipeline">Pipeline de Pedidos</div>
+          
+          <!-- Funnel UI -->
+          <div style="display:flex;gap:4px;height:24px;border-radius:6px;overflow:hidden;margin-bottom:8px;background:rgba(0,0,0,.03)">
+             <div class="pipe-budget" title="Orçamento/Validação" style="width:0%;height:100%;transition:width .5s;background:var(--muted)"></div>
+             <div class="pipe-prod" title="Produção" style="width:0%;height:100%;transition:width .5s;background:var(--orange)"></div>
+             <div class="pipe-done" title="Concluído" style="width:0%;height:100%;transition:width .5s;background:var(--success)"></div>
+          </div>
+          
+          <div style="font-size:0.75rem;display:flex;justify-content:space-between;color:var(--muted)">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--muted);margin-right:4px"></span>Aprovação: <strong id="pipeValBudget">0</strong></span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--orange);margin-right:4px"></span>Produção: <strong id="pipeValProd">0</strong></span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--success);margin-right:4px"></span>Pronto: <strong id="pipeValDone">0</strong></span>
           </div>
         </div>
 
-        <!-- Stock Alerts & Ruptures -->
+        <!-- Inventory & Fleet Consolidated -->
         <div class="stat-card">
           <div class="stat-header">
-            <div class="stat-icon red">⚠️</div>
-            <span class="stat-badge badge-down" id="stockBadge">0</span>
+            <div class="stat-icon gray" style="background:rgba(100,116,139,.1);color:#64748b">🏭</div>
+            <span class="stat-badge" id="stockBadge" style="background:none;border:none;font-weight:700">Status Operacional</span>
           </div>
-          <div class="stat-value" id="statStock">0</div>
-          <div class="stat-label" data-i18n="dash.stats.alerts">Alertas de Stock</div>
-          <div id="ruptureAlert" style="margin-top: 10px; font-size: 0.72rem; color: var(--danger); background: rgba(239, 68, 68, 0.05); padding: 4px 8px; border-radius: 4px; display: none;">
-            🔔 <span id="ruptureMaterial">Nenhum risco imediato</span>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(245,158,11,.08);border-radius:8px;border:1px solid rgba(245,158,11,.2)">
+               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)">📦 Stock Crítico</span>
+               <span id="statStock" style="font-size:1.1rem;font-weight:800;color:var(--orange)">0</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(59,143,212,.08);border-radius:8px;border:1px solid rgba(59,143,212,.2)">
+               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)">🖨️ Frota Online</span>
+               <span id="efficiencyLabel" style="font-size:1.1rem;font-weight:800;color:var(--blue)">0/0</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="actions-grid">
-        <a class="action-card" href="calculator.html">
-          <div class="action-icon">📐</div>
-          <div class="action-title" data-i18n="dash.actions.calc">Novo Cálculo</div>
-          <div class="action-desc" data-i18n="dash.actions.calc_desc">Calcular custo de impressão</div>
-        </a>
-        <a class="action-card" id="actionOrders" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#">
-          <div class="action-icon">📦</div>
-          <div class="action-title" data-i18n="dash.actions.order">Novo Pedido</div>
-          <div class="action-desc" data-i18n="dash.actions.order_desc">Registar pedido de cliente</div>
-          <span class="action-lock" id="ordersActionLock" style="display:none">Pro+</span>
-        </a>
-        <a class="action-card" href="materials.html">
-          <div class="action-icon">🎨</div>
-          <div class="action-title" data-i18n="dash.actions.mat">Gerir Materiais</div>
-          <div class="action-desc" data-i18n="dash.actions.mat_desc">Actualizar stock de materiais</div>
-        </a>
-        <a class="action-card" id="actionFinancial" onclick="handleFeatureClick('financial','Financeiro','Business')" href="#">
-          <div class="action-icon">📊</div>
-          <div class="action-title" data-i18n="dash.actions.fin">Relatório Financeiro</div>
-          <div class="action-desc" data-i18n="dash.actions.fin_desc">Ver receitas e pagamentos</div>
-          <span class="action-lock" id="financialActionLock" style="display:none">Business</span>
-        </a>
-        <a class="action-card" href="printers.html">
-          <div class="action-icon">🖨️</div>
-          <div class="action-title" data-i18n="dash.actions.print">Impressoras</div>
-          <div class="action-desc" data-i18n="dash.actions.print_desc">Gerir parque de impressoras</div>
-        </a>
-        <a class="action-card" href="backoffice.html">
-          <div class="action-icon">🗄️</div>
-          <div class="action-title" data-i18n="dash.actions.back">BackOffice</div>
-          <div class="action-desc" data-i18n="dash.actions.back_desc">Backup e restauro de dados</div>
-        </a>
-        <a class="action-card" onclick="navigate('billing')" href="#">
-          <div class="action-icon">💳</div>
-          <div class="action-title" data-i18n="dash.actions.plan">Gerir Plano</div>
-          <div class="action-desc" data-i18n="dash.actions.plan_desc">Assinatura e facturação</div>
-        </a>
-      </div>
+      <!-- Content Grid (v2.0) -->
+      <div class="content-grid" style="grid-template-columns: 2fr 1fr;gap:24px">
 
-      <!-- Content Grid -->
-      <div class="content-grid">
-
-        <!-- Recent Orders -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title" data-i18n="dash.cards.recent_orders">📦 Pedidos Recentes</div>
-            <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ver todos →</a>
+        <!-- To-Do Hub / Recent Orders -->
+        <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
+          <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:16px">
+            <div class="card-title" data-i18n="dash.cards.action_hub">📋 Foco Hoje</div>
+            <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ir para Pedidos →</a>
           </div>
-          <div class="card-body" id="recentOrdersBody">
+          <div class="card-body" id="recentOrdersBody" style="padding-top:16px">
             <div class="empty-state">
-              <div class="empty-icon">📦</div>
-              <div class="empty-text" data-i18n="dash.cards.empty_orders">Sem pedidos ainda.<br>Cria o teu primeiro pedido no módulo Pedidos.</div>
+              <div class="empty-icon">✅</div>
+              <div class="empty-text" data-i18n="dash.cards.empty_orders">Tudo em dia!<br>Sem pedidos pendentes de ação.</div>
             </div>
           </div>
         </div>
 
-        <!-- Filament Alerts -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title" data-i18n="dash.cards.fil_alerts">🎨 Alertas de Stock</div>
-            <a class="card-action" href="materials.html" data-i18n="dash.cards.manage">Gerir →</a>
-          </div>
-          <div class="card-body" id="filamentAlertsBody">
-            <div class="empty-state">
-              <div class="empty-icon">🎨</div>
-              <div class="empty-text" data-i18n="dash.cards.empty_fil">Sem alertas.<br>O teu stock está em ordem!</div>
+        <!-- Exception Alerts Stack -->
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <!-- Filament Alerts -->
+          <div class="card" id="filamentAlertsCard">
+            <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
+              <div class="card-title" data-i18n="dash.cards.fil_alerts" style="font-size:.9rem;color:var(--danger)">⚠️ Avisos de Stock</div>
+              <a class="card-action" href="materials.html" data-i18n="dash.cards.manage">Gerir →</a>
+            </div>
+            <div class="card-body" id="filamentAlertsBody" style="padding-top:12px">
+              <div class="empty-state" style="padding:20px 10px">
+                <div class="empty-text" style="font-size:.8rem" data-i18n="dash.cards.empty_fil">O teu stock está adequado.</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Printer Alerts -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title" data-i18n="dash.cards.print_alerts">🖨️ Impressoras</div>
-            <a class="card-action" href="printers.html" data-i18n="dash.cards.manage">Gerir →</a>
-          </div>
-          <div class="card-body" id="printerAlertsBody">
-            <div class="empty-state">
-              <div class="empty-icon">🖨️</div>
-              <div class="empty-text" data-i18n="dash.cards.empty_print">Sem impressoras.<br>Adiciona a tua primeira impressora.</div>
+          <!-- Printer Alerts -->
+          <div class="card" id="printerAlertsCard">
+            <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
+              <div class="card-title" data-i18n="dash.cards.print_alerts" style="font-size:.9rem;color:var(--danger)">🖨️ Anomalias Frota</div>
+              <a class="card-action" href="printers.html" data-i18n="dash.cards.manage">Gerir →</a>
+            </div>
+            <div class="card-body" id="printerAlertsBody" style="padding-top:12px">
+              <div class="empty-state" style="padding:20px 10px">
+                <div class="empty-text" style="font-size:.8rem" data-i18n="dash.cards.all_ok_print">Nenhuma anomalia detetada.</div>
+              </div>
             </div>
           </div>
-        </div>
+        </div> <!-- End Exception Stack -->
 
-      </div>
+      </div><!-- /content-grid -->
 
     </div><!-- /page-content -->
   </div><!-- /main -->
@@ -1060,44 +1042,37 @@ function renderStats() {
     revBadge.className = 'stat-badge badge-neu';
   }
 
-  // Update Operations (Active Orders)
-  document.getElementById('statOrders').textContent  = activeOrders;
+  // Update Operations (Pipeline Funnel)
+  const pipeBudget = (state.orders || []).filter(o => ['orcamento','validacao'].includes(o.status)).length;
+  const pipeProd   = (state.orders || []).filter(o => ['modelagem','aprovado','printing'].includes(o.status)).length;
+  const pipeDone   = (state.orders || []).filter(o => ['done','concluido','entregue'].includes(o.status)).length;
+  
+  const totalFunnel = pipeBudget + pipeProd + pipeDone;
+  const pctBudget = totalFunnel > 0 ? (pipeBudget / totalFunnel)*100 : 0;
+  const pctProd   = totalFunnel > 0 ? (pipeProd / totalFunnel)*100 : 0;
+  const pctDone   = totalFunnel > 0 ? (pipeDone / totalFunnel)*100 : 0;
 
-  // Fleet Efficiency
+  document.getElementById('statOrders').textContent = activeOrders;
+  document.getElementById('pipeValBudget').textContent = pipeBudget;
+  document.getElementById('pipeValProd').textContent = pipeProd;
+  document.getElementById('pipeValDone').textContent = pipeDone;
+  
+  document.querySelector('.pipe-budget').style.width = `${pctBudget}%`;
+  document.querySelector('.pipe-prod').style.width = `${pctProd}%`;
+  document.querySelector('.pipe-done').style.width = `${pctDone}%`;
+
+  // Fleet & Inventory Status
   const totalPrinters = state.printers.length;
   const onlinePrinters = state.printers.filter(p => p.status === 'operacional').length;
-  const efficiencyPct = totalPrinters > 0 ? Math.round((onlinePrinters / totalPrinters) * 100) : 0;
 
-  document.getElementById('efficiencyBadge').textContent = `${efficiencyPct}%`;
-  document.getElementById('efficiencyLabel').textContent = t('dash.stats.fleet_online', { online: onlinePrinters, total: totalPrinters }) || `${onlinePrinters}/${totalPrinters} online`;
-  document.getElementById('efficiencyBar').style.width = `${efficiencyPct}%`;
-  document.getElementById('efficiencyBadge').className = 'stat-badge ' + (efficiencyPct > 80 ? 'badge-up' : efficiencyPct > 50 ? 'badge-neu' : 'badge-down');
+  document.getElementById('efficiencyLabel').textContent = `${onlinePrinters}/${totalPrinters}`;
 
   // Stock Alerts & Ruptures
-  document.getElementById('statStock').textContent = totalAlerts;
-  const stockBadge = document.getElementById('stockBadge');
-  stockBadge.className = 'stat-badge ' + (totalAlerts > 0 ? 'badge-down' : 'badge-up');
+  document.getElementById('statStock').textContent = totalAlerts > 0 ? totalAlerts : '0';
+  document.getElementById('statStock').style.color = totalAlerts > 0 ? 'var(--orange)' : 'var(--success)';
   
-  const l_alerts = t('dash.stats.badge_alerts') || 'alertas';
-  const l_ok = t('dash.stats.badge_ok') || 'Tudo OK';
-  stockBadge.textContent = totalAlerts > 0 ? `${totalAlerts} ${l_alerts}` : l_ok;
-
-  const ruptureEl = document.getElementById('ruptureAlert');
-  const ruptureMatEl = document.getElementById('ruptureMaterial');
-  
-  if (totalAlerts > 0) {
-    const mostCritical = alertFils.sort((a,b) => {
-        const aStatus = getFilamentStatus(a) === 'red' ? 0 : 1;
-        const bStatus = getFilamentStatus(b) === 'red' ? 0 : 1;
-        return aStatus - bStatus;
-    })[0];
-    
-    ruptureEl.style.display = 'block';
-    const l_risk = t('dash.stats.risk') || 'Risco:';
-    ruptureMatEl.textContent = `${l_risk} ${mostCritical.type} ${mostCritical.color || ''}`;
-  } else {
-    ruptureEl.style.display = 'none';
-  }
+  // Show/Hide exception cards if 0
+  document.getElementById('filamentAlertsCard').style.display = totalAlerts > 0 ? 'block' : 'none';
 
   // Gate financial stats
   if (!canAccess('financial')) {
@@ -1116,7 +1091,11 @@ function renderRecentOrders() {
     .slice(0,5);
 
   if (!recent.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Sem pedidos ainda.<br>Cria o teu primeiro pedido no módulo Pedidos.</div></div>`;
+    el.innerHTML = `<div class="empty-state">
+        <div class="empty-icon" style="font-size:2rem;margin-bottom:8px">🎉</div>
+        <div class="empty-text" style="color:var(--dark);font-weight:600">Tudo em dia!</div>
+        <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Neste momento não tem tarefas pendentes.<br>Sem pedidos ativos.</div>
+      </div>`;
     return;
   }
 
@@ -1154,11 +1133,14 @@ function renderPrinterAlerts() {
   });
 
   if (!alerts.length) {
+    document.getElementById('printerAlertsCard').style.display = 'none';
     const key = printers.length > 0 ? 'dash.cards.all_ok_print' : 'dash.cards.empty_print';
     const fallback = printers.length > 0 ? 'Todas as impressoras OK.<br>Sem alertas de manutenção.' : 'Ainda não tens impressoras registadas.';
     el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">${window.i18n.getNestedTranslation(key) || fallback}</div></div>`;
     return;
   }
+  
+  document.getElementById('printerAlertsCard').style.display = 'block';
 
   const tc = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
