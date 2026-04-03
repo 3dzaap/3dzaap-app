@@ -1512,7 +1512,8 @@ async function printReceipt(id) {
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
-  const statusMap = {orcamento:'Orçamento',modelagem:'Modelagem',validacao:'Aprovação',aprovado:'Confirmado',fila:'Em Fila',printing:'Produção',preparacao:'Preparação',enviado:'Enviado',done:'Concluído'};
+  const t = (k, val) => window.i18n ? window.i18n.getNestedTranslation(k) || val : val;
+  const statusMap = {orcamento: t('orders.pipe.budget_tab','Orçamento'),modelagem: t('orders.status.modelagem','Modelagem'),validacao: t('orders.status.validacao','Aprovação'),aprovado: t('orders.status.aprovado','Confirmado'),fila: t('orders.status.fila','Em Fila'),printing: t('orders.status.printing','Produção'),preparacao: t('orders.status.preparacao','Preparação'),enviado: t('orders.status.enviado','Enviado'),done: t('orders.status.done','Concluído')};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
   const cfg = userData.config || _cfg || {};
@@ -1544,7 +1545,7 @@ async function printReceipt(id) {
         </div>
        </div>`
     : `<div class="rcpt-sig-row" style="justify-content:flex-start">
-        <div style="font-size:.65rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.6px">OS gerada em ${new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</div>
+        <div style="font-size:.65rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.6px">${t('orders.rcpt.generated','OS gerada em')} ${new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</div>
        </div>`;
 
   document.getElementById('receiptContent').innerHTML = `
@@ -1558,42 +1559,42 @@ async function printReceipt(id) {
         <div style="font-size:.65rem;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-left:4px">${escH(companyName)}</div>
       </div>
       <div class="rcpt-header-right">
-        <div class="rcpt-title">${isPaid ? 'Recibo de Pagamento' : 'Ordem de Serviço'}</div>
+        <div class="rcpt-title">${isPaid ? t('orders.rcpt.paid_title', 'Recibo de Pagamento') : t('orders.rcpt.service_title', 'Ordem de Serviço')}</div>
         <div class="rcpt-number">${escH(o.orderNumber||('#'+o.id.slice(-6)))}</div>
-        <div class="rcpt-date">Emitido em ${today}</div>
+        <div class="rcpt-date">${t('orders.rcpt.issued', 'Emitido em')} ${today}</div>
       </div>
     </div>
     ${isPaid
       ? `<div class="rcpt-status-bar paid">
-           <span><span class="rcpt-dot"></span>Pago em ${payDateStr}</span>
-           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
+           <span><span class="rcpt-dot"></span>${t('orders.rcpt.paid_on','Pago em')} ${payDateStr}</span>
+           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('orders.rcpt.status_label','ESTADO DO PEDIDO:')} <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
          </div>`
       : `<div class="rcpt-status-bar pending">
-           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">ESTADO DO PEDIDO: <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
+           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('orders.rcpt.status_label','ESTADO DO PEDIDO:')} <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
          </div>`}
     <div class="rcpt-body">
-      <div class="rcpt-section-label">Dados do Cliente</div>
+      <div class="rcpt-section-label">${t('orders.rcpt.client_data','Dados do Cliente')}</div>
       <div class="rcpt-client-grid">
-        <div><div class="rcpt-field-label">Nome</div><div class="rcpt-field-value">${escH(o.clientName)}</div></div>
-        ${o.clientEmail?`<div><div class="rcpt-field-label">Email</div><div class="rcpt-field-value">${escH(o.clientEmail)}</div></div>`:''}
-        ${o.clientPhone?`<div><div class="rcpt-field-label">Telefone</div><div class="rcpt-field-value">${escH(o.clientPhone)}</div></div>`:''}
+        <div><div class="rcpt-field-label">${t('orders.rcpt.name_label','Nome')}</div><div class="rcpt-field-value">${escH(o.clientName)}</div></div>
+        ${o.clientEmail?`<div><div class="rcpt-field-label">${t('orders.rcpt.email_label','Email')}</div><div class="rcpt-field-value">${escH(o.clientEmail)}</div></div>`:''}
+        ${o.clientPhone?`<div><div class="rcpt-field-label">${t('orders.rcpt.phone_label','Telefone')}</div><div class="rcpt-field-value">${escH(o.clientPhone)}</div></div>`:''}
       </div>
-      <div class="rcpt-section-label">Itens do Pedido</div>
+      <div class="rcpt-section-label">${t('orders.rcpt.items_label','Itens do Pedido')}</div>
       <table class="rcpt-table">
-        <thead><tr><th>Descrição</th><th class="r">Qtd</th><th class="r">Preço Unit.</th><th class="r">Total</th></tr></thead>
+        <thead><tr><th>${t('orders.rcpt.desc_col','Descrição')}</th><th class="r">${t('orders.rcpt.qty_col','Qtd')}</th><th class="r">${t('orders.rcpt.price_col','Preço Unit.')}</th><th class="r">${t('orders.rcpt.total_col','Total')}</th></tr></thead>
         <tbody>
           ${itemRows}
         </tbody>
       </table>
       <div class="rcpt-grand">
-        <span class="rcpt-grand-label">Total</span>
+        <span class="rcpt-grand-label">${t('orders.rcpt.total_col','Total')}</span>
         <span class="rcpt-grand-value">${((_cfg&&_cfg._currSymbol)||'€')}${grand.toFixed(2)}</span>
       </div>
       <div class="rcpt-meta">
-        <div><div class="rcpt-field-label">Data de Criação</div><div class="rcpt-field-value">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
-        ${o.dueDate?`<div><div class="rcpt-field-label">Prazo de Entrega</div><div class="rcpt-field-value">${fmtDate(o.dueDate)}</div></div>`:''}
+        <div><div class="rcpt-field-label">${t('orders.rcpt.created_label','Data de Criação')}</div><div class="rcpt-field-value">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
+        ${o.dueDate?`<div><div class="rcpt-field-label">${t('orders.rcpt.due_label','Prazo de Entrega')}</div><div class="rcpt-field-value">${fmtDate(o.dueDate)}</div></div>`:''}
       </div>
-      ${o.notes?`<div class="rcpt-notes"><strong>Observações:</strong> ${escH(o.notes)}</div>`:''}
+      ${o.notes?`<div class="rcpt-notes"><strong>${t('orders.rcpt.notes_label','Observações')}:</strong> ${escH(o.notes)}</div>`:''}
     </div>
     ${sigRow}
     <div class="rcpt-footer">
@@ -1601,7 +1602,7 @@ async function printReceipt(id) {
         <div class="rcpt-brand"><span style="color:#3b8fd4">3D</span><span style="color:#F5943A">ZAAP</span></div>
         <div class="rcpt-tagline">Printing Manager</div>
       </div>
-      <div class="rcpt-thanks">Obrigado pela sua confiança! 🙏</div>
+      <div class="rcpt-thanks">${t('orders.rcpt.thanks','Obrigado pela sua confiança! 🙏')}</div>
     </div>`;
   document.getElementById('rcptOverlay').classList.add('open');
 }
