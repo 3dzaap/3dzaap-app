@@ -1154,7 +1154,9 @@ function renderPrinterAlerts() {
   });
 
   if (!alerts.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">${window.i18n.getNestedTranslation('dash.cards.empty_print') || 'Todas as impressoras OK.<br>Sem alertas de manutenção.'}</div></div>`;
+    const key = printers.length > 0 ? 'dash.cards.all_ok_print' : 'dash.cards.empty_print';
+    const fallback = printers.length > 0 ? 'Todas as impressoras OK.<br>Sem alertas de manutenção.' : 'Ainda não tens impressoras registadas.';
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">${window.i18n.getNestedTranslation(key) || fallback}</div></div>`;
     return;
   }
 
