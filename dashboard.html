@@ -484,8 +484,8 @@
           <div class="stat-value" id="statRevenue">— 0,00</div>
           <div class="stat-label" data-i18n="dash.stats.revenue">Fluxo de Caixa (Faturado)</div>
           <div style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between;">
-            <span>Liquidado: <strong id="statPaid" style="color: var(--success)">— 0,00</strong></span>
-            <span>Pendente: <strong id="statPending" style="color: var(--warning)">— 0,00</strong></span>
+            <span><span data-i18n="dash.stats.paid_label">Liquidado:</span> <strong id="statPaid" style="color: var(--success)">— 0,00</strong></span>
+            <span><span data-i18n="dash.stats.pending_label">Pendente:</span> <strong id="statPending" style="color: var(--warning)">— 0,00</strong></span>
           </div>
         </div>
 
@@ -498,16 +498,16 @@
           <div class="stat-value" style="font-size:1.2rem;margin-top:12px;margin-bottom:6px" data-i18n="dash.stats.pipeline">Pipeline de Pedidos</div>
           
           <!-- Funnel UI -->
-          <div style="display:flex;gap:4px;height:24px;border-radius:6px;overflow:hidden;margin-bottom:8px;background:rgba(0,0,0,.03)">
-             <div class="pipe-budget" title="Orçamento/Validação" style="width:0%;height:100%;transition:width .5s;background:var(--muted)"></div>
-             <div class="pipe-prod" title="Produção" style="width:0%;height:100%;transition:width .5s;background:var(--orange)"></div>
-             <div class="pipe-done" title="Concluído" style="width:0%;height:100%;transition:width .5s;background:var(--success)"></div>
+          <div style="display:flex;gap:6px;height:12px;margin-bottom:14px;width:100%;">
+             <div class="pipe-budget" title="Orçamento/Validação" style="width:0%;height:100%;transition:width .5s;background:var(--muted);border-radius:10px"></div>
+             <div class="pipe-prod" title="Produção" style="width:0%;height:100%;transition:width .5s;background:var(--orange);border-radius:10px"></div>
+             <div class="pipe-done" title="Concluído" style="width:0%;height:100%;transition:width .5s;background:var(--success);border-radius:10px"></div>
           </div>
           
           <div style="font-size:0.75rem;display:flex;justify-content:space-between;color:var(--muted)">
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--muted);margin-right:4px"></span>Aprovação: <strong id="pipeValBudget">0</strong></span>
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--orange);margin-right:4px"></span>Produção: <strong id="pipeValProd">0</strong></span>
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--success);margin-right:4px"></span>Pronto: <strong id="pipeValDone">0</strong></span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--muted);margin-right:4px"></span><span data-i18n="dash.stats.pipe_approval">Aprovação:</span> <strong id="pipeValBudget">0</strong></span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--orange);margin-right:4px"></span><span data-i18n="dash.stats.pipe_prod">Produção:</span> <strong id="pipeValProd">0</strong></span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--success);margin-right:4px"></span><span data-i18n="dash.stats.pipe_done">Pronto:</span> <strong id="pipeValDone">0</strong></span>
           </div>
         </div>
 
@@ -515,15 +515,15 @@
         <div class="stat-card">
           <div class="stat-header">
             <div class="stat-icon gray" style="background:rgba(100,116,139,.1);color:#64748b">🏭</div>
-            <span class="stat-badge" id="stockBadge" style="background:none;border:none;font-weight:700">Status Operacional</span>
+            <span class="stat-badge" id="stockBadge" style="background:none;border:none;font-weight:700" data-i18n="dash.stats.op_status">Status Operacional</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(245,158,11,.08);border-radius:8px;border:1px solid rgba(245,158,11,.2)">
-               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)">📦 Stock Crítico</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(245,158,11,.08);border-radius:8px;border:1px solid rgba(245,158,11,.2)">
+               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)"><span data-i18n="dash.stats.crit_stock">📦 Stock Crítico</span></span>
                <span id="statStock" style="font-size:1.1rem;font-weight:800;color:var(--orange)">0</span>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(59,143,212,.08);border-radius:8px;border:1px solid rgba(59,143,212,.2)">
-               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)">🖨️ Frota Online</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(59,143,212,.08);border-radius:8px;border:1px solid rgba(59,143,212,.2)">
+               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)"><span data-i18n="dash.stats.fleet_online_label">🖨️ Frota Online</span></span>
                <span id="efficiencyLabel" style="font-size:1.1rem;font-weight:800;color:var(--blue)">0/0</span>
             </div>
           </div>
