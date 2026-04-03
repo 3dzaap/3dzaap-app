@@ -880,6 +880,22 @@ function toggleEye(id, btn) {
 // ══════════════════════════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════════════════════════
+function generateSlug(val) {
+  const slug = val.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  document.getElementById('companySlug').value = slug;
+  document.getElementById('slugPreview').textContent = 'app/' + slug;
+}
+
+function validateSlugInput(val) {
+  const clean = val.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  document.getElementById('companySlug').value = clean;
+  document.getElementById('slugPreview').textContent = 'app/' + clean;
+}
+
 function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
 function setErr(id, show) {
