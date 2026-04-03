@@ -18,7 +18,7 @@ let _companyCache = null;   // objecto completo — evita queries repetidas
 // ============================================================
 const Auth = {
 
-  async register({ fname, lname, email, pass, companyName, slug, plan, config, signature, initFilament, initPrinter }) {
+  async register({ fname, lname, email, pass, companyName, slug, plan, config, signature, logo, initFilament, initPrinter }) {
     const { data: authData, error: authErr } = await _sb.auth.signUp({
       email, password: pass,
       options: { data: { fname, lname } }
@@ -45,6 +45,7 @@ const Auth = {
         p_plan:      plan || 'trial',
         p_config:    config || {},
         p_signature: signature || null,
+        p_logo_url:  logo || null
       });
 
     if (!rpcErr && rpcData?.length) {
@@ -60,6 +61,7 @@ const Auth = {
           plan:      plan || 'trial',
           config:    config || {},
           signature: signature || null,
+          logo_url:  logo || null
         })
         .select()
         .single();
