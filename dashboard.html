@@ -53,14 +53,20 @@
   display:flex;align-items:flex-start;gap:8px;
   font-size:.8rem;line-height:1.45;color:var(--muted);
   background:rgba(59,143,212,.10);border-radius:8px;padding:7px 10px;
-  border-left:3px solid transparent
+  border-left:3px solid transparent;
+  text-decoration:none;transition:all .2s ease;
+  cursor:pointer;
 }
+.health-insight:hover{background:rgba(59,143,212,.18);transform:translateX(4px)}
 
-.health-insight.ok{border-left-color:var(--success);color:#166534}
+.health-insight.ok{border-left-color:var(--success);color:#166534;background:rgba(34,197,94,.08)}
+.health-insight.ok:hover{background:rgba(34,197,94,.14)}
 
-.health-insight.warn{border-left-color:var(--warning);color:#92400e}
+.health-insight.warn{border-left-color:var(--warning);color:#92400e;background:rgba(245,158,11,.08)}
+.health-insight.warn:hover{background:rgba(245,158,11,.14)}
 
-.health-insight.bad{border-left-color:var(--danger);color:#991b1b}
+.health-insight.bad{border-left-color:var(--danger);color:#991b1b;background:rgba(239,68,68,.08)}
+.health-insight.bad:hover{background:rgba(239,68,68,.14)}
 
 .health-insight-icon{font-size:.9rem;flex-shrink:0;margin-top:1px}
 
@@ -801,25 +807,25 @@ function calcHealthScore() {
   
   // Verificações de Branding e Config
   const hasLogo  = !!(state.company && state.company.logo_url);
-  const hasSig   = !!(state.company && state.company.signature_url);
+  const hasSig   = !!(state.company && state.company.signature);
   // Consideramos configurado se algum valor for diferente do default do onboarding ou se houver flag
   const isConfigured = _cfg && (_cfg.electricityPrice !== 0.22 || _cfg.profitMargin !== 30 || _cfg.setup_done === true);
 
   // Pontuação Setup
-  if (hasPrinter) { score += 20; insights.push({t:'ok', icon:'🖨️', key:'setup_printers_ok'}); }
-  else { insights.push({t:'bad', icon:'🖨️', key:'setup_printers_miss'}); }
+  if (hasPrinter) { score += 20; insights.push({t:'ok', icon:'🖨️', key:'setup_printers_ok', page:'printers.html'}); }
+  else { insights.push({t:'bad', icon:'🖨️', key:'setup_printers_miss', page:'printers.html'}); }
 
-  if (hasMat) { score += 20; insights.push({t:'ok', icon:'🎨', key:'setup_materials_ok'}); }
-  else { insights.push({t:'bad', icon:'🎨', key:'setup_materials_miss'}); }
+  if (hasMat) { score += 20; insights.push({t:'ok', icon:'🎨', key:'setup_materials_ok', page:'materials.html'}); }
+  else { insights.push({t:'bad', icon:'🎨', key:'setup_materials_miss', page:'materials.html'}); }
 
-  if (isConfigured) { score += 20; insights.push({t:'ok', icon:'⚡', key:'setup_configs_ok'}); }
-  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss'}); }
+  if (isConfigured) { score += 20; insights.push({t:'ok', icon:'⚡', key:'setup_configs_ok', page:'settings.html'}); }
+  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss', page:'settings.html'}); }
 
-  if (hasLogo) { score += 10; insights.push({t:'ok', icon:'🖼️', key:'setup_logo_ok'}); }
-  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss'}); }
+  if (hasLogo) { score += 10; insights.push({t:'ok', icon:'🖼️', key:'setup_logo_ok', page:'settings.html'}); }
+  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss', page:'settings.html'}); }
 
-  if (hasSig) { score += 10; insights.push({t:'ok', icon:'✍️', key:'setup_sig_ok'}); }
-  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss'}); }
+  if (hasSig) { score += 10; insights.push({t:'ok', icon:'✍️', key:'setup_sig_ok', page:'settings.html'}); }
+  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss', page:'settings.html'}); }
 
   // ── 2. PERFORMANCE OPERACIONAL (20 pts) ────────────────────
   // Margens (5 pts)
@@ -922,7 +928,7 @@ function calcHealthScore() {
   insights.sort((a,b) => priority.indexOf(a.t) - priority.indexOf(b.t));
   insightsEl.innerHTML = insights.slice(0,3).map(i => {
     let msg = t('dash.health.insights.' + i.key, i.vars) || i.key;
-    return `<div class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${msg}</span></div>`;
+    return `<a href="${i.page || '#'}" class="health-insight ${i.t}"><span class="health-insight-icon">${i.icon}</span><span>${msg}</span></a>`;
   }).join('');
 
   // Due date tip — show if more than 30% of open orders have no due_date
