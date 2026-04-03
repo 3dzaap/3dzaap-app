@@ -848,6 +848,7 @@ function calcHealthScore() {
   score += perfScore;
 
   // ── 5. TENDÊNCIA DE RECEITA (10 pts) ───────────────────────
+  const monthOrders = orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
   const revThis = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
   const prevOrd = orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
   const revPrev = prevOrd.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
