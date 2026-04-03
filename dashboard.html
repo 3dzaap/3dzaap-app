@@ -680,11 +680,19 @@ async function loadState() {
 
   state.user.email      = session.email;
   state.user.name       = fullName;
-  state.user.initials   = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  state.company.name    = companyName;
-  state.company.initials= companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
-  state.company.plan    = session.plan || 'trial';
-  state.company.config  = session.config || {};
+  state.user.initials    = fullName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  
+  // Sincronização robusta de empresa
+  state.company = {
+    ...state.company,
+    id:          session.companyId,
+    name:        companyName,
+    initials:    companyName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??',
+    plan:        session.plan || 'trial',
+    config:      session.config || {},
+    logo_url:    session.logo_url,
+    signature:   session.signature
+  };
 
   // Calcular dias de trial restantes a partir de trial_ends_at
   if (session.trialEndsAt) {
@@ -694,10 +702,19 @@ async function loadState() {
 
   Sidebar.setSession(session);
 
-  // Load data from Supabase
-  try { state.filaments = await DB.getFilaments(); } catch(e) { state.filaments = []; }
-  try { state.orders    = await DB.getOrders();    } catch(e) { state.orders = []; }
-  try { state.printers  = await DB.getPrinters();  } catch(e) { state.printers = []; }
+  // Load data from Supabase in parallel for speed
+  try {
+    const [fils, ords, prnts] = await Promise.all([
+      DB.getFilaments().catch(() => []),
+      DB.getOrders().catch(() => []),
+      DB.getPrinters().catch(() => [])
+    ]);
+    state.filaments = fils;
+    state.orders    = ords;
+    state.printers  = prnts;
+  } catch(e) {
+    console.error('[3DZAAP] Error loading parallel state:', e);
+  }
 }
 
 // ── GREETING ───────────────────────────
@@ -789,84 +806,88 @@ function dismissBanner() {
 
 // ── HEALTH SCORE ───────────────────────
 function calcHealthScore() {
-  const now     = new Date();
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const prevDate  = new Date(now.getFullYear(), now.getMonth()-1, 1);
-  const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevStr  = `${prevDate.getFullYear()}-${String(prevDate.getMonth()+1).padStart(2,'0')}`;
 
-  const orders    = state.orders  || [];
-  const filaments = state.filaments || [];
-  const insights  = [];
-  let   score     = 0;
-  let   missingDueDates = false;
+  const orders     = state.orders    || [];
+  const filaments  = state.filaments || [];
+  const printers   = state.printers  || [];
+  const insights   = [];
+  let score = 0;
 
-  // ── 1. SETUP INICIAL (80 pts) ──────────────────────────────
-  const printers   = state.printers || [];
-  const hasPrinter = printers.length > 0;
-  const hasMat     = filaments.length > 0;
-  
-  // Verificações de Branding e Config
-  const hasLogo  = !!(state.company && state.company.logo_url);
-  const hasSig   = !!(state.company && state.company.signature);
-  // Consideramos configurado se algum valor for diferente do default do onboarding ou se houver flag
-  const isConfigured = _cfg && (_cfg.electricityPrice !== 0.22 || _cfg.profitMargin !== 30 || _cfg.setup_done === true);
+  // 1. SETUP (50 pts) — Checks logo, signature, printers, config
+  // Validação explícita de strings b64 ou URLs
+  const hasLogo  = !!(state.company && state.company.logo_url && state.company.logo_url.length > 5);
+  const hasSig   = !!(state.company && state.company.signature && state.company.signature.length > 5);
+  const hasPrnt  = printers.length > 0;
+  const hasMat   = filaments.length > 0;
+  const isCfg    = _cfg && (_cfg.setup_done === true || _cfg.electricityPrice !== 0.22);
 
-  // Pontuação Setup
-  if (hasPrinter) { score += 20; insights.push({t:'ok', icon:'🖨️', key:'setup_printers_ok', page:'printers.html'}); }
+  if (hasLogo) { score += 10; insights.push({t:'ok', icon:'🖼️', key:'setup_logo_ok', page:'settings.html?tab=marca'}); }
+  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss', page:'settings.html?tab=marca'}); }
+
+  if (hasSig) { score += 10; insights.push({t:'ok', icon:'✍️', key:'setup_sig_ok', page:'settings.html?tab=marca'}); }
+  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss', page:'settings.html?tab=marca'}); }
+
+  if (hasPrnt) { score += 10; insights.push({t:'ok', icon:'🖨️', key:'setup_printers_ok', page:'printers.html'}); }
   else { insights.push({t:'bad', icon:'🖨️', key:'setup_printers_miss', page:'printers.html'}); }
 
-  if (hasMat) { score += 20; insights.push({t:'ok', icon:'🎨', key:'setup_materials_ok', page:'materials.html'}); }
+  if (hasMat) { score += 10; insights.push({t:'ok', icon:'🎨', key:'setup_materials_ok', page:'materials.html'}); }
   else { insights.push({t:'bad', icon:'🎨', key:'setup_materials_miss', page:'materials.html'}); }
 
-  if (isConfigured) { score += 20; insights.push({t:'ok', icon:'⚡', key:'setup_configs_ok', page:'settings.html'}); }
-  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss', page:'settings.html'}); }
+  if (isCfg) { score += 10; insights.push({t:'ok', icon:'⚡', key:'setup_configs_ok', page:'settings.html?tab=preferencias'}); }
+  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss', page:'settings.html?tab=preferencias'}); }
 
-  if (hasLogo) { score += 10; insights.push({t:'ok', icon:'🖼️', key:'setup_logo_ok', page:'settings.html'}); }
-  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss', page:'settings.html'}); }
+  // 2. PERFORMANCE & REVENUE (50 pts) — O(N) single pass
+  let doneCount = 0;
+  let lateCount = 0;
+  let unpaid    = 0;
+  let openCount = 0;
+  let revThis = 0;
+  let revPrev = 0;
 
-  if (hasSig) { score += 10; insights.push({t:'ok', icon:'✍️', key:'setup_sig_ok', page:'settings.html'}); }
-  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss', page:'settings.html'}); }
+  orders.forEach(o => {
+    const s    = (o.status || '').toLowerCase();
+    const isD  = ['concluido','done','entregue'].includes(s);
+    const isC  = ['cancelado'].includes(s);
+    const date = o.createdAt || '';
+    const total= parseFloat(o.total || 0);
 
-  // ── 2. PERFORMANCE OPERACIONAL (20 pts) ────────────────────
-  // Margens (5 pts)
-  const doneOrders = orders.filter(o => ['concluido','done','entregue'].includes(o.status));
-  let perfScore = 0;
-  if (doneOrders.length >= 1) {
-    perfScore += 5; // básico por ter atividade
-  }
+    if (isD) {
+      doneCount++;
+      if (o.paymentStatus === 'pago') {
+        if (date.startsWith(todayStr)) revThis += total;
+        if (date.startsWith(prevStr))  revPrev += total;
+      }
+    } else if (!isC) {
+      openCount++;
+      if (o.paymentStatus !== 'pago') unpaid++;
+      const dd = new Date(o.dueDate || o.due_date);
+      if (!isNaN(dd) && dd < now) lateCount++;
+    }
+  });
 
-  // Atrasos (5 pts)
-  const openOrders = orders.filter(o => !['concluido','done','entregue','cancelado'].includes(o.status));
-  const late = openOrders.filter(o => {
-    const d = new Date(o.dueDate || o.due_date);
-    return !isNaN(d) && d < now;
-  }).length;
-  if (openOrders.length > 0 && late === 0) perfScore += 5;
+  // Score Calculations
+  if (doneCount > 0) score += 10;
+  if (openCount > 0 && lateCount === 0) score += 10;
+  if (openCount > 0 && unpaid === 0)    score += 10;
+  
+  // Filament stock score
+  const hasCritical = filaments.some(f => {
+    const stock = parseFloat(f.stock || 0);
+    return stock <= (f.min_stock || 0);
+  });
+  if (hasMat && !hasCritical) score += 10;
 
-  // Stock (5 pts)
-  const critFils = filaments.filter(f => getFilamentStatus(f) === 'red');
-  if (hasMat && critFils.length === 0) perfScore += 5;
-
-  // Pagamentos (5 pts)
-  const pendOrders = orders.filter(o => o.paymentStatus !== 'pago').length;
-  if (orders.length > 0 && pendOrders === 0) perfScore += 5;
-
-  score += perfScore;
-
-  // ── 5. TENDÊNCIA DE RECEITA (10 pts) ───────────────────────
-  const monthOrders = orders.filter(o => (o.createdAt||'').startsWith(thisMonth));
-  const revThis = monthOrders.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-  const prevOrd = orders.filter(o => (o.createdAt||'').startsWith(prevMonth));
-  const revPrev = prevOrd.filter(o=>o.paymentStatus==='pago').reduce((s,o)=>s+parseFloat(o.total||0),0);
-  let   trendScore = 10;
-  if (revPrev === 0) {
-    trendScore = 10; // sem histórico = máximo
-  } else {
+  // Trend Score (10 pts)
+  let trendScore = 10;
+  if (revPrev > 0) {
     const change = (revThis - revPrev) / revPrev;
-    if (change === 0) { trendScore = 10; insights.push({t:'ok', icon:'📈', key:'rev_stable'}); }
-    else if (change > 0) { trendScore = 10; insights.push({t:'ok', icon:'📈', key:'rev_up', vars:{p:Math.round(change*100)}}); }
-    else if (change > -0.2) { trendScore = 5; insights.push({t:'warn', icon:'📉', key:'rev_warn', vars:{p:Math.round(change*100)*-1}}); }
-    else { trendScore = 0; insights.push({t:'bad', icon:'📉', key:'rev_bad', vars:{p:Math.round(change*100)*-1}}); }
+    if (change < -0.1) trendScore = 5;
+    if (change < -0.3) trendScore = 0;
+    if (change > 0) insights.push({t:'ok', icon:'📈', key:'rev_up', vars:{p:Math.round(change*100)}});
   }
   score += trendScore;
 
@@ -901,14 +922,12 @@ function calcHealthScore() {
 
   // Animate bar & ring after paint
   requestAnimationFrame(() => {
-    setTimeout(() => {
-      barEl.style.width = score + '%';
-      barEl.className   = 'health-bar-fill ' + band.bar;
-      // Ring: circumference = 2π×40 ≈ 251.2
-      const offset = 251.2 - (251.2 * score / 100);
-      ringFg.style.strokeDashoffset = offset;
-      ringFg.style.stroke = band.ring;
-    }, 80);
+    barEl.style.width = score + '%';
+    barEl.className   = 'health-bar-fill ' + band.bar;
+    // Ring: circumference = 2π×40 ≈ 251.2
+    const offset = 251.2 - (251.2 * score / 100);
+    ringFg.style.strokeDashoffset = offset;
+    ringFg.style.stroke = band.ring;
   });
   ringNum.textContent = score;
   ringNum.style.color = band.ring;
