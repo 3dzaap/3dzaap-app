@@ -847,6 +847,7 @@ function calcHealthScore() {
   let openCount = 0;
   let revThis = 0;
   let revPrev = 0;
+  let ordersWithoutDue = [];
 
   orders.forEach(o => {
     const s    = (o.status || '').toLowerCase();
@@ -864,13 +865,21 @@ function calcHealthScore() {
     } else if (!isC) {
       openCount++;
       if (o.paymentStatus !== 'pago') unpaid++;
-      const dd = new Date(o.dueDate || o.due_date);
-      if (!isNaN(dd) && dd < now) lateCount++;
+      
+      const dueDate = o.dueDate || o.due_date;
+      if (!dueDate) {
+        ordersWithoutDue.push(o);
+      } else {
+        const dd = new Date(dueDate);
+        if (!isNaN(dd) && dd < now) lateCount++;
+      }
     }
   });
 
+  const missingDueDates = openCount > 0 && (ordersWithoutDue.length / openCount) > 0.3;
+
   // Score Calculations & Specific Insights
-  if (doneCount > 0) { 
+  if (orders.length > 0) { 
     score += 10; 
   } else {
     insights.push({t:'warn', icon:'📦', key:'perf_no_orders', page:'calculator.html'});
@@ -882,16 +891,15 @@ function calcHealthScore() {
     
     if (unpaid === 0) score += 10;
     else insights.push({t:'warn', icon:'💰', key:'perf_unpaid_orders', page:'orders.html'});
-  } else {
-    // Se não tem pedidos abertos, não penalizamos mas também não damos bónus de "limpeza"
+  } else if (orders.length > 0) {
+    // Se não tem pedidos abertos mas já teve pedidos, bónus de limpeza
+    score += 20;
     insights.push({t:'ok', icon:'✅', key:'perf_all_clear'}); 
   }
   
-  // Filament stock score
-  const hasCritical = filaments.some(f => {
-    const stock = parseFloat(f.stock || 0);
-    return stock <= (f.min_stock || 0);
-  });
+  // Filament stock score — Sincronizado com os cards
+  const hasCritical = filaments.some(f => getFilamentStatus(f) !== 'green');
+  
   if (hasMat && !hasCritical) {
     score += 10;
   } else if (hasMat && hasCritical) {

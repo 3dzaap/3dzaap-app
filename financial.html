@@ -425,12 +425,12 @@ let expenses = [];
 let _periodo = '';
 
 const STATUS_LABELS = {
-  orcamento:  () => i18n.getNestedTranslation('financial.status.orcamento'),
-  modelagem:  () => i18n.getNestedTranslation('financial.status.modelagem'),
-  validacao:  () => i18n.getNestedTranslation('financial.status.validacao'),
-  aprovado:   () => i18n.getNestedTranslation('financial.status.aprovado'),
-  printing:   () => i18n.getNestedTranslation('financial.status.printing'),
-  done:       () => i18n.getNestedTranslation('financial.status.done')
+  orcamento:  () => i18n.getNestedTranslation('status.orcamento'),
+  modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
+  validacao:  () => i18n.getNestedTranslation('status.validacao'),
+  aprovado:   () => i18n.getNestedTranslation('status.aprovado'),
+  printing:   () => i18n.getNestedTranslation('status.printing'),
+  done:       () => i18n.getNestedTranslation('status.done')
 };
 
 // Removed local fmtCurrency — now using global version from utils.js
@@ -638,8 +638,8 @@ function renderStatusBadge(s) {
 }
 function renderPayBadge(s) {
   return s==='pago'
-    ? `<span class="badge bp-pago"><span class="badge-dot"></span>${t('financial.status_paid')||'Pago'}</span>`
-    : `<span class="badge bp-pendente"><span class="badge-dot"></span>${t('financial.status_pend')||'Pendente'}</span>`;
+    ? `<span class="badge bp-pago"><span class="badge-dot"></span>${i18n.getNestedTranslation('status.pago') || 'Pago'}</span>`
+    : `<span class="badge bp-pendente"><span class="badge-dot"></span>${i18n.getNestedTranslation('status.pendente') || 'Pendente'}</span>`;
 }
 
 function exportCSVFinanceiro() {
@@ -650,7 +650,7 @@ function exportCSVFinanceiro() {
   const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),(t('financial.th_payment')||'Pagamento'),((t('financial.th_total')||'Total')+' ('+ sym +')'),(t('financial.th_date')||'Data Criação'),'Data Pagamento','Itens'];
   const rows = periodOrders.map(o => [
     o.orderNumber||'', o.clientName||'',
-    t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?(t('financial.status_paid')||'Pago'):(t('financial.status_pend')||'Pendente'),
+    t('status.'+o.status)||STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?(t('status.pago')||'Pago'):(t('status.pendente')||'Pendente'),
     (o.total||0).toFixed(2), o.createdAt||'', o.paymentDate||'',
     (o.items||[]).map(i=>`${i.description} (${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
   ]);
