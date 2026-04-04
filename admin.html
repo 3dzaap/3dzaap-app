@@ -774,10 +774,23 @@ async function loadUsers() {
       .select('role, joined_at, user_id, companies(name, plan)')
       .order('joined_at', { ascending: false });
     if (error) throw error;
-    // Sem RPC de metadata — mostra user_id como identificador
-    // Quando a função SQL `get_users_metadata` for criada no Supabase,
-    // os emails aparecerão automaticamente aqui.
-    _users = data || [];
+
+    // Enriquecer com auth.users via RPC SECURITY DEFINER
+    // Requer executar DOC/create_rpc_users_metadata.sql no Supabase
+    let authMap = {};
+    try {
+      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
+      if (!rpcErr && Array.isArray(authUsers)) {
+        authUsers.forEach(u => { authMap[u.id] = u; });
+      }
+    } catch (_) { /* RPC não existe ainda — ver DOC/create_rpc_users_metadata.sql */ }
+
+    _users = (data || []).map(m => ({
+      ...m,
+      _email: authMap[m.user_id]?.email || null,
+      _fname: authMap[m.user_id]?.raw_user_meta_data?.fname || null,
+      _lname: authMap[m.user_id]?.raw_user_meta_data?.lname || null,
+    }));
     renderUsersTable(_users);
     document.getElementById('usersCount').textContent = _users.length;
   } catch(e) {
@@ -1018,14 +1031,18 @@ function renderUsersTable(data) {
     const saBadge = isSA
       ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>`
       : '';
-    // Identificador: mostra user_id por defeito (UUID)
-    // Quando a RPC get_users_metadata existir, mostrará email e nome
-    const uid  = escH(u.user_id || '—');
-    const abbr = u.user_id ? u.user_id.slice(0, 8) + '…' : '—';
+
+    // Nome e email: virão preenchidos após a RPC existir
+    const fullName = [u._fname, u._lname].filter(Boolean).join(' ');
+    const displayName = fullName || u._email || u.companies?.name || 'Utilizador';
+    const subLine    = u._email 
+      ? escH(u._email)
+      : `<span style="color:var(--muted)" title="${escH(u.user_id||'')}">${(u.user_id||'').slice(0,8)}…</span>`;
+
     return `<tr>
       <td>
-        <div style="font-weight:600;font-size:.82rem">${escH(u.companies?.name || 'Utilizador')}</div>
-        <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)" title="${uid}">${abbr}</div>
+        <div style="font-weight:700;font-size:.82rem">${escH(displayName)}</div>
+        <div style="font-size:.7rem;font-family:var(--mono);margin-top:1px">${subLine}</div>
       </td>
       <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
       <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
