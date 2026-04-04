@@ -1584,9 +1584,7 @@ async function deleteCustomer() {
     btn.disabled = true;
 
     const { error } = await _adminSb()
-      .from('companies')
-      .delete()
-      .eq('id', _deletingId);
+      .rpc('delete_company_full', { target_company_id: _deletingId });
 
     if (error) throw error;
 
