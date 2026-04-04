@@ -247,25 +247,32 @@
              TAB: GESTÃO DE CLIENTES (Empresas + Assinaturas)
         ══════════════════════════════════════════════ -->
         <div class="admin-panel active" id="tab-customers">
-          <div class="admin-toolbar">
-            <div class="admin-search-wrap">
+          <div class="admin-toolbar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px">
+            <div class="admin-search-wrap" style="flex:1; min-width:200px">
               <span class="admin-search-icon">🔍</span>
-              <input class="admin-search form-input" id="searchCustomers" placeholder="Pesquisar por empresa, slug ou NIF…" oninput="filterCustomers()">
+              <input class="admin-search form-input" id="searchCustomers" placeholder="Pesquisar empresa, slug ou ID…" oninput="filterCustomers()">
             </div>
-            <select class="form-select" id="filterPlan" onchange="filterCustomers()" style="width:auto">
-              <option value="">Todos os planos</option>
-              <option value="trial">Trial</option>
-              <option value="starter">Starter</option>
-              <option value="pro">Pro</option>
-              <option value="business">Business</option>
-            </select>
-            <select class="form-select" id="filterStatus" onchange="filterCustomers()" style="width:auto">
-              <option value="">Todos os estados</option>
-              <option value="active">Ativo</option>
-              <option value="trialing">Em trial</option>
-              <option value="past_due">Em atraso</option>
-              <option value="canceled">Cancelado</option>
-            </select>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <select class="form-select" id="filterPlan" onchange="filterCustomers()" style="width:auto">
+                <option value="">Todos os planos</option>
+                <option value="trial">Trial</option>
+                <option value="starter">Starter</option>
+                <option value="starter_ano">Starter (Ano)</option>
+                <option value="pro">Pro</option>
+                <option value="pro_ano">Pro (Ano)</option>
+                <option value="business">Business</option>
+                <option value="business_ano">Business (Ano)</option>
+              </select>
+              <select class="form-select" id="filterStatus" onchange="filterCustomers()" style="width:auto">
+                <option value="">Todos os estados</option>
+                <option value="active">Ativo</option>
+                <option value="trialing">Em trial</option>
+                <option value="active_man">Manual</option>
+                <option value="blocked">Bloqueado</option>
+                <option value="past_due">Em atraso</option>
+                <option value="canceled">Cancelado</option>
+              </select>
+            </div>
           </div>
 
           <div class="ad-card">
@@ -762,13 +769,21 @@ async function loadCustomers() {
 
 async function loadUsers() {
   try {
-    // memberships joins with auth.users metadata
     const { data, error } = await _adminSb()
       .from('memberships')
       .select('role, joined_at, user_id, companies(name, plan)')
       .order('joined_at', { ascending: false });
     if (error) throw error;
-    _users = data || [];
+    // Enrich with auth user data if accessible
+    const { data: authUsers } = await _adminSb().rpc('get_users_metadata').catch(() => ({ data: null }));
+    const authMap = {};
+    if (authUsers) authUsers.forEach(u => { authMap[u.id] = u; });
+    _users = (data || []).map(m => ({
+      ...m,
+      email: authMap[m.user_id]?.email || m.user_id,
+      fname: authMap[m.user_id]?.raw_user_meta_data?.fname || '',
+      lname: authMap[m.user_id]?.raw_user_meta_data?.lname || '',
+    }));
     renderUsersTable(_users);
     document.getElementById('usersCount').textContent = _users.length;
   } catch(e) {
@@ -948,7 +963,10 @@ function renderCustomersTable(data) {
         <div class="action-btns">
           <button class="btn-action" onclick="loginAsCompany('${c.slug}')" title="Aceder como empresa">🚀</button>
           <button class="btn-action" onclick="openCompanyDetail('${c.id}')" title="Ver Detalhes">🔍</button>
-          <button class="btn-action danger" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
+          ${(plan === 'trial' || subStatus === 'canceled' || subStatus === 'blocked')
+            ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso">⏳</button>`
+            : ''}
+          <button class="btn-action ${isSuspended ? '' : 'danger'}" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
             ${isSuspended ? '✅' : '⛔'}
           </button>
           <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')" title="Excluir Definitivamente">🗑️</button>
@@ -964,10 +982,23 @@ function filterCustomers() {
   const status = document.getElementById('filterStatus').value;
   
   const filtered = _customers.filter(c => {
-    const matchQ    = !q || c.name?.toLowerCase().includes(q) || c.slug?.toLowerCase().includes(q);
-    const matchPlan = !plan || c.plan === plan;
-    const subStatus = c.subscription?.status || (new Date(c.trial_ends_at) > new Date() ? 'trialing' : 'canceled');
-    const matchSt   = !status || subStatus === status;
+    const matchQ = !q 
+      || c.name?.toLowerCase().includes(q) 
+      || c.slug?.toLowerCase().includes(q) 
+      || c.id?.toLowerCase().includes(q)
+      || c.owner_id?.toLowerCase().includes(q);
+    // Plan filter: match exact or base plan (starter matches starter_ano too if user types starter)
+    const matchPlan = !plan || c.plan === plan || (plan && c.plan?.startsWith(plan.replace('_ano','')));
+    const now = new Date();
+    let subStatus;
+    if (c.subscription?.status) {
+      subStatus = c.subscription.status;
+    } else if (c.plan === 'trial') {
+      subStatus = new Date(c.trial_ends_at) > now ? 'trialing' : 'canceled';
+    } else {
+      subStatus = new Date(c.trial_ends_at) > now ? 'active_man' : 'blocked';
+    }
+    const matchSt = !status || subStatus === status;
     return matchQ && matchPlan && matchSt;
   });
   renderCustomersTable(filtered);
@@ -979,7 +1010,7 @@ function filterCustomers() {
 // ══════════════════════════════════════════════════════════
 function renderUsersTable(data) {
   const tbody = document.getElementById('usersTableBody');
-  if (!tbody) return; // Protection
+  if (!tbody) return;
   if (!data.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum utilizador encontrado</td></tr>';
     return;
@@ -991,8 +1022,15 @@ function renderUsersTable(data) {
       ? `<button class="btn-table danger" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',false)" title="Revogar Super Admin">🛡️ Revogar SA</button>`
       : `<button class="btn-table" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',true)" title="Promover a Super Admin">🛡️ Dar SA</button>`;
     const saBadge = isSA ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>` : '';
+    // Email: use raw_user_meta_data.email or user email stored in memberships
+    const email = u.email || u.raw_email || u.user_id || '—';
+    const name = (u.fname || u.raw_user_meta_data?.fname || '') + ' ' + (u.lname || u.raw_user_meta_data?.lname || '');
+    const displayName = name.trim() || '';
     return `<tr>
-      <td class="mono" style="font-size:.78rem">${escH(u.user_id || '—')}</td>
+      <td>
+        <div style="font-weight:600;font-size:.82rem">${escH(displayName || email)}</div>
+        <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)">${escH(email)}</div>
+      </td>
       <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
       <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
       <td><span class="plan-badge plan-${plan}">${plan}</span></td>
@@ -1000,8 +1038,7 @@ function renderUsersTable(data) {
       <td class="mono">—</td>
       <td style="white-space:nowrap">
         ${saBtn}
-        <button class="btn-table" onclick="impersonateUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">👤 Impersonar</button>
-        <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
+        <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">�ea53 Banir</button>
       </td>
     </tr>`;
   }).join('');
@@ -1010,7 +1047,11 @@ function renderUsersTable(data) {
 function filterUsers() {
   const q = document.getElementById('searchUsers').value.toLowerCase();
   const filtered = _users.filter(u =>
-    !q || u.user_id?.toLowerCase().includes(q) || u.companies?.name?.toLowerCase().includes(q)
+    !q 
+    || u.user_id?.toLowerCase().includes(q) 
+    || u.email?.toLowerCase().includes(q)
+    || u.companies?.name?.toLowerCase().includes(q)
+    || (u.fname + ' ' + u.lname)?.toLowerCase().includes(q)
   );
   renderUsersTable(filtered);
 }
@@ -1135,6 +1176,110 @@ function renderAuditLog() {
 //  COMPANY DETAIL MODAL
 // ══════════════════════════════════════════════════════════
 function closeCompanyDetail() { document.getElementById('companyDetailOverlay').classList.remove('open'); }
+
+function openCompanyDetail(companyId) {
+  const c = _customers.find(x => x.id === companyId);
+  if (!c) return;
+
+  const plan = c.plan || 'trial';
+  const now  = new Date();
+  const exp  = c.trial_ends_at ? new Date(c.trial_ends_at) : null;
+  const expStr = exp ? exp.toLocaleDateString('pt-PT') : 'N/A';
+  let subStatus;
+  if (c.subscription?.status) {
+    subStatus = c.subscription.status;
+  } else if (plan === 'trial') {
+    subStatus = exp && exp > now ? 'TRIALING' : 'CANCELED';
+  } else {
+    subStatus = exp && exp > now ? 'MANUAL' : 'BLOCKED';
+  }
+
+  const overlay = document.getElementById('companyDetailOverlay');
+  const body    = document.getElementById('companyDetailBody');
+  if (!overlay || !body) return;
+
+  body.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">EMPRESA</div>
+        <div style="font-size:1.1rem;font-weight:800">${escH(c.name)}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${escH(c.slug)}</div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">PLANO</div>
+        <div style="font-size:1rem;font-weight:800">${plan.toUpperCase()}</div>
+        <div style="font-size:.78rem;color:var(--muted)">Estado: ${subStatus}</div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">VENCIMENTO</div>
+        <div style="font-size:1rem;font-weight:800;color:${exp && exp < now ? 'var(--danger)' : 'var(--dark)'}">${expStr}</div>
+      </div>
+    </div>
+    <hr style="margin:20px 0;border-color:var(--border)">
+    <div style="font-size:.78rem;font-weight:700;margin-bottom:10px">⏳ PRORROGAR ACESSO</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="number" id="extendDaysInput" min="1" max="365" value="30"
+        style="width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:.88rem;font-weight:700">
+      <span style="font-size:.82rem;color:var(--muted)">dias a partir de hoje</span>
+      <button class="btn btn-primary btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}')">✅ Confirmar Prorrogação</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',7)">+7 dias</button>
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',30)">+30 dias</button>
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',90)">+90 dias</button>
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',365)">+365 dias</button>
+    </div>
+    <hr style="margin:20px 0;border-color:var(--border)">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:100px;text-align:center">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700">ID</div>
+        <div class="mono" style="font-size:.72rem;word-break:break-all">${escH(c.id)}</div>
+      </div>
+      <div style="flex:1;min-width:100px;text-align:center">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700">UTILIZADORES</div>
+        <div style="font-size:1.2rem;font-weight:800">${c.userCount || 0}</div>
+      </div>
+      <div style="flex:1;min-width:100px;text-align:center">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700">ADESÃO</div>
+        <div style="font-size:.88rem;font-weight:700">${fmtDate(c.created_at)}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('companyDetailTitle').textContent = c.name;
+  overlay.classList.add('open');
+}
+
+async function extendTrial(companyId, companyName) {
+  openCompanyDetail(companyId);
+}
+
+async function doExtendAccess(companyId, companyName, fixedDays) {
+  const days = fixedDays || parseInt(document.getElementById('extendDaysInput')?.value || '30');
+  if (!days || days < 1) { showToast('Indica um número de dias válido.', 'err'); return; }
+
+  const c = _customers.find(x => x.id === companyId);
+  if (!c) return;
+
+  // Prorrogar a partir de hoje (ou da data atual de vencimento se for futura)
+  const base = (c.trial_ends_at && new Date(c.trial_ends_at) > new Date())
+    ? new Date(c.trial_ends_at) 
+    : new Date();
+  base.setDate(base.getDate() + days);
+
+  try {
+    const { error } = await _adminSb()
+      .from('companies')
+      .update({ trial_ends_at: base.toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', companyId);
+    if (error) throw error;
+    await _adminAudit('extend_access', `Empresa: ${companyName} (${companyId}) +${days} dias → ${base.toLocaleDateString('pt-PT')}`);
+    showToast(`✅ Acesso de ${companyName} prorrogado por +${days} dias (até ${base.toLocaleDateString('pt-PT')})`, 'ok');
+    closeCompanyDetail();
+    await refreshAll();
+  } catch(e) {
+    showToast('Erro ao prorrogar: ' + e.message, 'err');
+  }
+}
 
 // ══════════════════════════════════════════════════════════
 //  ACTIONS (Unified & Premium)
