@@ -144,6 +144,11 @@
   .audit-row{grid-template-columns:1fr}
   .audit-who{text-align:left}
 }
+
+/* danger modal extra */
+.confirm-modal.danger { border-color: rgba(239,68,68,.4); }
+.confirm-modal.danger .confirm-icon { color: var(--danger); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
 </style>
 </head>
 <body>
@@ -877,6 +882,7 @@ function renderCustomersTable(data) {
           <button class="btn-action danger" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
             ${isSuspended ? '✅' : '⛔'}
           </button>
+          <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')" title="Excluir Definitivamente">🗑️</button>
         </div>
       </td>
     </tr>`;
@@ -1526,6 +1532,54 @@ function switchTab(name) {
 // ══════════════════════════════════════════════════════════
 //  CONFIRM MODAL
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  DELETE CUSTOMER (Danger Zone)
+// ══════════════════════════════════════════════════════════
+let _deletingId = null;
+let _deletingName = '';
+
+function confirmDeleteCustomer(id, name) {
+  _deletingId = id;
+  _deletingName = name;
+  document.getElementById('deleteConfirmSlug').textContent = name;
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteConfirmOverlay').classList.add('open');
+  
+  // Validation listener
+  const input = document.getElementById('deleteConfirmInput');
+  input.oninput = () => {
+    document.getElementById('deleteConfirmBtn').disabled = (input.value !== _deletingName);
+  };
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteConfirmOverlay').classList.remove('open');
+}
+
+async function deleteCustomer() {
+  if (!_deletingId) return;
+  try {
+    const btn = document.getElementById('deleteConfirmBtn');
+    btn.textContent = 'A apagar...';
+    btn.disabled = true;
+
+    const { error } = await _adminSb()
+      .from('companies')
+      .delete()
+      .eq('id', _deletingId);
+
+    if (error) throw error;
+
+    showToast('🔫 Empresa e dados apagados definitivamente', 'ok');
+    closeDeleteModal();
+    refreshAll();
+  } catch(e) {
+    showToast('Erro ao apagar: ' + e.message, 'err');
+    document.getElementById('deleteConfirmBtn').textContent = 'EXCLUIR TUDO';
+  }
+}
+
 function showConfirm(title, msg, onOk) {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent   = msg;
