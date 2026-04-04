@@ -145,7 +145,7 @@ const Auth = {
         .select('role, companies(id, name, slug, plan, config, signature, logo_url, trial_ends_at)')
         .eq('user_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!memErr && mem?.companies) {
         company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
@@ -159,7 +159,7 @@ const Auth = {
         .select('id, name, slug, plan, config, signature, logo_url, trial_ends_at')
         .eq('owner_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!ownedErr && owned) {
         company = owned;
