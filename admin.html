@@ -584,6 +584,25 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Exclusão Definitiva (Danger Zone)
+══════════════════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="deleteConfirmOverlay" onclick="if(event.target===this)closeDeleteModal()">
+  <div class="confirm-modal danger">
+    <div class="confirm-icon">🚨</div>
+    <div class="confirm-title">ZONA DE PERIGO</div>
+    <div class="confirm-msg">
+      Esta acção é <strong>irreversível</strong>. Todos os pedidos, materiais e utilizadores desta empresa serão apagados permanentemente.<br><br>
+      Para confirmar, digite <strong id="deleteConfirmSlug"></strong> abaixo:
+    </div>
+    <input type="text" class="form-input" id="deleteConfirmInput" placeholder="Nome da empresa..." style="text-align:center;margin-bottom:16px;border-color:var(--danger)">
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1" id="deleteConfirmBtn" disabled onclick="deleteCustomer()">EXCLUIR TUDO</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="utils.js"></script>
