@@ -367,7 +367,8 @@
               aria-label="Language">
               <option value="pt-PT">🇵🇹 PT</option>
               <option value="pt-BR">🇧🇷 BR</option>
-              <option value="en">🇺🇸 EN</option>
+              <option value="en-US">🇺🇸 US</option>
+              <option value="en-GB">🇬🇧 UK</option>
               <option value="es">🇪🇸 ES</option>
               <option value="en-GB">🇬🇧 UK</option>
             </select>
@@ -1093,15 +1094,25 @@ function renderRecentOrders() {
   if (!recent.length) {
     el.innerHTML = `<div class="empty-state">
         <div class="empty-icon" style="font-size:2rem;margin-bottom:8px">🎉</div>
-        <div class="empty-text" style="color:var(--dark);font-weight:600">Tudo em dia!</div>
+        <div class="empty-text" style="color:var(--dark);font-weight:600">${window.i18n ? window.i18n.getNestedTranslation('dash.cards.all_ok') || 'Tudo em dia!' : 'Tudo em dia!'}</div>
         <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Neste momento não tem tarefas pendentes.<br>Sem pedidos ativos.</div>
       </div>`;
+    // We must re-apply translations when injecting raw HTML if data-i18n is inside
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations();
     return;
   }
 
+  const t = (k, val) => window.i18n ? window.i18n.getNestedTranslation(k) || val : val;
   el.innerHTML = recent.map(o => {
     const status = o.status || 'orcamento';
-    const statusLabel = { orcamento:'Orçamento', modelagem:'Modelagem', validacao:'Validação', aprovado:'Aprovado', printing:'Imprimindo', done:'Concluído' }[status] || status;
+    const statusLabel = { 
+      orcamento: t('orders.pipe.budget_tab','Orçamento'), 
+      modelagem: t('orders.status.modelagem','Modelagem'), 
+      validacao: t('orders.status.validacao','Validação'), 
+      aprovado:  t('orders.status.aprovado','Aprovado'), 
+      printing:  t('orders.status.printing','Imprimindo'), 
+      done:      t('orders.status.done','Concluído') 
+    }[status] || status;
     const date = o.createdAt || o.created_at_date || '';
     const dateStr = date ? new Date(date).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : '';
     return `<div class="order-row" onclick="navigate('orders')">

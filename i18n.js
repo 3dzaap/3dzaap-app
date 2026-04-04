@@ -11,12 +11,13 @@
 const i18n = {
     currentLocale: localStorage.getItem('3dzaap_lang') || 'pt-PT',
     translations: {},
-    supportedLocales: ['pt-PT', 'pt-BR', 'en', 'es', 'en-GB'],
+    supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB'],
 
     async init() {
         // Fallback for old 'pt' or 'br' codes
         if (this.currentLocale === 'pt') this.currentLocale = 'pt-PT';
         if (this.currentLocale === 'br') this.currentLocale = 'pt-BR';
+        if (this.currentLocale === 'en') this.currentLocale = 'en-US';
         
         await this.loadTranslations(this.currentLocale);
         this.translatePage();
