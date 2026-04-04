@@ -263,40 +263,12 @@
                     <th>Estado</th>
                     <th>Faturação</th>
                     <th>Utilizadores</th>
-        ══════════════════════════════════════════════ -->
-        <div class="admin-panel" id="tab-subscriptions">
-          <div class="admin-toolbar">
-            <div class="admin-search-wrap">
-              <span class="admin-search-icon">🔍</span>
-              <input class="admin-search form-input" id="searchSubs" placeholder="Pesquisar empresa ou ID Stripe…" oninput="filterSubs()">
-            </div>
-            <select class="form-select" id="filterSubStatus" onchange="filterSubs()" style="width:auto">
-              <option value="">Todos os estados</option>
-              <option value="active">Ativo</option>
-              <option value="trialing">Em trial</option>
-              <option value="past_due">Em atraso</option>
-              <option value="canceled">Cancelado</option>
-            </select>
-          </div>
-          <div class="ad-card">
-            <div class="ad-card-header">
-              <div class="ad-card-title">💳 Subscrições</div>
-              <button class="btn btn-ghost btn-sm" onclick="syncStripe()">🔄 Sincronizar Stripe</button>
-            </div>
-            <div class="ad-card-body" style="padding:0;overflow-x:auto">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Empresa</th>
-                    <th>Plano</th>
-                    <th>Estado</th>
-                    <th>Próxima cobrança</th>
-                    <th>Stripe ID</th>
+                    <th>Desde</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
-                <tbody id="subsTableBody">
-                  <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
+                <tbody id="customersTableBody">
+                  <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar ecossistema…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -623,6 +595,8 @@ const PLAN_MRR = { trial: 0, starter: 9.90, pro: 19.90, business: 39.90 };
 //  STATE
 // ══════════════════════════════════════════════════════════
 let _customers     = []; // Combined Companies + Subs
+let _subscriptions = []; // Added for exports
+let _usersStatus   = []; 
 let _users         = [];
 let _broadcasts    = [];
 let _bcFilter      = 'all';
@@ -638,6 +612,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
   await checkAdminAccess();
 });
+
+// MOCK DATA FOR REGRESSION TEST
+const _MOCK_DATA = [
+  { id: 'c1', name: '3D Studio Alpha', slug: '3d-alpha', plan: 'pro', created_at: new Date().toISOString(), is_suspended: false, userCount: 8, subscription: { status: 'active', stripe_subscription_id: 'sub_alpha' } },
+  { id: 'c2', name: 'Print Farm Beta', slug: 'print-beta', plan: 'business', created_at: new Date().toISOString(), is_suspended: false, userCount: 22, subscription: { status: 'active', stripe_subscription_id: 'sub_beta' } },
+  { id: 'c3', name: 'Local Maker Gamma', slug: 'maker-gamma', plan: 'starter', created_at: new Date().toISOString(), is_suspended: false, userCount: 1, subscription: { status: 'trialing', stripe_subscription_id: null } }
+];
 
 async function checkAdminAccess() {
   const ok = await Auth.requireAuth();
@@ -711,6 +692,7 @@ async function loadCustomers() {
 
     _customers = (companies || []).map(c => {
       const sub = c.subscriptions && c.subscriptions.length ? c.subscriptions[0] : null;
+      if (sub) _subscriptions.push(sub);
       return {
         ...c,
         subscription: sub,
@@ -792,22 +774,22 @@ function updateKPIs() {
   const d60       = new Date(now); d60.setDate(d60.getDate() - 60);
 
   // Current period: last 30 days / Previous period: 31-60 days ago
-  const newThisPeriod = _companies.filter(c => { const d = new Date(c.created_at); return d >= d30 && d <= now; }).length;
-  const newPrevPeriod = _companies.filter(c => { const d = new Date(c.created_at); return d >= d60 && d < d30; }).length;
+  const newThisPeriod = _customers.filter(c => { const d = new Date(c.created_at); return d >= d30 && d <= now; }).length;
+  const newPrevPeriod = _customers.filter(c => { const d = new Date(c.created_at); return d >= d60 && d < d30; }).length;
 
-  const active    = _companies.filter(c => !c.is_suspended).length;
-  const trials    = _companies.filter(c => c.plan === 'trial').length;
-  const pastDue   = _subscriptions.filter(s => s.status === 'past_due').length;
-  const mrr       = _companies.filter(c => !c.is_suspended).reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
+  const active    = _customers.filter(c => !c.is_suspended).length;
+  const trials    = _customers.filter(c => c.plan === 'trial').length;
+  const pastDue   = _customers.filter(c => c.subscription?.status === 'past_due').length;
+  const mrr       = _customers.filter(c => !c.is_suspended).reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
 
   // MRR previous period: simulate based on companies that existed 30 days ago
-  const mrrPrev   = _companies.filter(c => !c.is_suspended && new Date(c.created_at) < d30)
+  const mrrPrev   = _customers.filter(c => !c.is_suspended && new Date(c.created_at) < d30)
                               .reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
   const mrrDiff   = mrr - mrrPrev;
 
   // Trials: compare this period vs previous
-  const trialsNew  = _companies.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d30).length;
-  const trialsPrev = _companies.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d60 && new Date(c.created_at) < d30).length;
+  const trialsNew  = _customers.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d30).length;
+  const trialsPrev = _customers.filter(c => c.plan === 'trial' && new Date(c.created_at) >= d60 && new Date(c.created_at) < d30).length;
 
   setText('kpiCompanies', active);
   setText('kpiMrr', '€ ' + mrr.toFixed(0));
@@ -850,6 +832,7 @@ function _setDelta(elId, curr, prev, labelCurr, labelPrev, labelNone) {
 // ══════════════════════════════════════════════════════════
 function renderCustomersTable(data) {
   const tbody = document.getElementById('customersTableBody');
+  if (!tbody) return; // Protection
   if (!data.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:48px">Nenhum cliente no ecossistema</td></tr>';
     return;
@@ -921,6 +904,7 @@ function filterCustomers() {
 // ══════════════════════════════════════════════════════════
 function renderUsersTable(data) {
   const tbody = document.getElementById('usersTableBody');
+  if (!tbody) return; // Protection
   if (!data.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum utilizador encontrado</td></tr>';
     return;
@@ -1355,7 +1339,7 @@ function exportGlobal(type) {
   if (type === 'companies' || type === 'full') {
     csv += '"#SECÇÃO";"Empresas"\n';
     csv += ['ID','Nome','Slug','Plano','Estado','Trial expira','Criado em'].join(sep)+'\n';
-    _companies.forEach(c => {
+    _customers.forEach(c => {
       csv += [c.id,c.name,c.slug||'',c.plan||'trial',c.is_suspended?'suspenso':'ativo',c.trial_ends_at||'',c.created_at||'']
         .map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
     });
@@ -1533,7 +1517,7 @@ function switchTab(name) {
   _currentTab = name;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-  const tabs = ['companies','subscriptions','users','metrics','tools','audit'];
+  const tabs = ['customers','users','metrics','tools','audit'];
   const idx = tabs.indexOf(name);
   if (idx > -1) document.querySelectorAll('.admin-tab')[idx]?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
@@ -1554,6 +1538,10 @@ function closeConfirm() { document.getElementById('confirmOverlay').classList.re
 //  HELPERS
 // ══════════════════════════════════════════════════════════
 function setText(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; }
+
+window.addEventListener('DOMContentLoaded', () => {
+  checkAdminAccess();
+});
 </script>
 <script src="i18n.js"></script>
 </body>
