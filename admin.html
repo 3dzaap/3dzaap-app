@@ -774,10 +774,14 @@ async function loadUsers() {
       .select('role, joined_at, user_id, companies(name, plan)')
       .order('joined_at', { ascending: false });
     if (error) throw error;
-    // Enrich with auth user data if accessible
-    const { data: authUsers } = await _adminSb().rpc('get_users_metadata').catch(() => ({ data: null }));
-    const authMap = {};
-    if (authUsers) authUsers.forEach(u => { authMap[u.id] = u; });
+
+    // Tentar enriquecer com auth.users via RPC (opcional — pode não existir)
+    let authMap = {};
+    try {
+      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
+      if (!rpcErr && authUsers) authUsers.forEach(u => { authMap[u.id] = u; });
+    } catch (_) { /* RPC não disponível — mostra UUID como fallback */ }
+
     _users = (data || []).map(m => ({
       ...m,
       email: authMap[m.user_id]?.email || m.user_id,
