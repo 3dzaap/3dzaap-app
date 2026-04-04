@@ -1016,14 +1016,15 @@ function renderCustomersTable(data) {
       }
     }
     
-    const isSuspended = c.is_suspended || subStatus === 'blocked';
+    const isSuspended = c.is_suspended;
     
     let statusClass = 's-active';
-    if (subStatus === 'trialing') statusClass = 's-trial';
-    if (subStatus === 'past_due') statusClass = 's-due';
-    if (subStatus === 'canceled' || isSuspended) statusClass = 's-canceled';
-    
-    const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
+    let statusLabel = subStatus.toUpperCase();
+    if (subStatus === 'trialing')  { statusClass = 's-trial';    statusLabel = 'TRIAL'; }
+    if (subStatus === 'active_man'){ statusClass = 's-manual';   statusLabel = 'MANUAL'; }
+    if (subStatus === 'past_due')  { statusClass = 's-due';      statusLabel = 'EM ATRASO'; }
+    if (subStatus === 'canceled')  { statusClass = 's-canceled'; statusLabel = 'CANCELADO'; }
+    if (subStatus === 'blocked' || isSuspended) { statusClass = 's-blocked'; statusLabel = 'BLOQUEADO'; }
 
     return `<tr>
       <td>
@@ -1044,7 +1045,7 @@ function renderCustomersTable(data) {
           <option value="business_ano" ${plan==='business_ano'?'selected':''}>Business (Ano)</option>
         </select>
       </td>
-      <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
+      <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
       <td>
         ${plan.endsWith('_ano')
           ? `<div class="mono" style="font-weight:700;font-size:.75rem">€ ${(PLAN_ANNUAL_TOTAL[plan]||0).toFixed(2)}</div>
@@ -1153,9 +1154,9 @@ function filterUsers() {
   const filtered = _users.filter(u =>
     !q 
     || u.user_id?.toLowerCase().includes(q) 
-    || u.email?.toLowerCase().includes(q)
+    || u._email?.toLowerCase().includes(q)
     || u.companies?.name?.toLowerCase().includes(q)
-    || (u.fname + ' ' + u.lname)?.toLowerCase().includes(q)
+    || [u._fname, u._lname].filter(Boolean).join(' ').toLowerCase().includes(q)
   );
   renderUsersTable(filtered);
 }
