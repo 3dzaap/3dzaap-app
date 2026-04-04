@@ -165,9 +165,11 @@
 .health-card{
   background:var(--bg-card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
   border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh);
-  padding:24px 28px;margin-bottom:20px;
-  display:grid;grid-template-columns:1fr auto;gap:0 24px;align-items:start;
-  animation:fadeUp .5s var(--ease) both;animation-delay:.1s
+  padding:24px 32px;margin: 0 4px 20px 4px; /* Added slight margin to prevent shadow clipping */
+  display:grid;grid-template-columns:1fr auto;gap:0 32px;align-items:start;
+  animation:fadeUp .6s var(--ease) both;animation-delay:.15s;
+  position: relative;
+  z-index: 10;
 }
 
 .health-left{min-width:0}
