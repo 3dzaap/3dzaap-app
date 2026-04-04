@@ -324,12 +324,12 @@
               <table class="admin-table">
                 <thead>
                   <tr>
+                    <th>Nome</th>
                     <th>Email</th>
                     <th>Empresa</th>
                     <th>Papel</th>
                     <th>Plano</th>
                     <th>Registado em</th>
-                    <th>Último acesso</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -1032,23 +1032,21 @@ function renderUsersTable(data) {
       ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>`
       : '';
 
-    // Nome e email: virão preenchidos após a RPC existir
     const fullName = [u._fname, u._lname].filter(Boolean).join(' ');
-    const displayName = fullName || u._email || u.companies?.name || 'Utilizador';
-    const subLine    = u._email 
+    const nameCell = fullName
+      ? escH(fullName)
+      : `<span style="color:var(--muted);font-style:italic">Sem nome</span>`;
+    const emailCell = u._email
       ? escH(u._email)
-      : `<span style="color:var(--muted)" title="${escH(u.user_id||'')}">${(u.user_id||'').slice(0,8)}…</span>`;
+      : `<span style="color:var(--muted);font-family:var(--mono);font-size:.72rem" title="${escH(u.user_id||'')}">${(u.user_id||'').slice(0,10)}…</span>`;
 
     return `<tr>
-      <td>
-        <div style="font-weight:700;font-size:.82rem">${escH(displayName)}</div>
-        <div style="font-size:.7rem;font-family:var(--mono);margin-top:1px">${subLine}</div>
-      </td>
+      <td><div style="font-weight:700;font-size:.85rem">${nameCell}</div></td>
+      <td><div style="font-size:.78rem;font-family:var(--mono)">${emailCell}</div></td>
       <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
       <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
       <td><span class="plan-badge plan-${plan}">${plan}</span></td>
       <td class="mono">${fmtDate(u.joined_at)}</td>
-      <td class="mono">—</td>
       <td style="white-space:nowrap">
         ${saBtn}
         <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
