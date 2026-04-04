@@ -370,7 +370,6 @@
               <option value="en-US">🇺🇸 US</option>
               <option value="en-GB">🇬🇧 UK</option>
               <option value="es">🇪🇸 ES</option>
-              <option value="en-GB">🇬🇧 UK</option>
             </select>
 
             <!-- Help Popover -->
@@ -1106,12 +1105,12 @@ function renderRecentOrders() {
   el.innerHTML = recent.map(o => {
     const status = o.status || 'orcamento';
     const statusLabel = { 
-      orcamento: t('orders.pipe.budget_tab','Orçamento'), 
-      modelagem: t('orders.status.modelagem','Modelagem'), 
-      validacao: t('orders.status.validacao','Validação'), 
-      aprovado:  t('orders.status.aprovado','Aprovado'), 
-      printing:  t('orders.status.printing','Imprimindo'), 
-      done:      t('orders.status.done','Concluído') 
+      orcamento: t('status.orcamento','Orçamento'), 
+      modelagem: t('status.modelagem','Modelagem'), 
+      validacao: t('status.validacao','Validação'), 
+      aprovado:  t('status.aprovado','Aprovado'), 
+      printing:  t('status.printing','Imprimindo'), 
+      done:      t('status.done','Concluído') 
     }[status] || status;
     const date = o.createdAt || o.created_at_date || '';
     const dateStr = date ? new Date(date).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : '';
