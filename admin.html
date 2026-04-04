@@ -1595,8 +1595,9 @@ async function deleteCustomer() {
     refreshAll();
   } catch(e) {
     console.error('Delete error:', e);
+    const msg = e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e));
     const detail = e.details || e.hint || '';
-    showToast('Erro ao apagar: ' + e.message + ' ' + detail, 'err');
+    showToast('Erro ao apagar: ' + msg + ' ' + detail, 'err');
     document.getElementById('deleteConfirmBtn').textContent = 'EXCLUIR TUDO';
   }
 }
