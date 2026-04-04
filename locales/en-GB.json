@@ -118,6 +118,22 @@
     "portal": {
       "title": "Client Portal",
       "desc": "Give clients autonomy."
+    },
+    "dashboard_module": {
+      "title": "Intelligent Dashboard",
+      "desc": "Complete overview with Health Score, financial summaries, and real-time alerts. Know your business health at a glance."
+    },
+    "multilang": {
+      "title": "Multi-language",
+      "desc": "Complete interface in Portuguese, English, and Spanish with auto-detection. Your business without language barriers."
+    },
+    "client_portal": {
+      "title": "Client Portal",
+      "desc": "Tracking link with exclusive access code. Your client follows order status in real-time, without creating an account."
+    },
+    "receipts": {
+      "title": "Receipts & Work Orders",
+      "desc": "Professional documents generated automatically with your studio's visual identity. Print or send as PDF."
     }
   },
   "pricing": {
@@ -333,11 +349,28 @@
         "rev_stable": "Revenue stable compared to last month.",
         "rev_up": "Revenue grew {p}% this month! 🚀",
         "rev_warn": "Revenue dropped {p}% vs last month.",
-        "rev_bad": "Sharp drop in revenue ({p}%)."
-      }
+        "rev_bad": "Sharp drop in revenue ({p}%).",
+        "setup_printers_ok": "Fleet configured. Excellent!",
+        "setup_printers_miss": "No printers registered. Add your equipment!",
+        "setup_materials_ok": "Initial materials registered.",
+        "setup_materials_miss": "No materials in stock. Configure your filaments.",
+        "setup_configs_ok": "Custom costs and margins set.",
+        "setup_configs_miss": "Default costs detected. Adjust your real values!",
+        "setup_logo_ok": "Corporate identity (Logo) active.",
+        "setup_logo_miss": "Branding missing. Upload your logo!",
+        "setup_sig_ok": "Digital signature configured.",
+        "setup_sig_miss": "Signature missing for receipts.",
+        "perf_no_orders": "No orders registered. Record your first job!",
+        "perf_late_orders": "Attention: you have orders with overdue delivery dates.",
+        "perf_unpaid_orders": "You have orders pending payment.",
+        "perf_stock_low": "Critical stock: check your materials.",
+        "perf_all_clear": "Activity on track. No delays or pendencies."
+      },
+      "perfect": "Congratulations! Your business is fully configured and healthy. 🏆"
     },
     "stats": {
       "revenue": "Cash Flow (Billed)",
+      "pipeline": "Order Pipeline",
       "active_orders": "Active Orders",
       "fleet_eff": "Fleet Efficiency",
       "fleet_online": "{online}/{total} online",
@@ -350,7 +383,7 @@
       "pending_label": "Pending:",
       "pipe_approval": "Approval:",
       "pipe_prod": "Production:",
-      "pipe_done": "Done:",
+      "pipe_done": "Ready:",
       "op_status": "Operational Status",
       "crit_stock": "📦 Critical Stock",
       "fleet_online_label": "🖨️ Fleet Online"
@@ -757,19 +790,78 @@
     }
   },
   "about": {
-    "title": "About Us",
-    "subtitle": "Our Story",
-    "p1": "Built from scratch to fix maker chaos.",
-    "p2": "Automate operations to give freedom back."
+    "label": "About Us",
+    "title": "Built by Makers, for Makers.",
+    "subtitle": "3DZAAP Print Manager is not just another tool — it's the mission to professionalize 3D printing worldwide.",
+    "story_p1": "3DZAAP was built from scratch, thinking about the real challenges we face every day in the digital manufacturing universe. We know that managing a 3D printing business goes way beyond operating a machine — it's about controlling invisible costs, anticipating stockouts, professionalizing customer service, and, above all, turning hours of work into real profit.",
+    "story_p2": "Our platform was born from the frustration with disorganized spreadsheets, \"by eye\" quotes, and filaments that run out at the worst moment. We decided to create the solution we always wanted to have: a complete, intuitive, and accessible system that puts the maker in total control of their business.",
+    "val1_title": "Precision",
+    "val1_desc": "Every calculation matters. Our cost engine considers power, wear, material, and risk — so you never charge below what is fair.",
+    "val2_title": "Transparency",
+    "val2_desc": "No hidden fees, no fine print. Your data is yours and our platform is open about what it charges and what it offers.",
+    "val3_title": "Innovation",
+    "val3_desc": "We evolve constantly with community feedback. Every feature is designed to solve real production problems."
   },
   "footer": {
-    "contacts": "Contacts",
-    "terms": "Terms | Privacy"
+    "slogan": "The brain of your 3D printing business.",
+    "col_features": "Features",
+    "col_company": "Company",
+    "col_legal": "Legal",
+    "link_calculator": "Calculator",
+    "link_materials": "Materials",
+    "link_orders": "Orders",
+    "link_dashboard": "Dashboard",
+    "link_plans": "Plans",
+    "link_trial": "Free Trial",
+    "link_about": "About Us",
+    "link_privacy": "Privacy",
+    "link_terms": "Terms of Use",
+    "link_cookies": "Cookie Policy",
+    "copyright": "© 2025 3DZAAP. All rights reserved.",
+    "tagline": "Manufactured in Europe 🇵🇹"
+  },
+  "portal": {
+    "loading": "Loading your order...",
+    "pin_title": "Restricted Access",
+    "pin_desc": "Enter the 4-digit code sent via WhatsApp to view details.",
+    "pin_err": "Incorrect code. Try again.",
+    "err_secure_title": "Security Required",
+    "err_secure_desc": "This tracking link does not have an access code configured. Please contact support or request a new link.",
+    "rcpt_title_paid": "Payment Receipt",
+    "rcpt_title_os": "Work Order",
+    "issued_at": "Issued on",
+    "status_paid": "Payment Confirmed",
+    "status_awaiting": "Awaiting Payment",
+    "order_status": "ORDER STATUS",
+    "client_data": "Client Details",
+    "lbl_name": "NAME",
+    "lbl_created_at": "CREATED AT",
+    "order_items": "Order Items",
+    "th_desc": "Description",
+    "th_qty": "Qty",
+    "th_total": "Total",
+    "total": "Total",
+    "notes": "Notes",
+    "tracker_title": "Order Tracking",
+    "curr_status": "CURRENT STATUS",
+    "btn_decline": "Decline",
+    "btn_approve_budget": "Approve Initial Quote",
+    "btn_reject_model": "Reject Model",
+    "btn_approve_final": "Approve Model & Final Value",
+    "status_declined_msg": "Order was declined by the client.",
+    "btn_print": "PDF / Print",
+    "btn_whatsapp": "Talk on WhatsApp",
+    "confirm_approve": "By approving, you confirm the details of this quote and authorize production to start. Shall we proceed?",
+    "alert_approved": "Quote approved successfully! You can now track production through this same link.",
+    "alert_declined": "Quote declined.",
+    "alert_err": "Error",
+    "btn_back_home": "Back to site",
+    "err_token_desc": "Access token not provided."
   },
   "privacy": {
-    "title": "Terms & Privacy",
-    "p1": "AES protected.",
-    "p2": "GDPR.",
+    "title": "Terms of Service & Privacy",
+    "p1": "Data protected with AES.",
+    "p2": "Cookies and GDPR strictly complied with.",
     "btn": "OK"
   }
 }
