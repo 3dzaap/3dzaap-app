@@ -18,6 +18,148 @@
 <script src="supabase.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
+/* ── ESTATISTICAS V2 ────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.stat-card-v2 {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s var(--ease);
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+
+.stat-card-v2:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lg);
+  border-color: rgba(59,143,212,0.3);
+}
+
+.stat-v2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stat-v2-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  background: var(--blue-g);
+  border: 1px solid rgba(59,143,212,0.15);
+}
+
+.stat-v2-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-v2-value-wrap { margin-bottom: 4px; }
+.stat-v2-value {
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-family: var(--mono);
+  line-height: 1;
+  background: linear-gradient(135deg, var(--dark), var(--muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-v2-value.blue {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-v2-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* Segmented Bar */
+.segmented-bar {
+  display: flex;
+  height: 10px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  gap: 2px;
+}
+.seg-item { height: 100%; transition: width 0.6s var(--ease); }
+.seg-1 { background: var(--subtle); opacity: 0.6; }
+.seg-2 { background: var(--orange); }
+.seg-3 { background: var(--success); }
+
+.stat-v2-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--subtle);
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Farm Grid */
+.farm-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.farm-mini-card {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s;
+}
+.farm-mini-card.alert {
+  border-color: rgba(245,148,58,0.4);
+  background: rgba(245,148,58,0.08);
+  box-shadow: 0 0 15px rgba(245,148,58,0.15);
+  animation: pulseGlow 2.5s infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(245,148,58,0.1); }
+  50% { box-shadow: 0 0 20px rgba(245,148,58,0.25); }
+}
+
+.farm-mini-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.farm-mini-value { font-size: 1.1rem; font-weight: 800; font-family: var(--mono); }
+
+[data-theme="dark"] .stat-card-v2 { background: #1e293b; }
+[data-theme="dark"] .farm-mini-card { background: rgba(0,0,0,0.2); }
+[data-theme="dark"] .stat-v2-value { background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; }
+</style>
+<style>
 /* ── Estilos específicos desta página ─────────────────────── */
 /* ── HEALTH SCORE ───────────────────── */
 .health-card{
@@ -473,58 +615,64 @@
         </a>
       </div>
 
-      <!-- Stats Grid (v2.0) -->
-      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
-        <!-- Financial Health -->
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon blue">💰</div>
-            <span class="stat-badge badge-up" id="revBadge">+0%</span>
+      <!-- Stats Grid (v2.0 Premium) -->
+      <div class="stats-grid">
+        
+        <!-- Financial: Cash Flow -->
+        <div class="stat-card-v2">
+          <div class="stat-v2-header">
+            <div class="stat-v2-icon-wrap" style="background:rgba(59,143,212,0.1); color:var(--blue)">💰</div>
+            <div class="stat-v2-badge badge-up" id="revBadge">+0%</div>
           </div>
-          <div class="stat-value" id="statRevenue">— 0,00</div>
-          <div class="stat-label" data-i18n="dash.stats.revenue">Fluxo de Caixa (Faturado)</div>
-          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between;">
-            <span><span data-i18n="dash.stats.paid_label">Liquidado:</span> <strong id="statPaid" style="color: var(--success)">— 0,00</strong></span>
-            <span><span data-i18n="dash.stats.pending_label">Pendente:</span> <strong id="statPending" style="color: var(--warning)">— 0,00</strong></span>
+          <div class="stat-v2-value-wrap">
+            <span class="stat-v2-value blue" id="statRevenue">€ 0,00</span>
+          </div>
+          <div class="stat-v2-label" data-i18n="dash.stats.revenue">Fluxo de Caixa (Facturado)</div>
+          
+          <div class="stat-v2-footer">
+            <span><span data-i18n="dash.stats.paid_label">Liquidado:</span> <strong id="statPaid" style="color:var(--success)">€ 0,00</strong></span>
+            <span><span data-i18n="dash.stats.pending_label">Pendente:</span> <strong id="statPending" style="color:var(--orange)">€ 0,00</strong></span>
           </div>
         </div>
 
-        <!-- Operations (Pipeline Visual) -->
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon purple" style="background:rgba(99,102,241,.1);color:#6366f1">🔄</div>
-            <span class="stat-badge badge-neu" id="efficiencyBadge" style="background:none;border:none;color:var(--dark);font-weight:700">Total: <span id="statOrders">0</span></span>
-          </div>
-          <div class="stat-value" style="font-size:1.2rem;margin-top:12px;margin-bottom:6px" data-i18n="dash.stats.pipeline">Pipeline de Pedidos</div>
-          
-          <!-- Funnel UI -->
-          <div style="display:flex;gap:6px;height:12px;margin-bottom:14px;width:100%;">
-             <div class="pipe-budget" title="Orçamento/Validação" style="width:0%;height:100%;transition:width .5s;background:var(--muted);border-radius:10px"></div>
-             <div class="pipe-prod" title="Produção" style="width:0%;height:100%;transition:width .5s;background:var(--orange);border-radius:10px"></div>
-             <div class="pipe-done" title="Concluído" style="width:0%;height:100%;transition:width .5s;background:var(--success);border-radius:10px"></div>
+        <!-- Operations: Pipeline -->
+        <div class="stat-card-v2">
+          <div class="stat-v2-header">
+            <div class="stat-v2-icon-wrap" style="background:rgba(139,92,246,0.1); color:var(--purple)">🔄</div>
+            <div class="stat-v2-badge badge-neu" style="background:none; border:none; color:var(--muted)">Total: <span id="statOrders">0</span></div>
           </div>
           
-          <div style="font-size:0.75rem;display:flex;justify-content:space-between;color:var(--muted)">
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--muted);margin-right:4px"></span><span data-i18n="dash.stats.pipe_approval">Aprovação:</span> <strong id="pipeValBudget">0</strong></span>
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--orange);margin-right:4px"></span><span data-i18n="dash.stats.pipe_prod">Produção:</span> <strong id="pipeValProd">0</strong></span>
-            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--success);margin-right:4px"></span><span data-i18n="dash.stats.pipe_done">Pronto:</span> <strong id="pipeValDone">0</strong></span>
+          <div class="stat-v2-label" style="font-size:1.1rem; color:var(--dark); margin-bottom:12px" data-i18n="dash.stats.pipeline">Pipeline de Pedidos</div>
+          
+          <!-- Segmented Progress Bar -->
+          <div class="segmented-bar">
+            <div id="segApproval" class="seg-item seg-1" style="width: 33%"></div>
+            <div id="segProduction" class="seg-item seg-2" style="width: 33%"></div>
+            <div id="segReady" class="seg-item seg-3" style="width: 34%"></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted)">
+            <div title="Orçamento/Validação">📝 <span data-i18n="dash.stats.pipe_approval">Aprovação:</span> <strong id="pipeValBudget">0</strong></div>
+            <div title="Em Produção">🖨️ <span data-i18n="dash.stats.pipe_prod">Produção:</span> <strong id="pipeValProd">0</strong></div>
+            <div title="Pronto para entrega">✅ <span data-i18n="dash.stats.pipe_done">Pronto:</span> <strong id="pipeValDone">0</strong></div>
           </div>
         </div>
 
-        <!-- Inventory & Fleet Consolidated -->
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon gray" style="background:rgba(100,116,139,.1);color:#64748b">🏭</div>
-            <span class="stat-badge" id="stockBadge" style="background:none;border:none;font-weight:700" data-i18n="dash.stats.op_status">Status Operacional</span>
+        <!-- 3D Print Farm Status -->
+        <div class="stat-card-v2">
+          <div class="stat-v2-header">
+            <div class="stat-v2-icon-wrap" style="background:rgba(100,116,139,0.1); color:var(--muted)">🏭</div>
+            <div class="stat-v2-badge" style="background:none; border:none; color:var(--muted)" data-i18n="dash.stats.op_status">Estado Operativo</div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(245,158,11,.08);border-radius:8px;border:1px solid rgba(245,158,11,.2)">
-               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)"><span data-i18n="dash.stats.crit_stock">📦 Stock Crítico</span></span>
-               <span id="statStock" style="font-size:1.1rem;font-weight:800;color:var(--orange)">0</span>
+
+          <div class="farm-status-grid">
+            <div id="stockMiniCard" class="farm-mini-card">
+              <span class="farm-mini-label" data-i18n="dash.stats.crit_stock">📦 Stock Crítico</span>
+              <span id="statStock" class="farm-mini-value" style="color:var(--orange)">0</span>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:rgba(59,143,212,.08);border-radius:8px;border:1px solid rgba(59,143,212,.2)">
-               <span style="font-size:0.8rem;font-weight:700;color:var(--dark)"><span data-i18n="dash.stats.fleet_online_label">🖨️ Frota Online</span></span>
-               <span id="efficiencyLabel" style="font-size:1.1rem;font-weight:800;color:var(--blue)">0/0</span>
+            <div class="farm-mini-card">
+              <span class="farm-mini-label" data-i18n="dash.stats.fleet_online_label">🖨️ Farm Online</span>
+              <span id="efficiencyLabel" class="farm-mini-value" style="color:var(--blue)">0/0</span>
             </div>
           </div>
         </div>
@@ -1010,7 +1158,6 @@ function getFilamentStatus(f) {
 function renderStats() {
   if (!state.orders) return;
   
-  // Calculate variables from state.orders FIRST to avoid ReferenceErrors
   const totalRevenue = (state.orders || []).reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
   const paidRevenue  = (state.orders || []).filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
   const pendingRevenue = totalRevenue - paidRevenue;
@@ -1018,48 +1165,47 @@ function renderStats() {
   const alertFils = (state.filaments || []).filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
-  // Previous month revenue for comparison
   const now = new Date();
   const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
   const prevTotalRevenue = state.orders
     .filter(o => (o.createdAt || o.created_at || '').startsWith(prevMonthStr))
     .reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
 
-  // Update Financial Values with Animation
   animateValue('statRevenue', 0, totalRevenue, 1000);
   animateValue('statPaid', 0, paidRevenue, 1000);
   animateValue('statPending', 0, pendingRevenue, 1000);
 
-  // Revenue badge — vs prev month
   const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : null;
   const revPct = prevTotalRevenue > 0 ? Math.round((totalRevenue - prevTotalRevenue) / prevTotalRevenue * 100) : null;
   const revBadge = document.getElementById('revBadge');
   if (revPct !== null) {
     revBadge.textContent = (revPct >= 0 ? '+' : '') + revPct + '%';
-    revBadge.className = 'stat-badge ' + (revPct >= 0 ? 'badge-up' : 'badge-down');
+    revBadge.className = 'stat-v2-badge ' + (revPct >= 0 ? 'badge-up' : 'badge-down');
   } else {
     revBadge.textContent = totalRevenue > 0 ? (t('dash.stats.this_month') || 'Este mês') : '—';
-    revBadge.className = 'stat-badge badge-neu';
+    revBadge.className = 'stat-v2-badge badge-neu';
   }
 
-  // Update Operations (Pipeline Funnel)
   const pipeBudget = (state.orders || []).filter(o => ['orcamento','validacao'].includes(o.status)).length;
   const pipeProd   = (state.orders || []).filter(o => ['modelagem','aprovado','printing'].includes(o.status)).length;
   const pipeDone   = (state.orders || []).filter(o => ['done','concluido','entregue'].includes(o.status)).length;
   
   const totalFunnel = pipeBudget + pipeProd + pipeDone;
-  const pctBudget = totalFunnel > 0 ? (pipeBudget / totalFunnel)*100 : 0;
-  const pctProd   = totalFunnel > 0 ? (pipeProd / totalFunnel)*100 : 0;
-  const pctDone   = totalFunnel > 0 ? (pipeDone / totalFunnel)*100 : 0;
+  const pctBudget = totalFunnel > 0 ? (pipeBudget / totalFunnel)*100 : 33.3;
+  const pctProd   = totalFunnel > 0 ? (pipeProd / totalFunnel)*100 : 33.3;
+  const pctDone   = totalFunnel > 0 ? (pipeDone / totalFunnel)*100 : 33.4;
 
   document.getElementById('statOrders').textContent = activeOrders;
   document.getElementById('pipeValBudget').textContent = pipeBudget;
   document.getElementById('pipeValProd').textContent = pipeProd;
   document.getElementById('pipeValDone').textContent = pipeDone;
   
-  document.querySelector('.pipe-budget').style.width = `${pctBudget}%`;
-  document.querySelector('.pipe-prod').style.width = `${pctProd}%`;
-  document.querySelector('.pipe-done').style.width = `${pctDone}%`;
+  const segApproval = document.getElementById('segApproval');
+  const segProduction = document.getElementById('segProduction');
+  const segReady = document.getElementById('segReady');
+  if (segApproval) segApproval.style.width = `${pctBudget}%`;
+  if (segProduction) segProduction.style.width = `${pctProd}%`;
+  if (segReady) segReady.style.width = `${pctDone}%`;
 
   // Fleet & Inventory Status
   const totalPrinters = state.printers.length;
@@ -1068,8 +1214,16 @@ function renderStats() {
   document.getElementById('efficiencyLabel').textContent = `${onlinePrinters}/${totalPrinters}`;
 
   // Stock Alerts & Ruptures
-  document.getElementById('statStock').textContent = totalAlerts > 0 ? totalAlerts : '0';
-  document.getElementById('statStock').style.color = totalAlerts > 0 ? 'var(--orange)' : 'var(--success)';
+  const stockVal = document.getElementById('statStock');
+  const stockCard = document.getElementById('stockMiniCard');
+  if (stockVal) {
+    stockVal.textContent = totalAlerts > 0 ? totalAlerts : '0';
+    stockVal.style.color = totalAlerts > 0 ? 'var(--orange)' : 'var(--success)';
+  }
+  if (stockCard) {
+    if (totalAlerts > 0) stockCard.classList.add('alert');
+    else stockCard.classList.remove('alert');
+  }
   
   // Show/Hide exception cards if 0
   document.getElementById('filamentAlertsCard').style.display = totalAlerts > 0 ? 'block' : 'none';
