@@ -774,20 +774,10 @@ async function loadUsers() {
       .select('role, joined_at, user_id, companies(name, plan)')
       .order('joined_at', { ascending: false });
     if (error) throw error;
-
-    // Tentar enriquecer com auth.users via RPC (opcional — pode não existir)
-    let authMap = {};
-    try {
-      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
-      if (!rpcErr && authUsers) authUsers.forEach(u => { authMap[u.id] = u; });
-    } catch (_) { /* RPC não disponível — mostra UUID como fallback */ }
-
-    _users = (data || []).map(m => ({
-      ...m,
-      email: authMap[m.user_id]?.email || m.user_id,
-      fname: authMap[m.user_id]?.raw_user_meta_data?.fname || '',
-      lname: authMap[m.user_id]?.raw_user_meta_data?.lname || '',
-    }));
+    // Sem RPC de metadata — mostra user_id como identificador
+    // Quando a função SQL `get_users_metadata` for criada no Supabase,
+    // os emails aparecerão automaticamente aqui.
+    _users = data || [];
     renderUsersTable(_users);
     document.getElementById('usersCount').textContent = _users.length;
   } catch(e) {
@@ -1020,20 +1010,22 @@ function renderUsersTable(data) {
     return;
   }
   tbody.innerHTML = data.map(u => {
-    const plan = u.companies?.plan || '—';
-    const isSA = _superAdmins.some(sa => sa.user_id === u.user_id);
+    const plan  = u.companies?.plan || '—';
+    const isSA  = _superAdmins.some(sa => sa.user_id === u.user_id);
     const saBtn = isSA
-      ? `<button class="btn-table danger" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',false)" title="Revogar Super Admin">🛡️ Revogar SA</button>`
-      : `<button class="btn-table" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',true)" title="Promover a Super Admin">🛡️ Dar SA</button>`;
-    const saBadge = isSA ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>` : '';
-    // Email: use raw_user_meta_data.email or user email stored in memberships
-    const email = u.email || u.raw_email || u.user_id || '—';
-    const name = (u.fname || u.raw_user_meta_data?.fname || '') + ' ' + (u.lname || u.raw_user_meta_data?.lname || '');
-    const displayName = name.trim() || '';
+      ? `<button class="btn-table danger" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',false)">🛡️ Revogar SA</button>`
+      : `<button class="btn-table" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',true)">🛡️ Dar SA</button>`;
+    const saBadge = isSA
+      ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>`
+      : '';
+    // Identificador: mostra user_id por defeito (UUID)
+    // Quando a RPC get_users_metadata existir, mostrará email e nome
+    const uid  = escH(u.user_id || '—');
+    const abbr = u.user_id ? u.user_id.slice(0, 8) + '…' : '—';
     return `<tr>
       <td>
-        <div style="font-weight:600;font-size:.82rem">${escH(displayName || email)}</div>
-        <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)">${escH(email)}</div>
+        <div style="font-weight:600;font-size:.82rem">${escH(u.companies?.name || 'Utilizador')}</div>
+        <div style="font-size:.7rem;color:var(--muted);font-family:var(--mono)" title="${uid}">${abbr}</div>
       </td>
       <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
       <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
@@ -1042,7 +1034,7 @@ function renderUsersTable(data) {
       <td class="mono">—</td>
       <td style="white-space:nowrap">
         ${saBtn}
-        <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">�ea53 Banir</button>
+        <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
       </td>
     </tr>`;
   }).join('');
