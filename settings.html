@@ -983,8 +983,20 @@ async function updateSubTab() {
     expiryEl.textContent = 'Ativo';
     expiryEl.style.color = 'var(--dark)';
   } else {
-    expiryEl.textContent = 'Subscrito';
-    expiryEl.style.color = 'var(--blue)';
+    expiryTitle.textContent = 'PRÓXIMA RENOVAÇÃO / VALIDADE';
+    if (_session.trialEndsAt) {
+       const end = new Date(_session.trialEndsAt);
+       if (end < new Date()) {
+         expiryEl.textContent = 'Expirado / Bloqueado';
+         expiryEl.style.color = 'var(--danger)';
+       } else {
+         expiryEl.textContent = end.toLocaleDateString('pt-PT', { day:'numeric', month:'short', year:'numeric' });
+         expiryEl.style.color = 'var(--dark)';
+       }
+    } else {
+       expiryEl.textContent = 'Subscrito';
+       expiryEl.style.color = 'var(--blue)';
+    }
   }
 }
 

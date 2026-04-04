@@ -873,11 +873,11 @@ function renderCustomersTable(data) {
       if (plan === 'trial') {
          subStatus = new Date(c.trial_ends_at) > new Date() ? 'trialing' : 'canceled';
       } else {
-         subStatus = 'active_man';
+         subStatus = new Date(c.trial_ends_at) > new Date() ? 'active_man' : 'blocked';
       }
     }
     
-    const isSuspended = c.is_suspended;
+    const isSuspended = c.is_suspended || subStatus === 'blocked';
     
     let statusClass = 's-active';
     if (subStatus === 'trialing') statusClass = 's-trial';
@@ -909,6 +909,10 @@ function renderCustomersTable(data) {
       <td>
         <div class="mono" style="font-weight:700;font-size:.75rem">€ ${(PLAN_MRR[plan]||0).toFixed(2)}/mês</div>
         <div style="font-size:.65rem;color:var(--muted)">${c.subscription?.stripe_subscription_id ? 'via Stripe' : 'Manual'}</div>
+      </td>
+      <td style="text-align:center">
+        <div class="mono" style="font-size:.75rem">${c.trial_ends_at ? new Date(c.trial_ends_at).toLocaleDateString('pt-PT') : 'N/A'}</div>
+        <div style="font-size:.65rem;color:var(--muted)">Vencimento</div>
       </td>
       <td style="text-align:center"><span class="badge" style="background:#eee">${c.userCount}</span></td>
       <td class="mono" style="font-size:.75rem">${fmtDate(c.created_at)}</td>
@@ -1113,9 +1117,19 @@ async function changeCustomerPlan(companyId, newPlan) {
   
   showConfirm('💳 Alterar Plano', `Deseja mudar o plano de "${c.name}" para <strong>${newPlan.toUpperCase()}</strong>?`, async () => {
     try {
+      const days = newPlan.includes('_ano') ? 365 + 1 : 30 + 1; // 1 day tolerance
+      const future = new Date();
+      if (newPlan !== 'trial') {
+        // Se for pago manual, somamos ao tempo atual para definir a validade
+        future.setDate(future.getDate() + days);
+      } else {
+        // Se voltar para trial, dá mais 7 dias no máximo
+        future.setDate(future.getDate() + 7);
+      }
+
       const { error } = await _adminSb()
         .from('companies')
-        .update({ plan: newPlan, updated_at: new Date().toISOString() })
+        .update({ plan: newPlan, trial_ends_at: future.toISOString(), updated_at: new Date().toISOString() })
         .eq('id', companyId);
       
       if (error) throw error;

@@ -901,6 +901,17 @@ function renderBanner() {
   const plan = (state.company.plan || 'trial').replace('_ano', '');
   const t = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
+  const isExpired = state.company.trial_ends_at && new Date(state.company.trial_ends_at) < new Date();
+
+  // Se plano não for trial e estiver expirado: Mostrar banner Blocked!
+  if (plan !== 'trial' && isExpired) {
+    inner.className = 'sub-banner-inner warning-banner';
+    icon.textContent = '⛔';
+    title.textContent = t('dash.sub_banner.overdue_active') || 'Acesso Bloqueado / Assinatura Expirada';
+    sub.textContent   = t('dash.sub_banner.overdue_desc') || 'A validade desta conta expirou. Por favor, contacte a administração.';
+    return; // não esconde o banner
+  }
+
   // Check if dismissed this session
   if (sessionStorage.getItem('banner_dismissed')) { banner.style.display='none'; return; }
 
@@ -1394,19 +1405,36 @@ function canAccess(feature) {
 function applyFeatureGating() {
   const plan = (state.company.plan || 'trial').replace('_ano', '');
 
+  let limits = { orders:true, financial:true, backoffice:true, settings:true, dashboard:true };
+  
+  const isExpired = state.company.trial_ends_at && new Date(state.company.trial_ends_at) < new Date();
+  
+  if (plan !== 'trial' && isExpired) {
+    // Lock EVERYTHING
+    limits = { orders:false, financial:false, backoffice:false, settings:false, dashboard:false };
+  } else {
+    limits = {
+      orders:     canAccess('orders'),
+      financial:  canAccess('financial'),
+      backoffice: canAccess('backoffice'),
+      settings:   canAccess('settings'),
+      dashboard:  canAccess('dashboard'),
+    };
+  }
+
   const locks = {
-    orders:     { navId: 'navLockOrders',     actionId: 'ordersActionLock',     cardId: 'actionOrders'    },
-    financial:  { navId: 'navLockFinancial',  actionId: 'financialActionLock',  cardId: 'actionFinancial' },
-    backoffice: { navId: 'navLockBackoffice', actionId: null, cardId: null },
-    settings:   { navId: 'navLockSettings',   actionId: null, cardId: null },
-    dashboard:  { navId: 'navLockDashboard',  actionId: null, cardId: null },
+    orders:     { navId: 'navLockOrders',     actionId: 'ordersActionLock',     cardId: 'actionOrders',    can: limits.orders },
+    financial:  { navId: 'navLockFinancial',  actionId: 'financialActionLock',  cardId: 'actionFinancial', can: limits.financial },
+    backoffice: { navId: 'navLockBackoffice', actionId: null, cardId: null, can: limits.backoffice },
+    settings:   { navId: 'navLockSettings',   actionId: null, cardId: null, can: limits.settings },
+    dashboard:  { navId: 'navLockDashboard',  actionId: null, cardId: null, can: limits.dashboard },
   };
 
-  Object.entries(locks).forEach(([feature, ids]) => {
-    if (!canAccess(feature)) {
-      if (ids.navId)    { const el = document.getElementById(ids.navId);    if (el) el.style.display = ''; }
-      if (ids.actionId) { const el = document.getElementById(ids.actionId); if (el) el.style.display = ''; }
-      if (ids.cardId)   { const el = document.getElementById(ids.cardId);   if (el) el.classList.add('locked-card'); }
+  Object.entries(locks).forEach(([feature, meta]) => {
+    if (!meta.can) {
+      if (meta.navId)    { const el = document.getElementById(meta.navId);    if (el) el.style.display = ''; }
+      if (meta.actionId) { const el = document.getElementById(meta.actionId); if (el) el.style.display = ''; }
+      if (meta.cardId)   { const el = document.getElementById(meta.cardId);   if (el) el.classList.add('locked-card'); }
     }
   });
 
