@@ -1594,7 +1594,9 @@ async function deleteCustomer() {
     closeDeleteModal();
     refreshAll();
   } catch(e) {
-    showToast('Erro ao apagar: ' + e.message, 'err');
+    console.error('Delete error:', e);
+    const detail = e.details || e.hint || '';
+    showToast('Erro ao apagar: ' + e.message + ' ' + detail, 'err');
     document.getElementById('deleteConfirmBtn').textContent = 'EXCLUIR TUDO';
   }
 }
