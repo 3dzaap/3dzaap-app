@@ -952,9 +952,16 @@ async function loadTeam() {
 }
 
 async function updateSubTab() {
-  const plan = _session.plan || 'trial';
-  document.getElementById('currPlanLabel').textContent = plan.toUpperCase();
+  const planRaw = _session.plan || 'trial';
+  const isAnnual = planRaw.endsWith('_ano');
+  const basePlan = planRaw.replace('_ano', '');
+  
+  let planLabel = basePlan.toUpperCase();
+  if (basePlan !== 'trial') planLabel += isAnnual ? ' (ANUAL)' : ' (MENSAL)';
+  
+  document.getElementById('currPlanLabel').textContent = planLabel;
 
+  const plan = basePlan; // Para a lógica que se segue (trial check)
   const expiryEl = document.getElementById('currExpiryValue');
   const expiryTitle = document.getElementById('expiryLabelTitle');
   

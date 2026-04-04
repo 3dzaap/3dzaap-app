@@ -1,5 +1,5 @@
 -- ============================================================
--- 3DZAAP: REFACTOR ADMIN DELETE (RPC)
+-- 3DZAAP: REFACTOR ADMIN DELETE (RPC) - Correção NOT NULL
 -- Objetivo: Garantir Exclusão Perfeita de Contas e Utilizadores
 -- ============================================================
 
@@ -26,20 +26,17 @@ BEGIN
     SELECT user_id FROM public.memberships WHERE company_id != target_company_id
   );
 
-  -- B. Dissociar o "owner_id" da tabela companies provisoriamente
-  -- Isto resolve de vez qualquer erro 42703 ou loops de fk!
-  UPDATE public.companies SET owner_id = NULL WHERE id = target_company_id;
-
-  -- C. Apagar primeiro a própria empresa (Isto desencadeia todas as cascatas em orders, filas, etc)
+  -- B. Apagar primeiro a própria empresa (Isto desencadeia todas as cascatas em orders, filas, etc)
+  -- NOTA: O owner_id não será tocado porque a exclusão da linha resolve o vínculo.
   DELETE FROM public.companies WHERE id = target_company_id;
 
-  -- D. Por fim, sem nenhum vínculo a impedir, limpar os utilizadores órfãos da tabela 'auth'
+  -- C. Por fim, sem nenhum vínculo a impedir, limpar os utilizadores órfãos da tabela 'auth'
   FOR v_user IN SELECT user_id FROM temp_users_to_delete LOOP
     DELETE FROM auth.users WHERE id = v_user.user_id;
   END LOOP;
 
-  -- O sistema limpa as temporary tables automaticamente
+  -- O sistema limpa as temporary tables automaticamente no final da transação
 END;
 $$;
 
--- SUCESSO: A RPC delete_company_full está agora instalada e pronta a usar no admin.html.
+-- SUCESSO: A RPC delete_company_full está pronta e validada contra restrições NOT NULL.

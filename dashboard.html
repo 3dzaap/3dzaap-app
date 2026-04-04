@@ -898,7 +898,7 @@ function renderBanner() {
   const icon = document.getElementById('subIcon');
   const title = document.getElementById('subTitle');
   const sub = document.getElementById('subSub');
-  const plan = state.company.plan;
+  const plan = (state.company.plan || 'trial').replace('_ano', '');
   const t = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
   // Check if dismissed this session
@@ -1387,11 +1387,12 @@ function renderFilamentAlerts() {
 
 // ── FEATURE GATING ─────────────────────
 function canAccess(feature) {
-  return PLAN_FEATURES[state.company.plan]?.[feature] ?? false;
+  const basePlan = (state.company.plan || 'trial').replace('_ano', '');
+  return PLAN_FEATURES[basePlan]?.[feature] ?? false;
 }
 
 function applyFeatureGating() {
-  const plan = state.company.plan;
+  const plan = (state.company.plan || 'trial').replace('_ano', '');
 
   const locks = {
     orders:     { navId: 'navLockOrders',     actionId: 'ordersActionLock',     cardId: 'actionOrders'    },
