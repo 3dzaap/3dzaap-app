@@ -545,8 +545,6 @@
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
 <div class="layout">
-<script src="sidebar.js"></script>
-<script>Sidebar.init();</script>
 
   <!-- ── SIDEBAR ─────────────────────── -->
   
@@ -1031,6 +1029,10 @@ function setTechMode(tech) {
   
   // Filter materials if they are loaded
   renderSelectors();
+  if (_calcMode === 'advanced') {
+    // preserve current focused inputs if any, but since it's a tech change, refreshing is fine
+    renderParts();
+  }
   liveCalc();
 }
 
@@ -1044,6 +1046,7 @@ async function loadInitialData() {
     _printers = prns;
     
     renderSelectors();
+    renderParts();
   } catch(e) {
     console.error('[3DZAAP] error loading calc data:', e);
   }
@@ -1071,9 +1074,11 @@ function renderSelectors() {
       mSel.appendChild(opt);
     } else {
       filtered.forEach(f => {
+        const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
+        const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
         const opt = document.createElement('option');
         opt.value = f.id;
-        opt.textContent = `${f.brand||''} ${f.name} (${fmtCurrency(f.price)}${unit})`;
+        opt.textContent = `${brand} ${matName} (${fmtCurrency(f.price)}${unit})`.trim();
         mSel.appendChild(opt);
       });
     }
@@ -1158,8 +1163,15 @@ function renderParts() {
       <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${p.id}, 'name', this.value)" placeholder="..."></td>
       <td>
         <select class="part-input" data-id="${p.id}" onchange="updatePart(${p.id}, 'materialId', this.value)">
-          <option value="">-- MAt --</option>
-          ${filteredMaterials.map(f => `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${f.name}</option>`).join('')}
+          <option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || '-- MAt --'}</option>
+          ${filteredMaterials.length === 0 ? `<option disabled>(${i18n.getNestedTranslation('calc.empty_materials') || 'Sem materiais'})</option>` : ''}
+          ${filteredMaterials.map(f => {
+            const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
+            const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+            const txt = `${brand} ${matName}`.trim();
+            const priceUnit = _activeTech === 'resin' ? '/L' : '/kg';
+            return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${txt} (${fmtCurrency(f.price)}${priceUnit})</option>`;
+          }).join('')}
         </select>
       </td>
       <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${p.id}, 'weight', this.value)" placeholder="g"></td>
