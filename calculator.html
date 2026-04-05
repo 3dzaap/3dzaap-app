@@ -909,19 +909,76 @@ function _persistHistory() {
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
+  
+  // Unidade de peso inicial (compatibilidade)
+  const wu = (localStorage.getItem('3dzaap_config_weightUnit')) || 'g';
+  document.querySelectorAll('.field-unit[data- unit="weight"]').forEach(el => el.textContent = wu);
+
   await loadUserData();
+  await loadInitialData();
+  await loadCompanyDefaults();
+  applyDefaultsToForm();
+  
+  // Garantir que impressoras de utilizador também sejam carregadas para o dropdown legado
   try {
     _userPrinters = await DB.getPrinters();
   } catch(e) { _userPrinters = []; }
   renderPrintersDropdown();
-  await loadCompanyDefaults();
-  applyDefaultsToForm();
-  liveCalc();
+  
   applyFeatureGating();
   renderHistory();
+  liveCalc();
 });
 
 // ── USER DATA ──────────────────────────
+async function loadUserData() {
+  try {
+    const ok = await Auth.requireAuth();
+    if (!ok) return;
+    const session = await Auth.getSession();
+    if (!session) return;
+    _sessionData = session;
+    if (window.Sidebar) Sidebar.setSession(session);
+    return session;
+  } catch(e) {
+    console.error('[3DZAAP] error in loadUserData:', e);
+  }
+}
+
+function initThemeToggle() {
+  const theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
+  const btn = document.getElementById('topbarThemeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+// ── HELPERS ───────────────────────────
+function setV(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function setSl(id, val, min, max) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.value = val;
+    if (min !== undefined) el.min = min;
+    if (max !== undefined) el.max = max;
+  }
+}
+function updateSliderLabels() {
+  const pairs = [
+    { s: 'failureSlider', v: 'failureVal' },
+    { s: 'indirectSlider', v: 'indirectVal' },
+    { s: 'marginSlider', v: 'marginVal' }
+  ];
+  pairs.forEach(p => {
+    const s = document.getElementById(p.s);
+    const v = document.getElementById(p.v);
+    if (s && v) v.textContent = s.value + '%';
+  });
+}
+function updatePctLabels() {
+  // Já lidado no _render para os indicadores do card de resultados
+}
 
 // ── NEW CALCULATOR LOGIC ──────────────────
 let _calcMode = 'simple'; // 'simple' or 'advanced'
@@ -1773,8 +1830,6 @@ function pf(id){
   if(typeof val === 'string') val = val.replace(',', '.');
   return parseFloat(val) || 0;
 }
-function setV(id,v){const el=document.getElementById(id);if(el)el.value=v;}
-function setSl(id,v,mn,mx){const el=document.getElementById(id);if(el)el.value=Math.min(mx,Math.max(mn,v));}
 function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 function dlCSV(csv,fn){
   const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
@@ -1806,17 +1861,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (++attempt > 20) clearInterval(iv);
   }, 100);
-  // Theme button icon
-  var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
-  var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
-
-  // Initialize new calculator
-  (async() => {
-    await loadInitialData();
-    await loadUserData();
-    liveCalc();
-  })();
+  // Inicialização gerida no topo via DOMContentLoaded.
 });
 </script>
 </body>
