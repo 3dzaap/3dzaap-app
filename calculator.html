@@ -550,42 +550,29 @@
 
   <!-- ── SIDEBAR ─────────────────────── -->
   
-
-  <!-- ── MAIN ─────────────────────────── -->
+  <!-- Content will be injected/wrapped -->
+  
   <div class="main">
-
-    <!-- Topbar: Breadcrumb + Global Controls -->
+    <!-- Topbar -->
     <header class="topbar">
-      <div class="topbar-breadcrumb">
-        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a>
-        <span>›</span>
-        <strong data-i18n="calc.title">📐 Calculadora</strong>
-      </div>
-      
-      <div class="global-ctrls">
-        <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn">🌙</button>
-        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
-          <option value="pt-PT">🇵🇹 PT</option>
-          <option value="pt-BR">🇧🇷 BR</option>
-          <option value="en-US">🇺🇸 US</option>
-          <option value="es">🇪🇸 ES</option>
-        </select>
-        <div class="user-profile" onclick="toggleUserMenu()">
-          <div class="user-avatar" id="userAvatar">U</div>
-          <div class="user-info">
-            <span class="user-name" id="userName">User</span>
-            <span class="user-plan" id="userPlanBadge">Free</span>
-          </div>
-          <div class="user-menu" id="userMenu">
-            <a href="settings.html" class="user-menu-item">⚙️ Definições</a>
-            <div class="user-menu-sep"></div>
-            <a href="#" onclick="doLogout()" class="user-menu-item" style="color:var(--error)">🚪 Sair</a>
-          </div>
+      <div class="topbar-title" id="topbarTitle" data-i18n="calc.page_title">Calculadora</div>
+      <div class="topbar-actions">
+        <div class="global-ctrls" id="globalCtrls">
+          <!-- Theme Toggle -->
+          <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme">🌙</button>
+          <!-- Language Selector -->
+          <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+            <option value="pt-PT">🇵🇹 PT</option>
+            <option value="pt-BR">🇧🇷 BR</option>
+            <option value="en-US">🇺🇸 US</option>
+            <option value="en-GB">🇬🇧 UK</option>
+            <option value="es">🇪🇸 ES</option>
+          </select>
         </div>
       </div>
     </header>
 
-    <div class="page">
+    <div class="page-content">
       <div class="page-header">
         <div class="page-header-text">
           <h1 data-i18n="calc.page_title">📐 Calculadora de Custos</h1>
@@ -773,8 +760,8 @@
                 <button class="btn-action" onclick="copyResults()">
                   <span data-i18n="calc.buttons.copy">Copiar</span>
                 </button>
-                <button class="btn-action" onclick="toggleAdvPanel()">
-                  <span data-i18n="calc.buttons.adjust">Ajustar %</span>
+                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
+                  <span data-i18n="calc.buttons.adjust">⚙️ Ajustar %</span>
                 </button>
               </div>
             </div>
@@ -1077,22 +1064,36 @@ function renderSelectors() {
       return cls === filterClass;
     });
     
-    filtered.forEach(f => {
+    if (filtered.length === 0) {
       const opt = document.createElement('option');
-      opt.value = f.id;
-      opt.textContent = `${f.brand||''} ${f.name} (${fmtCurrency(f.price)}${unit})`;
+      opt.disabled = true;
+      opt.textContent = '(' + (i18n.getNestedTranslation('calc.empty_materials') || 'Sem materiais registados') + ')';
       mSel.appendChild(opt);
-    });
+    } else {
+      filtered.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `${f.brand||''} ${f.name} (${fmtCurrency(f.price)}${unit})`;
+        mSel.appendChild(opt);
+      });
+    }
   }
   
   if (pSel) {
     pSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_printer') || 'Selecionar impressora...'}</option>`;
-    _printers.forEach(p => {
+    if (_printers.length === 0) {
       const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = `${p.model||p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
+      opt.disabled = true;
+      opt.textContent = '(' + (i18n.getNestedTranslation('calc.empty_printers') || 'Sem impressoras registadas') + ')';
       pSel.appendChild(opt);
-    });
+    } else {
+      _printers.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.model||p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
+        pSel.appendChild(opt);
+      });
+    }
   }
 }
 
@@ -1924,5 +1925,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicialização gerida no topo via DOMContentLoaded.
 });
 </script>
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
 </body>
 </html>
