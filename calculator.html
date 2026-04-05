@@ -649,30 +649,18 @@
             <!-- Modo Avançado (Pro) -->
             <div id="sectionAdvanced" style="display:none">
               <div class="form-section">
-                <div class="section-title">
-                  <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)">🏗️</div>
-                  <span data-i18n="calc.sections.project">Mesa</span>
+                <div class="section-title" style="justify-content: space-between; display: flex;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)">🏗️</div>
+                    <span data-i18n="calc.sections.project">Mesa</span>
+                  </div>
+                  <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
+                    <span>➕</span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
+                  </button>
                 </div>
-                <div class="parts-table-wrap">
-                  <table class="parts-table">
-                    <thead>
-                      <tr>
-                        <th data-i18n="calc.table.part">Peça</th>
-                        <th data-i18n="calc.table.material">Material</th>
-                        <th data-i18n="calc.table.weight">Peso (g)</th>
-                        <th data-i18n="calc.table.qty">Qtd</th>
-                        <th data-i18n="calc.table.time_h">Tempo (h)</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody id="partsBody">
-                      <!-- Dinâmico via JS -->
-                    </tbody>
-                  </table>
+                <div id="mesasContainer" style="margin-top:10px;">
+                  <!-- Dinâmico via JS -->
                 </div>
-                <button class="btn-add-part" onclick="addPartRow()">
-                  <span>➕</span> <span data-i18n="calc.buttons.add_part">Adicionar Mesa</span>
-                </button>
               </div>
             </div>
 
@@ -988,7 +976,7 @@ function updatePctLabels() {
 
 // ── NEW CALCULATOR LOGIC ──────────────────
 let _calcMode = 'simple'; // 'simple' or 'advanced'
-let _parts = []; // Array of { id, name, materialId, weight, qty, time }
+let _mesas = []; // Array of { id, name, parts: [...] }
 let _filaments = [];
 let _printers = [];
 let _selectedMaterial = null;
@@ -1011,8 +999,8 @@ function setCalcMode(mode) {
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
   document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
   
-  if (mode === 'advanced' && _parts.length === 0) {
-    addPartRow();
+  if (mode === 'advanced' && _mesas.length === 0) {
+    addMesa();
   }
   liveCalc();
 }
@@ -1122,30 +1110,63 @@ function applyPrinterSelect(id) {
   liveCalc();
 }
 
-function addPartRow() {
-  const id = Date.now() + Math.random();
-  const part = { id, name: '', materialId: '', weight: 0, qty: 1, time: 0 };
-  _parts.push(part);
-  renderParts();
+function addMesa() {
+  const mId = Date.now() + Math.random();
+  _mesas.push({ id: mId, name: 'Mesa ' + (_mesas.length + 1), parts: [] });
+  addPartToMesa(mId, false);
+  renderMesas();
   liveCalc();
 }
 
-function removePartRow(id) {
-  _parts = _parts.filter(p => p.id !== id);
-  if (_parts.length === 0) addPartRow();
-  renderParts();
+function deleteMesa(mId) {
+  if (_mesas.length <= 1) {
+    _mesas[0].name = 'Mesa 1';
+    _mesas[0].parts = [];
+    addPartToMesa(_mesas[0].id, false);
+  } else {
+    _mesas = _mesas.filter(m => m.id !== mId);
+  }
+  renderMesas();
   liveCalc();
 }
 
-function updatePart(id, field, val) {
-  const p = _parts.find(x => x.id === id);
+function updateMesaName(mId, name) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m) m.name = name;
+  liveCalc();
+}
+
+function addPartToMesa(mId, doRender = true) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  m.parts.push({ id: Date.now() + Math.random(), name: '', materialId: '', weight: 0, qty: 1, time: 0 });
+  if (doRender) { renderMesas(); liveCalc(); }
+}
+
+function removePartFromMesa(mId, pId) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  m.parts = m.parts.filter(p => p.id !== pId);
+  if (m.parts.length === 0) addPartToMesa(mId, false);
+  renderMesas();
+  liveCalc();
+}
+
+function updatePart(mId, pId, field, val) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  const p = m.parts.find(x => x.id === pId);
   if (!p) return;
   if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
   p[field] = val;
   
-  // Auto-sum time to totalProjectTime
   if (_calcMode === 'advanced') {
-    const total = _parts.reduce((sum, part) => sum + (part.time * (part.qty || 1)), 0);
+    let total = 0;
+    _mesas.forEach(mesa => {
+      mesa.parts.forEach(part => {
+        total += (part.time * (part.qty || 1));
+      });
+    });
     const timeEl = document.getElementById('totalProjectTime');
     if (timeEl) timeEl.value = total.toFixed(1);
   }
@@ -1153,39 +1174,109 @@ function updatePart(id, field, val) {
   liveCalc();
 }
 
-function renderParts() {
-  const body = document.getElementById('partsBody');
-  if (!body) return;
-  body.innerHTML = '';
+function renderMesas() {
+  const container = document.getElementById('mesasContainer');
+  if (!container) return;
+  container.innerHTML = '';
   
   const filterClass = _activeTech === 'resin' ? 'resin' : 'fdm';
   const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === filterClass);
 
-  _parts.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${p.id}, 'name', this.value)" placeholder="..."></td>
-      <td>
-        <select class="part-input" data-id="${p.id}" onchange="updatePart(${p.id}, 'materialId', this.value)">
-          <option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || '-- MAt --'}</option>
-          ${filteredMaterials.length === 0 ? `<option disabled>(${i18n.getNestedTranslation('calc.empty_materials') || 'Sem materiais'})</option>` : ''}
-          ${filteredMaterials.map(f => {
-            const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
-            const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
-            const txt = `${brand} ${matName}`.trim();
-            const priceUnit = _activeTech === 'resin' ? '/L' : '/kg';
-            return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${txt} (${fmtCurrency(f.price)}${priceUnit})</option>`;
-          }).join('')}
-        </select>
-      </td>
-      <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${p.id}, 'weight', this.value)" placeholder="g"></td>
-      <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${p.id}, 'qty', this.value)" placeholder="un"></td>
-      <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${p.id}, 'time', this.value)" placeholder="h"></td>
-      <td style="text-align:right">
-        <button class="btn-remove-part" onclick="removePartRow(${p.id})">✕</button>
-      </td>
+  _mesas.forEach((m, idx) => {
+    const mDiv = document.createElement('div');
+    mDiv.style.marginBottom = '20px';
+    mDiv.style.border = '1px solid var(--border)';
+    mDiv.style.borderRadius = 'var(--rm)';
+    mDiv.style.background = 'var(--bg-card)';
+    mDiv.style.overflow = 'hidden';
+    
+    // Header
+    const hdr = document.createElement('div');
+    hdr.style.padding = '12px 16px';
+    hdr.style.background = 'var(--bg-card-s)';
+    hdr.style.borderBottom = '1px solid var(--border)';
+    hdr.style.display = 'flex';
+    hdr.style.justifyContent = 'space-between';
+    hdr.style.alignItems = 'center';
+    
+    hdr.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span style="font-size:1.1rem">🔲</span>
+        <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
+      </div>
+      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem" onclick="deleteMesa(${m.id})">🗑️</button>
     `;
-    body.appendChild(tr);
+    mDiv.appendChild(hdr);
+    
+    // Table wrap
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'parts-table-wrap';
+    tableWrap.style.margin = '0';
+    tableWrap.style.borderBottom = '1px solid var(--border)';
+    tableWrap.style.borderTop = 'none';
+    tableWrap.style.borderLeft = 'none';
+    tableWrap.style.borderRight = 'none';
+    tableWrap.style.borderRadius = '0';
+    
+    let partsHtml = '';
+    m.parts.forEach((p, pIdx) => {
+      const matOptions = filteredMaterials.map(f => {
+        const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
+        const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+        const txt = `${brand} ${matName}`.trim();
+        const priceUnit = _activeTech === 'resin' ? '/L' : '/kg';
+        return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${txt} (${fmtCurrency(f.price)}${priceUnit})</option>`;
+      }).join('');
+      
+      partsHtml += `
+        <tr>
+          <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${m.id}, ${p.id}, 'name', this.value)" placeholder="..."></td>
+          <td>
+            <select class="part-input" onchange="updatePart(${m.id}, ${p.id}, 'materialId', this.value)">
+              <option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || '-- Mat --'}</option>
+              ${filteredMaterials.length === 0 ? `<option disabled>(Sem materiais)</option>` : matOptions}
+            </select>
+          </td>
+          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="g"></td>
+          <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
+          <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
+          <td style="text-align:right">
+            <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})">✕</button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    tableWrap.innerHTML = `
+      <table class="parts-table" style="border-radius:0;border:none">
+        <thead>
+          <tr>
+            <th data-i18n="calc.table.part">${i18n.getNestedTranslation('calc.table.part')||'Peça'}</th>
+            <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
+            <th data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')||'Peso (g)'}</th>
+            <th data-i18n="calc.table.qty">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
+            <th data-i18n="calc.table.time_h">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${partsHtml}
+        </tbody>
+      </table>
+    `;
+    mDiv.appendChild(tableWrap);
+    
+    const ftr = document.createElement('div');
+    ftr.style.padding = '8px 12px';
+    ftr.style.background = 'var(--bg)';
+    ftr.innerHTML = `
+      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600" onclick="addPartToMesa(${m.id})">
+        <span>➕</span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
+      </button>
+    `;
+    mDiv.appendChild(ftr);
+    
+    container.appendChild(mDiv);
   });
 }
 
@@ -1363,7 +1454,17 @@ function getInputs() {
     };
   } else {
     // Advanced mode: parts array
-    const partsTotalWeight = _parts.reduce((sum, p) => sum + (p.weight * (p.qty || 1)), 0);
+    // Advanced mode: array of mesas > array of parts
+    let partsTotalWeight = 0;
+    let advancedPartsInfo = [];
+    _mesas.forEach(mesa => {
+      mesa.parts.forEach(p => {
+        partsTotalWeight += (p.weight * (p.qty || 1));
+        const mat = _filaments.find(f => String(f.id) === String(p.materialId));
+        advancedPartsInfo.push({ ...p, price: mat ? mat.price : 25, mesaId: mesa.id });
+      });
+    });
+    
     const totalTimeValue = pf('totalProjectTime');
     
     return {
@@ -1372,10 +1473,8 @@ function getInputs() {
       tech: _activeTech,
       weight: partsTotalWeight,
       time: totalTimeValue,
-      parts: _parts.map(p => {
-        const mat = _filaments.find(f => String(f.id) === String(p.materialId));
-        return { ...p, price: mat ? mat.price : 25 };
-      }),
+      parts: advancedPartsInfo,
+      mesas: _mesas,
       totalTime: totalTimeValue
     };
   }
@@ -1503,18 +1602,23 @@ function sendWhatsApp() {
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
-function clearCalculator() {
-  if (_calcMode === 'advanced') {
-    _parts = [];
-    addPartRow();
-  } else {
-    document.getElementById('partWeight').value = 50;
-    document.getElementById('printTime').value = 3;
-    document.getElementById('fMaterialSelect').value = '';
-    _selectedMaterial = null;
-  }
+function clearCalculator(){
+  document.querySelectorAll('.inp, .part-input').forEach(i=> {
+    if(i.type==='checkbox') i.checked=false;
+    else if(i.tagName!=='SELECT'&&i.id!=='filamentPrice') i.value='';
+  });
+  
+  _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
+  addPartToMesa(_mesas[0].id, false);
+  
+  if(_activeTech==='fdm') setV('filamentPrice',25);
+  else setV('filamentPrice',40);
+  
+  setV('partWeight',50);setV('printTime',2);
+  loadCompanyDefaults();
+  renderMesas();
   liveCalc();
-  showToast('🗑️ Limpo!', 'ok');
+  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '🗑️ Campos limpos','');
 }
 
 function applyPrinterSelect(id) {
@@ -1698,9 +1802,15 @@ function restoreHistory(id){
     setV('partWeight', i.weight || i.partWeight || i.resinVolume || 50);
     setV('printTime', i.time || i.printTime || i.resinPrintTime || 2);
   } else {
-    _parts = i.parts || [];
+    if (i.mesas && Array.isArray(i.mesas) && i.mesas.length > 0) {
+      _mesas = i.mesas;
+    } else if (i.parts && Array.isArray(i.parts)) {
+      _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: i.parts }];
+    } else {
+      _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
+    }
     setV('totalProjectTime', i.totalTime || i.time || 0);
-    renderParts();
+    renderMesas();
   }
 
   setV('printerPrice',i.printerPrice); setV('printerLife',i.printerLife);
