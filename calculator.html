@@ -1019,7 +1019,7 @@ function setTechMode(tech) {
   renderSelectors();
   if (_calcMode === 'advanced') {
     // preserve current focused inputs if any, but since it's a tech change, refreshing is fine
-    renderParts();
+    renderMesas();
   }
   liveCalc();
 }
@@ -1034,7 +1034,7 @@ async function loadInitialData() {
     _printers = prns;
     
     renderSelectors();
-    renderParts();
+    renderMesas();
   } catch(e) {
     console.error('[3DZAAP] error loading calc data:', e);
   }
@@ -1085,7 +1085,7 @@ function renderSelectors() {
         opt.value = p.id;
         
         const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
-        const printStr = calcHr > 0 ? ` (${fmtCurrency(calcHr)}/h)` : '';
+        const printStr = ` (${fmtCurrency(calcHr)}/h)`;
         
         opt.textContent = `${p.model||p.name}${printStr}`;
         pSel.appendChild(opt);
@@ -1289,6 +1289,9 @@ async function loadCompanyDefaults(){
     ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
         if(c[k] !== undefined) defaults[k] = c[k];
       });
+      if(c.calc_history) {
+        calcHistory = Array.isArray(c.calc_history) ? c.calc_history : [];
+      }
     }
   }catch(e){}
 }
@@ -1341,22 +1344,43 @@ function criarPedido() {
   const r = computeResults(i);
   
   if (r.finalPrice <= 0) {
-    showToast('⚠️ Calcula um valor primeiro', 'err');
+    showToast(i18n.getNestedTranslation('calc.toasts.calc_first') || 'Calcula primeiro antes de criar o pedido', 'err');
+    return;
+  }
+
+  // Feature gating check for orders
+  const plan = (_sessionData?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
+  if (!['trial', 'pro', 'business'].includes(plan)) {
+    if (typeof UI !== 'undefined' && UI.showFeatureGate) {
+      UI.showFeatureGate('orders');
+    } else {
+      showToast('⚠️ Funcionalidade indisponível no teu plano atual.', 'err');
+    }
     return;
   }
 
   let payload = {};
+  var clientNameObj = document.getElementById('clientName');
+  var pClient = (clientNameObj ? clientNameObj.value : '').trim();
+  var name = (document.getElementById('printName').value || '').trim();
+  var modeLabel = i.tech === 'resin' ? 'Resina' : 'FDM';
+  var desc = name || (i.mode === 'advanced'
+    ? 'Projeto ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' peças'
+    : 'Impressão ' + modeLabel + ' — ' + (i.weight || 0) + 'g');
 
   if (i.mode === 'simple') {
     payload = {
-      mode: _activeTech,
-      description: document.getElementById('printName')?.value || 'Impressão 3D',
-      quantity: 1,
-      filament_weight: i.weight,
-      resin_volume: i.weight,
-      unit_price: r.finalPrice,
+      client_name: pClient,
+      mode: i.tech,
+      description: desc,
+      quantity: i.qty || 1,
+      total: parseFloat(r.finalPrice.toFixed(2)),
+      filament_weight: i.tech === 'fdm' ? i.weight * (i.qty || 1) : null,
+      resin_volume: i.tech === 'resin' ? i.weight * (i.qty || 1) : null,
+      unit_price: parseFloat(r.unitPrice.toFixed(2)),
       material_id: _selectedMaterial ? _selectedMaterial.id : null,
-      material_cost: r.materialCost
+      material_cost: parseFloat((r.materialCost * (i.qty || 1)).toFixed(4)),
+      _from_calc: true
     };
   } else {
     // Advanced mode: distribute overhead proportional to material cost
@@ -1364,7 +1388,10 @@ function criarPedido() {
     const overheadFactor = (r.finalPrice - r.materialCost) / totalMat;
     
     payload = {
+      client_name: pClient,
       mode: 'advanced',
+      description: desc,
+      _from_calc: true,
       parts: i.parts.map(p => {
         const unitMatCost = (p.price / 1000) * p.weight;
         const rowUnitPrice = unitMatCost * (1 + overheadFactor);
@@ -1372,7 +1399,7 @@ function criarPedido() {
           name: p.name || 'Peça',
           qty: p.qty,
           weight: p.weight,
-          unitPrice: rowUnitPrice,
+          unitPrice: parseFloat(rowUnitPrice.toFixed(2)),
           materialId: p.materialId
         };
       })
@@ -1380,7 +1407,8 @@ function criarPedido() {
   }
 
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
-  window.location.href = 'orders.html';
+  showToast(i18n.getNestedTranslation('calc.toasts.prefilling_order') || '📦 A abrir pedido pré-preenchido…', 'ok');
+  setTimeout(function() { window.location.href = 'orders.html?from=calc'; }, 600);
 }
 
 function updatePctLabels() {} // Já tratado no _render
@@ -1513,6 +1541,7 @@ function computeResults(i) {
     indirectCost,
     marginCost,
     finalPrice,
+    unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1
   };
 }
@@ -1867,40 +1896,7 @@ function exportCalcCSV(){
   showToast(i18n.getNestedTranslation('calc.toasts.csv_exported') || '📄 CSV exportado!','ok');
 }
 
-function criarPedido(){
-  var i=getInputs();var r=computeResults(i);
-  if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.calc_first') || 'Calcula primeiro antes de criar o pedido','err');return;}
 
-  // Feature gating check for orders
-  const plan = (localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
-  if (!['trial', 'pro', 'business'].includes(plan)) {
-    UI.showFeatureGate('orders');
-    return;
-  }
-  var clientNameObj=document.getElementById('clientName');
-  var pClient=(clientNameObj ? clientNameObj.value : '').trim();
-  var name=(document.getElementById('printName').value||'').trim();
-  var modeLabel=i.tech==='resin'?'Resina':'FDM';
-  var desc=name||(i.mode==='advanced'
-    ?'Projeto '+modeLabel+' — '+(i.parts?i.parts.length:1)+' peças'
-    :'Impressão '+modeLabel+' — '+(i.weight||0)+'g');
-    
-  var payload={
-    client_name:pClient,
-    description:desc,
-    unit_price:parseFloat(r.unitPrice.toFixed(2)),
-    quantity:i.qty||1,
-    total:parseFloat(r.finalPrice.toFixed(2)),
-    material_cost:parseFloat((r.materialCost*(i.qty||1)).toFixed(4)),
-    mode:i.tech,
-    filament_weight:i.tech==='fdm'?i.weight*(i.qty||1):null,
-    resin_volume:i.tech==='resin'?i.weight*(i.qty||1):null,
-    _from_calc:true,
-  };
-  sessionStorage.setItem('3dzaap_calc_prefill',JSON.stringify(payload));
-  showToast(i18n.getNestedTranslation('calc.toasts.prefilling_order') || '📦 A abrir pedido pré-preenchido…','ok');
-  setTimeout(function(){window.location.href='orders.html?from=calc';},600);
-}
 
 function copyResults(){
   const i=getInputs();const r=computeResults(i);
