@@ -13,6 +13,13 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let _companyId    = null;   // UUID da empresa
 let _companyCache = null;   // objecto completo — evita queries repetidas
 
+// ── PLAN GROUPS — Centralizando a lógica de permissões ─────
+const PLANS_FREE        = ['trial'];
+const PLANS_STARTER     = ['trial', 'starter', 'starter_ano', 'pro', 'pro_ano', 'business', 'business_ano'];
+const PLANS_PRO_PLUS    = ['trial', 'pro', 'pro_ano', 'business', 'business_ano'];
+const PLANS_BUSINESS    = ['trial', 'business', 'business_ano'];
+const PLANS_ANNUAL      = ['starter_ano', 'pro_ano', 'business_ano'];
+
 // ============================================================
 // AUTH
 // ============================================================
@@ -311,11 +318,15 @@ const DB = {
 
   async saveAllFilaments(filaments) {
     await _ensureCompany();
-    await _sb.from('filaments').delete().eq('company_id', _companyId);
+    // Para salvamento em lote (importação), o ideal seria uma transação.
+    // Como padrão de segurança, fazemos o delete e insert em sequência.
+    const { error: delErr } = await _sb.from('filaments').delete().eq('company_id', _companyId);
+    if (delErr) throw new Error('Falha ao limpar filamentos existentes: ' + delErr.message);
+    
     if (!filaments.length) return;
     const rows = filaments.map(f => ({ ..._mapFilamentToDB(f), company_id: _companyId }));
     const { error } = await _sb.from('filaments').insert(rows);
-    if (error) throw error;
+    if (error) throw new Error('Falha ao inserir novos filamentos: ' + error.message);
   },
 
   // ── ORDERS ──────────────────────────────────────────────────
@@ -369,13 +380,15 @@ const DB = {
     if (error) throw error;
   },
 
-  async saveAllOrders(orders) {
+  async saveAllOrders(ordersList) {
     await _ensureCompany();
-    await _sb.from('orders').delete().eq('company_id', _companyId);
-    if (!orders.length) return;
-    const rows = orders.map(o => ({ ..._mapOrderToDB(o), company_id: _companyId }));
+    const { error: delErr } = await _sb.from('orders').delete().eq('company_id', _companyId);
+    if (delErr) throw new Error('Falha ao limpar pedidos existentes: ' + delErr.message);
+    
+    if (!ordersList.length) return;
+    const rows = ordersList.map(o => ({ ..._mapOrderToDB(o), company_id: _companyId }));
     const { error } = await _sb.from('orders').insert(rows);
-    if (error) throw error;
+    if (error) throw new Error('Falha ao inserir novos pedidos: ' + error.message);
   },
 
   // ── CUSTOMER PORTAL & TRACKING (Public) ─────────────────────
@@ -500,13 +513,15 @@ const DB = {
     if (error) throw error;
   },
 
-  async saveAllExpenses(expenses) {
+  async saveAllExpenses(expensesList) {
     await _ensureCompany();
-    await _sb.from('expenses').delete().eq('company_id', _companyId);
-    if (!expenses.length) return;
-    const rows = expenses.map(e => ({ ..._mapExpenseToDB(e), company_id: _companyId }));
+    const { error: delErr } = await _sb.from('expenses').delete().eq('company_id', _companyId);
+    if (delErr) throw new Error('Falha ao limpar despesas existentes: ' + delErr.message);
+    
+    if (!expensesList.length) return;
+    const rows = expensesList.map(e => ({ ..._mapExpenseToDB(e), company_id: _companyId }));
     const { error } = await _sb.from('expenses').insert(rows);
-    if (error) throw error;
+    if (error) throw new Error('Falha ao inserir novas despesas: ' + error.message);
   },
 
   // ── PRINTERS ────────────────────────────────────────────────
@@ -551,11 +566,12 @@ const DB = {
   async saveAllPrinters(printersList) {
     await _ensureCompany();
     const { error: delErr } = await _sb.from('printers').delete().eq('company_id', _companyId);
-    if (delErr) throw delErr;
+    if (delErr) throw new Error('Falha ao limpar impressoras existentes: ' + delErr.message);
+    
     if (!printersList.length) return [];
     const rows = printersList.map(p => ({ ..._mapPrinterToDB(p), company_id: _companyId }));
     const { data, error } = await _sb.from('printers').insert(rows).select();
-    if (error) throw error;
+    if (error) throw new Error('Falha ao inserir novas impressoras: ' + error.message);
     return data.map(_mapPrinterFromDB);
   },
 

@@ -478,9 +478,9 @@
 /* ── GLOBAL CONTROLS ────────────────── */
 .global-ctrls { display:flex; align-items:center; gap:8px; margin-left:auto; }
 .gc-btn {
-  background: var(--bg-card, #fff);
-  border: 1.5px solid var(--border, rgba(0,0,0,.12));
-  color: var(--dark, #1a2332);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--dark);
   border-radius: 8px;
   padding: 5px 10px;
   cursor: pointer;
@@ -525,14 +525,7 @@
   transition: background .15s;
 }
 .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
-[data-theme="dark"] .gc-btn,
-[data-theme="dark"] .gc-select,
-[data-theme="dark"] .gc-popover {
-  background: var(--bg-card, #1e2d40);
-  border-color: var(--border, rgba(255,255,255,.1));
-  color: var(--dark, #e2e8f0);
-}
-[data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
+[data-theme="dark"] .gc-popover-item { color: var(--dark); }
 </style>
 </head>
 <body>
@@ -1080,8 +1073,11 @@ async function applyFeatureGating(){
   try{
     const session = await Auth.getSession();
     const plan = session?.plan || 'trial';
-    if(!['trial','pro','business'].includes(plan)) document.getElementById('ordersLock').style.display='';
-    if(!['trial','business'].includes(plan)) document.getElementById('financialLock').style.display='';
+    const PRO_PLUS = (typeof PLANS_PRO_PLUS !== 'undefined') ? PLANS_PRO_PLUS : ['trial','pro','pro_ano','business','business_ano'];
+    const BIZ = (typeof PLANS_BUSINESS !== 'undefined') ? PLANS_BUSINESS : ['trial','business','business_ano'];
+
+    if(!PRO_PLUS.includes(plan)) document.getElementById('ordersLock').style.display='';
+    if(!BIZ.includes(plan)) document.getElementById('financialLock').style.display='';
   }catch(e){}
 }
 

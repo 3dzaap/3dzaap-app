@@ -157,7 +157,12 @@ const Sidebar = (() => {
     const initials        = fullName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
     const companyName     = session.companyName || '—';
     const companyInitials = companyName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || '—';
-    const planLabels      = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
+    const planLabels      = { 
+      trial: 'Trial', 
+      starter: 'Starter', starter_ano: 'Starter (Ano)',
+      pro: 'Pro',         pro_ano: 'Pro (Ano)',
+      business: 'Business', business_ano: 'Business (Ano)' 
+    };
     const plan            = session.plan || 'trial';
 
     _setText('sidebarUserName',    fullName);
@@ -185,17 +190,23 @@ const Sidebar = (() => {
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
-    trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
-    starter:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
-    pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
-    business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
+    trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
+    starter:      { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
+    starter_ano:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
+    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
+    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
+    business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
+    business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
   };
 
   const PLAN_LIMITS = {
-    trial:    { materials: null, printers: null },
-    starter:  { materials: 10,  printers: 1    },
-    pro:      { materials: null, printers: null },
-    business: { materials: null, printers: null },
+    trial:        { materials: null, printers: null },
+    starter:      { materials: 10,   printers: 1    },
+    starter_ano:  { materials: 10,   printers: 1    },
+    pro:          { materials: null, printers: null },
+    pro_ano:      { materials: null, printers: null },
+    business:     { materials: null, printers: null },
+    business_ano: { materials: null, printers: null },
   };
 
   const LOCK_LABELS = { orders:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
