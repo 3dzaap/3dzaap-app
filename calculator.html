@@ -944,7 +944,7 @@ async function loadUserData() {
     const session = await Auth.getSession();
     if (!session) return;
     _sessionData = session;
-    if (window.Sidebar) Sidebar.setSession(session);
+    if (typeof Sidebar !== 'undefined') Sidebar.setSession(session);
     return session;
   } catch(e) {
     console.error('[3DZAAP] error in loadUserData:', e);
@@ -1680,16 +1680,25 @@ function renderHistory(){
 function restoreHistory(id){
   var e=calcHistory.find(function(h){return h.id===id;});if(!e)return;
   var i=e.inputs;
-  setMode(e.mode||'fdm');
-  setV('printName',e.name||''); setV('printQty',i.qty||1);
-  if(e.mode==='resin'){
-    setV('resinPrice',i.resinPrice); setV('resinVolume',i.resinVolume);
-    setV('resinDensity',i.resinDensity); setV('resinPrintTime',i.printTime);
-    setV('uvLampPower',i.uvLampPower); setV('washCureTime',i.washCureTime);
+  
+  var cMode = e.mode === 'advanced' || i.mode === 'advanced' ? 'advanced' : 'simple';
+  setCalcMode(cMode);
+  
+  var tech = i.tech || e.mode || 'fdm';
+  setTechMode(tech);
+  
+  setV('printName', e.name||'');
+  
+  if (cMode === 'simple') {
+    setV('filamentPrice', i.materialPrice || i.filamentPrice || i.resinPrice || 25);
+    setV('partWeight', i.weight || i.partWeight || i.resinVolume || 50);
+    setV('printTime', i.time || i.printTime || i.resinPrintTime || 2);
   } else {
-    setV('filamentPrice',i.filamentPrice); setV('partWeight',i.partWeight);
-    setV('printTime',i.printTime); setSl('printTimeSlider',i.printTime,0,48);
+    _parts = i.parts || [];
+    setV('totalProjectTime', i.totalTime || i.time || 0);
+    renderParts();
   }
+
   setV('printerPrice',i.printerPrice); setV('printerLife',i.printerLife);
   setV('powerConsumption',i.powerConsumption||200);
   setV('electricityPrice',i.electricityPrice);
@@ -1754,21 +1763,24 @@ function criarPedido(){
     UI.showFeatureGate('orders');
     return;
   }
+  var clientNameObj=document.getElementById('clientName');
+  var pClient=(clientNameObj ? clientNameObj.value : '').trim();
   var name=(document.getElementById('printName').value||'').trim();
-  var modeLabel=i.mode==='resin'?'Resina':'FDM';
-  var desc=name||(i.mode==='resin'
-    ?'Impressão '+modeLabel+' — '+i.resinVolume+'mL × '+(i.qty||1)+'un.'
-    :'Impressão '+modeLabel+' — '+i.partWeight+'g × '+(i.qty||1)+'un.');
+  var modeLabel=i.tech==='resin'?'Resina':'FDM';
+  var desc=name||(i.mode==='advanced'
+    ?'Projeto '+modeLabel+' — '+(i.parts?i.parts.length:1)+' peças'
+    :'Impressão '+modeLabel+' — '+(i.weight||0)+'g');
+    
   var payload={
-    client_name:(document.getElementById('clientName').value||'').trim(),
+    client_name:pClient,
     description:desc,
     unit_price:parseFloat(r.unitPrice.toFixed(2)),
     quantity:i.qty||1,
     total:parseFloat(r.finalPrice.toFixed(2)),
     material_cost:parseFloat((r.materialCost*(i.qty||1)).toFixed(4)),
-    mode:i.mode,
-    filament_weight:i.mode==='fdm'?i.partWeight*(i.qty||1):null,
-    resin_volume:i.mode==='resin'?i.resinVolume*(i.qty||1):null,
+    mode:i.tech,
+    filament_weight:i.tech==='fdm'?i.weight*(i.qty||1):null,
+    resin_volume:i.tech==='resin'?i.weight*(i.qty||1):null,
     _from_calc:true,
   };
   sessionStorage.setItem('3dzaap_calc_prefill',JSON.stringify(payload));
