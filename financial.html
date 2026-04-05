@@ -487,7 +487,7 @@ async function loadUserData() {
 async function applyFeatureGating() {
   try {
     const session = await Auth.getSession();
-    const plan = session?.plan || 'trial';
+    const plan = (session?.plan || 'trial').replace('_ano', '');
     // Gate: only trial and business can access financial
     const FIN_PLANS = ['trial','business'];
     if (!FIN_PLANS.includes(plan)) {
