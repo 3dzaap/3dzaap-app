@@ -159,3 +159,63 @@ function initThemeToggle() {
   var b = document.getElementById('themeToggle');
   if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
 }
+// ── UI COMPONENTS ─────────────────────────────────────────────
+var UI = {
+  _gateConfig: {
+    orders:     { icon:'📦', title:'Módulo Pedidos', sub:'Gere pedidos de clientes, acompanha o pipeline de produção e gera ordens de serviço.', plans:['pro','business'] },
+    financial:  { icon:'💰', title:'Módulo Financeiro', sub:'Análise completa de receitas, relatórios mensais e exportação financeira.', plans:['business'] },
+    backoffice: { icon:'🗄️', title:'BackOffice', sub:'Importação/Exportação de dados, backups e ferramentas avançadas.', plans:['pro','business'] },
+    settings:   { icon:'⚙️', title:'Configurações', sub:'Personalize a sua empresa, faturação e preferências da plataforma.', plans:['business'] },
+    materials:  { icon:'🎨', title:'Gestão de Materiais', sub:'Controle de stock avançado e estatísticas de consumo.', plans:['starter','pro','business'] },
+    printers:   { icon:'🖨️', title:'Gestão de Impressoras', sub:'Monitorização de horas de uso e alertas de manutenção.', plans:['starter','pro','business'] }
+  },
+
+  showFeatureGate: function(moduleKey) {
+    var cfg = this._gateConfig[moduleKey] || { icon:'🔒', title:'Módulo Restrito', sub:'Este módulo requer um plano superior.', plans:['pro'] };
+    
+    // Create overlay if not exists
+    var overlay = document.getElementById('gateOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'gateOverlay';
+      overlay.className = 'gate-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    var planLabels = window.PLAN_LABELS || { starter:'Starter', pro:'Pro', business:'Business' };
+    var planPrices = window.PLAN_PRICES || { starter: '€ 9.90', pro: '€ 19.90', business: '€ 39.90' };
+
+    var plansHtml = cfg.plans.map(function(p) {
+      return '<div class="gate-plan-row required">' +
+             '<span class="gate-plan-name">✅ ' + (planLabels[p] || p.toUpperCase()) + '</span>' +
+             '<span class="gate-plan-price">' + (planPrices[p] || '') + '</span>' +
+             '</div>';
+    }).join('');
+
+    overlay.innerHTML = 
+      '<div class="gate-modal">' +
+        '<div class="gate-icon">' + cfg.icon + '</div>' +
+        '<h2 class="gate-title">' + cfg.title + '</h2>' +
+        '<p class="gate-sub">' + cfg.sub + '</p>' +
+        '<div class="gate-plans">' + plansHtml + '</div>' +
+        '<div class="gate-actions">' +
+          '<a href="settings.html?tab=assinatura" class="btn-upgrade-premium">🚀 Fazer Upgrade Agora</a>' +
+          '<button class="btn-gate-cancel" onclick="UI.closeFeatureGate()">Voltar</button>' +
+        '</div>' +
+      '</div>';
+
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  },
+
+  closeFeatureGate: function() {
+    var overlay = document.getElementById('gateOverlay');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    // If we are in a page that REQUIRES this access, go back
+    var path = window.location.pathname;
+    if (path.includes('orders.html') || path.includes('financial.html') || path.includes('backoffice.html')) {
+      window.location.href = 'dashboard.html';
+    }
+  }
+};

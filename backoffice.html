@@ -516,10 +516,16 @@ async function loadUserData() {
   const session = await Auth.getSession();
   if (!session) return;
   loadCfg(session);
-  const fullName = (session.fname && session.lname)
-    ? session.fname + ' ' + session.lname
-    : session.fname || session.lname
-    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+  // Feature Gating: Backoffice requires Pro or Business
+  const plan = (session.plan || 'trial').replace('_ano', '');
+  if (!['trial', 'pro', 'business'].includes(plan)) {
+    UI.showFeatureGate('backoffice');
+    // Hide parts of the page for visual consistency
+    document.querySelector('.page').style.opacity = '0.3';
+    document.querySelector('.page').style.pointerEvents = 'none';
+  }
+
   Sidebar.setSession(session);
   return session;
 }

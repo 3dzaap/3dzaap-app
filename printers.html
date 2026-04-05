@@ -1191,7 +1191,7 @@ async function savePrinter() {
   // Verificar limite de plano (apenas para novos registos)
   if (!_editingPrinterId && window._printerLimit !== null && window._printerLimit !== undefined) {
     if (printers.length >= window._printerLimit) {
-      _showPrinterUpgradeNotice();
+      UI.showFeatureGate('printers');
       return;
     }
   }

@@ -1072,12 +1072,16 @@ function applyDefaultsToForm(){
 async function applyFeatureGating(){
   try{
     const session = await Auth.getSession();
-    const plan = session?.plan || 'trial';
-    const PRO_PLUS = (typeof PLANS_PRO_PLUS !== 'undefined') ? PLANS_PRO_PLUS : ['trial','pro','pro_ano','business','business_ano'];
-    const BIZ = (typeof PLANS_BUSINESS !== 'undefined') ? PLANS_BUSINESS : ['trial','business','business_ano'];
+    const plan = (session?.plan || 'trial').replace('_ano', '');
+    const isProPlus = ['trial','pro','business'].includes(plan);
+    const isBusiness = ['trial','business'].includes(plan);
 
-    if(!PRO_PLUS.includes(plan)) document.getElementById('ordersLock').style.display='';
-    if(!BIZ.includes(plan)) document.getElementById('financialLock').style.display='';
+    const btn = document.getElementById('btnCriarPedido');
+    if (btn && !isProPlus) {
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'not-allowed';
+      // Clicking a "locked" button in the calculator should still trigger the gate
+    }
   }catch(e){}
 }
 
@@ -1439,6 +1443,13 @@ function exportCalcCSV(){
 function criarPedido(){
   var i=getInputs();var r=computeResults(i);
   if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.calc_first') || 'Calcula primeiro antes de criar o pedido','err');return;}
+
+  // Feature gating check for orders
+  const plan = (localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
+  if (!['trial', 'pro', 'business'].includes(plan)) {
+    UI.showFeatureGate('orders');
+    return;
+  }
   var name=(document.getElementById('printName').value||'').trim();
   var modeLabel=i.mode==='resin'?'Resina':'FDM';
   var desc=name||(i.mode==='resin'

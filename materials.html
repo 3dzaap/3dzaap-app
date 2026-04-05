@@ -1518,7 +1518,7 @@ async function saveMaterial() {
   // Verificar limite de plano (apenas para novos registos)
   if (editingId === null && window._materialLimit !== null && window._materialLimit !== undefined) {
     if (allMaterials.length >= window._materialLimit) {
-      showUpgradeNotice('materials');
+      UI.showFeatureGate('materials');
       return;
     }
   }
@@ -1594,6 +1594,10 @@ async function saveMaterial() {
 // ══════════════════════════════════════
 //  DELETE
 // ══════════════════════════════════════
+function showUpgradeNotice(module) {
+  UI.showFeatureGate(module);
+}
+
 function confirmDelete(id) {
   const m = allMaterials.find(x => x.id === id);
   if (!m) return;

@@ -710,9 +710,7 @@
                 <div class="empty-text" style="font-size:.8rem" data-i18n="dash.cards.empty_fil">O teu stock está adequado.</div>
               </div>
             </div>
-          </div>
-
-          <!-- Printer Alerts -->
+            <!-- Printer Alerts -->
           <div class="card" id="printerAlertsCard">
             <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
               <div class="card-title" data-i18n="dash.cards.print_alerts" style="font-size:.9rem;color:var(--danger)">🖨️ Anomalias Frota</div>
@@ -731,20 +729,6 @@
     </div><!-- /page-content -->
   </div><!-- /main -->
 </div><!-- /layout -->
-
-<!-- Feature Gate Modal -->
-<div class="gate-overlay" id="gateOverlay" onclick="closeGate(event)">
-  <div class="gate-modal">
-    <div class="gate-icon" id="gateIcon">🔒</div>
-    <div class="gate-title" id="gateTitle" data-i18n="dash.gate.locked">Funcionalidade bloqueada</div>
-    <div class="gate-sub" id="gateSub" data-i18n="dash.gate.req_upgrade">Esta funcionalidade requer um upgrade de plano.</div>
-    <div class="gate-plans" id="gatePlans"></div>
-    <div class="gate-actions">
-      <button class="btn-upgrade" onclick="navigate('billing');closeGate()" data-i18n="dash.gate.btn_upgrade">Ver planos e fazer upgrade →</button>
-      <button class="btn-cancel" onclick="closeGate()" data-i18n="dash.gate.btn_cancel">Agora não</button>
-    </div>
-  </div>
-</div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1455,51 +1439,12 @@ function handleFeatureClick(feature, featureName, requiredPlan) {
 }
 
 // ── GATE MODAL ─────────────────────────
-const GATE_CONFIG = {
-  orders: {
-    icon: '📦', title: 'Módulo Pedidos',
-    sub: 'Gere pedidos de clientes, acompanha o pipeline de produção e gera ordens de serviço. Disponível no plano Pro ou superior.',
-    plans: ['pro','business']
-  },
-  financial: {
-    icon: '💰', title: 'Módulo Financeiro',
-    sub: 'Análise de receitas, relatórios mensais e exportação financeira. Exclusivo do plano Business.',
-    plans: ['business']
-  },
-  backoffice: {
-    icon: '🗄️', title: 'BackOffice',
-    sub: 'Importa e exporta dados, gere backups e acede a ferramentas avançadas de gestão. Disponível no plano Pro ou superior.',
-    plans: ['pro','business']
-  },
-  settings: {
-    icon: '⚙️', title: 'Configurações',
-    sub: 'Personaliza a tua empresa, faturação, moeda e preferências da plataforma. Disponível no plano Business.',
-    plans: ['business']
-  },
-};
-
-function openGate(feature, featureName, requiredPlan) {
-  const cfg = GATE_CONFIG[feature] || { icon:'🔒', title:featureName, sub:`Requer plano ${requiredPlan}.`, plans:[requiredPlan.toLowerCase()] };
-  document.getElementById('gateIcon').textContent = cfg.icon;
-  document.getElementById('gateTitle').textContent = `Desbloqueia ${cfg.title}`;
-  document.getElementById('gateSub').textContent = cfg.sub;
-
-  const plansHtml = cfg.plans.map(p => `
-    <div class="gate-plan-row required">
-      <span class="gate-plan-check">✅</span>
-      <span class="gate-plan-name">${PLAN_LABELS[p]}</span>
-      <span class="gate-plan-price">${PLAN_PRICES[p]}</span>
-    </div>`).join('');
-  document.getElementById('gatePlans').innerHTML = plansHtml;
-
-  document.getElementById('gateOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+function openGate(feature) {
+  UI.showFeatureGate(feature);
 }
 
 function closeGate(e) {
-  if (e && e.target !== document.getElementById('gateOverlay')) return;
-  document.getElementById('gateOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  UI.closeFeatureGate();
 }
 
 // ── NAVIGATION ─────────────────────────
