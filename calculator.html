@@ -554,227 +554,247 @@
   <!-- ── MAIN ─────────────────────────── -->
   <div class="main">
 
-    <!-- Topbar: só breadcrumb -->
+    <!-- Topbar: Breadcrumb + Global Controls -->
     <header class="topbar">
       <div class="topbar-breadcrumb">
         <a href="dashboard.html" data-i18n="nav.home">Dashboard</a>
         <span>›</span>
         <strong data-i18n="calc.title">📐 Calculadora</strong>
       </div>
-                  suporte@3dzaap.com
-                </a>
-              </div>
-            </div>
+      
+      <div class="global-ctrls">
+        <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn">🌙</button>
+        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+          <option value="pt-PT">🇵🇹 PT</option>
+          <option value="pt-BR">🇧🇷 BR</option>
+          <option value="en-US">🇺🇸 US</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+        <div class="user-profile" onclick="toggleUserMenu()">
+          <div class="user-avatar" id="userAvatar">U</div>
+          <div class="user-info">
+            <span class="user-name" id="userName">User</span>
+            <span class="user-plan" id="userPlanBadge">Free</span>
           </div>
-
+          <div class="user-menu" id="userMenu">
+            <a href="settings.html" class="user-menu-item">⚙️ Definições</a>
+            <div class="user-menu-sep"></div>
+            <a href="#" onclick="doLogout()" class="user-menu-item" style="color:var(--error)">🚪 Sair</a>
+          </div>
+        </div>
+      </div>
     </header>
 
     <div class="page">
-
-      <!-- Page header + botão parâmetros avançados -->
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="calc.title">📐 Calculadora de Impressão</h1>
-          <p data-i18n="calc.subtitle">Calcula o custo real e o preço de venda das tuas peças — lógica 100% homologada</p>
+          <h1 data-i18n="calc.page_title">📐 Calculadora de Custos</h1>
+          <p data-i18n="calc.page_desc">Define o teu preço com base no material, tempo e custos de máquina</p>
         </div>
-        <button class="btn-adv-trigger" id="advBtn" onclick="toggleAdvPanel()" data-i18n="calc.adv_btn">
-          <span class="adv-trigger-dot"></span>
-          ⚙️ Parâmetros Avançados
+      </div>
+
+      <!-- ── MODE SWITCHER ── -->
+      <div class="calc-mode-switcher">
+        <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+          <span data-i18n="calc.modes.simple">Simples</span>
+        </button>
+        <button class="mode-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+          <span data-i18n="calc.modes.advanced">Avançado</span>
+          <span class="pro-badge">Pro</span>
         </button>
       </div>
 
-      <!-- Colunas simétricas 1fr 1fr -->
       <div class="calc-layout">
-
-        <!-- ── INPUTS ───────────────────── -->
+        <!-- ── LEFT: FORM ── -->
         <div class="glass-card">
-          <div class="card-header">
-            <div class="card-header-title" data-i18n="calc.params_title">⚙️ Parâmetros</div>
-            <span class="card-header-badge" data-i18n="calc.live_calc_badge">⚡ Cálculo ao vivo</span>
-          </div>
-          <div id="paramsBody">
           <div class="form-sections">
-
-            <!-- Modo + Nome + Qty -->
+            
             <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)">🏷️</div>
+                <span data-i18n="calc.print_name_label">Nome da impressão</span>
+              </div>
               <div class="fields-grid">
                 <div class="field full">
-                  <label data-i18n="calc.mode_label">Modo de impressão</label>
-                  <div class="mode-toggle" id="modeToggle">
-                    <button class="mode-btn active" id="modeFDM" onclick="setMode('fdm')" data-i18n="calc.mode_fdm">🖨️ FDM — Filamento</button>
-                    <button class="mode-btn" id="modeResin" onclick="setMode('resin')" data-i18n="calc.mode_resin">🧪 Resina (SLA/DLP/MSLA)</button>
-                  </div>
-                </div>
-                <div class="field full">
-                  <label><span data-i18n="calc.client_name_label">Nome do cliente</span> <span class="field-hint" data-i18n="calc.client_name_hint">(para identificar o pedido)</span></label>
-                  <div class="field-wrap">
-                    <input type="text" id="clientName" placeholder="Ex: João Silva, Empresa Lda…" data-i18n="calc.client_name_placeholder">
-                  </div>
-                </div>
-                <div class="field full">
-                  <label><span data-i18n="calc.print_name_label">Nome da impressão</span> <span class="field-hint" data-i18n="calc.print_name_hint">(opcional — identifica o item no histórico)</span></label>
-                  <div class="field-wrap">
-                    <input type="text" id="printName" placeholder="Ex: Suporte câmara GoPro, Peça engrenagem v2…" data-i18n="calc.print_name_placeholder">
-                  </div>
-                </div>
-                <!-- NOVO SELECT DE IMPRESSORA -->
-                <div class="field full" id="calcPrinterField">
-                  <label><span data-i18n="calc.printer_select_label">A sua Impressora</span> <span class="field-hint" data-i18n="calc.printer_select_hint">(preenche consumos e parâmetros automaticamente)</span></label>
-                  <div class="field-wrap">
-                    <select id="calcPrinterSelect" onchange="onCalcPrinterChange()" style="width:100%;padding:8px 11px;border-radius:var(--r);border:1.5px solid var(--border-input);background:var(--bg-input);color:var(--dark);font-family:var(--f);font-size:.86rem;font-weight:600;outline:none;cursor:pointer;transition:border-color .18s;">
-                      <option value="" data-i18n="calc.printer_select_default">Genérica / Inserção Manual</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="field">
-                  <label data-i18n="calc.qty_label">Quantidade de peças</label>
-                  <div class="field-wrap">
-                    <input type="number" id="printQty" value="1" min="1" step="1" oninput="liveCalc()">
-                    <span class="field-unit" data-i18n="calc.qty_unit">un.</span>
-                  </div>
+                  <input type="text" id="printName" class="inp" data-i18n="[placeholder]calc.print_name_placeholder" placeholder="Ex: Suporte GoPro...">
                 </div>
               </div>
             </div>
 
-            <!-- Material & Impressão -->
-            <div class="form-section">
-              <div class="section-title">
-                <div class="section-title-icon si-blue">📊</div>
-                <span data-i18n="calc.material_impression_section">Material &amp; Impressão</span>
-              </div>
-              <div class="fields-grid">
-                <div class="field">
-                  <label data-i18n="calc.filament_price_label">Preço do filamento</label>
-                  <div class="field-wrap">
-                    <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit" id="labelFilPrice">/kg</span>
+            <!-- Modo Simples -->
+            <div id="sectionSimple">
+              <div class="form-section">
+                <div class="section-title">
+                  <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)">📦</div>
+                  <span data-i18n="calc.sections.config">Configuração</span>
+                </div>
+                <div class="fields-grid">
+                  <div class="field full">
+                    <label data-i18n="calc.mode_label">Modo de impressão</label>
+                    <div class="mode-toggle">
+                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm">🖨️ FDM — Filamento</button>
+                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" data-i18n="calc.mode_resin">🧪 Resina (SLA)</button>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <label><span data-i18n="calc.fields.material">Material</span> <span class="field-hint" data-i18n="calc.material_hint">(opcional - preenche o preço auto)</span></label>
+                    <select class="inp" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
+                      <option value="" data-i18n="calc.placeholders.select_material">Selecionar material...</option>
+                    </select>
+                  </div>
+                  <div class="field full">
+                    <label data-i18n="calc.filament_price_label">Preço do material</label>
+                    <div class="field-wrap">
+                      <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
+                      <span class="field-unit" id="labelFilPrice">/kg</span>
+                    </div>
+                  </div>
                   <div class="field">
                     <label data-i18n="calc.fields.weight">Peso (g)</label>
                     <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
-                <div class="field">
-                  <label data-i18n="calc.print_time_label">Tempo de impressão</label>
-                  <div class="field-wrap">
-                    <input type="number" id="resinPrintTime" value="2" step="0.1" min="0" oninput="liveCalc()">
-                    <span class="field-unit">h</span>
                   </div>
-                </div>
-                <div class="field">
-                  <label><span data-i18n="calc.uv_power_label">Potência UV/ecrã</span> <span class="field-hint" data-i18n="calc.hints.uv_power">consumo impressora</span></label>
-                  <div class="field-wrap">
-                    <input type="number" id="uvLampPower" value="60" step="5" min="0" oninput="liveCalc()">
-                    <span class="field-unit">W</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label><span data-i18n="calc.wash_cure_label">Lavagem + cura</span> <span class="field-hint" data-i18n="calc.hints.wash_cure">inclui consumo elétrico</span></label>
-                  <div class="field-wrap">
-                    <input type="number" id="washCureTime" value="20" step="1" min="0" oninput="liveCalc()">
-                    <span class="field-unit">min</span>
+                  <div class="field">
+                    <label data-i18n="calc.fields.time">Tempo (h)</label>
+                    <input type="number" id="printTime" value="2" step="0.1" min="0" oninput="liveCalc()">
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          </div><!-- /form-sections -->
-          </div><!-- /paramsBody -->
 
-          <!-- Limpar campos — discreto no rodapé -->
+            <!-- Modo Avançado (Pro) -->
+            <div id="sectionAdvanced" style="display:none">
+              <div class="form-section">
+                <div class="section-title">
+                  <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)">🏗️</div>
+                  <span data-i18n="calc.sections.project">Projeto / Tabuleiro</span>
+                </div>
+                <div class="parts-table-wrap">
+                  <table class="parts-table">
+                    <thead>
+                      <tr>
+                        <th data-i18n="calc.table.part">Peça</th>
+                        <th data-i18n="calc.table.material">Material</th>
+                        <th data-i18n="calc.table.weight">Peso (g)</th>
+                        <th data-i18n="calc.table.qty">Qtd</th>
+                        <th data-i18n="calc.table.time_h">Tempo (h)</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="partsBody">
+                      <!-- Dinâmico via JS -->
+                    </tbody>
+                  </table>
+                </div>
+                <button class="btn-add-part" onclick="addPartRow()">
+                  <span>➕</span> <span data-i18n="calc.buttons.add_part">Adicionar Peça</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Configurações partilhadas (Máquina) -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7">🖨️</div>
+                <span data-i18n="calc.sections.machine">Máquina</span>
+              </div>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label data-i18n="calc.fields.printer">Impressora</label>
+                  <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
+                    <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
+                  </select>
+                </div>
+                <div class="field" id="fieldTotalTime" style="display:none">
+                  <label data-i18n="calc.fields.total_time">Tempo Total Projecto (h)</label>
+                  <input type="number" id="totalProjectTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="card-footer">
-            <button class="btn-clear" onclick="clearFields()" data-i18n="calc.clear_fields_btn">🗑️ Limpar campos</button>
-          </div>
-        </div><!-- /inputs card -->
-
-        <!-- ── RESULTADOS ─────────────── -->
-        <div class="glass-card results-col">
-          <div class="card-header">
-            <div class="card-header-title" data-i18n="calc.results_title">📋 Resultados</div>
-            <span class="card-header-badge" id="liveIndicator" data-i18n="calc.results_live_badge">⚡ Ao vivo</span>
-          </div>
-          <div id="resultsBody">
-          <div class="results-panel">
-            <div class="price-hero">
-              <div class="price-hero-label" data-i18n="calc.price_hero_label">💰 Preço de venda sugerido</div>
-              <div class="price-hero-value" id="rFinal">—</div>
-              <div class="price-hero-sub" id="rFinalSub" data-i18n="calc.price_hero_empty">Introduz os parâmetros para calcular</div>
-            </div>
-            <div class="breakdown-list">
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label" id="rFilamentLabel" data-i18n="calc.filament_cost_label">Custo do filamento</span></div>
-                <span class="breakdown-value zero" id="rFilament">—</span>
-              </div>
-              <div class="cost-bar"><div class="cost-bar-fill" id="barFilament" style="width:0%"></div></div>
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label" data-i18n="calc.amortization_cost_label">Amortização impressora</span></div>
-                <span class="breakdown-value zero" id="rAmortization">—</span>
-              </div>
-              <div class="cost-bar"><div class="cost-bar-fill" id="barAmortization" style="width:0%"></div></div>
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot blue"></div><span class="breakdown-label" data-i18n="calc.electricity_cost_label">Custo eletricidade</span></div>
-                <span class="breakdown-value zero" id="rElectricity">—</span>
-              </div>
-              <div class="cost-bar"><div class="cost-bar-fill" id="barElectricity" style="width:0%"></div></div>
-              <div class="breakdown-item divider">
-                <div class="breakdown-left"><div class="breakdown-dot green"></div><span class="breakdown-label" style="font-weight:700" data-i18n="calc.base_cost_label">Custo base</span></div>
-                <span class="breakdown-value" id="rBase" style="font-weight:800">—</span>
-              </div>
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label" data-i18n="calc.failures_plus_label">+ Falhas</span> (<span id="rFailurePct">5</span>%)</div>
-                <span class="breakdown-value zero" id="rFailure">—</span>
-              </div>
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot orange"></div><span class="breakdown-label" data-i18n="calc.indirect_plus_label">+ Indiretos</span> (<span id="rIndirectPct">10</span>%)</div>
-                <span class="breakdown-value zero" id="rIndirect">—</span>
-              </div>
-              <div class="breakdown-item">
-                <div class="breakdown-left"><div class="breakdown-dot purple"></div><span class="breakdown-label" data-i18n="calc.margin_plus_label">+ Margem</span> (<span id="rMarginPct">30</span>%)</div>
-                <span class="breakdown-value zero" id="rMargin">—</span>
-              </div>
-              <div class="breakdown-item total-row">
-                <div class="breakdown-left"><span class="breakdown-label" data-i18n="calc.final_price_label">💰 Preço Final</span></div>
-                <span class="breakdown-value" id="rFinalRow">—</span>
-              </div>
-            </div>
-            <div class="results-actions">
-              <div class="results-actions-row">
-                <button class="btn-action" onclick="exportCalcCSV()" data-i18n="calc.csv_btn">📄 CSV</button>
-                <button class="btn-action" id="copyBtnPanel" onclick="copyResults()" data-i18n="calc.copy_btn">📋 Copiar</button>
-                <button class="btn-action" id="copyClientBtn" onclick="copyForClient()" data-i18n="calc.copy_client_btn">📋 p/ Cliente</button>
-                <button class="btn-action" onclick="saveToHistory()" data-i18n="calc.save_btn">💾 Guardar</button>
-              </div>
-              <button class="btn-wa" id="waBtn" onclick="sendWhatsApp()">
-                <span class="btn-wa-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                </span>
-                <span data-i18n="calc.wa_btn">Enviar no WhatsApp</span>
-              </button>
-              <button class="btn-criar-pedido" id="btnCriarPedido" onclick="criarPedido()" data-i18n="calc.create_order_btn">
-                📦 Criar Pedido com estes valores
-              </button>
-            </div>
-          </div>
-          </div><!-- /resultsBody -->
-        </div><!-- /results card -->
-
-      </div><!-- /calc-layout -->
-
-      <!-- ── HISTÓRICO — largura total ─── -->
-      <div class="glass-card history-card" style="margin-top:20px">
-        <div class="card-header">
-          <div class="card-header-title" data-i18n="calc.history_title">🕐 Histórico de Cálculos</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <div class="history-search-wrap">
-              <span class="history-search-icon">🔍</span>
-              <input type="text" id="historySearch" class="history-search" placeholder="Pesquisar por nome, peso, preço…" data-i18n="calc.history_search_placeholder" oninput="renderHistory()">
-            </div>
-            <span class="history-count" id="historyCount">0 registos</span>
-            <div class="history-clear-btn" onclick="clearHistory()" data-i18n="calc.history_clear_btn">Limpar histórico</div>
+            <button class="btn-clear" onclick="clearCalculator()">
+              <span>🗑️</span> <span data-i18n="calc.buttons.clear">Limpar</span>
+            </button>
           </div>
         </div>
-        <div class="history-table-wrap">
-          <div class="history-empty" id="historyEmpty" data-i18n="calc.history_empty_session">
-            <div class="history-empty-icon">🕐</div>
-            <div>Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> nos resultados para registar aqui.</div>
+
+        <!-- ── RIGHT: RESULTS ── -->
+        <div class="glass-card results-col">
+          <div class="results-panel">
+            <div class="res-hero">
+              <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
+              <div class="res-hero-val" id="rFinal">0,00 €</div>
+              <div class="price-hero-sub" id="rSubtext">A aguardar parâmetros...</div>
+            </div>
+
+            <div class="breakdown-list">
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> <span data-i18n="calc.results.material">Material</span></div>
+                <div class="res-value" id="resFilCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue-lt)"></span> <span data-i18n="calc.results.machine">Máquina</span></div>
+                <div class="res-value" id="resMchCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--subtle)"></span> <span data-i18n="calc.results.energy">Eletricidade</span></div>
+                <div class="res-value" id="resElecCost">0,00 €</div>
+              </div>
+              <div class="res-line" style="border-top:1.5px solid var(--border);margin-top:5px;padding-top:10px">
+                <div class="res-label" style="color:var(--success);font-weight:700"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.base">Custo Base</span></div>
+                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange)"></span> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                <div class="res-value" id="resFailCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                <div class="res-value" id="resIndCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
+                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 €</div>
+              </div>
+            </div>
+
+            <div class="results-actions">
+              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
+                <span data-i18n="calc.buttons.create_order">📦 Criar Pedido</span>
+              </button>
+              <button class="btn-criar-pedido visible" style="background:var(--success-g);color:var(--success);border-color:var(--success-border)" onclick="saveToHistory()">
+                <span data-i18n="calc.buttons.save_history">💾 Guardar Cálculo</span>
+              </button>
+              <button class="btn-wa" onclick="sendWhatsApp()">
+                <span class="btn-wa-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.462 3.426 1.262 4.876l-1.287 4.703 4.814-1.263c1.393.759 2.977 1.191 4.661 1.191l.011-.001c5.508 0 9.988-4.479 9.988-9.987 0-5.507-4.479-9.987-9.987-9.987zm4.567 14.113c-.19.533-1.096.997-1.545 1.055-.449.059-.89.096-2.502-.546-1.944-.775-3.197-2.753-3.294-2.882-.097-.129-.79-.848-.79-1.614 0-.766.403-1.144.545-1.294.142-.15.309-.188.412-.188h.262c.097 0 .227.001.326.234.1.234.341.831.371.892.03.061.05.132.01.213-.04.081-.06.132-.121.203-.061.071-.129.158-.184.213-.061.061-.125.127-.054.248.071.121.315.519.676.841.465.414.856.541.977.602.121.061.191.051.262-.03.072-.082.306-.356.388-.474.082-.119.162-.099.274-.059.112.04.708.334.831.395.122.06.203.091.233.14.03.05.03.291-.16.824z"/></svg></span>
+                <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
+              </button>
+              <div class="results-actions-row">
+                <button class="btn-action" onclick="copyResults()">
+                  <span data-i18n="calc.buttons.copy">Copiar</span>
+                </button>
+                <button class="btn-action" onclick="toggleAdvPanel()">
+                  <span data-i18n="calc.buttons.adjust">Ajustar %</span>
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div class="page-header" style="margin-top:40px">
+        <div class="page-header-text">
+          <h2 data-i18n="calc.history_title">🕐 Histórico de Cálculos</h2>
+        </div>
+        <div class="history-count" id="historyCount">0 registos</div>
+      </div>
+      <!-- CARD HISTÓRICO -->
+      <div class="glass-card" style="margin-bottom:40px; min-height: 200px;">
+        <div id="historyEmpty" class="history-empty" style="padding:40px; text-align:center; color:var(--muted)">
+           <div style="font-size:2rem; margin-bottom:10px">🕐</div>
+           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong>💾 Guardar Cálculo</strong> nos resultados para registar aqui.</div>
+        </div>
+        <div class="table-container">
           <table class="history-table" id="historyTable" style="display:none">
             <thead>
               <tr>
@@ -788,11 +808,12 @@
                 <th></th>
               </tr>
             </thead>
-            <tbody id="historyTbody"></tbody>
+            <tbody id="historyTbody">
+              <!-- JS -->
+            </tbody>
           </table>
         </div>
       </div>
-
     </div><!-- /page -->
   </div><!-- /main -->
 </div><!-- /layout -->
@@ -1017,8 +1038,9 @@ function setTechMode(tech) {
   document.getElementById('modeResin').classList.toggle('active', tech === 'resin');
   
   // Update UI units and labels
+  const currency = _sessionData?.currency || '€';
   const unitLabel = document.getElementById('labelFilPrice');
-  if (unitLabel) unitLabel.textContent = tech === 'resin' ? '/L' : '/kg';
+  if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
   
   // Filter materials if they are loaded
   renderSelectors();
@@ -1044,12 +1066,21 @@ function renderSelectors() {
   const mSel = document.getElementById('fMaterialSelect');
   const pSel = document.getElementById('fPrinterSelect');
   
+  const unit = _activeTech === 'resin' ? '/L' : '/kg';
+  const filterClass = _activeTech === 'resin' ? 'resin' : 'fdm';
+
   if (mSel) {
     mSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || 'Selecionar material...'}</option>`;
-    _filaments.forEach(f => {
+    // Filtrar materiais por classe/tecnologia
+    const filtered = _filaments.filter(f => {
+      const cls = (f.materialClass || f.material_class || 'fdm').toLowerCase();
+      return cls === filterClass;
+    });
+    
+    filtered.forEach(f => {
       const opt = document.createElement('option');
       opt.value = f.id;
-      opt.textContent = `${f.name} (${fmtCurrency(f.price)}/kg)`;
+      opt.textContent = `${f.brand||''} ${f.name} (${fmtCurrency(f.price)}${unit})`;
       mSel.appendChild(opt);
     });
   }
@@ -1059,7 +1090,7 @@ function renderSelectors() {
     _printers.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
+      opt.textContent = `${p.model||p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
       pSel.appendChild(opt);
     });
   }
@@ -1068,6 +1099,10 @@ function renderSelectors() {
 function applyMaterialSelect(id) {
   const mat = _filaments.find(f => String(f.id) === String(id));
   _selectedMaterial = mat || null;
+  if (mat) {
+    const inp = document.getElementById('filamentPrice');
+    if (inp) inp.value = mat.price;
+  }
   liveCalc();
 }
 
@@ -1097,6 +1132,14 @@ function updatePart(id, field, val) {
   if (!p) return;
   if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
   p[field] = val;
+  
+  // Auto-sum time to totalProjectTime
+  if (_calcMode === 'advanced') {
+    const total = _parts.reduce((sum, part) => sum + (part.time * (part.qty || 1)), 0);
+    const timeEl = document.getElementById('totalProjectTime');
+    if (timeEl) timeEl.value = total.toFixed(1);
+  }
+  
   liveCalc();
 }
 
@@ -1105,18 +1148,22 @@ function renderParts() {
   if (!body) return;
   body.innerHTML = '';
   
+  const filterClass = _activeTech === 'resin' ? 'resin' : 'fdm';
+  const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === filterClass);
+
   _parts.forEach(p => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${p.id}, 'name', this.value)" placeholder="ex: Corpo"></td>
+      <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${p.id}, 'name', this.value)" placeholder="..."></td>
       <td>
         <select class="part-input" data-id="${p.id}" onchange="updatePart(${p.id}, 'materialId', this.value)">
           <option value="">-- MAt --</option>
-          ${_filaments.map(f => `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${f.name}</option>`).join('')}
+          ${filteredMaterials.map(f => `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${f.name}</option>`).join('')}
         </select>
       </td>
-      <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${p.id}, 'weight', this.value)"></td>
-      <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${p.id}, 'qty', this.value)"></td>
+      <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${p.id}, 'weight', this.value)" placeholder="g"></td>
+      <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${p.id}, 'qty', this.value)" placeholder="un"></td>
+      <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${p.id}, 'time', this.value)" placeholder="h"></td>
       <td style="text-align:right">
         <button class="btn-remove-part" onclick="removePartRow(${p.id})">✕</button>
       </td>
@@ -1299,15 +1346,20 @@ function getInputs() {
     };
   } else {
     // Advanced mode: parts array
+    const partsTotalWeight = _parts.reduce((sum, p) => sum + (p.weight * (p.qty || 1)), 0);
+    const totalTimeValue = pf('totalProjectTime');
+    
     return {
       ...common,
       mode: 'advanced',
       tech: _activeTech,
+      weight: partsTotalWeight,
+      time: totalTimeValue,
       parts: _parts.map(p => {
         const mat = _filaments.find(f => String(f.id) === String(p.materialId));
         return { ...p, price: mat ? mat.price : 25 };
       }),
-      totalTime: pf('totalProjectTime')
+      totalTime: totalTimeValue
     };
   }
 }
@@ -1584,10 +1636,18 @@ function renderHistory(){
     return escH(str).replace(new RegExp('('+escH(raw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark class="hl">$1</mark>');
   }
   tbody.innerHTML=filtered.map(function(e){
+    var isAdvanced = e.inputs.mode === 'advanced';
     var modeBadge=e.mode==='resin'?'<span style="font-size:.65rem;background:rgba(168,85,247,.12);color:#7c3aed;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">Resina</span>':'';
+    if (isAdvanced) modeBadge += '<span style="font-size:.65rem;background:var(--orange-g);color:var(--orange);border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">Projeto</span>';
+    
     var qtyBadge=(e.inputs.qty||1)>1?'<span style="font-size:.65rem;color:var(--muted)"> ×'+(e.inputs.qty)+'</span>':'';
-    var weightCol=e.mode==='resin'?(e.inputs.resinVolume||'—')+'mL':(e.inputs.partWeight||'—')+'g';
-    var tPrint=e.mode==='resin'?(e.inputs.printTime||'—'):e.inputs.printTime;
+    
+    var weightTotal = e.inputs.weight || (isAdvanced ? 0 : e.inputs.partWeight);
+    var weightCol=e.mode==='resin'?(e.inputs.resinVolume||weightTotal||'—')+'mL':(weightTotal||'—')+'g';
+    
+    var timePrint = e.inputs.time || (isAdvanced ? 0 : e.inputs.printTime);
+    var tPrint = (timePrint || '—');
+
     var restoreBtnLabel = i18n.getNestedTranslation('calc.restore_btn') || 'Restaurar';
     return '<tr onclick="restoreHistory('+e.id+')">'
       +'<td class="td-name">'+(e.name?hl(e.name):'<span class="no-name">' + (i18n.getNestedTranslation('calc.no_name') || 'Sem nome') + '</span>')+modeBadge+qtyBadge+'</td>'
