@@ -1224,21 +1224,35 @@ function applyCalcPrefill(p) {
       const cnInput = document.getElementById('oClientName');
       if (cnInput) cnInput.value = p.client_name;
     }
-    const firstRow = document.querySelector('#orderItemsList .item-row');
-    if (firstRow) {
-      const inputs = firstRow.querySelectorAll('input.item-input');
-      // Order in row: [0]=descrição [1]=quantidade [2]=peso(g) [3]=preço unit.
-      const id = firstRow.dataset.id;
-      if (inputs[0]) { inputs[0].value = p.description || ''; updateItem(id,'description', inputs[0].value); }
-      if (inputs[1]) { inputs[1].value = p.quantity || 1;     updateItem(id,'quantity',    inputs[1].value); }
-      // weight field: use filament_weight (FDM g) or resin_volume (Resina ml)
-      const weightVal = p.mode === 'resin' ? p.resin_volume : p.filament_weight;
-      if (inputs[2] && weightVal) { inputs[2].value = weightVal; updateItem(id,'weightG', inputs[2].value); }
-      if (inputs[3]) { inputs[3].value = p.unit_price || 0;   updateItem(id,'unitPrice',   inputs[3].value); }
+
+    // Limpar itens padrão
+    const list = document.getElementById('orderItemsList');
+    if (list) list.innerHTML = '';
+    _items = [];
+
+    if (p.mode === 'advanced' && Array.isArray(p.parts)) {
+      p.parts.forEach(part => {
+        addOrderItem({
+          description: part.name || 'Peça do Projeto',
+          quantity: part.qty || 1,
+          weightG: part.weight || 0,
+          unitPrice: part.unitPrice || 0,
+          filamentId: part.materialId || ''
+        });
+      });
+    } else {
+      addOrderItem({
+        description: p.description || '',
+        quantity: p.quantity || 1,
+        weightG: p.mode === 'resin' ? p.resin_volume : p.filament_weight,
+        unitPrice: p.unit_price || 0,
+        filamentId: p.material_id || ''
+      });
     }
+
     recalcTotal();
 
-    // Highlight due date with orange pulse to guide user
+    // Highlight due date with orange pulse
     const dueDateEl = document.getElementById('oDueDate');
     if (dueDateEl) {
       dueDateEl.style.transition  = 'border-color .3s, box-shadow .3s';
@@ -1250,14 +1264,7 @@ function applyCalcPrefill(p) {
         dueDateEl.style.boxShadow   = '';
       }, 4000);
     }
-
-    showToast(i18n.getNestedTranslation('orders.toasts.saved'), 'ok');
-    window._calcMaterialCost = p.material_cost || 0;
-    window._calcMode         = p.mode || 'fdm';
-    // Update header based on calc mode
-    const lbl2 = document.getElementById('weightUnitLabel');
-    if (lbl2) lbl2.textContent = window._calcMode === 'resin' ? 'ml' : 'g';
-  }, 80);
+  }, 350);
 }
 
 // ── ITEMS ──────────────────────────────

@@ -22,35 +22,41 @@
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
 /* ── BOTÃO PARÂMETROS AVANÇADOS (inline no header) */
-.btn-adv-trigger{
-  display:flex;align-items:center;gap:8px;
-  padding:9px 18px;border-radius:var(--rm);
-  background:var(--bg-card);
-  border:1.5px solid var(--border);
-  font-size:.82rem;font-weight:600;color:var(--muted);
-  cursor:pointer;transition:all .22s var(--ease);
-  font-family:var(--f);white-space:nowrap;flex-shrink:0;
-  box-shadow:var(--sh);
+/* ── MODE TOGGLE (Simples vs Avançado) ── */
+.calc-mode-switcher {
+  display: flex; gap: 4px; background: rgba(59,143,212,.08);
+  border: 1.5px solid var(--border); border-radius: 50px; padding: 4px;
+  width: fit-content; margin-bottom: 20px; animation: fadeUp .4s var(--ease) both;
 }
-
-.btn-adv-trigger:hover{
-  background:rgba(59,143,212,.1);
-  border-color:rgba(59,143,212,.35);
-  color:var(--blue);
+.mode-opt {
+  padding: 8px 20px; border-radius: 40px; border: none; font-size: .84rem; font-weight: 700;
+  cursor: pointer; transition: all .2s var(--ease); color: var(--muted); background: transparent; display: flex; align-items: center; gap: 8px;
 }
+.mode-opt.active { background: var(--glass-s); color: var(--blue); box-shadow: var(--sh); }
+.mode-opt .pro-badge { font-size: .62rem; background: var(--orange); color: #fff; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
 
-.btn-adv-trigger.active-param{
-  background:linear-gradient(135deg,rgba(59,143,212,.14),rgba(59,143,212,.06));
-  border-color:rgba(59,143,212,.45);
-  color:var(--blue);font-weight:700;
-}
+/* ── MULTI-PART TABLE (Modo Avançado) ── */
+.parts-table-wrap { overflow-x: auto; margin-top: 10px; margin-bottom: 20px; border-radius: var(--rm); border: 1.5px solid var(--border); background: rgba(255,255,255,.05); }
+.parts-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+.parts-table th { text-align: left; padding: 12px 14px; font-size: .72rem; color: var(--muted); border-bottom: 1.5px solid var(--border); text-transform: uppercase; letter-spacing: .5px; }
+.parts-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.parts-table tr:last-child td { border-bottom: none; }
+.part-input { background: var(--bg-input); border: 1.5px solid var(--border-input); border-radius: 8px; padding: 6px 10px; font-size: .85rem; width: 100%; color: var(--dark); outline: none; }
+.part-input:focus { border-color: var(--blue); }
+.btn-remove-part { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: rgba(239,68,68,.08); color: var(--danger); border: 1.5px solid rgba(239,68,68,0.2); border-radius: 50%; cursor: pointer; transition: all .2s; }
+.btn-remove-part:hover { background: var(--danger); color: #fff; }
 
-.btn-adv-trigger .adv-trigger-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--subtle);transition:background .22s;
-}
+.btn-add-part { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(59,143,212,.08); color: var(--blue); border: 1.5px dashed var(--blue); border-radius: var(--rm); cursor: pointer; font-size: .85rem; font-weight: 700; width: 100%; justify-content: center; transition: all .2s; }
+.btn-add-part:hover { background: rgba(59,143,212,.15); }
 
-.btn-adv-trigger.active-param .adv-trigger-dot{background:var(--blue)}
+/* ── RESULTS BREAKDOWN (New Visuals) ── */
+.res-line { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.res-line:last-child { border-bottom: none; }
+.res-label { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--muted); font-weight: 500; }
+.res-dot { width: 10px; height: 10px; border-radius: 50%; }
+.res-value { font-family: var(--mono); font-weight: 800; color: var(--dark); font-size: .9rem; }
+.res-hero { background: linear-gradient(135deg, rgba(59,143,212,.1), rgba(59,143,212,.04)); border: 1.5px solid rgba(59,143,212,0.25); border-radius: var(--rm); padding: 20px; text-align: center; margin-bottom: 20px; }
+.res-hero-val { font-size: 2.2rem; font-weight: 900; line-height: 1; margin: 8px 0; }
 
 /* ── CALC LAYOUT — 1fr 1fr simétrico ── */
 .calc-layout{
@@ -555,45 +561,6 @@
         <span>›</span>
         <strong data-i18n="calc.title">📐 Calculadora</strong>
       </div>
-          <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
-          <div class="global-ctrls" id="globalCtrls">
-            <!-- Theme Toggle -->
-            <button id="topbarThemeToggle"
-              onclick="Sidebar.toggleTheme()"
-              title="Alternar Tema"
-              class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
-
-            <!-- Language Selector -->
-            <select id="topbarLangSelect"
-              class="gc-select"
-              onchange="window.i18n && window.i18n.setLanguage(this.value)"
-              aria-label="Language">
-              <option value="pt-PT">🇵🇹 PT</option>
-              <option value="pt-BR">🇧🇷 BR</option>
-              <option value="en-US">🇺🇸 US</option>
-              <option value="en-GB">🇬🇧 UK</option>
-              <option value="es">🇪🇸 ES</option>
-            </select>
-
-            <!-- Help Popover -->
-            <div class="gc-help-wrap">
-              <button id="topbarHelpBtn"
-                class="gc-btn gc-help-btn"
-                onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
-                aria-label="Ajuda" data-i18n="calc.help_btn">?</button>
-              <div id="topbarHelpPopover" class="gc-popover" style="display:none">
-                <div class="gc-popover-title" data-i18n="calc.contact_us">Contacte-nos</div>
-                <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt="">
-                  WhatsApp
-                </a>
-                <a href="https://instagram.com/3dzaap" target="_blank" class="gc-popover-item">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="18" height="18" alt="">
-                  @3dzaap
-                </a>
-                <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -681,60 +648,9 @@
                   <div class="field-wrap">
                     <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
                     <span class="field-unit" id="labelFilPrice">/kg</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label data-i18n="calc.part_weight_label">Peso da peça</label>
-                  <div class="field-wrap">
+                  <div class="field">
+                    <label data-i18n="calc.fields.weight">Peso (g)</label>
                     <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
-                    <span class="field-unit">g</span>
-                  </div>
-                </div>
-                <div class="field full">
-                  <label data-i18n="calc.print_time_label">Tempo de impressão</label>
-                  <div class="field-with-slider">
-                    <div class="field-wrap">
-                      <input type="number" id="printTime" value="3" step="0.1" min="0" oninput="syncSlider('printTime','printTimeSlider',0,48);liveCalc()">
-                      <span class="field-unit">h</span>
-                    </div>
-                    <div class="slider-row">
-                      <input type="range" id="printTimeSlider" min="0" max="48" step="0.5" value="3" oninput="syncInput('printTimeSlider','printTime');liveCalc()">
-                      <span class="slider-val" id="printTimeVal">3h</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          <!-- Campos Resina (ocultos por defeito) -->
-          <div id="resinFields" style="display:none">
-            <div class="form-section">
-              <div class="section-title">
-                <div class="section-title-icon si-blue">📊</div>
-                <span data-i18n="calc.material_impression_section">Material &amp; Impressão</span>
-              </div>
-              <div class="fields-grid">
-                <div class="field">
-                  <label><span data-i18n="calc.resin_price_label">Preço da resina</span> <span class="field-hint" data-i18n="calc.hints.resin_price">por litro</span></label>
-                  <div class="field-wrap">
-                    <input type="number" id="resinPrice" value="35" step="0.01" min="0" oninput="liveCalc()">
-                    <span class="field-unit" id="labelResinPrice">/L</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label><span data-i18n="calc.resin_volume_label">Volume da peça</span> <span class="field-hint" data-i18n="calc.hints.resin_volume">estimado pelo slicer</span></label>
-                  <div class="field-wrap">
-                    <input type="number" id="resinVolume" value="20" step="0.1" min="0" oninput="liveCalc()">
-                    <span class="field-unit">mL</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label><span data-i18n="calc.resin_density_label">Densidade da resina</span> <span class="field-hint" data-i18n="calc.hints.resin_density">padrão ≈ 1.1</span></label>
-                  <div class="field-wrap">
-                    <input type="number" id="resinDensity" value="1.1" step="0.01" min="0.5" max="3" oninput="liveCalc()">
-                    <span class="field-unit">g/mL</span>
-                  </div>
-                </div>
                 <div class="field">
                   <label data-i18n="calc.print_time_label">Tempo de impressão</label>
                   <div class="field-wrap">
@@ -1007,21 +923,149 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── USER DATA ──────────────────────────
 
-// ── CONFIG GLOBALS ──────────────────────────────────────────
-async function loadUserData() {
-  const ok = await Auth.requireAuth();
-  if (!ok) return;
-  const session = await Auth.getSession();
-  if (!session) return;
-  _sessionData = session;
-  loadCfg(session);
-  updateCurrencyLabels();
-  const fullName = (session.fname && session.lname)
-    ? session.fname + ' ' + session.lname
-    : session.fname || session.lname
-    || session.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  Sidebar.setSession(session);
-  return session;
+// ── NEW CALCULATOR LOGIC ──────────────────
+let _calcMode = 'simple'; // 'simple' or 'advanced'
+let _parts = []; // Array of { id, name, materialId, weight, qty, time }
+let _filaments = [];
+let _printers = [];
+let _selectedMaterial = null;
+let _selectedPrinter = null;
+
+function setCalcMode(mode) {
+  if (mode === 'advanced') {
+    const plan = (_sessionData?.plan || 'trial').replace('_ano', '');
+    if (!['pro', 'business'].includes(plan)) {
+      UI.showFeatureGate('calculator_advanced');
+      return;
+    }
+  }
+
+  _calcMode = mode;
+  document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
+  document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
+  
+  document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
+  document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
+  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
+  
+  if (mode === 'advanced' && _parts.length === 0) {
+    addPartRow();
+  }
+  liveCalc();
+}
+
+function setTechMode(tech) {
+  _activeTech = tech;
+  document.getElementById('modeFDM').classList.toggle('active', tech === 'fdm');
+  document.getElementById('modeResin').classList.toggle('active', tech === 'resin');
+  
+  // Update UI units and labels
+  const unitLabel = document.getElementById('labelFilPrice');
+  if (unitLabel) unitLabel.textContent = tech === 'resin' ? '/L' : '/kg';
+  
+  // Filter materials if they are loaded
+  renderSelectors();
+  liveCalc();
+}
+
+async function loadInitialData() {
+  try {
+    const [fils, prns] = await Promise.all([
+      DB.getFilaments(),
+      DB.getPrinters()
+    ]);
+    _filaments = fils;
+    _printers = prns;
+    
+    renderSelectors();
+  } catch(e) {
+    console.error('[3DZAAP] error loading calc data:', e);
+  }
+}
+
+function renderSelectors() {
+  const mSel = document.getElementById('fMaterialSelect');
+  const pSel = document.getElementById('fPrinterSelect');
+  
+  if (mSel) {
+    mSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || 'Selecionar material...'}</option>`;
+    _filaments.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = `${f.name} (${fmtCurrency(f.price)}/kg)`;
+      mSel.appendChild(opt);
+    });
+  }
+  
+  if (pSel) {
+    pSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_printer') || 'Selecionar impressora...'}</option>`;
+    _printers.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
+      pSel.appendChild(opt);
+    });
+  }
+}
+
+function applyMaterialSelect(id) {
+  const mat = _filaments.find(f => String(f.id) === String(id));
+  _selectedMaterial = mat || null;
+  liveCalc();
+}
+
+function applyPrinterSelect(id) {
+  const prn = _printers.find(p => String(p.id) === String(id));
+  _selectedPrinter = prn || null;
+  liveCalc();
+}
+
+function addPartRow() {
+  const id = Date.now() + Math.random();
+  const part = { id, name: '', materialId: '', weight: 0, qty: 1, time: 0 };
+  _parts.push(part);
+  renderParts();
+  liveCalc();
+}
+
+function removePartRow(id) {
+  _parts = _parts.filter(p => p.id !== id);
+  if (_parts.length === 0) addPartRow();
+  renderParts();
+  liveCalc();
+}
+
+function updatePart(id, field, val) {
+  const p = _parts.find(x => x.id === id);
+  if (!p) return;
+  if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
+  p[field] = val;
+  liveCalc();
+}
+
+function renderParts() {
+  const body = document.getElementById('partsBody');
+  if (!body) return;
+  body.innerHTML = '';
+  
+  _parts.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${p.id}, 'name', this.value)" placeholder="ex: Corpo"></td>
+      <td>
+        <select class="part-input" data-id="${p.id}" onchange="updatePart(${p.id}, 'materialId', this.value)">
+          <option value="">-- MAt --</option>
+          ${_filaments.map(f => `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${f.name}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${p.id}, 'weight', this.value)"></td>
+      <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${p.id}, 'qty', this.value)"></td>
+      <td style="text-align:right">
+        <button class="btn-remove-part" onclick="removePartRow(${p.id})">✕</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
 }
 
 async function loadCompanyDefaults(){
@@ -1077,18 +1121,63 @@ async function applyFeatureGating(){
     const isBusiness = ['trial','business'].includes(plan);
 
     const btn = document.getElementById('btnCriarPedido');
-    if (btn && !isProPlus) {
-      btn.style.opacity = '0.6';
-      btn.style.cursor = 'not-allowed';
-      // Clicking a "locked" button in the calculator should still trigger the gate
-    }
-  }catch(e){}
+  } catch(e) {}
 }
+
+function criarPedido() {
+  const i = getInputs();
+  const r = computeResults(i);
+  
+  if (r.finalPrice <= 0) {
+    showToast('⚠️ Calcula um valor primeiro', 'err');
+    return;
+  }
+
+  let payload = {};
+
+  if (i.mode === 'simple') {
+    payload = {
+      mode: _activeTech,
+      description: document.getElementById('printName')?.value || 'Impressão 3D',
+      quantity: 1,
+      filament_weight: i.weight,
+      resin_volume: i.weight,
+      unit_price: r.finalPrice,
+      material_id: _selectedMaterial ? _selectedMaterial.id : null,
+      material_cost: r.materialCost
+    };
+  } else {
+    // Advanced mode: distribute overhead proportional to material cost
+    const totalMat = r.materialCost || 1;
+    const overheadFactor = (r.finalPrice - r.materialCost) / totalMat;
+    
+    payload = {
+      mode: 'advanced',
+      parts: i.parts.map(p => {
+        const unitMatCost = (p.price / 1000) * p.weight;
+        const rowUnitPrice = unitMatCost * (1 + overheadFactor);
+        return {
+          name: p.name || 'Peça',
+          qty: p.qty,
+          weight: p.weight,
+          unitPrice: rowUnitPrice,
+          materialId: p.materialId
+        };
+      })
+    };
+  }
+
+  sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
+  window.location.href = 'orders.html';
+}
+
+function updatePctLabels() {} // Já tratado no _render
+function updateSliderLabels() {} // Não mais necessário com a nova UI de inputs diretos
 
 // ══════════════════════════════════════
 //  CORE CALCULATION — homologated + resina
 // ══════════════════════════════════════
-let _calcMode = 'fdm'; // 'fdm' | 'resin'
+let _activeTech = 'fdm'; // 'fdm' | 'resin'
 
 function renderPrintersDropdown() {
   const sel = document.getElementById('calcPrinterSelect');
@@ -1098,7 +1187,7 @@ function renderPrintersDropdown() {
     return;
   }
   let html = '<option value="">Genérica / Inserção Manual</option>';
-  const isResin = _calcMode === 'resin';
+  const isResin = _activeTech === 'resin';
   const filtered = _userPrinters.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
   
   filtered.forEach(p => {
@@ -1116,7 +1205,7 @@ function onCalcPrinterChange() {
   if (p.price) setV('printerPrice', p.price);
   if (p.lifeHours) setV('printerLife', p.lifeHours);
   
-  if (_calcMode === 'resin') {
+  if (_activeTech === 'resin') {
     if (p.powerPrint || p.powerStandby) setV('uvLampPower', p.powerPrint || 60);
   } else {
     if (p.powerPrint) setV('powerConsumption', p.powerPrint);
@@ -1126,66 +1215,80 @@ function onCalcPrinterChange() {
   liveCalc();
 }
 
-function setMode(mode) {
-  _calcMode = mode;
-  document.getElementById('modeFDM').classList.toggle('active', mode === 'fdm');
-  document.getElementById('modeResin').classList.toggle('active', mode === 'resin');
-  var fdmSec = document.querySelector('.form-section:has(#filamentPrice)');
-  var resinSec = document.getElementById('resinFields');
-  if (fdmSec)   fdmSec.style.display   = mode === 'fdm'   ? '' : 'none';
-  if (resinSec) resinSec.style.display = mode === 'resin' ? '' : 'none';
-  var lbl = document.getElementById('rFilamentLabel');
-  if (lbl) lbl.textContent = mode === 'resin' ? (i18n.getNestedTranslation('calc.resin_cost_label') || 'Custo da resina') : (i18n.getNestedTranslation('calc.filament_cost_label') || 'Custo do filamento');
-  renderPrintersDropdown();
-  liveCalc();
-}
+function getInputs() {
+  const pf = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+  const config = _sessionData?.config || {};
+  
+  const common = {
+    printerPrice: pf('printerPrice') || 1000,
+    printerLife: pf('printerLife') || 2500,
+    electricityPrice: pf('electricityPrice') || 0.20,
+    powerConsumption: pf('powerConsumption') || 250,
+    failureRate: pf('failureRate') || 5,
+    indirectCosts: pf('indirectCosts') || 10,
+    profitMargin: pf('profitMargin') || 30
+  };
 
-function getInputs(){
-  var qty = Math.max(1, parseFloat((document.getElementById('printQty')||{}).value)||1);
-  if (_calcMode === 'resin') {
+  if (_calcMode === 'simple') {
+    const matPrice = _selectedMaterial ? _selectedMaterial.price : pf('filamentPrice');
     return {
-      mode:'resin', qty:qty,
-      resinPrice:pf('resinPrice'), resinVolume:pf('resinVolume'),
-      resinDensity:pf('resinDensity')||1.1, printTime:pf('resinPrintTime'),
-      uvLampPower:pf('uvLampPower'), washCureTime:pf('washCureTime'),
-      printerPrice:pf('printerPrice'), printerLife:pf('printerLife')||1,
-      electricityPrice:pf('electricityPrice'),
-      failureRate:pf('failureRate'), indirectCosts:pf('indirectCosts'), profitMargin:pf('profitMargin'),
+      ...common,
+      mode: 'simple',
+      tech: _activeTech,
+      qty: 1,
+      materialPrice: matPrice,
+      weight: pf('partWeight'),
+      time: pf('printTime')
+    };
+  } else {
+    // Advanced mode: parts array
+    return {
+      ...common,
+      mode: 'advanced',
+      tech: _activeTech,
+      parts: _parts.map(p => {
+        const mat = _filaments.find(f => String(f.id) === String(p.materialId));
+        return { ...p, price: mat ? mat.price : 25 };
+      }),
+      totalTime: pf('totalProjectTime')
     };
   }
-  return {
-    mode:'fdm', qty:qty,
-    filamentPrice:pf('filamentPrice'), partWeight:pf('partWeight'), printTime:pf('printTime'),
-    printerPrice:pf('printerPrice'), printerLife:pf('printerLife')||1,
-    powerConsumption:pf('powerConsumption'), electricityPrice:pf('electricityPrice'),
-    failureRate:pf('failureRate'), indirectCosts:pf('indirectCosts'), profitMargin:pf('profitMargin'),
-  };
 }
 
-function computeResults(i){
-  var qty = i.qty || 1;
-  var materialCost, amortizationCost, electricityCost;
-  if (i.mode === 'resin') {
-    materialCost     = (i.resinPrice / 1000) * i.resinVolume * i.resinDensity;
-    amortizationCost = (i.printerPrice / i.printerLife) * i.printTime;
-    electricityCost  = (i.uvLampPower / 1000) * i.printTime * i.electricityPrice
-                     + (i.uvLampPower / 1000) * (i.washCureTime / 60) * i.electricityPrice;
+function computeResults(i) {
+  let materialCost = 0;
+  let machineTime = 0;
+  
+  if (i.mode === 'simple') {
+    materialCost = (i.materialPrice / 1000) * i.weight;
+    machineTime = i.time;
   } else {
-    materialCost     = (i.filamentPrice / 1000) * i.partWeight;
-    amortizationCost = (i.printerPrice / i.printerLife) * i.printTime;
-    electricityCost  = (i.powerConsumption / 1000) * i.printTime * i.electricityPrice;
+    // Sum all parts
+    i.parts.forEach(p => {
+      materialCost += (p.price / 1000) * p.weight * p.qty;
+    });
+    machineTime = i.totalTime;
   }
-  var baseCost    = materialCost + amortizationCost + electricityCost;
-  var failureCost = baseCost * (i.failureRate / 100);
-  var indirectCost= baseCost * (i.indirectCosts / 100);
-  var marginCost  = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
-  var unitPrice   = baseCost + failureCost + indirectCost + marginCost;
-  var finalPrice  = unitPrice * qty;
+
+  const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
+  const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
+  
+  const baseCost = materialCost + amortizationCost + electricityCost;
+  const failureCost = baseCost * (i.failureRate / 100);
+  const indirectCost = baseCost * (i.indirectCosts / 100);
+  const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const finalPrice = baseCost + failureCost + indirectCost + marginCost;
+
   return {
-    filamentCost:materialCost, materialCost:materialCost,
-    amortizationCost:amortizationCost, electricityCost:electricityCost,
-    baseCost:baseCost, failureCost:failureCost, indirectCost:indirectCost,
-    marginCost:marginCost, unitPrice:unitPrice, finalPrice:finalPrice, qty:qty,
+    materialCost,
+    amortizationCost,
+    electricityCost,
+    baseCost,
+    failureCost,
+    indirectCost,
+    marginCost,
+    finalPrice,
+    qty: i.qty || 1
   };
 }
 
@@ -1197,39 +1300,110 @@ function liveCalc(){
   updatePctLabels();
 }
 
-function _render(){
-  var i=getInputs();
-  var r=computeResults(i);
-  var heroEl=document.getElementById('rFinal');
-  var nv=fmtCurrency(r.finalPrice);
-  if(heroEl.textContent!==nv){
-    heroEl.textContent=nv;
-    heroEl.classList.remove('updated');void heroEl.offsetWidth;heroEl.classList.add('updated');
+function _render() {
+  const i = getInputs();
+  const r = computeResults(i);
+  
+  const heroEl = document.getElementById('rFinal');
+  if (heroEl) {
+    const newVal = fmtCurrency(r.finalPrice);
+    if (heroEl.textContent !== newVal) {
+      heroEl.textContent = newVal;
+      heroEl.classList.remove('updated'); void heroEl.offsetWidth; heroEl.classList.add('updated');
+    }
   }
-  document.getElementById('rFinalRow').textContent=nv;
-  var baseLabel = i18n.getNestedTranslation('calc.table_base') || 'Custo base';
-  var marginLabel = i18n.getNestedTranslation('calc.table_margin') || 'Margem';
-  var subParts=baseLabel+' '+fmtCurrency(r.baseCost)+' · '+marginLabel+' '+fmtCurrency(r.marginCost*r.qty);
-  if(r.qty>1) subParts+=' ('+r.qty+'×'+fmtCurrency(r.unitPrice)+' p/un.)';
-  document.getElementById('rFinalSub').textContent=r.finalPrice>0?subParts: (i18n.getNestedTranslation('calc.price_hero_empty') || 'Introduz os parâmetros para calcular');
-  var lbl=document.getElementById('rFilamentLabel');
-  if(lbl) lbl.textContent=_calcMode==='resin'?(i18n.getNestedTranslation('calc.resin_cost_label') || 'Custo da resina') : (i18n.getNestedTranslation('calc.filament_cost_label') || 'Custo do filamento');
-  setRes('rFilament',r.materialCost);
-  setRes('rAmortization',r.amortizationCost);
-  setRes('rElectricity',r.electricityCost);
-  setRes('rBase',r.baseCost,true);
-  setRes('rFailure',r.failureCost);
-  setRes('rIndirect',r.indirectCost);
-  setRes('rMargin',r.marginCost);
-  var tot=r.finalPrice||1;
-  setBar('barFilament',r.materialCost*(r.qty||1)/tot*100);
-  setBar('barAmortization',r.amortizationCost*(r.qty||1)/tot*100);
-  setBar('barElectricity',r.electricityCost*(r.qty||1)/tot*100);
-  var cpBtn=document.getElementById('btnCriarPedido');
-  if(cpBtn) {
-    if(r.finalPrice>0) cpBtn.classList.add('visible');
-    else cpBtn.classList.remove('visible');
+
+  // Update detailed breakdown with IDs from new HTML
+  const setV = (id, val) => { 
+    const el = document.getElementById(id); 
+    if (el) {
+      el.textContent = fmtCurrency(val);
+      el.classList.toggle('zero', val === 0);
+    }
+  };
+  
+  setV('resFilCost', r.materialCost);
+  setV('resMchCost', r.amortizationCost);
+  setV('resElecCost', r.electricityCost);
+  setV('resBaseCost', r.baseCost);
+  setV('resFailCost', r.failureCost);
+  setV('resIndCost', r.indirectCost);
+  setV('resMargCost', r.marginCost);
+  
+  // Update percentage labels
+  const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  setT('labFailPct', i.failureRate);
+  setT('labIndPct', i.indirectCosts);
+  setT('labMargPct', i.profitMargin);
+
+  // Subtext logic
+  const subEl = document.getElementById('rSubtext');
+  if (subEl) {
+    if (r.finalPrice > 0) {
+      const baseLabel = i18n.getNestedTranslation('calc.results.base_label') || 'Custo Base:';
+      subEl.textContent = `${baseLabel} ${fmtCurrency(r.baseCost)}`;
+    } else {
+      subEl.textContent = i18n.getNestedTranslation('calc.results.awaiting') || 'A aguardar parâmetros...';
+    }
   }
+
+  // Status button "Create Order"
+  const cpBtn = document.querySelector('.btn-criar-pedido');
+  if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
+}
+
+function sendWhatsApp() {
+  const i = getInputs();
+  const r = computeResults(i);
+  if (r.finalPrice <= 0) {
+    showToast('⚠️ Calcula um valor primeiro', 'err');
+    return;
+  }
+
+  let msg = `🎨 *Orçamento de Impressão 3D*\n\n`;
+  if (i.mode === 'simple') {
+    msg += `📍 *Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
+    msg += `⚖️ *Peso:* ${i.weight}g\n`;
+  } else {
+    msg += `📂 *Projeto Multi-Peças*\n`;
+    i.parts.forEach(p => {
+      msg += `• ${p.qty}x ${p.name || 'Peça'} (${p.weight}g)\n`;
+    });
+  }
+  
+  msg += `\n💰 *Total:* ${fmtCurrency(r.finalPrice)}\n`;
+  msg += `📍 _Obrigado pela preferência!_\n\n🚀 Gerado via *3DZAAP*`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function clearCalculator() {
+  if (_calcMode === 'advanced') {
+    _parts = [];
+    addPartRow();
+  } else {
+    document.getElementById('partWeight').value = 50;
+    document.getElementById('printTime').value = 3;
+    document.getElementById('fMaterialSelect').value = '';
+    _selectedMaterial = null;
+  }
+  liveCalc();
+  showToast('🗑️ Limpo!', 'ok');
+}
+
+function applyPrinterSelect(id) {
+  const prn = _printers.find(p => String(p.id) === String(id));
+  _selectedPrinter = prn;
+  if (prn) {
+    // If printer has custom config, set values in ADVANCED panel hidden inputs
+    const pPrice = document.getElementById('printerPrice');
+    if (pPrice) pPrice.value = prn.price || 1000;
+    const pLife = document.getElementById('printerLife');
+    if (pLife) pLife.value = prn.lifeHours || 2500;
+    const pPower = document.getElementById('powerConsumption');
+    if (pPower) pPower.value = prn.powerWatts || 250;
+  }
+  liveCalc();
 }
 
 function setRes(id,val,bold){
@@ -1564,78 +1738,8 @@ function copyForClient(){
   }else{fbClientCopy(txt);}
 }
 
-async function sendWhatsApp(){
-  const i=getInputs(); const r=computeResults(i);
-  if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.no_values'),'err');return;}
-  
-  const btn=document.getElementById('waBtn');
-  const orig=btn.innerHTML;
-  btn.disabled=true;
-  btn.innerHTML='<span>⏳ ' + i18n.getNestedTranslation('calc.toasts.generating_link') + '...</span>';
-
-  const waWin = window.open('', '_blank');
-
-  try {
-    const clientNameVal = (document.getElementById('clientName').value || '').trim();
-    const name = (document.getElementById('printName').value || '').trim();
-    const token = crypto.randomUUID();
-    const pin = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
-    const expiry = new Date();
-    expiry.setDate(expiry.getDate() + 7);
-    
-    // unitPrice = total price / qty (so orders module can recalculate correctly)
-    const qty = i.qty || 1;
-    const unitPrice = qty > 0 ? r.finalPrice / qty : r.finalPrice;
-
-    const newOrder = {
-      clientName: clientNameVal || 'Cliente (Via WhatsApp)',
-      total: r.finalPrice,
-      status: 'orcamento',
-      isQuote: true,
-      shareToken: token,
-      passphrase: pin,
-      expiresAt: expiry.toISOString(),
-      items: [{
-        description: name || 'Impressão 3D Customizada',
-        quantity: qty,
-        unitPrice: unitPrice,
-        material: i.materialName || 'N/A',
-        weightG: i.mode === 'resin' ? i.resinVolume : i.partWeight,
-      }]
-    };
-
-    await DB.saveOrder(newOrder);
-    
-    // Determine portal URL
-    const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
-    _portalUrl = base + '/portal.html?t=' + token;
-    _portalPin = pin;
-
-    const txt=_buildClientMsg();
-    const encoded=encodeURIComponent(txt);
-    const waUrl = 'https://wa.me/?text='+encoded;
-
-    if (waWin) {
-      waWin.location.href = waUrl;
-    } else {
-      window.open(waUrl, '_blank');
-    }
-
-    showToast(i18n.getNestedTranslation('calc.toasts.link_sent') || '✅ Link de tracking enviado!','ok');
-  } catch(err) {
-    console.error(err);
-    if (waWin) waWin.close();
-    showToast(i18n.getNestedTranslation('calc.toasts.error_tracking') || 'Erro ao gerar link de tracking.','err');
-  } finally {
-    btn.disabled=false;
-    btn.innerHTML=orig;
-    _portalUrl = ''; 
-    _portalPin = '';
-    // Reset client name and print name after sending
-    const cnEl = document.getElementById('clientName');
-    if (cnEl) cnEl.value = '';
-  }
-}
+// A função sendWhatsApp nova já foi definida anteriormente na área de lógica central.
+// Removendo a duplicata aqui.
 
 function fbClientCopy(t){
   const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
@@ -1706,6 +1810,13 @@ document.addEventListener('DOMContentLoaded', function() {
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
   if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+
+  // Initialize new calculator
+  (async() => {
+    await loadInitialData();
+    await loadUserData();
+    liveCalc();
+  })();
 });
 </script>
 </body>
