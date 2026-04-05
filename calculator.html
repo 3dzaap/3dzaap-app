@@ -597,7 +597,7 @@
             <div class="form-section">
               <div class="section-title">
                 <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)">🏷️</div>
-                <span data-i18n="calc.print_name_label">Nome da impressão</span>
+                <span data-i18n="calc.print_name_label">Projeto</span>
               </div>
               <div class="fields-grid">
                 <div class="field full">
@@ -651,7 +651,7 @@
               <div class="form-section">
                 <div class="section-title">
                   <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)">🏗️</div>
-                  <span data-i18n="calc.sections.project">Projeto / Tabuleiro</span>
+                  <span data-i18n="calc.sections.project">Mesa</span>
                 </div>
                 <div class="parts-table-wrap">
                   <table class="parts-table">
@@ -671,7 +671,7 @@
                   </table>
                 </div>
                 <button class="btn-add-part" onclick="addPartRow()">
-                  <span>➕</span> <span data-i18n="calc.buttons.add_part">Adicionar Peça</span>
+                  <span>➕</span> <span data-i18n="calc.buttons.add_part">Adicionar Mesa</span>
                 </button>
               </div>
             </div>
@@ -1095,7 +1095,11 @@ function renderSelectors() {
       _printers.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.id;
-        opt.textContent = `${p.model||p.name} (${fmtCurrency(p.custo_hora || 0)}/h)`;
+        
+        const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
+        const printStr = calcHr > 0 ? ` (${fmtCurrency(calcHr)}/h)` : '';
+        
+        opt.textContent = `${p.model||p.name}${printStr}`;
         pSel.appendChild(opt);
       });
     }
