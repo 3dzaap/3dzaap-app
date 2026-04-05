@@ -1367,40 +1367,57 @@ function filterUsers() {
 function renderMetrics() {
   const now = new Date();
 
-  // ── Plan distribution ────────────────────────────────────
-  const planCounts = { trial: 0, starter: 0, pro: 0, business: 0 };
+  // ── Plan distribution — mensal + anual separados
+  const planCounts = {
+    trial: 0,
+    starter: 0, starter_ano: 0,
+    pro: 0,     pro_ano: 0,
+    business: 0, business_ano: 0
+  };
   _customers.forEach(c => { if (planCounts[c.plan] !== undefined) planCounts[c.plan]++; });
+
+  const planGroups = [
+    { label: 'Trial',            color: 'var(--muted)',          count: planCounts.trial,        annual: false },
+    { label: 'Starter (mês)',    color: 'var(--admin-blue)',     count: planCounts.starter,      annual: false },
+    { label: 'Starter (ano)',    color: 'var(--admin-blue)',     count: planCounts.starter_ano,  annual: true  },
+    { label: 'Pro (mês)',        color: 'var(--admin-orange)',   count: planCounts.pro,          annual: false },
+    { label: 'Pro (ano)',        color: 'var(--admin-orange)',   count: planCounts.pro_ano,      annual: true  },
+    { label: 'Business (mês)',   color: 'var(--admin-success)', count: planCounts.business,     annual: false },
+    { label: 'Business (ano)',   color: 'var(--admin-success)', count: planCounts.business_ano, annual: true  },
+  ];
   const totalC = _customers.length || 1;
-  const planColors = { trial: 'var(--muted)', starter: 'var(--admin-blue)', pro: 'var(--admin-orange)', business: '#16a34a' };
-  document.getElementById('planDistBars').innerHTML = Object.entries(planCounts).map(([plan, count]) => {
+  document.getElementById('planDistBars').innerHTML = planGroups.map(({ label, color, count, annual }) => {
     const pct = Math.round((count / totalC) * 100);
+    const annualTag = annual
+      ? `<span style="font-size:.6rem;font-weight:800;padding:1px 5px;border-radius:6px;background:rgba(139,92,246,.12);color:var(--admin-purple);margin-left:5px">ANO</span>`
+      : '';
     return `<div>
-      <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-        <span style="font-weight:700;color:${planColors[plan]};text-transform:capitalize">${plan}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;margin-bottom:4px">
+        <span style="font-weight:700;color:${color};display:flex;align-items:center;gap:4px">${label}${annualTag}</span>
         <span style="font-family:var(--mono);color:var(--dark)">${count} <span style="color:var(--muted)">(${pct}%)</span></span>
       </div>
       <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:${planColors[plan]};border-radius:4px;transition:width .6s var(--ease)"></div>
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .6s var(--ease))"></div>
       </div>
     </div>`;
   }).join('');
 
-  // ── Conversion rate ──────────────────────────────────────
-  const converted = _customers.filter(c => ['starter','pro','business'].includes(c.plan)).length;
+  // ── Conversion rate — conta todos os planos pagos (mensais + anuais)
+  const converted = _customers.filter(c => ['starter','starter_ano','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
   const totalReg  = _customers.length;
   const convRate  = totalReg > 0 ? Math.round((converted / totalReg) * 100) : 0;
   setText('conversionRate', convRate + '%');
   setText('totalTrials', totalReg);
   setText('convertedTrials', converted);
 
-  // ── Module usage
+  // ── Module usage — inclui variantes anuais
   const active         = _customers.filter(c => !c.is_suspended);
   const activeCount    = active.length || 1;
-  const ordersUsers    = active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
-  const financialUsers = active.filter(c => ['trial','business'].includes(c.plan)).length;
-  const backofficeUsers= active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
-  const settingsUsers  = active.filter(c => ['trial','business'].includes(c.plan)).length;
-  const dashboardUsers = active.filter(c => ['trial','pro','business'].includes(c.plan)).length;
+  const ordersUsers    = active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
+  const financialUsers = active.filter(c => ['trial','business','business_ano'].includes(c.plan)).length;
+  const backofficeUsers= active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
+  const settingsUsers  = active.filter(c => ['trial','business','business_ano'].includes(c.plan)).length;
+  const dashboardUsers = active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
   const moduleUsage = [
     { name: '📐 Calculadora',   count: activeCount,    total: activeCount, gate: null },
     { name: '🎨 Materiais',     count: activeCount,    total: activeCount, gate: 'Starter: max 10' },
