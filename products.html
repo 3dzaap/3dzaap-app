@@ -6,6 +6,7 @@
 <title>3DZAAP — Biblioteca de Produtos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){
   var t = localStorage.getItem('3dzaap_theme') || 'light';
@@ -14,151 +15,63 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos de Produtos ──────────────────────── */
-.prod-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-  animation: fadeUp .5s var(--ease) .1s both;
+.cell-product { display: flex; align-items: center; gap: 12px; }
+.prod-icon-box {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--bg-nav-active); color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; border: 1.5px solid rgba(59,143,212,.2);
+  flex-shrink: 0;
+}
+.prod-name-main { font-weight: 700; color: var(--dark); font-size: 0.885rem; }
+.prod-name-sub { font-size: 0.74rem; color: var(--muted); font-weight: 400; margin-top: 1px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Mobile list overrides */
+.mob-prod-list { display: none; flex-direction: column; gap: 10px; padding: 0 4px 20px; }
+.mob-prod-card { 
+  background: var(--bg-card-s); border: 1.5px solid var(--border); 
+  border-radius: var(--rm); padding: 14px; display: flex; 
+  align-items: center; justify-content: space-between; 
 }
 
-.prod-card {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rl);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
-  position: relative;
-  overflow: hidden;
-}
-
-.prod-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--sh-float);
-  border-color: rgba(59,143,212,0.3);
-}
-
-.prod-icon-wrap {
-  width: 50px;
-  height: 50px;
-  background: var(--bg-hover-s);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  margin-bottom: 16px;
-  border: 1px solid var(--border);
-}
-
-.prod-name {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--dark);
-  margin-bottom: 6px;
-}
-
-.prod-desc {
-  font-size: 0.8rem;
-  color: var(--muted);
-  line-height: 1.4;
-  height: 2.8em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  margin-bottom: 16px;
-}
-
-.prod-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  margin-bottom: 18px;
-}
-
-.prod-stat-val {
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--dark);
-}
-
-.prod-stat-lbl {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--subtle);
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
-
-.prod-price-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-top: auto;
-}
-
-.prod-price-val {
-  font-family: var(--mono);
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--blue);
-}
-
-.prod-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.prod-badge-tech {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 0.6rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  background: var(--bg-hover-s);
-  padding: 3px 8px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  color: var(--subtle);
-}
-
-@media(max-width: 600px) {
-  .prod-grid { grid-template-columns: 1fr; }
+@media(max-width: 680px) {
+  .table-card .table-wrap { display: none; }
+  .mob-prod-list { display: flex; }
 }
 </style>
 </head>
 <body>
 
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
 <div class="layout">
-  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+  <!-- Sidebar injetado via sidebar.js -->
+  <div class="sidebar-overlay" id="sideOverlay" onclick="Sidebar.toggle()"></div>
   
   <main class="main">
     <header class="topbar">
-      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
-      <div class="topbar-path">Gestão › <span data-i18n="nav.products">Produtos</span></div>
+      <button class="mob-toggle" onclick="Sidebar.toggle()">☰</button>
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+        <span>›</span>
+        <strong data-i18n="nav.products">Produtos</strong>
+      </div>
       
-      <div class="global-ctrls">
-        <button id="topbarThemeToggle" class="gc-btn" onclick="Sidebar.toggleTheme()" aria-label="Toggle theme">🌙</button>
-        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+      <div class="topbar-actions">
+        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem">🌙</button>
+        <select id="topbarLangSelect" class="form-select" style="width: auto; padding: 4px 28px 4px 10px; font-size: 0.75rem" onchange="window.i18n && window.i18n.setLanguage(this.value)">
           <option value="pt-PT">🇵🇹 PT</option>
           <option value="pt-BR">🇧🇷 BR</option>
           <option value="en-US">🇺🇸 US</option>
           <option value="es">🇪🇸 ES</option>
         </select>
-        <button class="gc-btn gc-help-btn" onclick="Sidebar._toggleHelp(event)">?</button>
       </div>
     </header>
 
@@ -166,25 +79,50 @@
       <div class="page-header">
         <div class="page-header-text">
           <h1 data-i18n="nav.products">📂 Produtos</h1>
-          <p>Biblioteca de peças recorrentes com custos e configurações pré-definidas</p>
+          <p data-i18n="products.subtitle">Biblioteca de peças recorrentes e configuradas para produção.</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-primary" onclick="openProductModal()">+ Novo Produto</button>
+          <button class="btn btn-primary" onclick="openProductModal()">
+            <span>＋</span> <span data-i18n="products.btn_new">Novo Produto</span>
+          </button>
         </div>
       </div>
 
-      <div class="client-search-bar">
-        <span>🔍</span>
-        <input type="text" id="productSearchInput" placeholder="Pesquisar por nome ou descrição..." oninput="renderProducts()">
+      <!-- Filters Wrapper -->
+      <div class="filters-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-icon">🔍</span>
+          <input type="text" id="productSearchInput" class="filter-search" 
+                 placeholder="Pesquisar por nome ou descrição..." 
+                 oninput="renderProducts()" data-i18n="[placeholder]products.search_placeholder">
+        </div>
+        <div class="filter-sep"></div>
+        <span class="filter-count" id="filterCount">0 <span data-i18n="products.items_count">produtos</span></span>
       </div>
 
-      <div id="productsEmpty" class="fin-empty" style="display:none">
-        <div class="fin-empty-icon">📂</div>
-        <p>Ainda não tens produtos na tua biblioteca.<br><small>Podes criar um aqui ou guardar um cálculo diretamente da Calculadora.</small></p>
-      </div>
-
-      <div class="prod-grid" id="productGrid">
-        <!-- Renderizado via JS -->
+      <div class="table-card">
+        <div class="table-wrap">
+          <div id="productsEmpty" class="table-empty" style="display:none">
+            <div class="table-empty-icon">📂</div>
+            <h3 data-i18n="products.empty_title">Biblioteca vazia</h3>
+            <p data-i18n="products.empty_desc">Cria o teu primeiro produto ou guarda um directamente da Calculadora.</p>
+          </div>
+          
+          <table class="ord-table" id="productTable" style="display:none">
+            <thead>
+              <tr>
+                <th data-i18n="products.table.th_product">Produto / Peça</th>
+                <th data-i18n="products.table.th_tech">Tecnologia</th>
+                <th data-i18n="products.table.th_consumption">Consumo Est.</th>
+                <th data-i18n="products.table.th_time">Tempo Est.</th>
+                <th data-i18n="products.table.th_price">Preço Venda</th>
+                <th style="text-align:right" data-i18n="products.table.th_actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+          </table>
+        </div>
+        <div class="mob-prod-list" id="mobProdList"></div>
       </div>
     </div>
   </main>
@@ -192,53 +130,63 @@
 
 <!-- Modal Produto -->
 <div class="modal-overlay" id="productModalOverlay" onclick="if(event.target===this)closeProductModal()">
-  <div class="modal" style="max-width:600px">
+  <div class="modal" style="max-width:620px">
     <div class="modal-header">
-      <h3 id="productModalTitle">📂 Novo Produto</h3>
-      <button class="modal-close" onclick="closeProductModal()">×</button>
+      <div class="modal-title" id="productModalTitle">📂 Novo Produto</div>
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
     </div>
     <div class="modal-body">
+      
+      <div class="form-section-divider">
+        <div class="form-section-divider-icon si-blue">🏷️</div>
+        <span data-i18n="products.modal.sec_basic">Informação Geral</span>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
-          <label>Nome do Produto *</label>
-          <input type="text" id="prName" placeholder="Ex: Vaso Geométrico XL">
+          <label class="form-label" data-i18n="products.modal.lbl_name">Nome do Produto *</label>
+          <input type="text" id="prName" class="form-input" placeholder="Ex: Vaso Geométrico">
         </div>
-        <div class="form-group" style="max-width:180px">
-          <label>Preço de Venda Sugerido</label>
+        <div class="form-group">
+          <label class="form-label" data-i18n="products.modal.lbl_price">Preço Sugerido</label>
           <div style="position:relative">
-            <input type="number" id="prPrice" step="0.01" placeholder="0.00" style="padding-right:30px">
-            <span id="prCurrency" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:0.8rem; font-weight:700; color:var(--muted)">€</span>
+            <input type="number" id="prPrice" class="form-input mono" step="0.01" placeholder="0.00" style="padding-right:34px">
+            <span id="prCurrency" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:0.8rem; font-weight:700; color:var(--subtle)">€</span>
           </div>
         </div>
       </div>
+
       <div class="form-group">
-        <label>Descrição curta</label>
-        <textarea id="prDesc" rows="2" placeholder="O que é este produto?"></textarea>
+        <label class="form-label" data-i18n="products.modal.lbl_desc">Descrição do Catálogo</label>
+        <textarea id="prDesc" class="form-textarea" rows="2" placeholder="Notas curtas para identificação..."></textarea>
       </div>
 
-      <div style="background:var(--bg-hover-s); padding:16px; border-radius:12px; border:1px dashed var(--border); margin-top:10px">
-        <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--subtle); letter-spacing:0.05em; margin-bottom:12px; display:flex; align-items:center; gap:6px">
-          ⚙️ Configuração Técnica 
-          <span style="font-weight:400; text-transform:none; letter-spacing:0">(Injectado automaticamente via Calculadora)</span>
-        </div>
-        <div id="configSummary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px">
-          <div class="fin-kpi-sub" style="text-align:center">Sem configuração<br>associada</div>
+      <div class="form-section-divider">
+        <div class="form-section-divider-icon si-purple">⚙️</div>
+        <span data-i18n="products.modal.sec_tech">Ficha Técnica</span>
+      </div>
+
+      <div style="background:var(--bg-card); border:1.5px dashed var(--border); border-radius:12px; padding:18px; margin-top:4px">
+        <div id="configSummary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px">
+          <!-- Renderizado via JS -->
+          <div style="grid-column: span 3; text-align:center; color:var(--muted); font-size:0.82rem">Carregue via Calculadora para máxima precisão técnica.</div>
         </div>
         <input type="hidden" id="prConfig" value="{}">
       </div>
+
     </div>
     <div class="modal-footer">
       <div style="flex:1">
-        <button class="btn btn-ghost btn-danger btn-sm" id="btnDeleteProduct" style="display:none" onclick="confirmDelProduct()">🗑️ Apagar</button>
+        <button class="btn btn-ghost color-danger btn-sm" id="btnDeleteProduct" style="display:none" onclick="confirmDelProduct()" data-i18n="common.delete">🗑️ Apagar</button>
       </div>
-      <button class="btn btn-ghost" onclick="closeProductModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btnSaveProduct" onclick="saveProduct()">Gravar Produto</button>
+      <button class="btn btn-ghost" onclick="closeProductModal()" data-i18n="common.cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveProduct" onclick="saveProduct()">
+        <span data-i18n="products.modal.btn_save">Gravar Produto</span>
+      </button>
     </div>
   </div>
 </div>
 
-<script src="utils.js"></script>
-<script src="i18n.js"></script>
 <script src="sidebar.js"></script>
 <script>
 let products = [];
@@ -252,10 +200,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const session = await Auth.getSession();
   Sidebar.setSession(session);
+  applyFeatureGating();
   
-  // Update currency symbol
+  // Moeda
   const sym = getCurrencySymbol() || '€';
-  document.getElementById('prCurrency').textContent = sym;
+  const priceSuffix = document.getElementById('prCurrency');
+  if (priceSuffix) priceSuffix.textContent = sym;
   
   loadProducts();
 });
@@ -270,71 +220,93 @@ async function loadProducts() {
 }
 
 function renderProducts() {
-  const query = document.getElementById('productSearchInput').value.toLowerCase();
+  const query = (document.getElementById('productSearchInput').value || '').toLowerCase().trim();
   const filtered = products.filter(p => 
     p.name.toLowerCase().includes(query) || 
     (p.description || '').toLowerCase().includes(query)
   );
 
-  const grid = document.getElementById('productGrid');
+  const tbody = document.getElementById('productTableBody');
+  const mobList = document.getElementById('mobProdList');
   const empty = document.getElementById('productsEmpty');
-  const sym = getCurrencySymbol();
+  const table = document.getElementById('productTable');
+  const countEl = document.getElementById('filterCount');
+
+  if (countEl) {
+    countEl.innerHTML = `${filtered.length} <span data-i18n="products.items_count">produtos</span>`;
+    if (window.i18n) i18n.translatePage();
+  }
 
   if(filtered.length === 0) {
-    grid.innerHTML = '';
+    tbody.innerHTML = '';
+    mobList.innerHTML = '';
+    table.style.display = 'none';
     empty.style.display = 'flex';
     return;
   }
+  
   empty.style.display = 'none';
+  table.style.display = 'table';
 
-  grid.innerHTML = filtered.map(p => {
-    const config = p.config || {};
-    const weight = config.filament_weight || config.resin_volume || 0;
-    const time = config.est_print_hours || 0;
-    const tech = config.mode === 'resin' ? '🧪' : '🧵';
+  tbody.innerHTML = filtered.map(p => {
+    const cfg = p.config || {};
+    const weight = cfg.filament_weight || cfg.resin_volume || 0;
+    const time = cfg.est_print_hours || 0;
+    const isResin = cfg.mode === 'resin';
     
     return `
-      <div class="prod-card" onclick="openProductModal('${p.id}')">
-        <span class="prod-badge-tech">${tech} ${config.mode==='resin'?'Resina':'FDM'}</span>
-        <div class="prod-icon-wrap">📦</div>
-        <div class="prod-name">${escH(p.name)}</div>
-        <div class="prod-desc">${escH(p.description || 'Sem descrição...')}</div>
-        
-        <div class="prod-stats">
-          <div>
-            <div class="prod-stat-val">${weight.toFixed(1)}${config.mode==='resin'?'ml':'g'}</div>
-            <div class="prod-stat-lbl">Peso/Volume</div>
+      <tr>
+        <td>
+          <div class="cell-product">
+            <div class="prod-icon-box">📦</div>
+            <div>
+              <div class="prod-name-main">${escH(p.name)}</div>
+              <div class="prod-name-sub">${escH(p.description || 'Sem descrição')}</div>
+            </div>
           </div>
-          <div>
-            <div class="prod-stat-val">${time.toFixed(1)}h</div>
-            <div class="prod-stat-lbl">Tempo Est.</div>
+        </td>
+        <td>
+          <span class="mat-badge ${isResin?'mat-resin':'mat-fdm'}">
+             ${isResin?'🧪 Resina':'🧵 FDM'}
+          </span>
+        </td>
+        <td class="cell-mono">${weight.toFixed(1)}${isResin?'ml':'g'}</td>
+        <td class="cell-mono">${time.toFixed(1)}h</td>
+        <td class="cell-mono" style="color:var(--blue); font-weight:800">${fmtCurrency(p.salePrice)}</td>
+        <td>
+          <div style="display:flex; justify-content:flex-end; gap:6px">
+            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')" title="Gerar Pedido">🛒</button>
+            <button class="btn-icon" onclick="openProductModal('${p.id}')" title="Editar">✏️</button>
           </div>
-        </div>
-        
-        <div class="prod-price-row">
-          <div>
-             <div class="prod-stat-lbl">Preço Sugerido</div>
-             <div class="prod-price-val">${fmtCurrency(p.salePrice)}</div>
-          </div>
-          <div class="prod-actions">
-            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); createOrderFromProduct('${p.id}')">🛒 Pedido</button>
-          </div>
-        </div>
-      </div>
+        </td>
+      </tr>
     `;
   }).join('');
+
+  mobList.innerHTML = filtered.map(p => `
+    <div class="mob-prod-card">
+      <div style="display:flex; gap:12px; align-items:center">
+        <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem">📦</div>
+        <div>
+          <div class="prod-name-main" style="font-size:0.85rem">${escH(p.name)}</div>
+          <div style="font-family:var(--mono); font-size:0.78rem; color:var(--blue); font-weight:700">${fmtCurrency(p.salePrice)}</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:6px">
+        <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')">🛒</button>
+        <button class="btn-icon" onclick="openProductModal('${p.id}')">✏️</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 function openProductModal(id = null) {
   _editPrId = id;
-  const overlay = document.getElementById('productModalOverlay');
   const title = document.getElementById('productModalTitle');
-  const btn = document.getElementById('btnSaveProduct');
   const btnDel = document.getElementById('btnDeleteProduct');
   
   if(id) {
     title.textContent = '✏️ Editar Produto';
-    btn.textContent = 'Atualizar';
     btnDel.style.display = 'block';
     const p = products.find(x => x.id === id);
     if(p) {
@@ -346,7 +318,6 @@ function openProductModal(id = null) {
     }
   } else {
     title.textContent = '📂 Novo Produto';
-    btn.textContent = 'Gravar';
     btnDel.style.display = 'none';
     document.getElementById('prName').value = '';
     document.getElementById('prPrice').value = '';
@@ -355,7 +326,7 @@ function openProductModal(id = null) {
     renderConfigSummary({});
   }
   
-  overlay.classList.add('open');
+  document.getElementById('productModalOverlay').classList.add('open');
 }
 
 function closeProductModal() {
@@ -365,27 +336,27 @@ function closeProductModal() {
 function renderConfigSummary(cfg) {
   const wrap = document.getElementById('configSummary');
   if(!cfg || Object.keys(cfg).length === 0) {
-    wrap.innerHTML = '<div class="fin-kpi-sub" style="grid-column: span 3; text-align:center">Sem configuração técnica.<br>Cria produtos via Calculadora para máxima precisão.</div>';
+    wrap.innerHTML = '<div style="grid-column: span 3; text-align:center; color:var(--muted); font-size:0.82rem">Sem configuração técnica.<br>Cria produtos via Calculadora para máxima precisão.</div>';
     return;
   }
   
-  const matCost = cfg.material_cost || 0;
+  const mCost = cfg.material_cost || 0;
   const weight = cfg.filament_weight || cfg.resin_volume || 0;
   const time = cfg.est_print_hours || 0;
-  const sym = getCurrencySymbol();
+  const unit = cfg.mode === 'resin' ? 'ml' : 'g';
 
   wrap.innerHTML = `
     <div style="text-align:center">
-      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${weight.toFixed(1)}${cfg.mode==='resin'?'ml':'g'}</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Massa</div>
+      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${weight.toFixed(1)}${unit}</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Consumo</div>
     </div>
     <div style="text-align:center">
-      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${time.toFixed(1)}h</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Tempo</div>
+      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${time.toFixed(1)}h</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Produção</div>
     </div>
     <div style="text-align:center">
-      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${sym}${matCost.toFixed(2)}</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Custo Mat.</div>
+      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${fmtCurrency(mCost)}</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Custo Mat.</div>
     </div>
   `;
 }
@@ -396,7 +367,8 @@ async function saveProduct() {
   if(!name) { showToast('Nome é obrigatório.', 'err'); return; }
   
   _isSaving = true;
-  document.getElementById('btnSaveProduct').disabled = true;
+  const btn = document.getElementById('btnSaveProduct');
+  btn.disabled = true;
   
   try {
     const payload = {
@@ -414,14 +386,14 @@ async function saveProduct() {
     } else {
       products.unshift(saved);
     }
-    showToast('Produto gravado!', 'ok');
+    showToast('✅ Produto gravado com sucesso!', 'ok');
     closeProductModal();
     renderProducts();
   } catch(e) {
-    showToast('Erro ao gravar: ' + e.message, 'err');
+    showToast('❌ Erro ao gravar: ' + e.message, 'err');
   } finally {
     _isSaving = false;
-    document.getElementById('btnSaveProduct').disabled = false;
+    btn.disabled = false;
   }
 }
 
@@ -431,11 +403,11 @@ async function confirmDelProduct() {
   try {
     await DB.deleteProduct(_editPrId);
     products = products.filter(p => p.id !== _editPrId);
-    showToast('Produto removido.', 'ok');
+    showToast('🗑️ Produto removido.', 'ok');
     closeProductModal();
     renderProducts();
   } catch(e) {
-    showToast('Erro: ' + e.message, 'err');
+    showToast('❌ Erro: ' + e.message, 'err');
   }
 }
 
@@ -443,7 +415,6 @@ function createOrderFromProduct(id) {
   const p = products.find(x => x.id === id);
   if(!p) return;
   
-  // Transform product + config into a calculator-like prefill payload
   const cfg = p.config || {};
   const payload = {
     _from_product_library: true,
@@ -462,6 +433,10 @@ function createOrderFromProduct(id) {
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
   showToast('📦 A carregar dados do produto para novo pedido...', 'ok');
   setTimeout(() => { window.location.href = 'orders.html?from=product'; }, 800);
+}
+
+function applyFeatureGating() {
+  // Common gating logic
 }
 </script>
 </body>

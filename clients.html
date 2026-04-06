@@ -6,6 +6,7 @@
 <title>3DZAAP — Clientes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){
   var t = localStorage.getItem('3dzaap_theme') || 'light';
@@ -14,145 +15,63 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos de Clientes ──────────────────────── */
 .client-avatar-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  color: var(--blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.9rem;
-  border: 1.5px solid var(--border);
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--bg-nav-active); color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem; border: 1.5px solid rgba(59,143,212,.25);
   flex-shrink: 0;
 }
+.client-name-cell { display: flex; align-items: center; gap: 12px; }
+.client-info-main { font-weight: 700; color: var(--dark); font-size: 0.88rem; }
+.client-info-sub { font-size: 0.74rem; color: var(--muted); font-weight: 400; margin-top: 1px; }
 
-.client-search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rm);
-  padding: 10px 16px;
-  margin-bottom: 20px;
-  animation: fadeUp .5s var(--ease) .05s both;
+/* Mobile list overrides */
+.mob-client-list { display: none; flex-direction: column; gap: 10px; padding: 0 4px 20px; }
+.mob-client-card { 
+  background: var(--bg-card-s); border: 1.5px solid var(--border); 
+  border-radius: var(--rm); padding: 14px; display: flex; 
+  align-items: center; justify-content: space-between; 
 }
 
-.client-search-bar input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-family: var(--f);
-  font-size: 0.9rem;
-  color: var(--dark);
-}
-
-.client-grid-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rl);
-  padding: 20px;
-  animation: fadeUp .5s var(--ease) .1s both;
-}
-
-.client-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.client-table th {
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--subtle);
-  border-bottom: 1.5px solid var(--border);
-}
-
-.client-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(59,143,212,0.1);
-  vertical-align: middle;
-}
-
-.client-name-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.client-info-main {
-  font-weight: 700;
-  color: var(--dark);
-  font-size: 0.9rem;
-}
-
-.client-info-sub {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-.client-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.mob-client-list {
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.mob-client-card {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rm);
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-@media(max-width: 768px) {
-  .client-grid-card { padding: 0; background: transparent; border: none; box-shadow: none; }
-  .client-table-wrap { display: none; }
+@media(max-width: 680px) {
+  .table-card .table-wrap { display: none; }
   .mob-client-list { display: flex; }
 }
 </style>
 </head>
 <body>
 
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
 <div class="layout">
   <!-- Sidebar injetado via sidebar.js -->
-  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar-overlay" id="sideOverlay" onclick="Sidebar.toggle()"></div>
   
   <main class="main">
     <header class="topbar">
-      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
-      <div class="topbar-path">Dashboard › <span data-i18n="nav.clients">Clientes</span></div>
+      <button class="mob-toggle" onclick="Sidebar.toggle()">☰</button>
+      <div class="topbar-breadcrumb">
+        <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+        <span>›</span>
+        <strong data-i18n="nav.clients">Clientes</strong>
+      </div>
       
-      <div class="global-ctrls">
-        <button id="topbarThemeToggle" class="gc-btn" onclick="Sidebar.toggleTheme()" aria-label="Toggle theme">🌙</button>
-        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+      <div class="topbar-actions">
+        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem">🌙</button>
+        <select id="topbarLangSelect" class="form-select" style="width: auto; padding: 4px 28px 4px 10px; font-size: 0.75rem" onchange="window.i18n && window.i18n.setLanguage(this.value)">
           <option value="pt-PT">🇵🇹 PT</option>
           <option value="pt-BR">🇧🇷 BR</option>
           <option value="en-US">🇺🇸 US</option>
           <option value="es">🇪🇸 ES</option>
         </select>
-        <button class="gc-btn gc-help-btn" onclick="Sidebar._toggleHelp(event)">?</button>
       </div>
     </header>
 
@@ -160,42 +79,48 @@
       <div class="page-header">
         <div class="page-header-text">
           <h1 data-i18n="nav.clients">👥 Clientes</h1>
-          <p>Gere os teus clientes recorrentes e histórico de contactos</p>
+          <p data-i18n="clients.subtitle">Gere os teus clientes e base de contactos recorrentes.</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-primary" onclick="openClientModal()">+ Novo Cliente</button>
+          <button class="btn btn-primary" onclick="openClientModal()">
+            <span>＋</span> <span data-i18n="clients.btn_new">Novo Cliente</span>
+          </button>
         </div>
       </div>
 
-      <div class="client-search-bar">
-        <span>🔍</span>
-        <input type="text" id="clientSearchInput" placeholder="Pesquisar por nome, email ou NIF..." oninput="renderClients()">
+      <!-- Filters Wrapper -->
+      <div class="filters-bar">
+        <div class="filter-search-wrap">
+          <span class="filter-search-icon">🔍</span>
+          <input type="text" id="clientSearchInput" class="filter-search" 
+                 placeholder="Pesquisar por nome, email ou NIF..." 
+                 oninput="renderClients()" data-i18n="[placeholder]clients.search_placeholder">
+        </div>
+        <div class="filter-sep"></div>
+        <span class="filter-count" id="filterCount">0 <span data-i18n="clients.items_count">clientes</span></span>
       </div>
 
-      <div class="client-grid-card">
-        <div class="client-table-wrap">
-          <table class="client-table">
+      <div class="table-card">
+        <div class="table-wrap">
+          <div id="clientsEmpty" class="table-empty" style="display:none">
+            <div class="table-empty-icon">👥</div>
+            <h3 data-i18n="clients.empty_title">Sem clientes registados</h3>
+            <p data-i18n="clients.empty_desc">Os teus clientes aparecerão aqui assim que os adicionares.</p>
+          </div>
+          
+          <table class="ord-table" id="clientTable" style="display:none">
             <thead>
               <tr>
-                <th>Nome / Contacto</th>
-                <th>NIF</th>
-                <th>Localização</th>
-                <th style="text-align:right">Ações</th>
+                <th data-i18n="clients.table.th_client">Cliente / Contacto</th>
+                <th data-i18n="clients.table.th_tax">NIF / Identificação</th>
+                <th data-i18n="clients.table.th_address">Morada Principal</th>
+                <th style="text-align:right" data-i18n="clients.table.th_actions">Ações</th>
               </tr>
             </thead>
-            <tbody id="clientTableBody">
-              <!-- Renderizado via JS -->
-            </tbody>
+            <tbody id="clientTableBody"></tbody>
           </table>
         </div>
-        <div class="mob-client-list" id="mobClientList">
-          <!-- Renderizado via JS -->
-        </div>
-        
-        <div id="clientsEmpty" class="fin-empty" style="display:none">
-          <div class="fin-empty-icon">👥</div>
-          <p>Nenhum cliente encontrado.</p>
-        </div>
+        <div class="mob-client-list" id="mobClientList"></div>
       </div>
     </div>
   </main>
@@ -203,52 +128,65 @@
 
 <!-- Modal Cliente -->
 <div class="modal-overlay" id="clientModalOverlay" onclick="if(event.target===this)closeClientModal()">
-  <div class="modal" style="max-width:550px">
+  <div class="modal" style="max-width:580px">
     <div class="modal-header">
-      <h3 id="clientModalTitle">👥 Novo Cliente</h3>
-      <button class="modal-close" onclick="closeClientModal()">×</button>
+      <div class="modal-title" id="clientModalTitle">👥 Novo Cliente</div>
+      <button class="modal-close" onclick="closeClientModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
+      <div class="form-section-divider">
+        <div class="form-section-divider-icon si-blue">📝</div>
+        <span data-i18n="clients.modal.sec_basic">Informação de Contacto</span>
+      </div>
+      
+      <div class="form-row full">
         <div class="form-group">
-          <label>Nome Completo *</label>
-          <input type="text" id="clName" placeholder="Ex: João Silva">
+          <label class="form-label" data-i18n="clients.modal.lbl_name">Nome Completo *</label>
+          <input type="text" id="clName" class="form-input" placeholder="Ex: João Silva">
         </div>
       </div>
+      
       <div class="form-row">
         <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="clEmail" placeholder="joao@exemplo.com">
+          <label class="form-label" data-i18n="clients.modal.lbl_email">Email</label>
+          <input type="email" id="clEmail" class="form-input" placeholder="joao@exemplo.com">
         </div>
         <div class="form-group">
-          <label>Telefone</label>
-          <input type="text" id="clPhone" placeholder="+351 ...">
+          <label class="form-label" data-i18n="clients.modal.lbl_phone">Telefone</label>
+          <input type="text" id="clPhone" class="form-input" placeholder="+351 ...">
         </div>
       </div>
+
+      <div class="form-section-divider">
+        <div class="form-section-divider-icon si-orange">🏢</div>
+        <span data-i18n="clients.modal.sec_billing">Dados de Faturação</span>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
-          <label>NIF / CPF</label>
-          <input type="text" id="clNif" placeholder="Contribuinte">
+          <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF / Identificação Fiscal</label>
+          <input type="text" id="clNif" class="form-input mono" placeholder="999 999 999">
         </div>
         <div class="form-group">
-          <label>Morada</label>
-          <input type="text" id="clAddress" placeholder="Rua, Cidade, CP">
+          <label class="form-label" data-i18n="clients.modal.lbl_address">Morada de Faturação</label>
+          <input type="text" id="clAddress" class="form-input" placeholder="Rua, Cidade, Código Postal">
         </div>
       </div>
+
       <div class="form-group">
-        <label>Notas Internas</label>
-        <textarea id="clNotes" rows="3" placeholder="Preferências de material, prazos habituais, etc."></textarea>
+        <label class="form-label" data-i18n="clients.modal.lbl_notes">Notas Internas</label>
+        <textarea id="clNotes" class="form-textarea" rows="2" placeholder="Preferências, acordos de preço, etc."></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeClientModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btnSaveClient" onclick="saveClient()">Gravar Cliente</button>
+      <button class="btn btn-ghost" onclick="closeClientModal()" data-i18n="common.cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveClient" onclick="saveClient()">
+        <span data-i18n="clients.modal.btn_save">Gravar Cliente</span>
+      </button>
     </div>
   </div>
 </div>
 
-<script src="utils.js"></script>
-<script src="i18n.js"></script>
 <script src="sidebar.js"></script>
 <script>
 let clients = [];
@@ -262,6 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const session = await Auth.getSession();
   Sidebar.setSession(session);
+  applyFeatureGating();
   
   loadClients();
 });
@@ -276,7 +215,7 @@ async function loadClients() {
 }
 
 function renderClients() {
-  const query = document.getElementById('clientSearchInput').value.toLowerCase();
+  const query = (document.getElementById('clientSearchInput').value || '').toLowerCase().trim();
   const filtered = clients.filter(c => 
     c.name.toLowerCase().includes(query) || 
     (c.email || '').toLowerCase().includes(query) ||
@@ -286,14 +225,24 @@ function renderClients() {
   const tbody = document.getElementById('clientTableBody');
   const mobList = document.getElementById('mobClientList');
   const empty = document.getElementById('clientsEmpty');
+  const table = document.getElementById('clientTable');
+  const countEl = document.getElementById('filterCount');
+
+  if (countEl) {
+    countEl.innerHTML = `${filtered.length} <span data-i18n="clients.items_count">clientes</span>`;
+    if (window.i18n) i18n.translatePage();
+  }
 
   if(filtered.length === 0) {
     tbody.innerHTML = '';
     mobList.innerHTML = '';
+    table.style.display = 'none';
     empty.style.display = 'flex';
     return;
   }
+  
   empty.style.display = 'none';
+  table.style.display = 'table';
 
   tbody.innerHTML = filtered.map(c => {
     const initials = c.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
@@ -304,16 +253,16 @@ function renderClients() {
             <div class="client-avatar-circle">${initials}</div>
             <div>
               <div class="client-info-main">${escH(c.name)}</div>
-              <div class="client-info-sub">${escH(c.email || 'Sem email')} • ${escH(c.phone || 'Sem tlf')}</div>
+              <div class="client-info-sub">${escH(c.email || '—')} • ${escH(c.phone || '—')}</div>
             </div>
           </div>
         </td>
-        <td><code style="font-size:0.75rem">${escH(c.nif || '—')}</code></td>
-        <td class="client-info-sub">${escH(c.address || '—')}</td>
+        <td class="cell-mono" style="font-size:0.75rem">${escH(c.nif || '—')}</td>
+        <td class="client-info-sub" style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escH(c.address || '—')}</td>
         <td>
-          <div class="client-actions">
-            <button class="btn btn-ghost btn-sm" onclick="openClientModal('${c.id}')">✏️</button>
-            <button class="btn btn-ghost btn-sm color-danger" onclick="confirmDelClient('${c.id}')">🗑️</button>
+          <div style="display:flex; justify-content:flex-end; gap:6px">
+            <button class="btn-icon" onclick="openClientModal('${c.id}')" title="Editar">✏️</button>
+            <button class="btn-icon del" onclick="confirmDelClient('${c.id}')" title="Apagar">🗑️</button>
           </div>
         </td>
       </tr>
@@ -323,17 +272,15 @@ function renderClients() {
   mobList.innerHTML = filtered.map(c => `
     <div class="mob-client-card">
       <div style="display:flex; gap:12px; align-items:center">
-        <div class="client-avatar-circle" style="width:34px; height:34px; font-size:0.8rem">
+        <div class="client-avatar-circle">
           ${c.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
         </div>
         <div>
-          <div class="client-info-main" style="font-size:0.85rem">${escH(c.name)}</div>
-          <div class="client-info-sub">${escH(c.email || c.phone || 'Sem contacto')}</div>
+          <div class="client-info-main">${escH(c.name)}</div>
+          <div class="client-info-sub">${escH(c.email || c.phone || '—')}</div>
         </div>
       </div>
-      <div class="client-actions">
-        <button class="btn btn-ghost btn-sm" onclick="openClientModal('${c.id}')">✏️</button>
-      </div>
+      <button class="btn-icon" onclick="openClientModal('${c.id}')">✏️</button>
     </div>
   `).join('');
 }
@@ -341,11 +288,9 @@ function renderClients() {
 function openClientModal(id = null) {
   _editClId = id;
   const title = document.getElementById('clientModalTitle');
-  const btn = document.getElementById('btnSaveClient');
   
   if(id) {
     title.textContent = '✏️ Editar Cliente';
-    btn.textContent = 'Atualizar Cliente';
     const c = clients.find(x => x.id === id);
     if(c) {
       document.getElementById('clName').value = c.name;
@@ -357,7 +302,6 @@ function openClientModal(id = null) {
     }
   } else {
     title.textContent = '👥 Novo Cliente';
-    btn.textContent = 'Gravar Cliente';
     document.getElementById('clName').value = '';
     document.getElementById('clEmail').value = '';
     document.getElementById('clPhone').value = '';
@@ -375,12 +319,8 @@ function closeClientModal() {
 
 async function saveClient() {
   if(_isSaving) return;
-  
   const name = document.getElementById('clName').value.trim();
-  if(!name) {
-    showToast('O nome é obrigatório.', 'err');
-    return;
-  }
+  if(!name) { showToast('O nome é obrigatório.', 'err'); return; }
   
   const payload = {
     name,
@@ -393,7 +333,8 @@ async function saveClient() {
   if(_editClId) payload.id = _editClId;
   
   _isSaving = true;
-  document.getElementById('btnSaveClient').disabled = true;
+  const btn = document.getElementById('btnSaveClient');
+  btn.disabled = true;
   
   try {
     const saved = await DB.saveClient(payload);
@@ -403,14 +344,14 @@ async function saveClient() {
     } else {
       clients.unshift(saved);
     }
-    showToast('Cliente gravado com sucesso!', 'ok');
+    showToast('✅ Cliente gravado com sucesso!', 'ok');
     closeClientModal();
     renderClients();
   } catch(e) {
-    showToast('Erro ao gravar cliente: ' + e.message, 'err');
+    showToast('❌ Erro ao gravar cliente: ' + e.message, 'err');
   } finally {
     _isSaving = false;
-    document.getElementById('btnSaveClient').disabled = false;
+    btn.disabled = false;
   }
 }
 
@@ -419,11 +360,15 @@ async function confirmDelClient(id) {
   try {
     await DB.deleteClient(id);
     clients = clients.filter(x => x.id !== id);
-    showToast('Cliente removido.', 'ok');
+    showToast('🗑️ Cliente removido.', 'ok');
     renderClients();
   } catch(e) {
-    showToast('Erro ao remover: ' + e.message, 'err');
+    showToast('❌ Erro ao remover: ' + e.message, 'err');
   }
+}
+
+function applyFeatureGating() {
+  // Common gating logic in sidebar/orders, added here if needed
 }
 </script>
 </body>
