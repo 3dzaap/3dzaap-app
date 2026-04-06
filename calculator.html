@@ -929,14 +929,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       const data = JSON.parse(raw);
       localStorage.removeItem('3dzaap_calc_load');
       
-      if (data.printName) document.getElementById('printName').value = data.printName;
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      if (data.printName) setEl('printName', data.printName);
       if (data.tech) setTechMode(data.tech);
       
       // Simple mode inputs
-      if (data.weight !== undefined) document.getElementById('printWeight').value = data.weight;
-      if (data.printTime !== undefined) document.getElementById('printTime').value = data.printTime;
+      if (data.weight !== undefined) setEl('partWeight', data.weight);
+      if (data.printTime !== undefined) setEl('printTime', data.printTime);
       
-      // Advanced mode (if we decide to support it fully later, for now we map simple fields)
+      // Advanced mode
       if (data.config && data.config.parts && Array.isArray(data.config.parts)) {
         setCalcMode('advanced');
         _mesas = [{ 
