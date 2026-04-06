@@ -607,15 +607,17 @@ function animateValue(id, start, end, duration, isCurrency = false) {
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadUserData();
+  await loadUserData();
   applyFeatureGating();
   await loadData();
+  
   // filament tooltip hover
   const icon = document.querySelector('#orderItemsList')?.parentElement?.querySelector('.tip-icon');
   if (icon) {
     icon.addEventListener('mouseenter', () => { document.getElementById('filTipBubble').style.display = 'block'; });
     icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
   }
+
   // ── Pre-fill from Calculator or Product Library ──────────────────────────────
   const prefillFrom = new URLSearchParams(window.location.search).get('from');
   if (prefillFrom === 'calc' || prefillFrom === 'product') {
@@ -639,7 +641,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Ensure render runs after i18n/cfg
   let attempt = 0;
   const iv = setInterval(() => {
-    // Wait for both i18n AND company config (_cfg) to be ready
     const cfgReady = window._3dzaap_cfg_ready || (window._cfg && window._cfg.currency);
     const i18nReady = window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length;
     
