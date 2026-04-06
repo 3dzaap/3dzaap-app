@@ -315,6 +315,7 @@ function renderProducts() {
         <td class="cell-mono" style="color:var(--blue); font-weight:800">${fmtCurrency(p.salePrice)}</td>
         <td>
           <div style="display:flex; justify-content:flex-end; gap:6px">
+            <button class="btn-icon" onclick="calculateProduct('${p.id}')" title="Calcular">🧪</button>
             <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')" title="Gerar Pedido">🛒</button>
             <button class="btn-icon" onclick="openProductModal('${p.id}')" title="Editar">✏️</button>
           </div>
@@ -333,6 +334,7 @@ function renderProducts() {
         </div>
       </div>
       <div style="display:flex; gap:6px">
+        <button class="btn-icon" onclick="calculateProduct('${p.id}')">🧪</button>
         <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')">🛒</button>
         <button class="btn-icon" onclick="openProductModal('${p.id}')">✏️</button>
       </div>
@@ -478,6 +480,22 @@ function createOrderFromProduct(id) {
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
   showToast('📦 A carregar dados do produto para novo pedido...', 'ok');
   setTimeout(() => { window.location.href = 'orders.html?from=product'; }, 800);
+}
+
+function calculateProduct(id) {
+  const p = products.find(x => x.id === id);
+  if(!p) return;
+  const cfg = p.config || {};
+  // Store original inputs for the calculator
+  const loadData = cfg._orig_inputs || {
+    printName: p.name,
+    weight: cfg.filament_weight || cfg.resin_volume || 0,
+    printTime: cfg.est_print_hours || 0,
+    tech: cfg.mode || 'fdm',
+    materialId: cfg.material_id || ''
+  };
+  localStorage.setItem('3dzaap_calc_load', JSON.stringify(loadData));
+  window.location.href = 'calculator.html?from=library';
 }
 
 function applyFeatureGating() {

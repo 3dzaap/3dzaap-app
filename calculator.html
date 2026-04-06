@@ -921,6 +921,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   applyFeatureGating();
   renderHistory();
+  
+  // ── Load from Product Library ──────────────────────────────
+  try {
+    const raw = localStorage.getItem('3dzaap_calc_load');
+    if (raw) {
+      const data = JSON.parse(raw);
+      localStorage.removeItem('3dzaap_calc_load');
+      
+      if (data.printName) document.getElementById('printName').value = data.printName;
+      if (data.tech) setTechMode(data.tech);
+      
+      // Simple mode inputs
+      if (data.weight !== undefined) document.getElementById('printWeight').value = data.weight;
+      if (data.printTime !== undefined) document.getElementById('printTime').value = data.printTime;
+      
+      // Advanced mode (if we decide to support it fully later, for now we map simple fields)
+      if (data.config && data.config.parts && Array.isArray(data.config.parts)) {
+        setCalcMode('advanced');
+        _mesas = [{ 
+          id: Date.now(), 
+          name: 'Mesa 1', 
+          parts: data.config.parts.map(p => ({ ...p, id: Date.now() + Math.random() })) 
+        }];
+        renderMesas();
+      }
+
+      if (data.materialId) {
+        const mSel = document.getElementById('fMaterialSelect');
+        if (mSel) {
+          mSel.value = data.materialId;
+          applyMaterialSelect(data.materialId);
+        }
+      }
+    }
+  } catch(e) { console.warn('[3DZAAP] error loading from library:', e); }
+
   liveCalc();
 });
 

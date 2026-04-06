@@ -394,6 +394,11 @@
           <input type="email" id="oClientEmail" class="form-input" placeholder="email@exemplo.com">
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><span data-i18n="orders.modal.lbl_phone">Telefone</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
+          <input type="tel" id="oClientPhone" class="form-input" placeholder="+351 XXX XXX XXX">
+        </div>
         <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF</label>
           <input type="text" id="oClientNif" class="form-input" placeholder="NIF">
@@ -623,6 +628,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch(e) { console.warn('[3DZAAP] calc prefill error:', e); }
   }
+
+  // ── Pre-fill from Product Library ──────────────────────────
+  try {
+    const raw = localStorage.getItem('3dzaap_ord_prefill');
+    if (raw) {
+      const p = JSON.parse(raw);
+      localStorage.removeItem('3dzaap_ord_prefill');
+      // Wait for data load then open
+      const iv_pre = setInterval(() => {
+        if (typeof filaments !== 'undefined' && filaments.length > 0) {
+          clearInterval(iv_pre);
+          openModal();
+          if (p.description) {
+            addOrderItem({
+              description: p.description,
+              quantity: p.quantity || 1,
+              unitPrice: p.unitPrice || p.total || 0,
+              filamentId: p.materialId || '',
+              weightG: p.weightG || ''
+            });
+          }
+        }
+      }, 100);
+    }
+  } catch(e) {}
 
   // Ensure render runs after i18n/cfg
   let attempt = 0;
