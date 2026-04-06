@@ -358,12 +358,12 @@
 
       <div class="fin-kpi-grid">
         <div class="fin-kpi accent">
-          <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Faturado</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Volume de Pedidos</div>
           <div class="fin-kpi-val" id="kpiTotal">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiTotalSub">0 pedidos</div>
         </div>
         <div class="fin-kpi green">
-          <div class="fin-kpi-lbl" data-i18n="financial.kpi_rcvd">Recebido</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_rcvd">Faturado (Recebido)</div>
           <div class="fin-kpi-val" id="kpiPago">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPagoSub">0 pagos</div>
         </div>
@@ -590,6 +590,7 @@ async function loadExpenses() {
   } catch(e) {
     expenses = [];
   }
+  renderAll();
 }
 
 function renderAll() {
@@ -845,7 +846,10 @@ function closeExpModal() {
   _editExpId = null;
 }
 
+let _isSavingExp = false;
 async function saveExp() {
+  if (_isSavingExp) return;
+  
   const date = document.getElementById('expDate').value;
   const value = parseFloat(document.getElementById('expValue').value);
   const category = document.getElementById('expCategory').value;
@@ -856,6 +860,7 @@ async function saveExp() {
      return;
   }
 
+  _isSavingExp = true;
   const payload = {
     date,
     value,
@@ -877,6 +882,8 @@ async function saveExp() {
      renderAll();
   } catch(e) {
      showToast('Erro ao gravar: ' + e.message, 'err');
+  } finally {
+     _isSavingExp = false;
   }
 }
 
