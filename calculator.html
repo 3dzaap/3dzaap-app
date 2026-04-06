@@ -1520,6 +1520,7 @@ function getInputs() {
       tech: _activeTech,
       qty: 1,
       materialPrice: matPrice,
+      materialId: _selectedMaterial ? _selectedMaterial.id : '',
       weight: pf('partWeight'),
       time: pf('printTime')
     };
@@ -1824,7 +1825,8 @@ async function doSaveProduct() {
         material_cost: r.materialCost || 0,
         filament_weight: i.tech === 'fdm' ? i.weight || 0 : null,
         resin_volume: i.tech === 'resin' ? i.weight || 0 : null,
-        est_print_hours: i.printTime || 0,
+        est_print_hours: i.time || 0,
+        material_id: i.materialId || '',
         _orig_inputs: i
       }
     };
