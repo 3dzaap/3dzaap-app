@@ -615,6 +615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (icon) {
     icon.addEventListener('mouseenter', () => { document.getElementById('filTipBubble').style.display = 'block'; });
     icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
+  }
   // ── Pre-fill from Calculator or Product Library ──────────────────────────────
   const prefillFrom = new URLSearchParams(window.location.search).get('from');
   if (prefillFrom === 'calc' || prefillFrom === 'product') {
