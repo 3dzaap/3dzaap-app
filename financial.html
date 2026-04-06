@@ -344,15 +344,17 @@
           <p data-i18n="financial.subtitle">Relatório de receitas e desempenho por período</p>
         </div>
         <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="exportCSVFinanceiro()" data-i18n="financial.btn_csv_fin">📄 CSV Financeiro</button>
-          <button class="btn btn-ghost" onclick="exportCSVOrcamento()" data-i18n="financial.btn_csv_orc">📋 CSV Orçamento</button>
+          <button class="btn btn-ghost" onclick="exportCSVExtrato()" data-i18n="financial.btn_csv_extrato">📊 Exportar Extrato (CSV)</button>
         </div>
       </div>
 
       <div class="fin-period-bar">
-        <label for="periodoInput" data-i18n="financial.lbl_period">📅 Período:</label>
-        <input type="month" id="periodoInput" onchange="renderAll()">
-        <button class="btn btn-ghost btn-sm" onclick="setToday()" data-i18n="financial.btn_month">Mês actual</button>
+        <label for="periodoInput" data-i18n="financial.lbl_period" style="margin-right:4px">📅 Período:</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="month" id="periodoInput" style="height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--rm);outline:none;font-family:var(--f);font-size:0.85rem;font-weight:600;color:var(--dark)">
+          <button class="btn btn-primary" onclick="renderAll()" style="height:34px;padding:0 14px;font-size:0.8rem">🔍 Pesquisar</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="setToday()" data-i18n="financial.btn_month" style="margin-left:6px">Mês atual</button>
         <span id="periodoLabel" style="font-size:.78rem;color:var(--subtle);margin-left:4px"></span>
       </div>
 
@@ -776,39 +778,52 @@ function renderPayBadge(s) {
     : `<span class="badge bp-pendente"><span class="badge-dot"></span>${i18n.getNestedTranslation('status.pendente') || 'Pendente'}</span>`;
 }
 
-function exportCSVFinanceiro() {
+function exportCSVExtrato() {
   const periodOrders = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo);
-  if (!periodOrders.length) { showToast((t('financial.empty_period')||'Sem pedidos neste período'),'err'); return; }
-  const sep = ';';
-  const sym = getCurrencySymbol();
-  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),(t('financial.th_payment')||'Pagamento'),((t('financial.th_total')||'Total')+' ('+ sym +')'),(t('financial.th_date')||'Data Criação'),'Data Pagamento','Itens'];
-  const rows = periodOrders.map(o => [
-    o.orderNumber||'', o.clientName||'',
-    t('status.'+o.status)||STATUS_LABELS[o.status]||o.status, o.paymentStatus==='pago'?(t('status.pago')||'Pago'):(t('status.pendente')||'Pendente'),
-    (o.total||0).toFixed(2), o.createdAt||'', o.paymentDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
-  ]);
-  const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
-  dlCSV(csv, `financeiro_${_periodo}.csv`);
-  showToast(t('financial.toast_csv_exp')||'📄 CSV Financeiro exportado!', 'ok');
-}
+  const periodExps = expenses.filter(e => (e.date||'').slice(0,7) === _periodo);
 
-function exportCSVOrcamento() {
-  const pendentes = orders.filter(o => (o.createdAt||'').slice(0,7) === _periodo && o.paymentStatus === 'pendente');
-  if (!pendentes.length) { showToast((t('financial.empty_period')||'Sem orçamentos pendentes neste período'),'err'); return; }
+  if (!periodOrders.length && !periodExps.length) { 
+    showToast((t('financial.empty_period')||'Sem dados financeiros neste período.'), 'err'); 
+    return; 
+  }
+
   const sep = ';';
   const sym = getCurrencySymbol();
-  const hdr = [(t('financial.th_num')||'Nº'),(t('financial.th_client')||'Cliente'),(t('financial.th_status')||'Estado'),((t('financial.th_total')||'Total')+' ('+ sym +')'),(t('financial.th_date')||'Data Criação'),'Prazo Entrega','Itens','Observações'];
-  const rows = pendentes.map(o => [
-    o.orderNumber||'', o.clientName||'',
-    t('orders.status.'+o.status)||STATUS_LABELS[o.status]||o.status, (o.total||0).toFixed(2),
-    o.createdAt||'', o.dueDate||'',
-    (o.items||[]).map(i=>`${i.description} (${i.quantity}x ${sym} ${(i.unitPrice||0).toFixed(2)})`).join(' | '),
-    o.notes||'',
-  ]);
-  const csv = [hdr,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
-  dlCSV(csv, `orcamentos_${_periodo}.csv`);
-  showToast(t('financial.toast_csv_exp')||'📋 CSV Orçamento exportado!', 'ok');
+  const hdr = ['Data', 'Tipo', 'Entidade / Categoria', 'Detalhes', 'Status', `Entrada (+${sym})`, `Saída (-${sym})`];
+
+  const rowOrders = periodOrders.map(o => {
+    const desc = o.items ? o.items.map(i => i.description + ` (${i.quantity}x)`).join(', ') : '';
+    const statusLabel = o.paymentStatus === 'pago' ? (t('status.pago')||'Pago') : (t('status.pendente')||'Pendente');
+    return [
+      o.createdAt || '',
+      'Receita (Pedido)',
+      o.clientName || '-',
+      desc || o.orderNumber || '-',
+      statusLabel,
+      (o.total || 0).toFixed(2),
+      ''
+    ];
+  });
+
+  const rowExps = periodExps.map(e => {
+    return [
+      e.date || '',
+      'Despesa',
+      e.category || '-',
+      e.description || '-',
+      t('status.pago')||'Pago', // Assumimos que a despesa lançada já foi paga
+      '',
+      (e.value || 0).toFixed(2)
+    ];
+  });
+
+  const allRows = [...rowOrders, ...rowExps];
+  // Sort by date ascending
+  allRows.sort((a,b) => new Date(a[0]) - new Date(b[0]));
+
+  const csv = [hdr,...allRows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
+  dlCSV(csv, `extrato_financeiro_${_periodo}.csv`);
+  showToast('📊 Extrato Financeiro exportado!', 'ok');
 }
 
 function toggleUserMenu() { Sidebar._toggleUserMenu(); }
