@@ -615,44 +615,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (icon) {
     icon.addEventListener('mouseenter', () => { document.getElementById('filTipBubble').style.display = 'block'; });
     icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
-  }
-  // ── Pre-fill from Calculator ──────────────────────────────
-  // Pre-fill from Calculator
-  if (new URLSearchParams(window.location.search).get('from') === 'calc') {
+  // ── Pre-fill from Calculator or Product Library ──────────────────────────────
+  const prefillFrom = new URLSearchParams(window.location.search).get('from');
+  if (prefillFrom === 'calc' || prefillFrom === 'product') {
     try {
       const raw = sessionStorage.getItem('3dzaap_calc_prefill');
       if (raw) {
         const p = JSON.parse(raw);
         sessionStorage.removeItem('3dzaap_calc_prefill');
-        applyCalcPrefill(p);
-      }
-    } catch(e) { console.warn('[3DZAAP] calc prefill error:', e); }
-  }
-
-  // ── Pre-fill from Product Library ──────────────────────────
-  try {
-    const raw = localStorage.getItem('3dzaap_ord_prefill');
-    if (raw) {
-      const p = JSON.parse(raw);
-      localStorage.removeItem('3dzaap_ord_prefill');
-      // Wait for data load then open
-      const iv_pre = setInterval(() => {
-        if (typeof filaments !== 'undefined' && filaments.length > 0) {
-          clearInterval(iv_pre);
-          openModal();
-          if (p.description) {
-            addOrderItem({
-              description: p.description,
-              quantity: p.quantity || 1,
-              unitPrice: p.unitPrice || p.total || 0,
-              filamentId: p.materialId || '',
-              weightG: p.weightG || ''
-            });
+        
+        // Wait for data load (filaments) then apply
+        const iv_pre = setInterval(() => {
+          if (typeof filaments !== 'undefined' && filaments.length > 0) {
+            clearInterval(iv_pre);
+            applyCalcPrefill(p);
           }
-        }
-      }, 100);
-    }
-  } catch(e) {}
+        }, 100);
+      }
+    } catch(e) { console.warn('[3DZAAP] prefill error:', e); }
+  }
 
   // Ensure render runs after i18n/cfg
   let attempt = 0;
