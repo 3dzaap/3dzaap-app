@@ -1740,12 +1740,65 @@ async function saveAsDefaults(){
 function saveToHistory(){
   const i=getInputs();const r=computeResults(i);
   if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.no_values') || 'Sem valores para guardar','err');return;}
+  document.getElementById('saveChoiceOverlay').classList.add('open');
+}
+
+function closeSaveChoice() {
+  document.getElementById('saveChoiceOverlay').classList.remove('open');
+}
+
+async function doSaveHistory() {
+  const i=getInputs(); const r=computeResults(i);
   const name=(document.getElementById('printName').value||'').trim();
-  calcHistory.unshift({id:Date.now(),name,mode:_calcMode,time:new Date().toLocaleTimeString(i18n.currentLocale,{hour:'2-digit',minute:'2-digit'}),inputs:{...i},results:{...r}});
-  if(calcHistory.length>50) calcHistory.pop();
+  calcHistory.unshift({
+    id: Date.now(),
+    name,
+    mode: _calcMode,
+    time: new Date().toLocaleTimeString(i18n.currentLocale, { hour: '2-digit', minute: '2-digit' }),
+    inputs: { ...i },
+    results: { ...r }
+  });
+  
+  if(calcHistory.length > 20) calcHistory = calcHistory.slice(0, 20);
+  
   _persistHistory();
   renderHistory();
+  closeSaveChoice();
   showToast(i18n.getNestedTranslation('calc.toasts.saved') || '💾 Guardado no histórico!','ok');
+}
+
+async function doSaveProduct() {
+  const i=getInputs(); const r=computeResults(i);
+  const name=(document.getElementById('printName').value||'').trim();
+  
+  if(!name) {
+    showToast('Dá um nome ao projeto antes de criar o produto.', 'err');
+    closeSaveChoice();
+    document.getElementById('printName').focus();
+    return;
+  }
+
+  try {
+    const payload = {
+      name,
+      salePrice: r.finalPrice,
+      description: 'Criado a partir da calculadora.',
+      config: {
+        mode: i.tech || 'fdm',
+        material_cost: r.materialCost || 0,
+        filament_weight: i.tech === 'fdm' ? i.weight || 0 : null,
+        resin_volume: i.tech === 'resin' ? i.weight || 0 : null,
+        est_print_hours: i.printTime || 0,
+        _orig_inputs: i
+      }
+    };
+    
+    await DB.saveProduct(payload);
+    showToast('📦 Produto criado na sua biblioteca!', 'ok');
+    closeSaveChoice();
+  } catch(e) {
+    showToast('Erro ao criar produto: ' + e.message, 'err');
+  }
 }
 
 function renderHistory(){
@@ -2066,6 +2119,23 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inicialização gerida no topo via DOMContentLoaded.
 });
 </script>
+
+<!-- NOVO: Modal de Escolha ao Guardar -->
+<div class="modal-overlay" id="saveChoiceOverlay" onclick="if(event.target===this)closeSaveChoice()">
+  <div class="modal" style="max-width:400px; text-align:center; padding:30px 20px">
+    <div style="font-size:2.4rem; margin-bottom:12px">💾</div>
+    <h3 style="margin-bottom:8px">Onde desejas guardar?</h3>
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:24px; line-height:1.4">
+      Podes guardar no histórico rápido para consulta ou criar um novo modelo na tua biblioteca de produtos.
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <button class="btn btn-primary" onclick="doSaveProduct()">📦 Criar Novo Produto</button>
+      <button class="btn btn-ghost" style="border:1.5px solid var(--border)" onclick="doSaveHistory()">🕐 Apenas no Histórico</button>
+      <button class="btn btn-ghost" onclick="closeSaveChoice()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script src="sidebar.js"></script>
 <script>Sidebar.init();</script>
 </body>

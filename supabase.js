@@ -677,6 +677,84 @@ const DB = {
     await Auth._loadCompany();
     return data;
   },
+
+  // ── CLIENTS ─────────────────────────────────────────────────
+
+  async getClients() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('clients').select('*')
+      .eq('company_id', _companyId)
+      .order('name', { ascending: true });
+    if (error) throw error;
+    return data.map(_mapClientFromDB);
+  },
+
+  async saveClient(client) {
+    await _ensureCompany();
+    const row   = _mapClientToDB(client);
+    const isNew = !client.id || _isLocalId(client.id);
+
+    if (!isNew) {
+      const { data, error } = await _sb
+        .from('clients').update(row)
+        .eq('id', client.id).eq('company_id', _companyId)
+        .select().single();
+      if (error) throw error;
+      return _mapClientFromDB(data);
+    } else {
+      const { data, error } = await _sb
+        .from('clients').insert({ ...row, company_id: _companyId })
+        .select().single();
+      if (error) throw error;
+      return _mapClientFromDB(data);
+    }
+  },
+
+  async deleteClient(id) {
+    await _ensureCompany();
+    const { error } = await _sb.from('clients').delete().eq('id', id).eq('company_id', _companyId);
+    if (error) throw error;
+  },
+
+  // ── PRODUCTS ────────────────────────────────────────────────
+
+  async getProducts() {
+    await _ensureCompany();
+    const { data, error } = await _sb
+      .from('products').select('*')
+      .eq('company_id', _companyId)
+      .order('name', { ascending: true });
+    if (error) throw error;
+    return data.map(_mapProductFromDB);
+  },
+
+  async saveProduct(product) {
+    await _ensureCompany();
+    const row   = _mapProductToDB(product);
+    const isNew = !product.id || _isLocalId(product.id);
+
+    if (!isNew) {
+      const { data, error } = await _sb
+        .from('products').update(row)
+        .eq('id', product.id).eq('company_id', _companyId)
+        .select().single();
+      if (error) throw error;
+      return _mapProductFromDB(data);
+    } else {
+      const { data, error } = await _sb
+        .from('products').insert({ ...row, company_id: _companyId })
+        .select().single();
+      if (error) throw error;
+      return _mapProductFromDB(data);
+    }
+  },
+
+  async deleteProduct(id) {
+    await _ensureCompany();
+    const { error } = await _sb.from('products').delete().eq('id', id).eq('company_id', _companyId);
+    if (error) throw error;
+  },
 };
 
 // ============================================================
@@ -877,6 +955,50 @@ function _mapPrinterToDB(p) {
     power_standby:        p.powerStandby        || null,
     power_max:            p.powerMax            || null,
     catalog_id:           p.catalogId           || null,
+  };
+}
+
+function _mapClientFromDB(row) {
+  return {
+    id:        row.id,
+    name:      row.name,
+    nif:       row.nif,
+    email:     row.email,
+    phone:     row.phone,
+    address:   row.address,
+    notes:     row.notes,
+    createdAt: row.created_at,
+  };
+}
+
+function _mapClientToDB(c) {
+  return {
+    name:    c.name,
+    nif:     c.nif     || null,
+    email:   c.email   || null,
+    phone:   c.phone   || null,
+    address: c.address || null,
+    notes:   c.notes   || null,
+  };
+}
+
+function _mapProductFromDB(row) {
+  return {
+    id:          row.id,
+    name:        row.name,
+    description: row.description,
+    salePrice:   parseFloat(row.sale_price || 0),
+    config:      row.config || {},
+    createdAt:   row.created_at,
+  };
+}
+
+function _mapProductToDB(p) {
+  return {
+    name:        p.name,
+    description: p.description || null,
+    sale_price:  parseFloat(p.salePrice) || 0,
+    config:      p.config || {},
   };
 }
 

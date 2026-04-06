@@ -227,6 +227,21 @@
 }
 .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
 [data-theme="dark"] .gc-popover-item { color: var(--dark); }
+
+/* Suggestion box for clients */
+.sug-box {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-top: none; border-radius: 0 0 10px 10px;
+  z-index: 1000; box-shadow: var(--sh-float);
+  max-height: 200px; overflow-y: auto;
+}
+.sug-item {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+}
+.sug-item:hover { background: var(--bg-hover-s); }
+.sug-item:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -369,17 +384,24 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_name">Nome do cliente</span> <span data-i18n="orders.modal.req">*</span></label>
-          <input type="text" id="oClientName" class="form-input" placeholder="Nome completo" data-i18n="orders.modal.lbl_name">
+          <div style="position:relative">
+            <input type="text" id="oClientName" class="form-input" placeholder="Nome completo" oninput="showClientSugs()">
+            <div id="clientSugs" class="sug-box" style="display:none"></div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_email">Email</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
           <input type="email" id="oClientEmail" class="form-input" placeholder="email@exemplo.com">
         </div>
       </div>
-      <div class="form-row full" style="margin-bottom:0">
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_phone">Telefone</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
           <input type="tel" id="oClientPhone" class="form-input" placeholder="+351 XXX XXX XXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">NIF</label>
+          <input type="text" id="oClientNif" class="form-input" placeholder="NIF">
         </div>
       </div>
 
@@ -395,7 +417,10 @@
         <span style="text-align:right" data-i18n="orders.modal.th_price">Preço un.</span><span></span>
       </div>
       <div id="orderItemsList"></div>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" style="margin-top:6px" data-i18n="orders.modal.btn_add">＋ Adicionar item</button>
+      <div style="display:flex; gap:10px; margin-top:8px">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" data-i18n="orders.modal.btn_add">＋ Adicionar item</button>
+        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--blue); border-color:var(--blue)" onclick="openLibraryModal()">📚 Biblioteca de Produtos</button>
+      </div>
       <div class="grand-total-row" style="margin-top:12px">
         <span class="grand-total-lbl" data-i18n="orders.modal.grand_total">Total do pedido</span>
         <span class="grand-total-val" id="oGrandTotal">— 0,00</span>
@@ -470,6 +495,22 @@
   </div>
 </div>
 
+<!-- PRODUCT LIBRARY MODAL (Small overlay) -->
+<div class="modal-overlay" id="libraryOverlay" onclick="if(event.target===this)closeLibraryModal()" style="z-index:650">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">📚 Biblioteca de Produtos</div>
+      <button class="modal-close" onclick="closeLibraryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <input type="text" id="libSearch" class="form-input" placeholder="Pesquisar produto..." oninput="renderLibraryItems()">
+      </div>
+      <div id="libList" style="max-height:350px; overflow-y:auto; margin-top:12px; display:flex; flex-direction:column; gap:8px"></div>
+    </div>
+  </div>
+</div>
+
 <!-- PRINTING MODAL -->
 <div class="modal-overlay" id="printingModalOverlay" onclick="if(event.target===this)closePrintingModal()">
   <div class="modal" style="max-width:440px">
@@ -508,6 +549,8 @@
 let orders = [];
 let filaments = [];
 let printers = [];
+let _dbClients = [];
+let _dbProducts = [];
 let lastOrderNumber = 0;
 let editingId = null;
 let _items = []; // modal items buffer
@@ -606,7 +649,100 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderOrders();
     updateStats();
   });
+
+  // Close suggestions on click outside
+  document.addEventListener('click', e => {
+    if(!e.target.closest('#oClientName') && !e.target.closest('#clientSugs')) {
+      const box = document.getElementById('clientSugs');
+      if(box) box.style.display = 'none';
+    }
+  });
 });
+
+// ── CLIENT & PRODUCT INTEGRATION ───────
+
+function showClientSugs() {
+  const q = document.getElementById('oClientName').value.toLowerCase().trim();
+  const box = document.getElementById('clientSugs');
+  if(!q || !_dbClients.length) { box.style.display = 'none'; return; }
+  
+  const filtered = _dbClients.filter(c => c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q));
+  if(!filtered.length) { box.style.display = 'none'; return; }
+  
+  box.innerHTML = filtered.map(c => `
+    <div class="sug-item" onclick="pickClient('${c.id}')">
+      <div style="font-weight:700">${escH(c.name)}</div>
+      <div style="font-size:0.7rem; color:var(--muted)">${escH(c.email || c.phone || 'Sem contacto')}</div>
+    </div>
+  `).join('');
+  box.style.display = 'block';
+}
+
+function pickClient(id) {
+  const c = _dbClients.find(x => x.id === id);
+  if(!c) return;
+  document.getElementById('oClientName').value = c.name;
+  document.getElementById('oClientEmail').value = c.email || '';
+  document.getElementById('oClientPhone').value = c.phone || '';
+  // NIF field added in previous step
+  const nif = document.getElementById('oClientNif');
+  if(nif) nif.value = c.nif || '';
+  
+  document.getElementById('clientSugs').style.display = 'none';
+}
+
+function openLibraryModal() {
+  document.getElementById('libraryOverlay').classList.add('open');
+  renderLibraryItems();
+}
+
+function closeLibraryModal() {
+  document.getElementById('libraryOverlay').classList.remove('open');
+}
+
+function renderLibraryItems() {
+  const q = (document.getElementById('libSearch').value || '').toLowerCase();
+  const box = document.getElementById('libList');
+  const filtered = _dbProducts.filter(p => p.name.toLowerCase().includes(q));
+  
+  if(!filtered.length) {
+    box.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:0.8rem">Nenhum produto encontrado.</div>';
+    return;
+  }
+  
+  box.innerHTML = filtered.map(p => `
+    <div class="sug-item" style="display:flex; justify-content:space-between; align-items:center" onclick="addProductToOrder('${p.id}')">
+      <div style="flex:1">
+        <div style="font-weight:700">${escH(p.name)}</div>
+        <div style="font-size:0.7rem; color:var(--muted)">${escH(p.description || '')}</div>
+      </div>
+      <div style="font-family:var(--mono); font-weight:700; color:var(--blue); margin-left:12px">${fmtCurrency(p.salePrice)}</div>
+    </div>
+  `).join('');
+}
+
+function addProductToOrder(id) {
+  const p = _dbProducts.find(x => x.id === id);
+  if(!p) return;
+  
+  const cfg = p.config || {};
+  const newItem = {
+    id: Date.now() + Math.random(),
+    description: p.name,
+    quantity: 1,
+    unitPrice: p.salePrice || 0,
+    materialId: (cfg._orig_inputs && cfg._orig_inputs.selectedMaterialId) ? cfg._orig_inputs.selectedMaterialId : null,
+    filament_weight: cfg.filament_weight || null,
+    resin_volume: cfg.resin_volume || null,
+    est_print_hours: cfg.est_print_hours || null
+  };
+  
+  _items.push(newItem);
+  if(typeof renderItemsList === 'function') renderItemsList();
+  if(typeof calculateGrandTotal === 'function') calculateGrandTotal();
+  closeLibraryModal();
+  showToast('📦 Item da biblioteca adicionado.', 'ok');
+}
 
 // ── USER DATA ──────────────────────────
 
@@ -644,15 +780,17 @@ async function applyFeatureGating() {
 // ── LOAD / SAVE DATA ───────────────────
 async function loadData() {
   try {
-    [orders, filaments, lastOrderNumber, printers] = await Promise.all([
+    [orders, filaments, lastOrderNumber, printers, _dbClients, _dbProducts] = await Promise.all([
       DB.getOrders(),
       DB.getFilaments(),
       DB.getLastOrderNumber(),
       DB.getPrinters().catch(() => []),
+      DB.getClients().catch(() => []),
+      DB.getProducts().catch(() => []),
     ]);
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
-    orders = []; filaments = []; lastOrderNumber = 0; printers = [];
+    orders = []; filaments = []; lastOrderNumber = 0; printers = []; _dbClients = []; _dbProducts = [];
   }
   renderOrders();
   updateStats();
@@ -1187,6 +1325,7 @@ function openModal(id = null) {
     document.getElementById('oClientName').value = o.clientName || '';
     document.getElementById('oClientEmail').value = o.clientEmail || '';
     document.getElementById('oClientPhone').value = o.clientPhone || '';
+    document.getElementById('oClientNif').value = o.clientNif || '';
     document.getElementById('oStatus').value = o.status || 'orcamento';
     document.getElementById('oPaymentStatus').value = o.paymentStatus || 'pendente';
     // Handle both full ISO timestamps (2026-03-30T07:04:22Z) and date-only strings (2026-03-30)
@@ -1201,6 +1340,7 @@ function openModal(id = null) {
     document.getElementById('oClientName').value = '';
     document.getElementById('oClientEmail').value = '';
     document.getElementById('oClientPhone').value = '';
+    document.getElementById('oClientNif').value = '';
     document.getElementById('oStatus').value = 'orcamento';
     document.getElementById('oPaymentStatus').value = 'pendente';
     document.getElementById('oCreatedAt').value = new Date().toISOString().split('T')[0];
@@ -1208,6 +1348,7 @@ function openModal(id = null) {
     document.getElementById('oNotes').value = '';
     addOrderItem();
   }
+  document.getElementById('clientSugs').style.display = 'none';
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -1408,6 +1549,7 @@ async function saveOrder() {
     clientName,
     clientEmail: document.getElementById('oClientEmail').value.trim(),
     clientPhone: document.getElementById('oClientPhone').value.trim(),
+    clientNif: document.getElementById('oClientNif').value.trim(),
     items,
     description: items.map(i=>i.description).join('; '),
     quantity: items[0].quantity,

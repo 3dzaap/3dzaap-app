@@ -26,12 +26,14 @@ const Sidebar = (() => {
         { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '🏠', label: 'Início',       lockId: 'navLockDashboard' },
         { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '📐', label: 'Calculadora' },
         { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '📦', label: 'Pedidos',      lockId: 'navLockOrders' },
+        { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '👥', label: 'Clientes',     lockId: 'navLockClients' },
         { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '💰', label: 'Financeiro',   lockId: 'navLockFinancial' },
       ]
     },
     {
       section: 'Gestão', i18nKey: 'nav.gestao',
       items: [
+        { id: 'products',   i18nKey: 'nav.products',   href: 'products.html',   icon: '📂', label: 'Produtos',     lockId: 'navLockProducts' },
         { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '🎨', label: 'Materiais' },
         { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '🖨️', label: 'Impressoras' },
         { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '🗄️', label: 'BackOffice',  lockId: 'navLockBackoffice' },
@@ -190,13 +192,13 @@ const Sidebar = (() => {
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
-    trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
-    starter:      { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
-    starter_ano:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
-    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
-    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
-    business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
-    business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
+    trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
+    starter:      { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
+    starter_ano:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
+    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:false, backoffice:true,  settings:false },
+    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:false, backoffice:true,  settings:false },
+    business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
+    business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
   };
 
   const PLAN_LIMITS = {
@@ -209,7 +211,7 @@ const Sidebar = (() => {
     business_ano: { materials: null, printers: null },
   };
 
-  const LOCK_LABELS = { orders:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
+  const LOCK_LABELS = { orders:'Pro+', clients:'Pro+', products:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;

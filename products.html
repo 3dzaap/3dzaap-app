@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Biblioteca de Produtos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── Estilos específicos de Produtos ──────────────────────── */
+.prod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  animation: fadeUp .5s var(--ease) .1s both;
+}
+
+.prod-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.prod-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-float);
+  border-color: rgba(59,143,212,0.3);
+}
+
+.prod-icon-wrap {
+  width: 50px;
+  height: 50px;
+  background: var(--bg-hover-s);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+.prod-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+
+.prod-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+  height: 2.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  margin-bottom: 16px;
+}
+
+.prod-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+.prod-stat-val {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.prod-stat-lbl {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--subtle);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.prod-price-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.prod-price-val {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.prod-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.prod-badge-tech {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--bg-hover-s);
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--subtle);
+}
+
+@media(max-width: 600px) {
+  .prod-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+  
+  <main class="main">
+    <header class="topbar">
+      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-path">Gestão › <span data-i18n="nav.products">Produtos</span></div>
+      
+      <div class="global-ctrls">
+        <button id="topbarThemeToggle" class="gc-btn" onclick="Sidebar.toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+          <option value="pt-PT">🇵🇹 PT</option>
+          <option value="pt-BR">🇧🇷 BR</option>
+          <option value="en-US">🇺🇸 US</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+        <button class="gc-btn gc-help-btn" onclick="Sidebar._toggleHelp(event)">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 data-i18n="nav.products">📂 Produtos</h1>
+          <p>Biblioteca de peças recorrentes com custos e configurações pré-definidas</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="openProductModal()">+ Novo Produto</button>
+        </div>
+      </div>
+
+      <div class="client-search-bar">
+        <span>🔍</span>
+        <input type="text" id="productSearchInput" placeholder="Pesquisar por nome ou descrição..." oninput="renderProducts()">
+      </div>
+
+      <div id="productsEmpty" class="fin-empty" style="display:none">
+        <div class="fin-empty-icon">📂</div>
+        <p>Ainda não tens produtos na tua biblioteca.<br><small>Podes criar um aqui ou guardar um cálculo diretamente da Calculadora.</small></p>
+      </div>
+
+      <div class="prod-grid" id="productGrid">
+        <!-- Renderizado via JS -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Produto -->
+<div class="modal-overlay" id="productModalOverlay" onclick="if(event.target===this)closeProductModal()">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3 id="productModalTitle">📂 Novo Produto</h3>
+      <button class="modal-close" onclick="closeProductModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do Produto *</label>
+          <input type="text" id="prName" placeholder="Ex: Vaso Geométrico XL">
+        </div>
+        <div class="form-group" style="max-width:180px">
+          <label>Preço de Venda Sugerido</label>
+          <div style="position:relative">
+            <input type="number" id="prPrice" step="0.01" placeholder="0.00" style="padding-right:30px">
+            <span id="prCurrency" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:0.8rem; font-weight:700; color:var(--muted)">€</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descrição curta</label>
+        <textarea id="prDesc" rows="2" placeholder="O que é este produto?"></textarea>
+      </div>
+
+      <div style="background:var(--bg-hover-s); padding:16px; border-radius:12px; border:1px dashed var(--border); margin-top:10px">
+        <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--subtle); letter-spacing:0.05em; margin-bottom:12px; display:flex; align-items:center; gap:6px">
+          ⚙️ Configuração Técnica 
+          <span style="font-weight:400; text-transform:none; letter-spacing:0">(Injectado automaticamente via Calculadora)</span>
+        </div>
+        <div id="configSummary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px">
+          <div class="fin-kpi-sub" style="text-align:center">Sem configuração<br>associada</div>
+        </div>
+        <input type="hidden" id="prConfig" value="{}">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="flex:1">
+        <button class="btn btn-ghost btn-danger btn-sm" id="btnDeleteProduct" style="display:none" onclick="confirmDelProduct()">🗑️ Apagar</button>
+      </div>
+      <button class="btn btn-ghost" onclick="closeProductModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveProduct" onclick="saveProduct()">Gravar Produto</button>
+    </div>
+  </div>
+</div>
+
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
+<script src="sidebar.js"></script>
+<script>
+let products = [];
+let _editPrId = null;
+let _isSaving = false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  Sidebar.init();
+  const ok = await Auth.requireAuth();
+  if(!ok) return;
+  
+  const session = await Auth.getSession();
+  Sidebar.setSession(session);
+  
+  // Update currency symbol
+  const sym = getCurrencySymbol() || '€';
+  document.getElementById('prCurrency').textContent = sym;
+  
+  loadProducts();
+});
+
+async function loadProducts() {
+  try {
+    products = await DB.getProducts();
+    renderProducts();
+  } catch(e) {
+    showToast('Erro ao carregar biblioteca: ' + e.message, 'err');
+  }
+}
+
+function renderProducts() {
+  const query = document.getElementById('productSearchInput').value.toLowerCase();
+  const filtered = products.filter(p => 
+    p.name.toLowerCase().includes(query) || 
+    (p.description || '').toLowerCase().includes(query)
+  );
+
+  const grid = document.getElementById('productGrid');
+  const empty = document.getElementById('productsEmpty');
+  const sym = getCurrencySymbol();
+
+  if(filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(p => {
+    const config = p.config || {};
+    const weight = config.filament_weight || config.resin_volume || 0;
+    const time = config.est_print_hours || 0;
+    const tech = config.mode === 'resin' ? '🧪' : '🧵';
+    
+    return `
+      <div class="prod-card" onclick="openProductModal('${p.id}')">
+        <span class="prod-badge-tech">${tech} ${config.mode==='resin'?'Resina':'FDM'}</span>
+        <div class="prod-icon-wrap">📦</div>
+        <div class="prod-name">${escH(p.name)}</div>
+        <div class="prod-desc">${escH(p.description || 'Sem descrição...')}</div>
+        
+        <div class="prod-stats">
+          <div>
+            <div class="prod-stat-val">${weight.toFixed(1)}${config.mode==='resin'?'ml':'g'}</div>
+            <div class="prod-stat-lbl">Peso/Volume</div>
+          </div>
+          <div>
+            <div class="prod-stat-val">${time.toFixed(1)}h</div>
+            <div class="prod-stat-lbl">Tempo Est.</div>
+          </div>
+        </div>
+        
+        <div class="prod-price-row">
+          <div>
+             <div class="prod-stat-lbl">Preço Sugerido</div>
+             <div class="prod-price-val">${fmtCurrency(p.salePrice)}</div>
+          </div>
+          <div class="prod-actions">
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); createOrderFromProduct('${p.id}')">🛒 Pedido</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openProductModal(id = null) {
+  _editPrId = id;
+  const overlay = document.getElementById('productModalOverlay');
+  const title = document.getElementById('productModalTitle');
+  const btn = document.getElementById('btnSaveProduct');
+  const btnDel = document.getElementById('btnDeleteProduct');
+  
+  if(id) {
+    title.textContent = '✏️ Editar Produto';
+    btn.textContent = 'Atualizar';
+    btnDel.style.display = 'block';
+    const p = products.find(x => x.id === id);
+    if(p) {
+      document.getElementById('prName').value = p.name;
+      document.getElementById('prPrice').value = p.salePrice || '';
+      document.getElementById('prDesc').value = p.description || '';
+      document.getElementById('prConfig').value = JSON.stringify(p.config || {});
+      renderConfigSummary(p.config || {});
+    }
+  } else {
+    title.textContent = '📂 Novo Produto';
+    btn.textContent = 'Gravar';
+    btnDel.style.display = 'none';
+    document.getElementById('prName').value = '';
+    document.getElementById('prPrice').value = '';
+    document.getElementById('prDesc').value = '';
+    document.getElementById('prConfig').value = '{}';
+    renderConfigSummary({});
+  }
+  
+  overlay.classList.add('open');
+}
+
+function closeProductModal() {
+  document.getElementById('productModalOverlay').classList.remove('open');
+}
+
+function renderConfigSummary(cfg) {
+  const wrap = document.getElementById('configSummary');
+  if(!cfg || Object.keys(cfg).length === 0) {
+    wrap.innerHTML = '<div class="fin-kpi-sub" style="grid-column: span 3; text-align:center">Sem configuração técnica.<br>Cria produtos via Calculadora para máxima precisão.</div>';
+    return;
+  }
+  
+  const matCost = cfg.material_cost || 0;
+  const weight = cfg.filament_weight || cfg.resin_volume || 0;
+  const time = cfg.est_print_hours || 0;
+  const sym = getCurrencySymbol();
+
+  wrap.innerHTML = `
+    <div style="text-align:center">
+      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${weight.toFixed(1)}${cfg.mode==='resin'?'ml':'g'}</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Massa</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${time.toFixed(1)}h</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Tempo</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-weight:700; color:var(--dark); font-size:0.8rem">${sym}${matCost.toFixed(2)}</div>
+      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase">Custo Mat.</div>
+    </div>
+  `;
+}
+
+async function saveProduct() {
+  if(_isSaving) return;
+  const name = document.getElementById('prName').value.trim();
+  if(!name) { showToast('Nome é obrigatório.', 'err'); return; }
+  
+  _isSaving = true;
+  document.getElementById('btnSaveProduct').disabled = true;
+  
+  try {
+    const payload = {
+      name,
+      salePrice: parseFloat(document.getElementById('prPrice').value) || 0,
+      description: document.getElementById('prDesc').value.trim(),
+      config: JSON.parse(document.getElementById('prConfig').value || '{}')
+    };
+    if(_editPrId) payload.id = _editPrId;
+    
+    const saved = await DB.saveProduct(payload);
+    if(_editPrId) {
+      const idx = products.findIndex(x => x.id === _editPrId);
+      if(idx > -1) products[idx] = saved;
+    } else {
+      products.unshift(saved);
+    }
+    showToast('Produto gravado!', 'ok');
+    closeProductModal();
+    renderProducts();
+  } catch(e) {
+    showToast('Erro ao gravar: ' + e.message, 'err');
+  } finally {
+    _isSaving = false;
+    document.getElementById('btnSaveProduct').disabled = false;
+  }
+}
+
+async function confirmDelProduct() {
+  if(!_editPrId) return;
+  if(!confirm('Tens a certeza que desejas apagar este produto da biblioteca?')) return;
+  try {
+    await DB.deleteProduct(_editPrId);
+    products = products.filter(p => p.id !== _editPrId);
+    showToast('Produto removido.', 'ok');
+    closeProductModal();
+    renderProducts();
+  } catch(e) {
+    showToast('Erro: ' + e.message, 'err');
+  }
+}
+
+function createOrderFromProduct(id) {
+  const p = products.find(x => x.id === id);
+  if(!p) return;
+  
+  // Transform product + config into a calculator-like prefill payload
+  const cfg = p.config || {};
+  const payload = {
+    _from_product_library: true,
+    product_id: p.id,
+    description: p.name,
+    total: p.salePrice || 0,
+    unit_price: p.salePrice || 0,
+    quantity: 1,
+    material_cost: cfg.material_cost || 0,
+    filament_weight: cfg.filament_weight || null,
+    resin_volume: cfg.resin_volume || null,
+    est_print_hours: cfg.est_print_hours || null,
+    mode: cfg.mode || 'fdm'
+  };
+  
+  sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
+  showToast('📦 A carregar dados do produto para novo pedido...', 'ok');
+  setTimeout(() => { window.location.href = 'orders.html?from=product'; }, 800);
+}
+</script>
+</body>
+</html>

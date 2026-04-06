@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── Estilos específicos de Clientes ──────────────────────── */
+.client-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+}
+
+.client-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  animation: fadeUp .5s var(--ease) .05s both;
+}
+
+.client-search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--f);
+  font-size: 0.9rem;
+  color: var(--dark);
+}
+
+.client-grid-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 20px;
+  animation: fadeUp .5s var(--ease) .1s both;
+}
+
+.client-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.client-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--subtle);
+  border-bottom: 1.5px solid var(--border);
+}
+
+.client-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(59,143,212,0.1);
+  vertical-align: middle;
+}
+
+.client-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.client-info-main {
+  font-weight: 700;
+  color: var(--dark);
+  font-size: 0.9rem;
+}
+
+.client-info-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.client-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.mob-client-list {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mob-client-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media(max-width: 768px) {
+  .client-grid-card { padding: 0; background: transparent; border: none; box-shadow: none; }
+  .client-table-wrap { display: none; }
+  .mob-client-list { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar injetado via sidebar.js -->
+  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+  
+  <main class="main">
+    <header class="topbar">
+      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-path">Dashboard › <span data-i18n="nav.clients">Clientes</span></div>
+      
+      <div class="global-ctrls">
+        <button id="topbarThemeToggle" class="gc-btn" onclick="Sidebar.toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+          <option value="pt-PT">🇵🇹 PT</option>
+          <option value="pt-BR">🇧🇷 BR</option>
+          <option value="en-US">🇺🇸 US</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+        <button class="gc-btn gc-help-btn" onclick="Sidebar._toggleHelp(event)">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 data-i18n="nav.clients">👥 Clientes</h1>
+          <p>Gere os teus clientes recorrentes e histórico de contactos</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="openClientModal()">+ Novo Cliente</button>
+        </div>
+      </div>
+
+      <div class="client-search-bar">
+        <span>🔍</span>
+        <input type="text" id="clientSearchInput" placeholder="Pesquisar por nome, email ou NIF..." oninput="renderClients()">
+      </div>
+
+      <div class="client-grid-card">
+        <div class="client-table-wrap">
+          <table class="client-table">
+            <thead>
+              <tr>
+                <th>Nome / Contacto</th>
+                <th>NIF</th>
+                <th>Localização</th>
+                <th style="text-align:right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="clientTableBody">
+              <!-- Renderizado via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="mob-client-list" id="mobClientList">
+          <!-- Renderizado via JS -->
+        </div>
+        
+        <div id="clientsEmpty" class="fin-empty" style="display:none">
+          <div class="fin-empty-icon">👥</div>
+          <p>Nenhum cliente encontrado.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Cliente -->
+<div class="modal-overlay" id="clientModalOverlay" onclick="if(event.target===this)closeClientModal()">
+  <div class="modal" style="max-width:550px">
+    <div class="modal-header">
+      <h3 id="clientModalTitle">👥 Novo Cliente</h3>
+      <button class="modal-close" onclick="closeClientModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome Completo *</label>
+          <input type="text" id="clName" placeholder="Ex: João Silva">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="clEmail" placeholder="joao@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input type="text" id="clPhone" placeholder="+351 ...">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>NIF / CPF</label>
+          <input type="text" id="clNif" placeholder="Contribuinte">
+        </div>
+        <div class="form-group">
+          <label>Morada</label>
+          <input type="text" id="clAddress" placeholder="Rua, Cidade, CP">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notas Internas</label>
+        <textarea id="clNotes" rows="3" placeholder="Preferências de material, prazos habituais, etc."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeClientModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveClient" onclick="saveClient()">Gravar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
+<script src="sidebar.js"></script>
+<script>
+let clients = [];
+let _editClId = null;
+let _isSaving = false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  Sidebar.init();
+  const ok = await Auth.requireAuth();
+  if(!ok) return;
+  
+  const session = await Auth.getSession();
+  Sidebar.setSession(session);
+  
+  loadClients();
+});
+
+async function loadClients() {
+  try {
+    clients = await DB.getClients();
+    renderClients();
+  } catch(e) {
+    showToast('Erro ao carregar clientes: ' + e.message, 'err');
+  }
+}
+
+function renderClients() {
+  const query = document.getElementById('clientSearchInput').value.toLowerCase();
+  const filtered = clients.filter(c => 
+    c.name.toLowerCase().includes(query) || 
+    (c.email || '').toLowerCase().includes(query) ||
+    (c.nif || '').toLowerCase().includes(query)
+  );
+
+  const tbody = document.getElementById('clientTableBody');
+  const mobList = document.getElementById('mobClientList');
+  const empty = document.getElementById('clientsEmpty');
+
+  if(filtered.length === 0) {
+    tbody.innerHTML = '';
+    mobList.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(c => {
+    const initials = c.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+    return `
+      <tr>
+        <td>
+          <div class="client-name-cell">
+            <div class="client-avatar-circle">${initials}</div>
+            <div>
+              <div class="client-info-main">${escH(c.name)}</div>
+              <div class="client-info-sub">${escH(c.email || 'Sem email')} • ${escH(c.phone || 'Sem tlf')}</div>
+            </div>
+          </div>
+        </td>
+        <td><code style="font-size:0.75rem">${escH(c.nif || '—')}</code></td>
+        <td class="client-info-sub">${escH(c.address || '—')}</td>
+        <td>
+          <div class="client-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openClientModal('${c.id}')">✏️</button>
+            <button class="btn btn-ghost btn-sm color-danger" onclick="confirmDelClient('${c.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  mobList.innerHTML = filtered.map(c => `
+    <div class="mob-client-card">
+      <div style="display:flex; gap:12px; align-items:center">
+        <div class="client-avatar-circle" style="width:34px; height:34px; font-size:0.8rem">
+          ${c.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+        </div>
+        <div>
+          <div class="client-info-main" style="font-size:0.85rem">${escH(c.name)}</div>
+          <div class="client-info-sub">${escH(c.email || c.phone || 'Sem contacto')}</div>
+        </div>
+      </div>
+      <div class="client-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openClientModal('${c.id}')">✏️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openClientModal(id = null) {
+  _editClId = id;
+  const title = document.getElementById('clientModalTitle');
+  const btn = document.getElementById('btnSaveClient');
+  
+  if(id) {
+    title.textContent = '✏️ Editar Cliente';
+    btn.textContent = 'Atualizar Cliente';
+    const c = clients.find(x => x.id === id);
+    if(c) {
+      document.getElementById('clName').value = c.name;
+      document.getElementById('clEmail').value = c.email || '';
+      document.getElementById('clPhone').value = c.phone || '';
+      document.getElementById('clNif').value = c.nif || '';
+      document.getElementById('clAddress').value = c.address || '';
+      document.getElementById('clNotes').value = c.notes || '';
+    }
+  } else {
+    title.textContent = '👥 Novo Cliente';
+    btn.textContent = 'Gravar Cliente';
+    document.getElementById('clName').value = '';
+    document.getElementById('clEmail').value = '';
+    document.getElementById('clPhone').value = '';
+    document.getElementById('clNif').value = '';
+    document.getElementById('clAddress').value = '';
+    document.getElementById('clNotes').value = '';
+  }
+  
+  document.getElementById('clientModalOverlay').classList.add('open');
+}
+
+function closeClientModal() {
+  document.getElementById('clientModalOverlay').classList.remove('open');
+}
+
+async function saveClient() {
+  if(_isSaving) return;
+  
+  const name = document.getElementById('clName').value.trim();
+  if(!name) {
+    showToast('O nome é obrigatório.', 'err');
+    return;
+  }
+  
+  const payload = {
+    name,
+    email: document.getElementById('clEmail').value.trim(),
+    phone: document.getElementById('clPhone').value.trim(),
+    nif: document.getElementById('clNif').value.trim(),
+    address: document.getElementById('clAddress').value.trim(),
+    notes: document.getElementById('clNotes').value.trim()
+  };
+  if(_editClId) payload.id = _editClId;
+  
+  _isSaving = true;
+  document.getElementById('btnSaveClient').disabled = true;
+  
+  try {
+    const saved = await DB.saveClient(payload);
+    if(_editClId) {
+      const idx = clients.findIndex(x => x.id === _editClId);
+      if(idx > -1) clients[idx] = saved;
+    } else {
+      clients.unshift(saved);
+    }
+    showToast('Cliente gravado com sucesso!', 'ok');
+    closeClientModal();
+    renderClients();
+  } catch(e) {
+    showToast('Erro ao gravar cliente: ' + e.message, 'err');
+  } finally {
+    _isSaving = false;
+    document.getElementById('btnSaveClient').disabled = false;
+  }
+}
+
+async function confirmDelClient(id) {
+  if(!confirm('Tens a certeza que desejas apagar este cliente?')) return;
+  try {
+    await DB.deleteClient(id);
+    clients = clients.filter(x => x.id !== id);
+    showToast('Cliente removido.', 'ok');
+    renderClients();
+  } catch(e) {
+    showToast('Erro ao remover: ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>
