@@ -157,23 +157,42 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" data-i18n="products.modal.lbl_desc">Descrição do Catálogo</label>
-        <textarea id="prDesc" class="form-textarea" rows="2" placeholder="Notas curtas para identificação..."></textarea>
-      </div>
-
       <div class="form-section-divider">
         <div class="form-section-divider-icon si-purple">⚙️</div>
         <span data-i18n="products.modal.sec_tech">Ficha Técnica</span>
       </div>
 
-      <div style="background:var(--bg-card); border:1.5px dashed var(--border); border-radius:12px; padding:18px; margin-top:4px">
-        <div id="configSummary" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px">
-          <!-- Renderizado via JS -->
-          <div style="grid-column: span 3; text-align:center; color:var(--muted); font-size:0.82rem">Carregue via Calculadora para máxima precisão técnica.</div>
+      <div class="form-row three">
+        <div class="form-group">
+          <label class="form-label" data-i18n="products.modal.lbl_tech">Tecnologia</label>
+          <select id="prTech" class="form-select" onchange="onTechChange()">
+            <option value="fdm" data-i18n="products.modal.tech_fdm">🧵 FDM</option>
+            <option value="resin" data-i18n="products.modal.tech_resin">🧪 Resina</option>
+          </select>
         </div>
-        <input type="hidden" id="prConfig" value="{}">
+        <div class="form-group">
+          <label class="form-label" id="lblWeight" data-i18n="products.modal.lbl_weight">Peso (g)</label>
+          <input type="number" id="prWeight" class="form-input mono" step="0.1" placeholder="0.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="products.modal.lbl_time">Tempo (h)</label>
+          <input type="number" id="prTime" class="form-input mono" step="0.1" placeholder="0.0">
+        </div>
       </div>
+
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label" data-i18n="products.modal.lbl_material">Material Recomendado</label>
+        <select id="prMaterialId" class="form-select">
+          <option value="">— selecionar material —</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label" data-i18n="products.modal.lbl_desc">Descrição do Catálogo</label>
+        <textarea id="prDesc" class="form-textarea" rows="2" placeholder="Notas curtas para identificação..."></textarea>
+      </div>
+
+      <input type="hidden" id="prConfig" value="{}">
 
     </div>
     <div class="modal-footer">
@@ -191,6 +210,7 @@
 <script src="sidebar.js"></script>
 <script>
 let products = [];
+let materials = [];
 let _editPrId = null;
 let _isSaving = false;
 
@@ -208,8 +228,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const priceSuffix = document.getElementById('prCurrency');
   if (priceSuffix) priceSuffix.textContent = sym;
   
+  loadMaterials();
   loadProducts();
 });
+
+async function loadMaterials() {
+  try {
+    materials = await DB.getFilaments();
+    const sel = document.getElementById('prMaterialId');
+    sel.innerHTML = '<option value="">— selecionar material —</option>';
+    materials.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${m.name} (${m.brand || '?'})`;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.error('Erro materiais:', e);
+  }
+}
 
 async function loadProducts() {
   try {
@@ -301,6 +338,18 @@ function renderProducts() {
   `).join('');
 }
 
+function onTechChange() {
+  const tech = document.getElementById('prTech').value;
+  const lbl = document.getElementById('lblWeight');
+  if(!lbl) return;
+  
+  if(tech === 'resin') {
+    lbl.textContent = window.i18n ? i18n.getNestedTranslation('products.modal.lbl_volume') : 'Volume (ml)';
+  } else {
+    lbl.textContent = window.i18n ? i18n.getNestedTranslation('products.modal.lbl_weight') : 'Peso (g)';
+  }
+}
+
 function openProductModal(id = null) {
   _editPrId = id;
   const title = document.getElementById('productModalTitle');
@@ -314,8 +363,13 @@ function openProductModal(id = null) {
       document.getElementById('prName').value = p.name;
       document.getElementById('prPrice').value = p.salePrice || '';
       document.getElementById('prDesc').value = p.description || '';
-      document.getElementById('prConfig').value = JSON.stringify(p.config || {});
-      renderConfigSummary(p.config || {});
+      
+      const cfg = p.config || {};
+      document.getElementById('prTech').value = cfg.mode || 'fdm';
+      document.getElementById('prWeight').value = cfg.filament_weight || cfg.resin_volume || '';
+      document.getElementById('prTime').value = cfg.est_print_hours || '';
+      document.getElementById('prMaterialId').value = cfg.material_id || '';
+      onTechChange();
     }
   } else {
     title.textContent = '📂 Novo Produto';
@@ -323,8 +377,11 @@ function openProductModal(id = null) {
     document.getElementById('prName').value = '';
     document.getElementById('prPrice').value = '';
     document.getElementById('prDesc').value = '';
-    document.getElementById('prConfig').value = '{}';
-    renderConfigSummary({});
+    document.getElementById('prTech').value = 'fdm';
+    document.getElementById('prWeight').value = '';
+    document.getElementById('prTime').value = '';
+    document.getElementById('prMaterialId').value = '';
+    onTechChange();
   }
   
   document.getElementById('productModalOverlay').classList.add('open');
@@ -332,34 +389,6 @@ function openProductModal(id = null) {
 
 function closeProductModal() {
   document.getElementById('productModalOverlay').classList.remove('open');
-}
-
-function renderConfigSummary(cfg) {
-  const wrap = document.getElementById('configSummary');
-  if(!cfg || Object.keys(cfg).length === 0) {
-    wrap.innerHTML = '<div style="grid-column: span 3; text-align:center; color:var(--muted); font-size:0.82rem">Sem configuração técnica.<br>Cria produtos via Calculadora para máxima precisão.</div>';
-    return;
-  }
-  
-  const mCost = cfg.material_cost || 0;
-  const weight = cfg.filament_weight || cfg.resin_volume || 0;
-  const time = cfg.est_print_hours || 0;
-  const unit = cfg.mode === 'resin' ? 'ml' : 'g';
-
-  wrap.innerHTML = `
-    <div style="text-align:center">
-      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${weight.toFixed(1)}${unit}</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Consumo</div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${time.toFixed(1)}h</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Produção</div>
-    </div>
-    <div style="text-align:center">
-      <div style="font-family:var(--mono); font-weight:800; color:var(--dark); font-size:0.9rem">${fmtCurrency(mCost)}</div>
-      <div style="font-size:0.6rem; color:var(--subtle); text-transform:uppercase; font-weight:700">Custo Mat.</div>
-    </div>
-  `;
 }
 
 async function saveProduct() {
@@ -372,11 +401,24 @@ async function saveProduct() {
   btn.disabled = true;
   
   try {
+    const tech = document.getElementById('prTech').value;
+    const qty = parseFloat(document.getElementById('prWeight').value) || 0;
+    
+    // Create unified config
+    const config = {
+      mode: tech,
+      est_print_hours: parseFloat(document.getElementById('prTime').value) || 0,
+      material_id: document.getElementById('prMaterialId').value
+    };
+    
+    if(tech === 'resin') config.resin_volume = qty;
+    else config.filament_weight = qty;
+
     const payload = {
       name,
       salePrice: parseFloat(document.getElementById('prPrice').value) || 0,
       description: document.getElementById('prDesc').value.trim(),
-      config: JSON.parse(document.getElementById('prConfig').value || '{}')
+      config: config
     };
     if(_editPrId) payload.id = _editPrId;
     

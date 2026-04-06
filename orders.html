@@ -419,7 +419,7 @@
       <div id="orderItemsList"></div>
       <div style="display:flex; gap:10px; margin-top:8px">
         <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()" data-i18n="orders.modal.btn_add">＋ Adicionar item</button>
-        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--blue); border-color:var(--blue)" onclick="openLibraryModal()">📚 Biblioteca de Produtos</button>
+        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--blue); border-color:var(--blue)" onclick="openLibraryModal()">＋ Biblioteca de Produtos</button>
       </div>
       <div class="grand-total-row" style="margin-top:12px">
         <span class="grand-total-lbl" data-i18n="orders.modal.grand_total">Total do pedido</span>
@@ -499,7 +499,7 @@
 <div class="modal-overlay" id="libraryOverlay" onclick="if(event.target===this)closeLibraryModal()" style="z-index:650">
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
-      <div class="modal-title">📚 Biblioteca de Produtos</div>
+      <div class="modal-title">＋ Biblioteca de Produtos</div>
       <button class="modal-close" onclick="closeLibraryModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -711,7 +711,7 @@ function renderLibraryItems() {
   }
   
   box.innerHTML = filtered.map(p => `
-    <div class="sug-item" style="display:flex; justify-content:space-between; align-items:center" onclick="addProductToOrder('${p.id}')">
+    <div class="sug-item" style="display:flex; justify-content:space-between; align-items:center" onclick="addProductToOrderByRef('${p.id}')">
       <div style="flex:1">
         <div style="font-weight:700">${escH(p.name)}</div>
         <div style="font-size:0.7rem; color:var(--muted)">${escH(p.description || '')}</div>
@@ -721,27 +721,22 @@ function renderLibraryItems() {
   `).join('');
 }
 
-function addProductToOrder(id) {
+function addProductToOrderByRef(id) {
   const p = _dbProducts.find(x => x.id === id);
   if(!p) return;
   
   const cfg = p.config || {};
-  const newItem = {
-    id: Date.now() + Math.random(),
+  // Standardized mapping: use the same fields as the orders table
+  addOrderItem({
     description: p.name,
     quantity: 1,
     unitPrice: p.salePrice || 0,
-    materialId: (cfg._orig_inputs && cfg._orig_inputs.selectedMaterialId) ? cfg._orig_inputs.selectedMaterialId : null,
-    filament_weight: cfg.filament_weight || null,
-    resin_volume: cfg.resin_volume || null,
-    est_print_hours: cfg.est_print_hours || null
-  };
+    filamentId: cfg.material_id || '',
+    weightG: cfg.filament_weight || cfg.resin_volume || ''
+  });
   
-  _items.push(newItem);
-  if(typeof renderItemsList === 'function') renderItemsList();
-  if(typeof calculateGrandTotal === 'function') calculateGrandTotal();
   closeLibraryModal();
-  showToast('📦 Item da biblioteca adicionado.', 'ok');
+  showToast('📦 Produto adicionado ao pedido.', 'ok');
 }
 
 // ── USER DATA ──────────────────────────

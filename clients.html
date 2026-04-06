@@ -149,6 +149,17 @@
       
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_name">Nome Completo *</label>
+          <input type="text" id="clName" class="form-input" placeholder="João Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF / Identificação Fiscal</label>
+          <input type="text" id="clNif" class="form-input mono" placeholder="999 999 999">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_email">Email</label>
           <input type="email" id="clEmail" class="form-input" placeholder="joao@exemplo.com">
         </div>
@@ -159,22 +170,36 @@
       </div>
 
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-orange">🏢</div>
-        <span data-i18n="clients.modal.sec_billing">Dados de Faturação</span>
+        <div class="form-section-divider-icon si-orange">🏡</div>
+        <span data-i18n="clients.modal.sec_billing">Morada e Faturação</span>
       </div>
 
-      <div class="form-row">
+      <div class="form-row three">
         <div class="form-group">
-          <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF / Identificação Fiscal</label>
-          <input type="text" id="clNif" class="form-input mono" placeholder="999 999 999">
+          <label class="form-label" data-i18n="clients.modal.lbl_country">País</label>
+          <select id="clCountry" class="form-select">
+            <option value="PT">🇵🇹 Portugal</option>
+            <option value="BR">🇧🇷 Brasil</option>
+            <option value="ES">🇪🇸 Espanha</option>
+            <option value="UK">🇬🇧 Reino Unido</option>
+            <option value="US">🇺🇸 EUA</option>
+          </select>
         </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="clients.modal.lbl_address">Morada de Faturação</label>
-          <input type="text" id="clAddress" class="form-input" placeholder="Rua, Cidade, Código Postal">
+        <div class="form-group" style="grid-column: span 2">
+          <label class="form-label" data-i18n="clients.modal.lbl_zip">Código Postal / CEP</label>
+          <div style="display:flex; gap:8px">
+            <input type="text" id="clZip" class="form-input mono" placeholder="0000-000">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="lookupAddress()" id="btnZipLookup" data-i18n="clients.modal.btn_lookup">Procurar</button>
+          </div>
         </div>
       </div>
 
       <div class="form-group">
+        <label class="form-label" data-i18n="clients.modal.lbl_address">Morada de Faturação</label>
+        <textarea id="clAddress" class="form-textarea" rows="2" placeholder="Rua, Cidade, Código Postal"></textarea>
+      </div>
+
+      <div class="form-group" style="margin-top:14px">
         <label class="form-label" data-i18n="clients.modal.lbl_notes">Notas Internas</label>
         <textarea id="clNotes" class="form-textarea" rows="2" placeholder="Preferências, acordos de preço, etc."></textarea>
       </div>
@@ -220,7 +245,8 @@ function renderClients() {
   const filtered = clients.filter(c => 
     c.name.toLowerCase().includes(query) || 
     (c.email || '').toLowerCase().includes(query) ||
-    (c.nif || '').toLowerCase().includes(query)
+    (c.nif || '').toLowerCase().includes(query) ||
+    (c.phone || '').toLowerCase().includes(query)
   );
 
   const tbody = document.getElementById('clientTableBody');
@@ -248,22 +274,45 @@ function renderClients() {
   tbody.innerHTML = filtered.map(c => {
     const initials = c.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
     return `
-      <tr>
+      <tr class="ord-row" onclick="toggleExpand('${c.id}')">
         <td>
           <div class="client-name-cell">
             <div class="client-avatar-circle">${initials}</div>
             <div>
               <div class="client-info-main">${escH(c.name)}</div>
-              <div class="client-info-sub">${escH(c.email || '—')} • ${escH(c.phone || '—')}</div>
+              <div class="client-info-sub">${escH(c.email || '—')}</div>
             </div>
           </div>
         </td>
-        <td class="cell-mono" style="font-size:0.75rem">${escH(c.nif || '—')}</td>
-        <td class="client-info-sub" style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${escH(c.address || '—')}</td>
         <td>
-          <div style="display:flex; justify-content:flex-end; gap:6px">
-            <button class="btn-icon" onclick="openClientModal('${c.id}')" title="Editar">✏️</button>
-            <button class="btn-icon del" onclick="confirmDelClient('${c.id}')" title="Apagar">🗑️</button>
+          <div class="client-info-main">${escH(c.phone || '—')}</div>
+          <div class="client-info-sub">${escH(c.nif || 'NIF —')}</div>
+        </td>
+        <td>
+          <div style="display:flex; justify-content:flex-end; gap:8px; align-items:center">
+            <button class="btn-icon" onclick="event.stopPropagation(); openClientModal('${c.id}')" title="Editar">✏️</button>
+            <button class="btn-icon del" onclick="event.stopPropagation(); confirmDelClient('${c.id}')" title="Apagar">🗑️</button>
+            <button class="expand-btn" id="ebtn-${c.id}">▼</button>
+          </div>
+        </td>
+      </tr>
+      <tr class="expand-details" id="exp-${c.id}">
+        <td colspan="3">
+          <div class="expand-inner">
+            <div class="detail-grid">
+              <div>
+                <div class="detail-item-lbl" data-i18n="clients.modal.lbl_nif">NIF / Identificação</div>
+                <div class="detail-item-val cell-mono">${escH(c.nif || '—')}</div>
+              </div>
+              <div>
+                <div class="detail-item-lbl" data-i18n="clients.modal.lbl_address">Morada</div>
+                <div class="detail-item-val">${escH(c.address || '—')}</div>
+              </div>
+              <div>
+                <div class="detail-item-lbl" data-i18n="clients.modal.lbl_notes">Notas</div>
+                <div class="detail-item-val" style="font-size:0.8rem; font-weight:400">${escH(c.notes || '—')}</div>
+              </div>
+            </div>
           </div>
         </td>
       </tr>
@@ -271,19 +320,130 @@ function renderClients() {
   }).join('');
 
   mobList.innerHTML = filtered.map(c => `
-    <div class="mob-client-card">
-      <div style="display:flex; gap:12px; align-items:center">
-        <div class="client-avatar-circle">
-          ${c.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+    <div class="mob-client-card" onclick="toggleMobExpand('${c.id}')">
+      <div style="display:flex; gap:12px; align-items:center; justify-content:space-between">
+        <div style="display:flex; gap:12px; align-items:center">
+          <div class="client-avatar-circle">
+            ${c.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+          </div>
+          <div>
+            <div class="client-info-main">${escH(c.name)}</div>
+            <div class="client-info-sub">${escH(c.email || c.phone || '—')}</div>
+          </div>
         </div>
-        <div>
-          <div class="client-info-main">${escH(c.name)}</div>
-          <div class="client-info-sub">${escH(c.email || c.phone || '—')}</div>
+        <button class="expand-btn" id="mebtn-${c.id}" style="border:none; background:transparent">▼</button>
+      </div>
+      
+      <div class="mob-ord-expand" id="mexp-${c.id}" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none">
+        <div class="mob-expand-grid" style="grid-template-columns:1fr; gap:10px">
+           <div><div class="mob-expand-lbl" data-i18n="clients.modal.lbl_nif">NIF</div><div class="mob-expand-val mono">${escH(c.nif || '—')}</div></div>
+           <div><div class="mob-expand-lbl" data-i18n="clients.modal.lbl_address">Morada</div><div class="mob-expand-val">${escH(c.address || '—')}</div></div>
+           <div><div class="mob-expand-lbl" data-i18n="clients.modal.lbl_notes">Notas</div><div class="mob-expand-val" style="font-size:0.78rem">${escH(c.notes || '—')}</div></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:14px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation(); openClientModal('${c.id}')">✏️ Editar</button>
+          <button class="btn btn-ghost btn-sm del" style="flex:1" onclick="event.stopPropagation(); confirmDelClient('${c.id}')">🗑️ Apagar</button>
         </div>
       </div>
-      <button class="btn-icon" onclick="openClientModal('${c.id}')">✏️</button>
     </div>
   `).join('');
+}
+
+function toggleExpand(id) {
+  const exp = document.getElementById('exp-' + id);
+  const btn = document.getElementById('ebtn-' + id);
+  const row = btn.closest('tr');
+  
+  const wasOpen = exp.classList.contains('open');
+  
+  // Close others if open
+  document.querySelectorAll('.expand-details.open').forEach(el => {
+    if(el.id !== 'exp-'+id) {
+       el.classList.remove('open');
+       const bid = el.id.replace('exp-', 'ebtn-');
+       const b = document.getElementById(bid);
+       if(b) b.classList.remove('open');
+    }
+  });
+
+  if(wasOpen) {
+    exp.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    exp.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+function toggleMobExpand(id) {
+  const exp = document.getElementById('mexp-' + id);
+  const btn = document.getElementById('mebtn-' + id);
+  if(!exp || !btn) return;
+  const wasOpen = exp.style.display === 'block';
+  exp.style.display = wasOpen ? 'none' : 'block';
+  btn.style.display = wasOpen ? 'flex' : 'none'; // hide chevron when open to match mobile UX? no, rotate it.
+  btn.style.transform = wasOpen ? '' : 'rotate(180deg)';
+  btn.style.display = 'flex'; // always flex
+}
+
+async function lookupAddress() {
+  const country = document.getElementById('clCountry').value;
+  const zip = document.getElementById('clZip').value.trim();
+  const btn = document.getElementById('btnZipLookup');
+  const addrEl = document.getElementById('clAddress');
+  
+  if(!zip) { showToast('Insira um código postal/CEP.', 'err'); return; }
+  
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  try {
+    let url = '';
+    // BR: ViaCEP
+    if(country === 'BR') {
+      const cleanZip = zip.replace(/\D/g,'');
+      if(cleanZip.length !== 8) throw new Error('CEP inválido. Deve ter 8 dígitos.');
+      url = `https://viacep.com.br/ws/${cleanZip}/json/`;
+    } 
+    // UK: Postcodes.io
+    else if(country === 'UK') {
+      url = `https://api.postcodes.io/postcodes/${encodeURIComponent(zip)}`;
+    }
+    // PT, ES, US: Zippopotam.us
+    else {
+      url = `https://api.zippopotam.us/${country}/${zip}`;
+    }
+    
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error('Zip não encontrado.');
+    const data = await resp.json();
+    
+    let result = '';
+    
+    if(country === 'BR') {
+      if(data.erro) throw new Error('CEP não encontrado.');
+      result = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`;
+    }
+    else if(country === 'UK') {
+       if(data.status !== 200) throw new Error('Postcode não encontrado.');
+       const r = data.result;
+       result = `${r.parliamentary_constituency || ''}, ${r.admin_district}, ${r.region || ''}, UK`;
+    }
+    else {
+       // Zippopotam.us format
+       if(!data.places || data.places.length === 0) throw new Error('Código não encontrado.');
+       const p = data.places[0];
+       result = `${p['place name']}, ${p['state']}, ${country}`;
+    }
+    
+    addrEl.value = result;
+    showToast('📍 Morada localizada!', 'ok');
+  } catch(e) {
+    showToast('❌ ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = window.i18n ? i18n.getNestedTranslation('clients.modal.btn_lookup') : 'Procurar';
+  }
 }
 
 function openClientModal(id = null) {
@@ -300,6 +460,8 @@ function openClientModal(id = null) {
       document.getElementById('clNif').value = c.nif || '';
       document.getElementById('clAddress').value = c.address || '';
       document.getElementById('clNotes').value = c.notes || '';
+      // No zip/country stored in legacy DB, but we keep it empty for new lookups
+      document.getElementById('clZip').value = '';
     }
   } else {
     title.textContent = '👥 Novo Cliente';
@@ -309,6 +471,7 @@ function openClientModal(id = null) {
     document.getElementById('clNif').value = '';
     document.getElementById('clAddress').value = '';
     document.getElementById('clNotes').value = '';
+    document.getElementById('clZip').value = '';
   }
   
   document.getElementById('clientModalOverlay').classList.add('open');
@@ -329,7 +492,11 @@ async function saveClient() {
     phone: document.getElementById('clPhone').value.trim(),
     nif: document.getElementById('clNif').value.trim(),
     address: document.getElementById('clAddress').value.trim(),
-    notes: document.getElementById('clNotes').value.trim()
+    notes: document.getElementById('clNotes').value.trim(),
+    metadata: {
+       country: document.getElementById('clCountry').value,
+       zip: document.getElementById('clZip').value.trim()
+    }
   };
   if(_editClId) payload.id = _editClId;
   
@@ -368,9 +535,7 @@ async function confirmDelClient(id) {
   }
 }
 
-function applyFeatureGating() {
-  // Common gating logic in sidebar/orders, added here if needed
-}
+function applyFeatureGating() { }
 </script>
 </body>
 </html>

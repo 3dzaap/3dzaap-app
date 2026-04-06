@@ -13,11 +13,22 @@ CREATE TABLE IF NOT EXISTS public.clients (
     phone TEXT,
     address TEXT,
     notes TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb, -- Stores country, zip, etc.
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Ensure metadata column exists if table was already created
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='clients' AND column_name='metadata') THEN
+        ALTER TABLE public.clients ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
+    END IF;
+END $$;
+
 -- RLS for Clients
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can see their own company clients" ON public.clients;
 CREATE POLICY "Users can see their own company clients" ON public.clients
     FOR SELECT USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = clients.company_id
@@ -25,6 +36,7 @@ CREATE POLICY "Users can see their own company clients" ON public.clients
         SELECT owner_id FROM public.companies WHERE id = clients.company_id
     ));
 
+DROP POLICY IF EXISTS "Users can insert clients for their company" ON public.clients;
 CREATE POLICY "Users can insert clients for their company" ON public.clients
     FOR INSERT WITH CHECK (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = company_id
@@ -32,6 +44,7 @@ CREATE POLICY "Users can insert clients for their company" ON public.clients
         SELECT owner_id FROM public.companies WHERE id = company_id
     ));
 
+DROP POLICY IF EXISTS "Users can update their company clients" ON public.clients;
 CREATE POLICY "Users can update their company clients" ON public.clients
     FOR UPDATE USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = clients.company_id
@@ -39,6 +52,7 @@ CREATE POLICY "Users can update their company clients" ON public.clients
         SELECT owner_id FROM public.companies WHERE id = clients.company_id
     ));
 
+DROP POLICY IF EXISTS "Users can delete their company clients" ON public.clients;
 CREATE POLICY "Users can delete their company clients" ON public.clients
     FOR DELETE USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = clients.company_id
@@ -60,6 +74,8 @@ CREATE TABLE IF NOT EXISTS public.products (
 
 -- RLS for Products
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can see their own company products" ON public.products;
 CREATE POLICY "Users can see their own company products" ON public.products
     FOR SELECT USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = products.company_id
@@ -67,6 +83,7 @@ CREATE POLICY "Users can see their own company products" ON public.products
         SELECT owner_id FROM public.companies WHERE id = products.company_id
     ));
 
+DROP POLICY IF EXISTS "Users can insert products for their company" ON public.products;
 CREATE POLICY "Users can insert products for their company" ON public.products
     FOR INSERT WITH CHECK (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = company_id
@@ -74,6 +91,7 @@ CREATE POLICY "Users can insert products for their company" ON public.products
         SELECT owner_id FROM public.companies WHERE id = company_id
     ));
 
+DROP POLICY IF EXISTS "Users can update their company products" ON public.products;
 CREATE POLICY "Users can update their company products" ON public.products
     FOR UPDATE USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = products.company_id
@@ -81,6 +99,7 @@ CREATE POLICY "Users can update their company products" ON public.products
         SELECT owner_id FROM public.companies WHERE id = products.company_id
     ));
 
+DROP POLICY IF EXISTS "Users can delete their company products" ON public.products;
 CREATE POLICY "Users can delete their company products" ON public.products
     FOR DELETE USING (auth.uid() IN (
         SELECT user_id FROM public.memberships WHERE company_id = products.company_id
