@@ -238,9 +238,11 @@ async function loadMaterials() {
     const sel = document.getElementById('prMaterialId');
     sel.innerHTML = '<option value="">— selecionar material —</option>';
     materials.forEach(m => {
+      const isResin = (m.material_class === 'resin' || m.materialClass === 'resin');
+      const unit = isResin ? 'ml' : 'g';
       const opt = document.createElement('option');
       opt.value = m.id;
-      opt.textContent = `${m.name} (${m.brand || '?'})`;
+      opt.textContent = `[${isResin?'Resina':'FDM'}] ${m.colorName || m.name} — ${m.type} (${unit})`;
       sel.appendChild(opt);
     });
   } catch(e) {

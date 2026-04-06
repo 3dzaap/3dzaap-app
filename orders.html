@@ -394,15 +394,14 @@
           <input type="email" id="oClientEmail" class="form-input" placeholder="email@exemplo.com">
         </div>
       </div>
-      <div class="form-row">
         <div class="form-group">
-          <label class="form-label"><span data-i18n="orders.modal.lbl_phone">Telefone</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
-          <input type="tel" id="oClientPhone" class="form-input" placeholder="+351 XXX XXX XXX">
-        </div>
-        <div class="form-group">
-          <label class="form-label">NIF</label>
+          <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF</label>
           <input type="text" id="oClientNif" class="form-input" placeholder="NIF">
         </div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label" data-i18n="clients.modal.lbl_address">Morada</label>
+        <input type="text" id="oClientAddress" class="form-input" placeholder="Morada completa">
       </div>
 
       <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_items">📦 Itens do Pedido</div>
@@ -789,6 +788,143 @@ async function loadData() {
   }
   renderOrders();
   updateStats();
+}
+
+// ── CLIENT SELECTION ───────────────────
+function showClientSugs() {
+  const q = document.getElementById('oClientName').value.trim().toLowerCase();
+  const box = document.getElementById('clientSugs');
+  if(!q) { box.style.display = 'none'; return; }
+  
+  const filtered = (_dbClients || []).filter(c => 
+    c.name.toLowerCase().includes(q) || 
+    (c.email || '').toLowerCase().includes(q)
+  ).slice(0, 5);
+  
+  box.innerHTML = '';
+  filtered.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'sug-item';
+    div.innerHTML = `
+      <div style="font-weight:700">${escH(c.name)}</div>
+      <div style="font-size:0.7rem; color:var(--muted)">${escH(c.email || '')} ${c.phone ? ' · '+escH(c.phone) : ''}</div>
+    `;
+    div.onclick = () => selectClient(c);
+    box.appendChild(div);
+  });
+  
+  // Opção Novo Cliente
+  const addNew = document.createElement('div');
+  addNew.className = 'sug-item sug-new';
+  addNew.style.borderTop = '1px solid var(--border)';
+  addNew.style.color = 'var(--blue)';
+  addNew.innerHTML = `<strong>＋ Novo Cliente: "${escH(document.getElementById('oClientName').value)}"</strong>`;
+  addNew.onclick = () => openClientModal_fromOrder(document.getElementById('oClientName').value);
+  box.appendChild(addNew);
+  
+  box.style.display = 'block';
+}
+
+function selectClient(c) {
+  document.getElementById('oClientName').value = c.name;
+  document.getElementById('oClientEmail').value = c.email || '';
+  document.getElementById('oClientPhone').value = c.phone || '';
+  document.getElementById('oClientNif').value = c.nif || '';
+  document.getElementById('oClientAddress').value = c.address || '';
+  document.getElementById('clientSugs').style.display = 'none';
+}
+
+function openClientModal_fromOrder(initialName = '') {
+  document.getElementById('clientSugs').style.display = 'none';
+  document.getElementById('clName').value = initialName;
+  document.getElementById('clEmail').value = '';
+  document.getElementById('clPhone').value = '';
+  document.getElementById('clNif').value = '';
+  document.getElementById('clAddress').value = '';
+  document.getElementById('clNotes').value = '';
+  document.getElementById('clZip').value = '';
+  document.getElementById('clientModalOverlay').classList.add('open');
+}
+
+function closeClientModal() {
+  document.getElementById('clientModalOverlay').classList.remove('open');
+}
+
+async function lookupAddress() {
+  const country = document.getElementById('clCountry').value;
+  const zip = document.getElementById('clZip').value.trim();
+  if(!zip) return;
+  
+  const btn = document.getElementById('btnZipLookup');
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  try {
+    let addr = '';
+    if(country === 'BR') {
+      const res = await fetch(`https://viacep.com.br/ws/${zip.replace(/\D/g,'')}/json/`).then(r => r.json());
+      if(!res.erro) addr = `${res.logradouro}, ${res.bairro}, ${res.localidade} - ${res.uf}`;
+    } else if(country === 'PT' || country === 'ES' || country === 'US') {
+      const res = await fetch(`https://api.zippopotam.us/${country.toLowerCase()}/${zip}`).then(r => r.json());
+      if(res.places && res.places.length) {
+        const p = res.places[0];
+        addr = `${p['place name']}, ${p['state']}, ${res.country}`;
+      }
+    } else if(country === 'UK') {
+      const res = await fetch(`https://api.postcodes.io/postcodes/${zip}`).then(r => r.json());
+      if(res.status === 200 && res.result) {
+        const r = res.result;
+        addr = `${r.parliamentary_constituency || ''}, ${r.admin_district}, ${r.country}`;
+      }
+    }
+    
+    if(addr) {
+      const current = document.getElementById('clAddress').value;
+      document.getElementById('clAddress').value = (current ? current + '\n' : '') + addr;
+      showToast('✅ Morada encontrada!', 'ok');
+    } else {
+      showToast('❌ Código postal não encontrado.', 'err');
+    }
+  } catch(e) {
+    showToast('❌ Erro na pesquisa.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
+}
+
+async function saveClientFromOrder() {
+  const name = document.getElementById('clName').value.trim();
+  if(!name) { showToast('Nome é obrigatório', 'err'); return; }
+  
+  const btn = document.getElementById('btnSaveClient');
+  btn.disabled = true;
+  
+  try {
+    const payload = {
+      name,
+      email: document.getElementById('clEmail').value.trim(),
+      phone: document.getElementById('clPhone').value.trim(),
+      nif: document.getElementById('clNif').value.trim(),
+      address: document.getElementById('clAddress').value.trim(),
+      notes: document.getElementById('clNotes').value.trim(),
+      metadata: { 
+        country: document.getElementById('clCountry').value,
+        zip: document.getElementById('clZip').value.trim()
+      }
+    };
+    
+    const saved = await DB.saveClient(payload);
+    _dbClients.unshift(saved);
+    selectClient(saved);
+    closeClientModal();
+    showToast('✅ Cliente registado e selecionado!', 'ok');
+  } catch(e) {
+    showToast('❌ Erro ao gravar cliente: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // saveOrders e saveFilaments removidos — writes feitos directamente via DB.saveOrder / DB.saveFilament
@@ -1321,6 +1457,7 @@ function openModal(id = null) {
     document.getElementById('oClientEmail').value = o.clientEmail || '';
     document.getElementById('oClientPhone').value = o.clientPhone || '';
     document.getElementById('oClientNif').value = o.clientNif || '';
+    document.getElementById('oClientAddress').value = o.clientAddress || '';
     document.getElementById('oStatus').value = o.status || 'orcamento';
     document.getElementById('oPaymentStatus').value = o.paymentStatus || 'pendente';
     // Handle both full ISO timestamps (2026-03-30T07:04:22Z) and date-only strings (2026-03-30)
@@ -1336,6 +1473,7 @@ function openModal(id = null) {
     document.getElementById('oClientEmail').value = '';
     document.getElementById('oClientPhone').value = '';
     document.getElementById('oClientNif').value = '';
+    document.getElementById('oClientAddress').value = '';
     document.getElementById('oStatus').value = 'orcamento';
     document.getElementById('oPaymentStatus').value = 'pendente';
     document.getElementById('oCreatedAt').value = new Date().toISOString().split('T')[0];
@@ -1545,6 +1683,7 @@ async function saveOrder() {
     clientEmail: document.getElementById('oClientEmail').value.trim(),
     clientPhone: document.getElementById('oClientPhone').value.trim(),
     clientNif: document.getElementById('oClientNif').value.trim(),
+    clientAddress: document.getElementById('oClientAddress').value.trim(),
     items,
     description: items.map(i=>i.description).join('; '),
     quantity: items[0].quantity,
@@ -1880,7 +2019,87 @@ function _printerLabel(printerId) {
   return p ? `${p.brand} ${p.model}` : '—';
 }
 function fmtN(v){ var loc=(_cfg&&_cfg._locale)||'pt-PT'; return parseFloat(v||0).toLocaleString(loc,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// Style for suggestions
+const style = document.createElement('style');
+style.textContent = `
+  .sug-box { position:absolute; top:100%; left:0; width:100%; max-height:220px; overflow-y:auto; background:var(--bg-card); border:1.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.15); z-index:900; margin-top:4px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .sug-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--bg-table-row-border); transition:all .15s; }
+  .sug-item:last-child { border-bottom:none; }
+  .sug-item:hover { background:var(--bg-table-row-hover); }
+  .sug-new { background:rgba(44,142,246,.05); }
+  .sug-new:hover { background:rgba(44,142,246,.1); }
+`;
+document.head.appendChild(style);
 </script>
 <script src="i18n.js"></script>
+<!-- CLIENT REGISTRATION MODAL (FOR QUICK ENTRY) -->
+<div class="modal-overlay" id="clientModalOverlay" onclick="if(event.target===this)closeClientModal()" style="z-index:1000">
+  <div class="modal" style="max-width:550px">
+    <div class="modal-header">
+      <div class="modal-title" id="clientModalTitle" data-i18n="clients.btn_new">Novo Cliente</div>
+      <button class="modal-close" onclick="closeClientModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_name">Nome Completo *</label>
+          <input type="text" id="clName" class="form-input" placeholder="João Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF / Identificação Fiscal</label>
+          <input type="text" id="clNif" class="form-input mono" placeholder="999 999 999">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_email">Email</label>
+          <input type="email" id="clEmail" class="form-input" placeholder="joao@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_phone">Telefone</label>
+          <input type="text" id="clPhone" class="form-input" placeholder="+351 ...">
+        </div>
+      </div>
+      <div class="form-section-divider">
+        <div class="form-section-divider-icon si-orange">🏡</div>
+        <span data-i18n="clients.modal.sec_billing">Morada e Faturação</span>
+      </div>
+      <div class="form-row three">
+        <div class="form-group">
+          <label class="form-label" data-i18n="clients.modal.lbl_country">País</label>
+          <select id="clCountry" class="form-select">
+            <option value="PT">🇵🇹 Portugal</option>
+            <option value="BR">🇧🇷 Brasil</option>
+            <option value="ES">🇪🇸 Espanha</option>
+            <option value="UK">🇬🇧 Reino Unido</option>
+            <option value="US">🇺🇸 EUA</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: span 2">
+          <label class="form-label" data-i18n="clients.modal.lbl_zip">Código Postal / CEP</label>
+          <div style="display:flex; gap:8px">
+            <input type="text" id="clZip" class="form-input mono" placeholder="0000-000">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="lookupAddress()" id="btnZipLookup" data-i18n="clients.modal.btn_lookup">Procurar</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="clients.modal.lbl_address">Morada de Faturação</label>
+        <textarea id="clAddress" class="form-textarea" rows="2" placeholder="Rua, Cidade, Código Postal"></textarea>
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label" data-i18n="clients.modal.lbl_notes">Notas Internas</label>
+        <textarea id="clNotes" class="form-textarea" rows="2" placeholder="Preferências..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeClientModal()" data-i18n="common.cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveClient" onclick="saveClientFromOrder()">
+        <span data-i18n="clients.modal.btn_save">Gravar Cliente</span>
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
