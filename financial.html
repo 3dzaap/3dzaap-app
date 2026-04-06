@@ -586,7 +586,18 @@ async function loadOrders() {
 
 async function loadExpenses() {
   try {
-    expenses = await DB.getExpenses();
+    let raw = await DB.getExpenses();
+    const unique = [];
+    raw.forEach(e => {
+       const isDup = unique.some(u => u.date === e.date && u.value === e.value && u.description === e.description);
+       if (!isDup) {
+          unique.push(e);
+       } else {
+          // Remove duplicate silently from DB
+          DB.deleteExpense(e.id).catch(()=>{});
+       }
+    });
+    expenses = unique;
   } catch(e) {
     expenses = [];
   }
