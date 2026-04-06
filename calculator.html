@@ -862,11 +862,11 @@
 <div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
     <div class="confirm-icon">🗑️</div>
-    <div class="confirm-title" id="confirmTitle">Confirmar</div>
-    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-title" id="confirmTitle" data-i18n="orders.confirm.delete_title">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg" data-i18n="orders.confirm.delete_msg"></div>
     <div class="confirm-btns">
-      <button class="confirm-cancel" onclick="closeConfirm()">Cancelar</button>
-      <button class="confirm-ok" id="confirmOkBtn">Confirmar</button>
+      <button class="confirm-cancel" onclick="closeConfirm()" data-i18n="orders.confirm.btn_cancel">Cancelar</button>
+      <button class="confirm-ok" id="confirmOkBtn" data-i18n="orders.confirm.btn_confirm">Confirmar</button>
     </div>
   </div>
 </div>
@@ -1363,10 +1363,16 @@ function criarPedido() {
   var clientNameObj = document.getElementById('clientName');
   var pClient = (clientNameObj ? clientNameObj.value : '').trim();
   var name = (document.getElementById('printName').value || '').trim();
-  var modeLabel = i.tech === 'resin' ? 'Resina' : 'FDM';
+  var t_projeto = window.i18n ? (window.i18n.getNestedTranslation('calc.print_name_label') || 'Projeto') : 'Projeto';
+  var t_impr = 'Impressão';
+  var t_pecas = window.i18n ? (window.i18n.getNestedTranslation('calc.table.part') || 'peças').toLowerCase() : 'peças';
+  
+  var modeLabel = i.tech === 'resin' ? (window.i18n ? window.i18n.getNestedTranslation('calc.modes.resin')||'Resina' : 'Resina') : (window.i18n ? window.i18n.getNestedTranslation('calc.modes.fdm')||'FDM' : 'FDM');
+  modeLabel = modeLabel.replace(/🖨️ |🧪 | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
+  
   var desc = name || (i.mode === 'advanced'
-    ? 'Projeto ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' peças'
-    : 'Impressão ' + modeLabel + ' — ' + (i.weight || 0) + 'g');
+    ? t_projeto + ' ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' ' + t_pecas
+    : t_impr + ' ' + modeLabel + ' — ' + (i.weight || 0) + 'g');
 
   if (i.mode === 'simple') {
     payload = {
@@ -1422,11 +1428,12 @@ let _activeTech = 'fdm'; // 'fdm' | 'resin'
 function renderPrintersDropdown() {
   const sel = document.getElementById('calcPrinterSelect');
   if (!sel) return;
+  const t_gen = typeof window.i18n !== 'undefined' ? (window.i18n.getNestedTranslation('calc.printer_select_default')||'Genérica') : 'Genérica';
   if (!_userPrinters.length) {
-    sel.innerHTML = '<option value="">Genérica / Inserção Manual</option>';
+    sel.innerHTML = '<option value="">'+t_gen+' / Inserção Manual</option>';
     return;
   }
-  let html = '<option value="">Genérica / Inserção Manual</option>';
+  let html = '<option value="">'+t_gen+' / Inserção Manual</option>';
   const isResin = _activeTech === 'resin';
   const filtered = _userPrinters.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
   
