@@ -152,7 +152,7 @@
 
 .fin-card-title{font-size:.72rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 
-.fin-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;animation:fadeUp .5s var(--ease) .1s both}
+.fin-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;animation:fadeUp .5s var(--ease) .1s both}
 
 .fin-kpi{background:var(--bg-card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border:1.5px solid var(--border);border-radius:var(--rm);padding:16px 18px}
 
@@ -167,6 +167,8 @@
 .fin-kpi.green .fin-kpi-val{color:#15803d}
 
 .fin-kpi.orange .fin-kpi-val{color:#c2600a}
+
+.fin-kpi.red .fin-kpi-val{color:#dc2626}
 
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;animation:fadeUp .5s var(--ease) .2s both}
 
@@ -206,7 +208,7 @@
 
 .fin-empty p{font-size:.82rem}
 
-@media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(3,1fr)}}
 
 @media(max-width:680px){.fin-grid{grid-template-columns:1fr}.fin-kpi-grid{grid-template-columns:1fr 1fr}}
 
@@ -356,7 +358,7 @@
 
       <div class="fin-kpi-grid">
         <div class="fin-kpi accent">
-          <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Total Faturado</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Faturado</div>
           <div class="fin-kpi-val" id="kpiTotal">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiTotalSub">0 pedidos</div>
         </div>
@@ -366,14 +368,19 @@
           <div class="fin-kpi-sub" id="kpiPagoSub">0 pagos</div>
         </div>
         <div class="fin-kpi orange">
-          <div class="fin-kpi-lbl" data-i18n="financial.kpi_pend">A Receber</div>
+          <div class="fin-kpi-lbl" data-i18n="financial.kpi_pend">Pendente</div>
           <div class="fin-kpi-val" id="kpiPendente">— 0,00</div>
           <div class="fin-kpi-sub" id="kpiPendenteSub">0 pendentes</div>
         </div>
-        <div class="fin-kpi">
-          <div class="fin-kpi-lbl" data-i18n="financial.kpi_avg">Valor Médio</div>
-          <div class="fin-kpi-val" id="kpiMedia">— 0,00</div>
-          <div class="fin-kpi-sub" id="kpiMediaSub" data-i18n="financial.kpi_avg_sub">por pedido</div>
+        <div class="fin-kpi red">
+          <div class="fin-kpi-lbl">Despesas</div>
+          <div class="fin-kpi-val" id="kpiDespesas">— 0,00</div>
+          <div class="fin-kpi-sub" id="kpiDespesasSub">0 despesas</div>
+        </div>
+        <div class="fin-kpi" id="kpiBalancoWrap">
+          <div class="fin-kpi-lbl">Lucro Líquido (Mês)</div>
+          <div class="fin-kpi-val" id="kpiBalanco">— 0,00</div>
+          <div class="fin-kpi-sub">Recebido - Despesas</div>
         </div>
       </div>
 
@@ -413,6 +420,67 @@
         <div class="mob-fin-list" id="mobFinList"></div>
       </div>
 
+      <div class="fin-card" style="margin-top:20px">
+        <div class="fin-card-title" style="justify-content:space-between">
+          <span>💸 Despesas do período</span>
+          <button class="btn btn-primary btn-sm" onclick="openExpModal()">+ Nova Despesa</button>
+        </div>
+        <div class="table-wrap">
+          <div id="expEmpty" class="fin-empty" style="display:none">
+            <div class="fin-empty-icon">💸</div>
+            <p>Sem despesas registadas neste período.</p>
+          </div>
+          <table class="fin-orders-table" id="expTable" style="display:none">
+            <thead>
+              <tr>
+                <th>Data</th><th>Categoria</th><th>Descrição</th><th class="r">Valor</th><th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody id="expTableBody"></tbody>
+          </table>
+        </div>
+        <div class="mob-fin-list" id="mobExpList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="expenseModalOverlay" onclick="if(event.target===this)closeExpModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title" id="expenseModalTitle">💸 Nova Despesa</div>
+      <button class="modal-close" onclick="closeExpModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Data *</label>
+        <input type="date" id="expDate" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valor (c/ IVA) *</label>
+        <input type="number" id="expValue" class="form-input" min="0.01" step="0.01" placeholder="Ex: 25.50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoria *</label>
+        <select id="expCategory" class="form-input">
+          <option value="materiais">Materiais (Filamento/Resina)</option>
+          <option value="manutencao">Manutenção e Peças</option>
+          <option value="envios">Envios e Embalagens</option>
+          <option value="eletricidade">Eletricidade</option>
+          <option value="marketing">Marketing e Publicidade</option>
+          <option value="impostos">Impostos e Taxas</option>
+          <option value="softwares">Softwares e Subscrições</option>
+          <option value="outros">Outros</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Descrição *</label>
+        <textarea id="expDesc" class="form-input" rows="2" placeholder="Breve descrição da despesa..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions" style="border-top:1px solid var(--border);padding:14px 24px;display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-ghost" onclick="closeExpModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveExp()">💾 Guardar Despesa</button>
     </div>
   </div>
 </div>
@@ -540,16 +608,79 @@ function renderAll() {
   const pago      = pagos.reduce((s,o) => s + (o.total||0), 0);
   const pendentes = periodOrders.filter(o => o.paymentStatus === 'pendente');
   const pendente  = pendentes.reduce((s,o) => s + (o.total||0), 0);
-  const media     = periodOrders.length ? total / periodOrders.length : 0;
+  
+  const periodExps = expenses.filter(e => (e.date || '').slice(0, 7) === _periodo);
+  const totalExp = periodExps.reduce((s,e) => s + (e.value || 0), 0);
+  const balanco = pago - totalExp;
 
   animateValue('kpiTotal', 0, total, 800);
   document.getElementById('kpiTotalSub').textContent    = i18n.getNestedTranslation(periodOrders.length === 1 ? 'financial.kpi_total_sub_1' : 'financial.kpi_total_sub_n', {n: periodOrders.length});
+  
   animateValue('kpiPago', 0, pago, 800);
   document.getElementById('kpiPagoSub').textContent     = i18n.getNestedTranslation(pagos.length === 1 ? 'financial.kpi_rcvd_sub_1' : 'financial.kpi_rcvd_sub_n', {n: pagos.length});
+  
   animateValue('kpiPendente', 0, pendente, 800);
   document.getElementById('kpiPendenteSub').textContent = i18n.getNestedTranslation(pendentes.length === 1 ? 'financial.kpi_pend_sub_1' : 'financial.kpi_pend_sub_n', {n: pendentes.length});
-  animateValue('kpiMedia', 0, media, 800);
-  document.getElementById('kpiMediaSub').textContent    = t('financial.kpi_avg_sub');
+  
+  animateValue('kpiDespesas', 0, totalExp, 800);
+  document.getElementById('kpiDespesasSub').textContent = `${periodExps.length} despesa${periodExps.length !== 1 ? 's' : ''}`;
+  
+  animateValue('kpiBalanco', 0, balanco, 800);
+  const bWrap = document.getElementById('kpiBalancoWrap');
+  if (bWrap) {
+    bWrap.className = 'fin-kpi ' + (balanco >= 0 ? 'green' : 'red');
+  }
+
+  // Render Expense Table
+  const trArr = periodExps.sort((a,b) => new Date(b.date) - new Date(a.date));
+  const eTable = document.getElementById('expTable');
+  const eEmpty = document.getElementById('expEmpty');
+  const eBody = document.getElementById('expTableBody');
+  const catNames = {
+    'materiais': 'Materiais', 'manutencao': 'Manutenção', 'envios': 'Envios/Embalagens', 
+    'eletricidade': 'Eletricidade', 'marketing': 'Marketing', 'impostos': 'Impostos', 'softwares':'Subscrições', 'outros': 'Outros'
+  };
+
+  if (!periodExps.length) {
+    eTable.style.display = 'none';
+    eEmpty.style.display = 'flex';
+    if(document.getElementById('mobExpList')) document.getElementById('mobExpList').innerHTML = '';
+  } else {
+    eTable.style.display = '';
+    eEmpty.style.display = 'none';
+    eBody.innerHTML = trArr.map(e => `
+      <tr>
+        <td style="color:var(--muted);font-size:.78rem">${fmtDate(e.date)}</td>
+        <td><span class="badge" style="background:var(--bg-hover-s)">${catNames[e.category]||e.category}</span></td>
+        <td style="font-weight:600">${escH(e.description||'')}</td>
+        <td class="r" style="font-weight:700;color:#dc2626">${fmtCurrency(e.value||0)}</td>
+        <td class="r" style="white-space:nowrap">
+           <button class="btn-icon" onclick="openExpModal('${e.id}')" title="Editar">✏️</button>
+           <button class="btn-icon del" onclick="confirmDelExp('${e.id}')" title="Apagar">🗑️</button>
+        </td>
+      </tr>
+    `).join('');
+    // Mobile view
+    if(document.getElementById('mobExpList')) {
+      document.getElementById('mobExpList').innerHTML = trArr.map(e => `
+      <div class="mob-fin-card">
+        <div class="mob-fin-left">
+           <div class="mob-fin-client">${escH(e.description||'—')}</div>
+           <div class="mob-fin-meta">
+             <span class="badge" style="background:var(--bg-hover-s)">${catNames[e.category]||e.category}</span>
+             <span class="mob-fin-date">${fmtDate(e.date)}</span>
+           </div>
+        </div>
+        <div class="mob-fin-right">
+           <div class="mob-fin-total" style="color:#dc2626">${fmtCurrency(e.value||0)}</div>
+           <div style="margin-top:4px">
+             <button class="btn-icon" onclick="openExpModal('${e.id}')">✏️</button>
+             <button class="btn-icon del" onclick="confirmDelExp('${e.id}')">🗑️</button>
+           </div>
+        </div>
+      </div>`).join('');
+    }
+  }
 
   // Status distribution
   const statusGroups = {};
@@ -682,6 +813,84 @@ function dlCSV(csv, fn) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// ── EXPENSE DOM LOGIC ──
+let _editExpId = null;
+
+function openExpModal(id = null) {
+  _editExpId = id;
+  const overlay = document.getElementById('expenseModalOverlay');
+  const title = document.getElementById('expenseModalTitle');
+  if (id) {
+    title.textContent = '✏️ Editar Despesa';
+    const e = expenses.find(x => x.id === id);
+    if(e) {
+       document.getElementById('expDate').value = e.date || '';
+       document.getElementById('expValue').value = e.value || '';
+       document.getElementById('expCategory').value = e.category || 'materiais';
+       document.getElementById('expDesc').value = e.description || '';
+    }
+  } else {
+    title.textContent = '💸 Nova Despesa';
+    const nd = new Date();
+    document.getElementById('expDate').value = nd.toISOString().split('T')[0];
+    document.getElementById('expValue').value = '';
+    document.getElementById('expCategory').value = 'materiais';
+    document.getElementById('expDesc').value = '';
+  }
+  overlay.classList.add('open');
+}
+
+function closeExpModal() {
+  document.getElementById('expenseModalOverlay').classList.remove('open');
+  _editExpId = null;
+}
+
+async function saveExp() {
+  const date = document.getElementById('expDate').value;
+  const value = parseFloat(document.getElementById('expValue').value);
+  const category = document.getElementById('expCategory').value;
+  const description = document.getElementById('expDesc').value.trim();
+
+  if(!date || isNaN(value) || value <= 0 || !description) {
+     showToast('Preenche todos os campos obrigatórios com valores válidos.', 'err');
+     return;
+  }
+
+  const payload = {
+    date,
+    value,
+    category,
+    description
+  };
+  if(_editExpId) payload.id = _editExpId;
+
+  try {
+     const saved = await DB.saveExpense(payload);
+     if(_editExpId) {
+        const idx = expenses.findIndex(x => x.id === _editExpId);
+        if(idx > -1) expenses[idx] = saved;
+     } else {
+        expenses.push(saved);
+     }
+     showToast('Despesa gravada com sucesso!', 'ok');
+     closeExpModal();
+     renderAll();
+  } catch(e) {
+     showToast('Erro ao gravar: ' + e.message, 'err');
+  }
+}
+
+async function confirmDelExp(id) {
+  if(!confirm('Tens a certeza que queres apagar esta despesa?')) return;
+  try {
+     await DB.deleteExpense(id);
+     expenses = expenses.filter(x => x.id !== id);
+     showToast('Despesa apagada.', 'ok');
+     renderAll();
+  } catch(e) {
+     showToast('Erro ao apagar: ' + e.message, 'err');
+  }
+}
 
 </script>
 <script src="i18n.js"></script>
