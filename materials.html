@@ -132,7 +132,6 @@
 
 .fil-table{width:100%;border-collapse:collapse;min-width:700px}
 
-.fil-table thead tr{background:var(--bg-table-head);border-bottom:1.5px solid var(--border)}
 
 .fil-table th{padding:11px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
 
@@ -899,19 +898,19 @@ function animateValue(id, start, end, duration) {
 // ══════════════════════════════════════
 
 // FDM
-const FDM_TYPES      = ['PLA','PETG','ABS','TPU','ASA','Nylon','PC','HIPS','PVA','Wood','Carbon','Metal','PLA+'];
-const FDM_VARIATIONS = ['Basic','Generic','+','PRO','Matte','Silk','Glow','Marble','Galaxy','Sparkle','Dual','High Speed','Hyper'];
+const FDM_TYPES      = ['PLA','PETG','ABS','TPU','ASA','Nylon','PC','HIPS','PVA','Wood','Carbon','Metal','PLA+','Outros'];
+const FDM_VARIATIONS = ['Basic','Generic','+','PRO','Matte','Silk','Glow','Marble','Galaxy','Sparkle','Dual','High Speed','Hyper','Outros'];
 const FDM_ROLL_SIZES = ['1kg','500g','300g','250g','100g'];
 const FDM_BRANDS = [
-  '3D Fuel','3DHoJor','3DXTECH','AMOLEN','Amazon Basics','Anycubic','Bambu Lab','CCTREE','ColorFabb','Creality','Das Filament','DEEPLEE','Devil Design','Elegoo','Eryone','eSUN','Extrudr','FFF World','Fiberlogy','Fillamentum','Flashforge','FormFutura','Geeetech','Generic','GIANTARM','GST3D','Hatchbox','Inland','iSANMATE','JAYO','NinjaTek','Overture','Polymaker','Professional LAB','Prusa','Prusament','Sainsmart','SIENOC','SmartFil','SmartPrint','SOLEYIN','SUNLU','TECBEARS','Winkle'
+  '3D Fuel','3DHoJor','3DXTECH','3DLab','3DJake','3Industry','AMOLEN','Amazon Basics','Anycubic','Atomic Filament','Bambu Lab','Basf Forward AM','CCTREE','Coex','ColorFabb','Creality','Das Filament','DEEPLEE','Devil Design','E3D','Elegoo','Eryone','eSUN','Extrudr','F3D','FFF World','Fiberlogy','Fillamentum','Filament PM','Flashforge','FormFutura','Geeetech','Generic','GIANTARM','GST3D','Hatchbox','Inland','iSANMATE','JAYO','Kimya','Kyboo','Masterprint','MatterHackers','NinjaTek','Overture','Polymaker','Professional LAB','Proto-pasta','Prusa','Prusament','Recreus','Reflow','Sainsmart','SIENOC','SmartFil','SmartMaterials 3D','SmartPrint','SOLEYIN','SUNLU','TECBEARS','TreeD Filaments','Tucab','Voolt3D','Winkle','Outros'
 ];
 
 // Resina
-const RESIN_TYPES      = ['Standard','ABS-Like','Water Washable','Castable','Flexible/Elastic','High-Temp','Dental','Engineering','Tough','Transparent'];
-const RESIN_VARIATIONS = ['Standard','Premium','Ultra','Fast','Night','Matte','Glossy'];
+const RESIN_TYPES      = ['Standard','ABS-Like','Water Washable','Castable','Flexible/Elastic','High-Temp','Dental','Engineering','Tough','Transparent','Outros'];
+const RESIN_VARIATIONS = ['Standard','Premium','Ultra','Fast','Night','Matte','Glossy','Outros'];
 const RESIN_BOTTLE_SIZES = ['500ml','1L','2L','5L'];
 const RESIN_BRANDS = [
-  '3D Systems','AMOLEN','Anycubic','ApplyLabWork','Bambu Lab','Creality','eSUN','Elegoo','Flashforge','Formlabs','Generic','HARZ Labs','iSANMATE','Liqcreate','Monocure3D','Overture','Phrozen','Resin8','Siraya Tech','SpotHardener','SUNLU'
+  '3D Systems','3D Resin Solutions','3D Jake','AMOLEN','AmeraLabs','Anycubic','ApplyLabWork','Asiga','Atlas 3D','B9Creator','Bambu Lab','BlueCast','Conjure','Creality','DWS','eSUN','Elegoo','Flashforge','Formlabs','FormFutura','FunToDo','Generic','HARZ Labs','iSANMATE','Jamg He','Kulzer','Liqcreate','Monocure3D','NextDent','Nova3D','Overture','Peopoly','Phrozen','PrimaSelect','Resin8','Resione','Siraya Tech','Skulpt','SpotHardener','SUNLU', 'Zortrax', 'Outros'
 ];
 
 const COLOR_PRESETS = [
