@@ -385,7 +385,8 @@
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_name">Nome do cliente</span> <span data-i18n="orders.modal.req">*</span></label>
           <div style="position:relative">
-            <input type="text" id="oClientName" class="form-input" placeholder="Nome completo" oninput="showClientSugs()">
+            <input type="text" id="oClientName" class="form-input" placeholder="Pesquisar ou inserir novo…" oninput="showClientSugs()" onfocus="showClientSugs(true)" onclick="showClientSugs(true)" autocomplete="off">
+            <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:0.9rem; color:var(--muted); pointer-events:none">🔍</span>
             <div id="clientSugs" class="sug-box" style="display:none"></div>
           </div>
         </div>
@@ -844,38 +845,61 @@ async function loadData() {
 }
 
 // ── CLIENT SELECTION ───────────────────
-function showClientSugs() {
+function showClientSugs(isFocus = false) {
   const q = document.getElementById('oClientName').value.trim().toLowerCase();
   const box = document.getElementById('clientSugs');
-  if(!q) { box.style.display = 'none'; return; }
   
-  const filtered = (_dbClients || []).filter(c => 
-    c.name.toLowerCase().includes(q) || 
-    (c.email || '').toLowerCase().includes(q)
-  ).slice(0, 5);
+  // Se estiver focado e vazio, mostramos os primeiros 5 (ou todos se pouco)
+  // Se tiver texto, filtramos
+  let filtered = [];
+  if (!q) {
+    if (isFocus) filtered = (_dbClients || []).slice(0, 5);
+    else { box.style.display = 'none'; return; }
+  } else {
+    filtered = (_dbClients || []).filter(c => 
+      c.name.toLowerCase().includes(q) || 
+      (c.email || '').toLowerCase().includes(q)
+    ).slice(0, 5);
+  }
   
+  if (filtered.length === 0 && !q) { box.style.display = 'none'; return; }
+
   box.innerHTML = '';
   filtered.forEach(c => {
     const div = document.createElement('div');
     div.className = 'sug-item';
     div.innerHTML = `
-      <div style="font-weight:700">${escH(c.name)}</div>
+      <div style="font-weight:700; font-size:0.85rem">${escH(c.name)}</div>
       <div style="font-size:0.7rem; color:var(--muted)">${escH(c.email || '')} ${c.phone ? ' · '+escH(c.phone) : ''}</div>
     `;
-    div.onclick = () => selectClient(c);
+    div.onclick = (e) => { e.stopPropagation(); selectClient(c); };
     box.appendChild(div);
   });
   
-  // Opção Novo Cliente
+  // Opção Novo Cliente (só se tiver algum texto ou se for focus num campo limpo)
   const addNew = document.createElement('div');
   addNew.className = 'sug-item sug-new';
   addNew.style.borderTop = '1px solid var(--border)';
   addNew.style.color = 'var(--blue)';
-  addNew.innerHTML = `<strong>＋ Novo Cliente: "${escH(document.getElementById('oClientName').value)}"</strong>`;
-  addNew.onclick = () => openClientModal_fromOrder(document.getElementById('oClientName').value);
+  addNew.innerHTML = q 
+    ? `<strong>＋ Novo Cliente: "${escH(q)}"</strong>`
+    : `<strong>＋ Criar Novo Cliente</strong>`;
+  addNew.onclick = (e) => {
+    e.stopPropagation();
+    openClientModal_fromOrder(document.getElementById('oClientName').value);
+  };
   box.appendChild(addNew);
   
   box.style.display = 'block';
+  
+  // Click-outside listener
+  const hideSugs = (e) => {
+    if (!box.contains(e.target) && e.target.id !== 'oClientName') {
+      box.style.display = 'none';
+      document.removeEventListener('mousedown', hideSugs);
+    }
+  };
+  document.addEventListener('mousedown', hideSugs);
 }
 
 function selectClient(c) {
