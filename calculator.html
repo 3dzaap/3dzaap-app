@@ -934,33 +934,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (el) el.value = val;
       };
 
-      if (data.printName) setEl('printName', data.printName);
-      if (data.tech) setTechMode(data.tech);
+      // 1. Recover full state from _orig_inputs if available
+      const src = (data.config && data.config._orig_inputs) ? data.config._orig_inputs : data;
       
-      // Simple mode inputs
-      if (data.weight !== undefined) setEl('partWeight', data.weight);
-      if (data.printTime !== undefined) setEl('printTime', data.printTime);
+      if (src.printName) setEl('printName', src.printName);
+      if (src.tech) setTechMode(src.tech);
       
-      // Advanced mode
-      if (data.config && data.config.parts && Array.isArray(data.config.parts)) {
-        setCalcMode('advanced');
-        _mesas = [{ 
-          id: Date.now(), 
-          name: 'Mesa 1', 
-          parts: data.config.parts.map(p => ({ ...p, id: Date.now() + Math.random() })) 
-        }];
-        renderMesas();
-      }
+      // Restore common financial parameters
+      const common = ['printerPrice','printerLife','electricityPrice','powerConsumption','failureRate','indirectCosts','profitMargin'];
+      common.forEach(k => { if (src[k] !== undefined) setEl(k, src[k]); });
 
-      if (data.materialId) {
-        const mSel = document.getElementById('fMaterialSelect');
-        if (mSel) {
-          mSel.value = data.materialId;
-          applyMaterialSelect(data.materialId);
+      // Detect and set calculation mode
+      const mode = src.mode || (src.parts ? 'advanced' : 'simple');
+      setCalcMode(mode);
+
+      if (mode === 'simple') {
+        if (src.weight !== undefined) setEl('partWeight', src.weight);
+        if (src.time !== undefined)   setEl('printTime', src.time);
+        if (src.materialId) {
+          const mSel = document.getElementById('fMaterialSelect');
+          if (mSel) {
+            mSel.value = src.materialId;
+            applyMaterialSelect(src.materialId);
+          }
         }
+      } else {
+        // Advanced mode: Restore mesas
+        if (src.mesas && Array.isArray(src.mesas)) {
+          _mesas = JSON.parse(JSON.stringify(src.mesas));
+          renderMesas();
+        } else if (src.parts && Array.isArray(src.parts)) {
+          // Fallback for legacy parts-only data
+          _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: src.parts }];
+          renderMesas();
+        }
+        if (src.totalTime !== undefined) setEl('totalProjectTime', src.totalTime);
       }
     }
-  } catch(e) { console.warn('[3DZAAP] error loading from library:', e); }
+  } catch(e) { console.warn('[3DZAAP] error loading state:', e); }
 
   liveCalc();
 });
@@ -1826,13 +1837,12 @@ async function doSaveProduct() {
       salePrice: r.finalPrice,
       description: 'Criado a partir da calculadora.',
       config: {
-        mode: i.tech || 'fdm',
+        mode: i.mode || (_calcMode === 'advanced' ? 'advanced' : 'simple'),
         material_cost: r.materialCost || 0,
-        filament_weight: i.tech === 'fdm' ? i.weight || 0 : null,
-        resin_volume: i.tech === 'resin' ? i.weight || 0 : null,
+        filament_weight: i.weight || 0,
         est_print_hours: i.time || 0,
         material_id: i.materialId || '',
-        _orig_inputs: i
+        _orig_inputs: { ...i, printName: name } // Full snapshot
       }
     };
     

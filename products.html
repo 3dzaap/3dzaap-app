@@ -28,16 +28,44 @@
   font-size: 1.1rem; border: 1.5px solid rgba(59,143,212,.2);
   flex-shrink: 0;
 }
-.prod-name-main { font-weight: 700; color: var(--dark); font-size: 0.885rem; }
-.prod-name-sub { font-size: 0.74rem; color: var(--muted); font-weight: 400; margin-top: 1px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prod-name-main { font-weight: 700; color: var(--dark); font-size: 0.885rem; }
+  .prod-name-sub { font-size: 0.74rem; color: var(--muted); font-weight: 400; margin-top: 1px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Mobile list overrides */
-.mob-prod-list { display: none; flex-direction: column; gap: 10px; padding: 0 4px 20px; }
-.mob-prod-card { 
-  background: var(--bg-card-s); border: 1.5px solid var(--border); 
-  border-radius: var(--rm); padding: 14px; display: flex; 
-  align-items: center; justify-content: space-between; 
-}
+  /* Expanding Rows */
+  .cell-mono { font-family: var(--mono); font-weight: 500; font-size: 0.9rem; }
+  .mat-badge { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+  .mat-fdm { background: rgba(52,199,89,0.1); color: #34C759; }
+  .mat-resin { background: rgba(255,149,0,0.1); color: #FF9500; }
+
+  .exp-tr { cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--bg-table-row-border); }
+  .exp-tr:hover { background: var(--bg-table-row-hover); }
+  .exp-tr.is-expanded { background: rgba(44,142,246,0.05); border-bottom: none; }
+  .details-tr { display: none; background: rgba(44,142,246,0.05); }
+  .details-tr.is-expanded { display: table-row; }
+  .details-pane { 
+    padding: 20px; border-radius: 0 0 16px 16px; border: 1px solid rgba(44,142,246,0.1); 
+    border-top: none; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1.5fr; 
+    gap: 24px; animation: slideDown 0.3s ease-out; 
+  }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+  .summary-card { background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .summary-title { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .summary-item label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 2px; }
+  .summary-item span { font-family: var(--mono); font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+
+  .mob-prod-list { display: none; flex-direction: column; gap: 10px; padding: 0 4px 20px; }
+  .mob-prod-card { 
+    background: var(--bg-card-s); border: 1.5px solid var(--border); 
+    border-radius: var(--rm); padding: 14px; display: flex; 
+    flex-direction: column; gap: 12px; 
+  }
+  .mob-expand-area { display: none; padding: 12px; border-top: 1px solid var(--border); animation: slideDown 0.2s ease-out; }
+  .mob-expand-area.is-expanded { display: block; }
+  
+  .btn-trash { color: #FF3B30 !important; border-color: rgba(255,59,48,0.2) !important; }
+  .btn-trash:hover { background: rgba(255,59,48,0.1) !important; border-color: #FF3B30 !important; }
 
 @media(max-width: 680px) {
   .table-card .table-wrap { display: none; }
@@ -210,6 +238,7 @@
 <script src="sidebar.js"></script>
 <script>
 let products = [];
+let expandId = null;
 let materials = [];
 let _editPrId = null;
 let _isSaving = false;
@@ -293,15 +322,19 @@ function renderProducts() {
     const weight = cfg.filament_weight || cfg.resin_volume || 0;
     const time = cfg.est_print_hours || 0;
     const isResin = cfg.mode === 'resin';
+    const isExpanded = expandId === p.id;
     
     return `
-      <tr>
+      <tr class="exp-tr ${isExpanded ? 'is-expanded' : ''}" onclick="toggleProductExpand('${p.id}')">
         <td>
           <div class="cell-product">
             <div class="prod-icon-box">📦</div>
             <div>
-              <div class="prod-name-main">${escH(p.name)}</div>
-              <div class="prod-name-sub">${escH(p.description || 'Sem descrição')}</div>
+              <div class="prod-name-main" style="display:flex; align-items:center; gap:8px">
+                ${escH(p.name)}
+                <span style="font-size:0.7rem; color:var(--muted); opacity:0.6">${isExpanded ? '▲' : '▼'}</span>
+              </div>
+              <div class="prod-name-sub">${escH(p.description || '')}</div>
             </div>
           </div>
         </td>
@@ -310,36 +343,106 @@ function renderProducts() {
              ${isResin?'🧪 Resina':'🧵 FDM'}
           </span>
         </td>
-        <td class="cell-mono">${weight.toFixed(1)}${isResin?'ml':'g'}</td>
-        <td class="cell-mono">${time.toFixed(1)}h</td>
-        <td class="cell-mono" style="color:var(--blue); font-weight:800">${fmtCurrency(p.salePrice)}</td>
+        <td class="cell-mono">${fmtCurrency(p.salePrice)}</td>
         <td>
-          <div style="display:flex; justify-content:flex-end; gap:6px">
+          <div style="display:flex; justify-content:flex-end; gap:6px" onclick="event.stopPropagation()">
             <button class="btn-icon" onclick="calculateProduct('${p.id}')" title="Calcular">🧪</button>
             <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')" title="Gerar Pedido">🛒</button>
             <button class="btn-icon" onclick="openProductModal('${p.id}')" title="Editar">✏️</button>
+            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')" title="Excluir">🗑️</button>
+          </div>
+        </td>
+      </tr>
+      <tr class="details-tr ${isExpanded ? 'is-expanded' : ''}">
+        <td colspan="4">
+          <div class="details-pane">
+            <div class="summary-card">
+              <div class="summary-title">📁 Descrição</div>
+              <p style="font-size:0.8rem; color:var(--text-main); line-height:1.4">
+                ${p.description ? escH(p.description) : '<span style="color:var(--muted)">Sem descrição detalhada.</span>'}
+              </p>
+            </div>
+            <div class="summary-card">
+              <div class="summary-title">🧪 Resumo Técnico</div>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <label>Consumo</label>
+                  <span>${weight.toFixed(1)}${isResin?'ml':'g'}</span>
+                </div>
+                <div class="summary-item">
+                  <label>Tempo de Impressão</label>
+                  <span>${time.toFixed(1)}h</span>
+                </div>
+                <div class="summary-item">
+                  <label>Material ID</label>
+                  <span style="font-size:0.75rem">${cfg.material_id || 'N/A'}</span>
+                </div>
+                <div class="summary-item">
+                  <label>Modo</label>
+                  <span>${cfg.mode === 'advanced' ? 'Avançado' : 'Simples'}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </td>
       </tr>
     `;
   }).join('');
 
-  mobList.innerHTML = filtered.map(p => `
-    <div class="mob-prod-card">
-      <div style="display:flex; gap:12px; align-items:center">
-        <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem">📦</div>
-        <div>
-          <div class="prod-name-main" style="font-size:0.85rem">${escH(p.name)}</div>
-          <div style="font-family:var(--mono); font-size:0.78rem; color:var(--blue); font-weight:700">${fmtCurrency(p.salePrice)}</div>
+  mobList.innerHTML = filtered.map(p => {
+    const isExpanded = expandId === p.id;
+    const cfg = p.config || {};
+    const weight = cfg.filament_weight || cfg.resin_volume || 0;
+    const time = cfg.est_print_hours || 0;
+    const isResin = cfg.mode === 'resin';
+
+    return `
+      <div class="mob-prod-card" onclick="toggleProductExpand('${p.id}')">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <div style="display:flex; gap:12px; align-items:center">
+            <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem">📦</div>
+            <div>
+              <div class="prod-name-main" style="font-size:0.85rem">${escH(p.name)}</div>
+              <div style="font-family:var(--mono); font-size:0.78rem; color:var(--blue); font-weight:700">${fmtCurrency(p.salePrice)}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px" onclick="event.stopPropagation()">
+            <button class="btn-icon" onclick="calculateProduct('${p.id}')">🧪</button>
+            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')">🛒</button>
+            <button class="btn-icon" onclick="openProductModal('${p.id}')">✏️</button>
+            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')">🗑️</button>
+          </div>
+        </div>
+        <div class="mob-expand-area ${isExpanded ? 'is-expanded' : ''}">
+          <div class="summary-grid">
+            <div class="summary-item"><label>Teconologia</label><span>${isResin?'Resina':'FDM'}</span></div>
+            <div class="summary-item"><label>Consumo</label><span>${weight.toFixed(1)}${isResin?'ml':'g'}</span></div>
+            <div class="summary-item"><label>Tempo</label><span>${time.toFixed(1)}h</span></div>
+            <div class="summary-item"><label>Preço</label><span>${fmtCurrency(p.salePrice)}</span></div>
+          </div>
         </div>
       </div>
-      <div style="display:flex; gap:6px">
-        <button class="btn-icon" onclick="calculateProduct('${p.id}')">🧪</button>
-        <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')">🛒</button>
-        <button class="btn-icon" onclick="openProductModal('${p.id}')">✏️</button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+function toggleProductExpand(id) {
+  expandId = (expandId === id) ? null : id;
+  renderProducts();
+}
+
+async function deleteProduct(id) {
+  if(!confirm('Tens a certeza que desejas excluir este produto permanentemente?')) return;
+  try {
+    const p = products.find(x => x.id === id);
+    if(!p) return;
+    
+    await DB.deleteProduct(id);
+    showToast('🗑️ Produto excluído com sucesso.', 'ok');
+    loadData(); // Reload list
+  } catch(e) {
+    showToast('Erro ao excluir produto: ' + e.message, 'err');
+  }
 }
 
 function onTechChange() {
