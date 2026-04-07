@@ -44,6 +44,7 @@
   .mob-client-list { display: flex; }
 }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 
@@ -57,7 +58,7 @@
   
   <main class="main">
     <header class="topbar">
-      <button class="mob-toggle" onclick="Sidebar.toggle()">☰</button>
+      <button class="mob-toggle" onclick="Sidebar.toggle()"><i class="ph-bold ph-list"></i></button>
       <div class="topbar-breadcrumb">
         <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
         <span>›</span>
@@ -65,7 +66,7 @@
       </div>
       
       <div class="topbar-actions">
-        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem">🌙</button>
+        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
         <select id="topbarLangSelect" class="form-select" style="width: auto; padding: 4px 28px 4px 10px; font-size: 0.75rem" onchange="window.i18n && window.i18n.setLanguage(this.value)">
           <option value="pt-PT">🇵🇹 PT</option>
           <option value="pt-BR">🇧🇷 BR</option>
@@ -79,12 +80,12 @@
     <div class="page">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="nav.clients">👥 Clientes</h1>
+          <h1 data-i18n="nav.clients"><i class="ph-bold ph-users"></i> Clientes</h1>
           <p data-i18n="clients.subtitle">Gere os teus clientes e base de contactos recorrentes.</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-primary" onclick="openClientModal()">
-            <span>＋</span> <span data-i18n="clients.btn_new">Novo Cliente</span>
+            <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="clients.btn_new">Novo Cliente</span>
           </button>
         </div>
       </div>
@@ -92,7 +93,7 @@
       <!-- Filters Wrapper -->
       <div class="filters-bar">
         <div class="filter-search-wrap">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
           <input type="text" id="clientSearchInput" class="filter-search" 
                  placeholder="Pesquisar por nome, email ou NIF..." 
                  oninput="renderClients()" data-i18n="[placeholder]clients.search_placeholder">
@@ -104,7 +105,7 @@
       <div class="table-card">
         <div class="table-wrap">
           <div id="clientsEmpty" class="table-empty" style="display:none">
-            <div class="table-empty-icon">👥</div>
+            <div class="table-empty-icon"><i class="ph-bold ph-users"></i></div>
             <h3 data-i18n="clients.empty_title">Sem clientes registados</h3>
             <p data-i18n="clients.empty_desc">Os teus clientes aparecerão aqui assim que os adicionares.</p>
           </div>
@@ -131,12 +132,12 @@
 <div class="modal-overlay" id="clientModalOverlay" onclick="if(event.target===this)closeClientModal()">
   <div class="modal" style="max-width:580px">
     <div class="modal-header">
-      <div class="modal-title" id="clientModalTitle">👥 Novo Cliente</div>
-      <button class="modal-close" onclick="closeClientModal()">✕</button>
+      <div class="modal-title" id="clientModalTitle"><i class="ph-bold ph-users"></i> Novo Cliente</div>
+      <button class="modal-close" onclick="closeClientModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-blue">📝</div>
+        <div class="form-section-divider-icon si-blue"><i class="ph-bold ph-note-pencil"></i></div>
         <span data-i18n="clients.modal.sec_basic">Informação de Contacto</span>
       </div>
       
@@ -170,7 +171,7 @@
       </div>
 
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-orange">🏡</div>
+        <div class="form-section-divider-icon si-orange"><i class="ph-bold ph-house"></i></div>
         <span data-i18n="clients.modal.sec_billing">Morada e Faturação</span>
       </div>
 
@@ -290,9 +291,9 @@ function renderClients() {
         </td>
         <td>
           <div style="display:flex; justify-content:flex-end; gap:8px; align-items:center">
-            <button class="btn-icon" onclick="event.stopPropagation(); openClientModal('${c.id}')" title="Editar">✏️</button>
-            <button class="btn-icon del" onclick="event.stopPropagation(); confirmDelClient('${c.id}')" title="Apagar">🗑️</button>
-            <button class="expand-btn" id="ebtn-${c.id}">▼</button>
+            <button class="btn-icon" onclick="event.stopPropagation(); openClientModal('${c.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+            <button class="btn-icon del" onclick="event.stopPropagation(); confirmDelClient('${c.id}')" title="Apagar"><i class="ph-bold ph-trash"></i></button>
+            <button class="expand-btn" id="ebtn-${c.id}"><i class="ph-bold ph-caret-down"></i></button>
           </div>
         </td>
       </tr>
@@ -331,7 +332,7 @@ function renderClients() {
             <div class="client-info-sub">${escH(c.email || c.phone || '—')}</div>
           </div>
         </div>
-        <button class="expand-btn" id="mebtn-${c.id}" style="border:none; background:transparent">▼</button>
+        <button class="expand-btn" id="mebtn-${c.id}" style="border:none; background:transparent"><i class="ph-bold ph-caret-down"></i></button>
       </div>
       
       <div class="mob-ord-expand" id="mexp-${c.id}" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border); display:none">
@@ -341,8 +342,8 @@ function renderClients() {
            <div><div class="mob-expand-lbl" data-i18n="clients.modal.lbl_notes">Notas</div><div class="mob-expand-val" style="font-size:0.78rem">${escH(c.notes || '—')}</div></div>
         </div>
         <div style="display:flex; gap:8px; margin-top:14px">
-          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation(); openClientModal('${c.id}')">✏️ Editar</button>
-          <button class="btn btn-ghost btn-sm del" style="flex:1" onclick="event.stopPropagation(); confirmDelClient('${c.id}')">🗑️ Apagar</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation(); openClientModal('${c.id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+          <button class="btn btn-ghost btn-sm del" style="flex:1" onclick="event.stopPropagation(); confirmDelClient('${c.id}')"><i class="ph-bold ph-trash"></i> Apagar</button>
         </div>
       </div>
     </div>
@@ -451,7 +452,7 @@ function openClientModal(id = null) {
   const title = document.getElementById('clientModalTitle');
   
   if(id) {
-    title.textContent = '✏️ Editar Cliente';
+    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Cliente';
     const c = clients.find(x => x.id === id);
     if(c) {
       document.getElementById('clName').value = c.name;
@@ -464,7 +465,7 @@ function openClientModal(id = null) {
       document.getElementById('clZip').value = '';
     }
   } else {
-    title.textContent = '👥 Novo Cliente';
+    title.textContent = '<i class="ph-bold ph-users"></i> Novo Cliente';
     document.getElementById('clName').value = '';
     document.getElementById('clEmail').value = '';
     document.getElementById('clPhone').value = '';
@@ -512,7 +513,7 @@ async function saveClient() {
     } else {
       clients.unshift(saved);
     }
-    showToast('✅ Cliente gravado com sucesso!', 'ok');
+    showToast('<i class="ph-bold ph-check-circle"></i> Cliente gravado com sucesso!', 'ok');
     closeClientModal();
     renderClients();
   } catch(e) {
@@ -528,7 +529,7 @@ async function confirmDelClient(id) {
   try {
     await DB.deleteClient(id);
     clients = clients.filter(x => x.id !== id);
-    showToast('🗑️ Cliente removido.', 'ok');
+    showToast('<i class="ph-bold ph-trash"></i> Cliente removido.', 'ok');
     renderClients();
   } catch(e) {
     showToast('❌ Erro ao remover: ' + e.message, 'err');

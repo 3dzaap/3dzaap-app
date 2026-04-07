@@ -811,4 +811,103 @@ O trial inicia com score 100 (benefício da dúvida). À medida que o utilizador
 
 ---
 
-*3DZAAP Print Manager — SaaS Blueprint v1.1 · © 2025 · Documento Confidencial*
+## 20. Módulo Biblioteca de Produtos (v1.4 — Integrado)
+
+### Visão Geral
+
+O módulo `products.html` funciona como uma biblioteca reutilizável de peças configuradas. Cada produto é um snapshot completo de um cálculo, permitindo a re-utilização sem recalcular desde zero.
+
+### Schema do Produto (localStorage/Supabase `products`)
+
+```json
+{
+  "id": "uuid",
+  "name": "Vaso Geométrico",
+  "description": "Para cliente recorrente.",
+  "salePrice": 12.50,
+  "config": {
+    "mode": "simple|advanced",
+    "filament_weight": 45.0,
+    "resin_volume": 0.0,
+    "est_print_hours": 3.5,
+    "material_id": "uuid-do-material",
+    "_orig_inputs": {
+      "partWeight": 45, "printTime": 3.5,
+      "filamentPrice": 25, "printerPrice": 600,
+      "printerLife": 5000, "powerConsumption": 200,
+      "electricityPrice": 0.22, "failureRate": 5,
+      "indirectCosts": 10, "profitMargin": 30,
+      "mesas": [], "mode": "simple"
+    }
+  }
+}
+```
+
+### Fluxo de Integração Triângulo (Calculadora ↔ Produto ↔ Pedido)
+
+```
+Calculadora ──[💾 Guardar]──► Biblioteca de Produtos
+     ▲                              │
+     │  localStorage                │  onClick [🧪 Calcular]
+     │  3dzaap_calc_load            │
+     └──────────────────────────────┘
+                                    │  onClick [🛒 Gerar Pedido]
+                                    ▼
+                              Módulo Pedidos
+                              (pré-preenchido via sessionStorage)
+```
+
+**Implementação chave:**
+- `calculator.html` → `doSaveProduct()`: guarda `_orig_inputs` completo como snapshot.
+- `calculator.html` → `loadFromLibrary(product)`: restaura modo (simples/avançado), mesas e parâmetros financeiros do `_orig_inputs`.
+- `products.html` → `calculateProduct(id)`: escreve em `localStorage['3dzaap_calc_load']` e redireciona para `calculator.html`.
+- `products.html` → `createOrderFromProduct(id)`: escreve em `sessionStorage['3dzaap_calc_prefill']` e redireciona para `orders.html?from=product`.
+- `orders.html` → lê `sessionStorage['3dzaap_calc_prefill']` no `DOMContentLoaded` e pré-preenche a modal de novo pedido.
+
+### UI da Biblioteca de Produtos
+
+- **Linhas expansíveis**: Clica para expandir; revela Resumo Técnico (consumo, tempo, material, modo).
+- **Ações por linha**: 🧪 Calcular · 🛒 Pedido · ✏️ Editar · 🗑️ Eliminar.
+- **Eliminar direto**: confirmação inline sem abrir modal.
+- **Mobile**: troca tabela por cards (`mob-prod-list`) abaixo de 680px.
+
+---
+
+## 21. Seleção de Clientes em Pedidos (v1.4)
+
+A modal de novo pedido (`orders.html`) inclui autocomplete inteligente no campo "Nome do cliente":
+
+- **Focus trigger**: Ao clicar no campo (mesmo vazio), mostra os 5 clientes mais recentes da BD.
+- **Filtro em tempo real**: Filtra por nome ou email enquanto o utilizador escreve.
+- **Preenchimento automático**: Selecionar um cliente preenche Email, Telefone, NIF e Morada.
+- **Criar novo cliente**: Opção "+ Criar Novo Cliente" redireciona para o modal de registo.
+- **Click-outside**: Lista fecha ao clicar fora do campo.
+
+---
+
+## 22. Auditoria Pré-Lançamento (Abril 2026)
+
+### Traduções (i18n)
+- ✅ Adicionada secção `common` (delete, cancel, save, edit, close, confirm) a todos os 5 locales.
+- ✅ Adicionada `dash.stats.total_label` a todos os 5 locales.
+- ✅ Adicionada `nav.tagline` ("Printing Manager") a todos os 5 locales.
+- ✅ `dashboard.html`: "Total:" convertido de hardcode para `data-i18n="dash.stats.total_label"`.
+- ✅ `orders.html`: "Printing Manager" no rodapé do recibo convertido para `t('nav.tagline', ...)`.
+- ✅ Todos os 5 ficheiros JSON validados: sem erros de sintaxe.
+
+### Ícones (Padronização)
+- 🧪 Calcular · 🛒 Gerar Pedido · ✏️ Editar · 🗑️ Eliminar · 🔍 Pesquisar · 💾 Guardar
+- Iconografia emoji aplicada de forma consistente em: `products.html`, `clients.html`, `orders.html`.
+
+### Debug Code
+- ✅ Sem `console.log` em HTML/JS de produção.
+- ℹ️ `supabase.js` tem 2 linhas `console.info` informativas — mantidas intencionalmente.
+
+### Responsividade
+- `products.html`: tabela oculta < 680px; cards mobile (`mob-prod-list`) com área expansível.
+- `orders.html`: estatísticas em grid 2×2 < 680px; lista mobile de pedidos.
+- `shared.css`: 3 breakpoints definidos (1100px, 680px, 420px).
+
+---
+
+*3DZAAP Print Manager — SaaS Blueprint v1.4 · Abril 2026 · © 2025 · Documento Confidencial*

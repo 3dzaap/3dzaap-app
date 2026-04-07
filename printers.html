@@ -354,10 +354,11 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
 <script src="sidebar.js"></script>
@@ -370,7 +371,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="printers.title">🖨️ Impressoras</strong>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="printers.title"><i class="ph-bold ph-printer"></i> Impressoras</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -379,7 +380,7 @@
               onclick="Sidebar.toggleTheme()"
               title="Alternar Tema"
               class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -399,7 +400,7 @@
               <button id="topbarHelpBtn"
                 class="gc-btn gc-help-btn"
                 onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
-                aria-label="Ajuda">?</button>
+                aria-label="Ajuda"><i class="ph-bold ph-question"></i></button>
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
                 <div class="gc-popover-title" data-i18n="nav.help_title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
@@ -411,7 +412,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -424,30 +425,30 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="printers.title">🖨️ Impressoras</h1>
+          <h1 data-i18n="printers.title"><i class="ph-bold ph-printer"></i> Impressoras</h1>
           <p data-i18n="printers.subtitle">Gere o parque de impressoras — estado, horas e manutenções</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-primary" onclick="openPrinterModal()" data-i18n="printers.btn_new">＋ Nova impressora</button>
+          <button class="btn btn-primary" onclick="openPrinterModal()" data-i18n="printers.btn_new"><i class="ph-bold ph-plus"></i> Nova impressora</button>
         </div>
       </div>
 
       <!-- Stats -->
       <div class="stats-row">
         <div class="stat-mini">
-          <div class="stat-mini-icon si-blue">🖨️</div>
+          <div class="stat-mini-icon si-blue"><i class="ph-bold ph-printer"></i></div>
           <div><div class="stat-mini-val" id="statTotal">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.total">Total de impressoras</div></div>
         </div>
         <div class="stat-mini">
-          <div class="stat-mini-icon si-green">✅</div>
+          <div class="stat-mini-icon si-green"><i class="ph-bold ph-check-circle"></i></div>
           <div><div class="stat-mini-val" id="statOperacional">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.operational">Operacionais</div></div>
         </div>
         <div class="stat-mini">
-          <div class="stat-mini-icon si-orange">🔧</div>
+          <div class="stat-mini-icon si-orange"><i class="ph-bold ph-wrench"></i></div>
           <div><div class="stat-mini-val" id="statManutencao">0</div><div class="stat-mini-lbl" data-i18n="printers.stats.maintenance">Em manutenção</div></div>
         </div>
         <div class="stat-mini">
-          <div class="stat-mini-icon si-purple">⏱️</div>
+          <div class="stat-mini-icon si-purple"><i class="ph-bold ph-timer"></i></div>
           <div><div class="stat-mini-val" id="statTotalHours">0h</div><div class="stat-mini-lbl" data-i18n="printers.stats.total_hours">Horas totais acumuladas</div></div>
         </div>
       </div>
@@ -455,7 +456,7 @@
       <!-- Printers grid / empty state -->
       <div id="printersEmpty" class="table-card" style="display:none">
         <div class="table-empty">
-          <div class="table-empty-icon">🖨️</div>
+          <div class="table-empty-icon"><i class="ph-bold ph-printer"></i></div>
           <h3 data-i18n="printers.empty_title">Sem impressoras ainda</h3>
           <p data-i18n="printers.empty_desc">Adiciona a tua primeira impressora clicando em <strong>＋ Nova impressora</strong> acima.</p>
         </div>
@@ -472,11 +473,11 @@
 <div class="modal-overlay" id="printerModalOverlay" onclick="if(event.target===this)closePrinterModal()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="printerModalTitle" data-i18n="printers.modal.title_new">＋ Nova Impressora</div>
-      <button class="modal-close" onclick="closePrinterModal()">✕</button>
+      <div class="modal-title" id="printerModalTitle" data-i18n="printers.modal.title_new"><i class="ph-bold ph-plus"></i> Nova Impressora</div>
+      <button class="modal-close" onclick="closePrinterModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-section-divider" data-i18n="printers.modal.section_id">🖨️ Identificação</div>
+      <div class="form-section-divider" data-i18n="printers.modal.section_id"><i class="ph-bold ph-printer"></i> Identificação</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label"><span data-i18n="printers.modal.lbl_brand">Fabricante</span> <span>*</span></label>
@@ -543,7 +544,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider" style="margin-top:18px">🎨 Sistema Multi-Material</div>
+      <div class="form-section-divider" style="margin-top:18px"><i class="ph-bold ph-palette"></i> Sistema Multi-Material</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Sistema</label>
@@ -608,7 +609,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closePrinterModal()" data-i18n="orders.modal.btn_cancel">Cancelar</button>
-      <button class="btn btn-primary" onclick="savePrinter()">💾 Guardar</button>
+      <button class="btn btn-primary" onclick="savePrinter()"><i class="ph-bold ph-floppy-disk"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -619,8 +620,8 @@
 <div class="modal-overlay" id="detailModalOverlay" onclick="if(event.target===this)closeDetailModal()">
   <div class="modal" style="max-width:620px">
     <div class="modal-header">
-      <div class="modal-title" id="detailModalTitle">🖨️ Impressora</div>
-      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+      <div class="modal-title" id="detailModalTitle"><i class="ph-bold ph-printer"></i> Impressora</div>
+      <button class="modal-close" onclick="closeDetailModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
       <!-- Printer summary -->
@@ -634,7 +635,7 @@
       <div id="maintList" class="maint-list"></div>
 
       <!-- Add maintenance form -->
-      <div class="maint-section-title" style="margin-top:20px">＋ Registar manutenção</div>
+      <div class="maint-section-title" style="margin-top:20px"><i class="ph-bold ph-plus"></i> Registar manutenção</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Tipo <span>*</span></label>
@@ -673,7 +674,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeDetailModal()">Fechar</button>
-      <button class="btn btn-ghost" onclick="openPrinterModal(_detailPrinterId)">✏️ Editar impressora</button>
+      <button class="btn btn-ghost" onclick="openPrinterModal(_detailPrinterId)"><i class="ph-bold ph-pencil-simple"></i> Editar impressora</button>
       <button class="btn btn-primary" onclick="saveMaintenance()">🔧 Registar</button>
     </div>
   </div>
@@ -682,7 +683,7 @@
 <!-- CONFIRM MODAL -->
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
-    <div class="confirm-icon" id="confirmIcon">🗑️</div>
+    <div class="confirm-icon" id="confirmIcon"><i class="ph-bold ph-trash"></i></div>
     <div class="confirm-title" id="confirmTitle">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
@@ -800,7 +801,7 @@ function renderPrinters() {
     return `
     <div class="printer-card status-${p.status}" onclick="openDetailModal('${p.id}')" style="display:flex;flex-direction:column;height:100%;border-radius:12px;overflow:hidden;background:var(--bg-card);border:1px solid var(--border)">
       <div style="height:180px;background:var(--bg-card-s);position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border)">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${escH(p.model)}" style="width:100%;height:100%;object-fit:contain;padding:16px;">` : `<div style="font-size:3rem;background:var(--bg-card);width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:0.6">🖨️</div>`}
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${escH(p.model)}" style="width:100%;height:100%;object-fit:contain;padding:16px;">` : `<div style="font-size:3rem;background:var(--bg-card);width:100%;height:100%;display:flex;align-items:center;justify-content:center;opacity:0.6"><i class="ph-bold ph-printer"></i></div>`}
         <div style="position:absolute;top:12px;right:12px;display:flex;gap:6px">
           <span class="printer-type-badge pt-${p.printerType}" style="backdrop-filter:blur(4px)">${typeof TYPE_LABELS[p.printerType]==='function'?TYPE_LABELS[p.printerType]():(TYPE_LABELS[p.printerType]||p.printerType)}</span>
         </div>
@@ -818,12 +819,12 @@ function renderPrinters() {
       </div>
 
       <div style="padding:0 14px;flex:1">
-        ${p.mmsSystem ? `<div style="font-size:11px;color:var(--text-muted);margin:4px 0 2px;display:flex;align-items:center;gap:4px"><span>🎨</span><span>${_mmsLabel(p)}</span></div>` : ''}
+        ${p.mmsSystem ? `<div style="font-size:11px;color:var(--text-muted);margin:4px 0 2px;display:flex;align-items:center;gap:4px"><span><i class="ph-bold ph-palette"></i></span><span>${_mmsLabel(p)}</span></div>` : ''}
 
         ${(p.powerPrint || p.powerStandby) ? `
         <div style="margin-top:12px">
           <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;text-transform:uppercase">
-            <span style="color:#d4a045">⚡</span> <span data-i18n="printers.card.power_consumption">Consumo Elétrico</span>
+            <span style="color:#d4a045"><i class="ph-bold ph-lightning"></i></span> <span data-i18n="printers.card.power_consumption">Consumo Elétrico</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
              <div style="background:var(--bg-lighter);padding:8px 4px;border-radius:66px;text-align:center;border:1px solid var(--border)">
@@ -871,8 +872,8 @@ function renderPrinters() {
       <div class="printer-card-actions" onclick="event.stopPropagation()" style="justify-content:space-between;padding:10px 14px">
         <span class="badge bs-${p.status}"><span class="badge-dot"></span>${typeof STATUS_LABELS[p.status]==='function'?STATUS_LABELS[p.status]():(STATUS_LABELS[p.status]||p.status)}</span>
         <div style="display:flex;gap:4px">
-          <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar">✏️</button>
-          <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar">🗑️</button>
+          <button class="btn-icon" onclick="openPrinterModal('${p.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+          <button class="btn-icon del" onclick="confirmDeletePrinter('${p.id}')" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
         </div>
       </div>
     </div>`;
@@ -891,12 +892,12 @@ function _maintAlertChip(p) {
   const threshold = Math.round(interval * 0.20); // alert at 20%
 
   if (hoursUntilNext <= 0) {
-    return `<div class="printer-alert-chip warn">⚠️ ${t('printers.card.maint_overdue', {h: Math.abs(hoursUntilNext)})}</div>`;
+    return `<div class="printer-alert-chip warn"><i class="ph-bold ph-warning-octagon"></i> ${t('printers.card.maint_overdue', {h: Math.abs(hoursUntilNext)})}</div>`;
   }
   if (hoursUntilNext <= threshold) {
-    return `<div class="printer-alert-chip warn">🔧 ${t('printers.card.maint_upcoming', {h: hoursUntilNext})}</div>`;
+    return `<div class="printer-alert-chip warn"><i class="ph-bold ph-wrench"></i> ${t('printers.card.maint_upcoming', {h: hoursUntilNext})}</div>`;
   }
-  return `<div class="printer-alert-chip ok">✅ ${t('printers.card.maint_next', {h: hoursUntilNext})}</div>`;
+  return `<div class="printer-alert-chip ok"><i class="ph-bold ph-check-circle"></i> ${t('printers.card.maint_next', {h: hoursUntilNext})}</div>`;
 }
 
 function _hoursPercent(p) {
@@ -1208,8 +1209,8 @@ async function savePrinter() {
   const brand    = brandSel === 'Outro' ? (document.getElementById('pModelCustom').dataset.brand || 'Outro') : brandSel;
   const model    = _resolveModel();
 
-  if (!brandSel || brandSel === '') { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_brand'), 'err'); return; }
-  if (!model)                        { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_model'), 'err'); return; }
+  if (!brandSel || brandSel === '') { showToast('<i class="ph-bold ph-warning-octagon"></i> ' + i18n.getNestedTranslation('printers.toasts.err_brand'), 'err'); return; }
+  if (!model)                        { showToast('<i class="ph-bold ph-warning-octagon"></i> ' + i18n.getNestedTranslation('printers.toasts.err_model'), 'err'); return; }
 
   const data = {
     brand:              brandSel === 'Outro' ? 'Outro' : brandSel,
@@ -1248,11 +1249,11 @@ async function savePrinter() {
       const saved = await DB.savePrinter(merged);
       const idx = printers.findIndex(p => p.id === _editingPrinterId);
       if (idx > -1) printers[idx] = saved;
-      showToast('✅ ' + i18n.getNestedTranslation('printers.toasts.updated'), 'ok');
+      showToast('<i class="ph-bold ph-check-circle"></i> ' + i18n.getNestedTranslation('printers.toasts.updated'), 'ok');
     } else {
       const saved = await DB.savePrinter({ ...data, hoursUsed: 0, maintenances: [] });
       printers.unshift(saved);
-      showToast('✅ ' + i18n.getNestedTranslation('printers.toasts.saved'), 'ok');
+      showToast('<i class="ph-bold ph-check-circle"></i> ' + i18n.getNestedTranslation('printers.toasts.saved'), 'ok');
     }
     closePrinterModal();
     renderPrinters();
@@ -1266,7 +1267,7 @@ function openDetailModal(id) {
   const p = printers.find(x => x.id === id);
   if (!p) return;
 
-  document.getElementById('detailModalTitle').textContent = `🖨️ ${p.customName ? p.customName + ' (' + p.brand + ' ' + p.model + ')' : p.brand + ' ' + p.model}`;
+  document.getElementById('detailModalTitle').textContent = `<i class="ph-bold ph-printer"></i> ${p.customName ? p.customName + ' (' + p.brand + ' ' + p.model + ')' : p.brand + ' ' + p.model}`;
 
   // Summary fields
   const pct = _hoursPercent(p);
@@ -1283,7 +1284,7 @@ function openDetailModal(id) {
     <div><div class="detail-field-lbl">Data de compra</div><div class="detail-field-val">${p.purchaseDate ? fmtDate(p.purchaseDate) : '—'}</div></div>
     ${warrantyHtml}
     <div><div class="detail-field-lbl">Intervalo manutenção</div><div class="detail-field-val">${p.maintIntervalHours ? p.maintIntervalHours + 'h' : '—'}</div></div>
-    ${p.mmsSystem ? `<div><div class="detail-field-lbl">🎨 Sistema Multi-Material</div><div class="detail-field-val">${_mmsLabel(p)}</div></div>` : ''}
+    ${p.mmsSystem ? `<div><div class="detail-field-lbl"><i class="ph-bold ph-palette"></i> Sistema Multi-Material</div><div class="detail-field-val">${_mmsLabel(p)}</div></div>` : ''}
     ${p.notes ? `<div style="grid-column:1/-1"><div class="detail-field-lbl">Notas</div><div class="detail-field-val">${escH(p.notes)}</div></div>` : ''}
   `;
 
@@ -1336,7 +1337,7 @@ function _renderMaintList(p) {
       <span class="maint-row-type">${typeLbl}</span>
       <span class="maint-row-desc">${escH(m.description || '')}${m.hoursAtMaint ? ` <span style="color:var(--text-muted);font-size:10px">(@${m.hoursAtMaint}h)</span>` : ''}</span>
       <span class="maint-row-cost">${m.cost ? fmtCurrency(m.cost) : '—'}</span>
-      <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="${i18n.getNestedTranslation('printers.card.btn_delete')}">🗑️</button>
+      <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="${i18n.getNestedTranslation('printers.card.btn_delete')}"><i class="ph-bold ph-trash"></i></button>
     </div>`;
   }).join('');
   i18n.translatePage();
@@ -1354,7 +1355,7 @@ async function saveMaintenance() {
 
   const type = document.getElementById('mType').value;
   const date = document.getElementById('mDate').value;
-  if (!date) { showToast('⚠️ ' + i18n.getNestedTranslation('printers.toasts.err_date'), 'err'); return; }
+  if (!date) { showToast('<i class="ph-bold ph-warning-octagon"></i> ' + i18n.getNestedTranslation('printers.toasts.err_date'), 'err'); return; }
 
   const cost         = parseFloat(document.getElementById('mCost').value) || null;
   const description  = document.getElementById('mDesc').value.trim() || null;
@@ -1383,12 +1384,12 @@ async function saveMaintenance() {
           category:    'manutencao',
           description: `${i18n.getNestedTranslation('printers.card.maintenance')} ${typeof TYPE_LABELS[p.printerType]==='function'?TYPE_LABELS[p.printerType]():p.printerType} ${p.brand} ${p.model} — ${typeof MAINT_LABELS[type]==='function'?MAINT_LABELS[type]():type}`,
         });
-        showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_expense'), 'ok');
+        showToast('<i class="ph-bold ph-wrench"></i> ' + i18n.getNestedTranslation('printers.toasts.maint_expense'), 'ok');
       } catch(e) {
-        showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
+        showToast('<i class="ph-bold ph-wrench"></i> ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
       }
     } else {
-      showToast('🔧 ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
+      showToast('<i class="ph-bold ph-wrench"></i> ' + i18n.getNestedTranslation('printers.toasts.maint_saved'), 'ok');
     }
 
     // Re-open detail modal with fresh data
@@ -1418,7 +1419,7 @@ async function deleteMaintenance(printerId, maintIdx) {
     if (idx > -1) printers[idx] = saved;
     openDetailModal(printerId);
     renderPrinters();
-    showToast('🗑️ Manutenção eliminada', '');
+    showToast('<i class="ph-bold ph-trash"></i> Manutenção eliminada', '');
   } catch(e) { showToast('Erro: ' + e.message, 'err'); }
 }
 
@@ -1440,13 +1441,13 @@ async function deletePrinter(id) {
     printers = printers.filter(p => p.id !== id);
     renderPrinters();
     updateStats();
-    showToast('🗑️ Impressora eliminada', '');
+    showToast('<i class="ph-bold ph-trash"></i> Impressora eliminada', '');
   } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
 // ── USER MENU ──────────────────────────
 function _showPrinterUpgradeNotice() {
-  showToast(`⚠️ Limite do plano Starter atingido (${window._printerLimit} impressora). Faz upgrade para Pro.`, 'err');
+  showToast(`<i class="ph-bold ph-warning-octagon"></i> Limite do plano Starter atingido (${window._printerLimit} impressora). Faz upgrade para Pro.`, 'err');
   let banner = document.getElementById('upgradeBanner');
   if (!banner) {
     banner = document.createElement('div');
@@ -1459,7 +1460,7 @@ function _showPrinterUpgradeNotice() {
         <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Faz upgrade para <strong>Pro</strong> e adiciona impressoras ilimitadas.</div>
       </div>
       <a href="billing.html" style="padding:8px 14px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap">Ver planos</a>
-      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px">✕</button>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px"><i class="ph-bold ph-x"></i></button>
     `;
     document.body.appendChild(banner);
     setTimeout(() => banner?.remove(), 8000);

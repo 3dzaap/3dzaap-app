@@ -181,10 +181,11 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
 <script src="utils.js"></script>
@@ -195,7 +196,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html">Dashboard</a><span>›</span><strong>🗄️ BackOffice</strong>
+        <a href="dashboard.html">Dashboard</a><span>›</span><strong><i class="ph-bold ph-archive"></i> BackOffice</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -204,7 +205,7 @@
               onclick="Sidebar.toggleTheme()"
               title="Alternar Tema"
               class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -223,7 +224,7 @@
               <button id="topbarHelpBtn"
                 class="gc-btn gc-help-btn"
                 onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
-                aria-label="Ajuda">?</button>
+                aria-label="Ajuda"><i class="ph-bold ph-question"></i></button>
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
                 <div class="gc-popover-title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
@@ -235,7 +236,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -247,7 +248,7 @@
 
       <div class="page-header">
         <div class="page-header-text">
-          <h1>🗄️ BackOffice</h1>
+          <h1><i class="ph-bold ph-archive"></i> BackOffice</h1>
           <p>Backup, restauro, gestão de dados e log de actividade</p>
         </div>
       </div>
@@ -255,31 +256,31 @@
       <!-- STORAGE STATS -->
       <div class="bo-card" style="margin-bottom:20px;animation:fadeUp .5s var(--ease) both">
         <div class="bo-card-header">
-          <div class="bo-card-title">💾 Armazenamento local</div>
-          <button class="btn btn-ghost btn-sm" onclick="refreshStats()">↺ Actualizar</button>
+          <div class="bo-card-title"><i class="ph-bold ph-floppy-disk"></i> Armazenamento local</div>
+          <button class="btn btn-ghost btn-sm" onclick="refreshStats()"><i class="ph-bold ph-arrows-clockwise"></i> Actualizar</button>
         </div>
         <div class="bo-card-body">
           <div class="storage-grid">
             <div class="storage-item">
-              <div class="storage-icon">🎨</div>
+              <div class="storage-icon"><i class="ph-bold ph-palette"></i></div>
               <div class="storage-count" id="statFil">0</div>
               <div class="storage-lbl">Materiais</div>
               <div class="storage-size" id="statFilSize">0 KB</div>
             </div>
             <div class="storage-item">
-              <div class="storage-icon">📦</div>
+              <div class="storage-icon"><i class="ph-bold ph-package"></i></div>
               <div class="storage-count" id="statOrd">0</div>
               <div class="storage-lbl">Pedidos</div>
               <div class="storage-size" id="statOrdSize">0 KB</div>
             </div>
             <div class="storage-item">
-              <div class="storage-icon">🧾</div>
+              <div class="storage-icon"><i class="ph-bold ph-receipt"></i></div>
               <div class="storage-count" id="statExp">0</div>
               <div class="storage-lbl">Despesas</div>
               <div class="storage-size" id="statExpSize">0 KB</div>
             </div>
             <div class="storage-item">
-              <div class="storage-icon">🖨️</div>
+              <div class="storage-icon"><i class="ph-bold ph-printer"></i></div>
               <div class="storage-count" id="statPrt">0</div>
               <div class="storage-lbl">Impressoras</div>
               <div class="storage-size" id="statPrtSize">0 KB</div>
@@ -295,11 +296,11 @@
       <div class="bo-grid">
         <!-- EXPORT -->
         <div class="bo-card">
-          <div class="bo-card-header"><div class="bo-card-title">📤 Exportar dados</div></div>
+          <div class="bo-card-header"><div class="bo-card-title"><i class="ph-bold ph-export"></i> Exportar dados</div></div>
           <div class="bo-card-body">
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">📦 Backup completo</div>
+                <div class="action-title"><i class="ph-bold ph-package"></i> Backup completo</div>
                 <div class="action-desc">Materiais + Pedidos + Despesas + Impressoras num único ficheiro CSV</div>
                 <div class="action-feedback" id="fbBackup"></div>
               </div>
@@ -309,7 +310,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🎨 Materiais</div>
+                <div class="action-title"><i class="ph-bold ph-palette"></i> Materiais</div>
                 <div class="action-desc">Exportar apenas os filamentos em CSV</div>
                 <div class="action-feedback" id="fbFil"></div>
               </div>
@@ -319,7 +320,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">📦 Pedidos</div>
+                <div class="action-title"><i class="ph-bold ph-package"></i> Pedidos</div>
                 <div class="action-desc">Exportar apenas os pedidos em CSV</div>
                 <div class="action-feedback" id="fbOrd"></div>
               </div>
@@ -329,7 +330,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🧾 Despesas</div>
+                <div class="action-title"><i class="ph-bold ph-receipt"></i> Despesas</div>
                 <div class="action-desc">Exportar apenas as despesas em CSV</div>
                 <div class="action-feedback" id="fbExp"></div>
               </div>
@@ -339,7 +340,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🖨️ Impressoras</div>
+                <div class="action-title"><i class="ph-bold ph-printer"></i> Impressoras</div>
                 <div class="action-desc">Exportar apenas as impressoras em CSV</div>
                 <div class="action-feedback" id="fbPrt"></div>
               </div>
@@ -352,11 +353,11 @@
 
         <!-- IMPORT -->
         <div class="bo-card">
-          <div class="bo-card-header"><div class="bo-card-title">📥 Importar / Restaurar</div></div>
+          <div class="bo-card-header"><div class="bo-card-title"><i class="ph-bold ph-import"></i> Importar / Restaurar</div></div>
           <div class="bo-card-body">
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🔄 Restaurar backup</div>
+                <div class="action-title"><i class="ph-bold ph-arrows-clockwise"></i> Restaurar backup</div>
                 <div class="action-desc">Importa um ficheiro de backup completo (CSV)</div>
                 <div class="action-feedback" id="fbImportAll"></div>
               </div>
@@ -366,7 +367,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🎨 Importar filamentos</div>
+                <div class="action-title"><i class="ph-bold ph-palette"></i> Importar filamentos</div>
                 <div class="action-desc">Importa um CSV de filamentos exportado por este sistema</div>
                 <div class="action-feedback" id="fbImportFil"></div>
               </div>
@@ -376,7 +377,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">📦 Importar pedidos</div>
+                <div class="action-title"><i class="ph-bold ph-package"></i> Importar pedidos</div>
                 <div class="action-desc">Importa um CSV de pedidos exportado por este sistema</div>
                 <div class="action-feedback" id="fbImportOrd"></div>
               </div>
@@ -386,7 +387,7 @@
             </div>
             <div class="action-row">
               <div class="action-info">
-                <div class="action-title">🧾 Importar despesas</div>
+                <div class="action-title"><i class="ph-bold ph-receipt"></i> Importar despesas</div>
                 <div class="action-desc">Importa um CSV de despesas exportado por este sistema</div>
                 <div class="action-feedback" id="fbImportExp"></div>
               </div>
@@ -401,30 +402,30 @@
       <!-- DANGER ZONE -->
       <div class="bo-card" style="margin-bottom:20px">
         <div class="bo-card-header">
-          <div class="bo-card-title" style="color:var(--danger)">⚠️ Zona de perigo</div>
+          <div class="bo-card-title" style="color:var(--danger)"><i class="ph-bold ph-warning-octagon"></i> Zona de perigo</div>
           <span style="font-size:.74rem;color:var(--muted);font-weight:500">Acções irreversíveis — confirma antes de prosseguir</span>
         </div>
         <div class="bo-card-body">
           <div class="danger-grid">
             <div class="danger-item">
-              <div class="danger-item-title">🎨 Limpar filamentos</div>
+              <div class="danger-item-title"><i class="ph-bold ph-palette"></i> Limpar filamentos</div>
               <div class="danger-item-desc">Remove todos os materiais do sistema. O histórico de pedidos não é afectado.</div>
-              <button class="btn btn-danger btn-sm" onclick="confirmClear('filaments')">🗑️ Limpar</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmClear('filaments')"><i class="ph-bold ph-trash"></i> Limpar</button>
             </div>
             <div class="danger-item">
-              <div class="danger-item-title">📦 Limpar pedidos</div>
+              <div class="danger-item-title"><i class="ph-bold ph-package"></i> Limpar pedidos</div>
               <div class="danger-item-desc">Remove todos os pedidos e repõe o contador PED-XXXX a zero.</div>
-              <button class="btn btn-danger btn-sm" onclick="confirmClear('orders')">🗑️ Limpar</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmClear('orders')"><i class="ph-bold ph-trash"></i> Limpar</button>
             </div>
             <div class="danger-item">
-              <div class="danger-item-title">🧾 Limpar despesas</div>
+              <div class="danger-item-title"><i class="ph-bold ph-receipt"></i> Limpar despesas</div>
               <div class="danger-item-desc">Remove todas as despesas registadas. Os pedidos e filamentos não são afectados.</div>
-              <button class="btn btn-danger btn-sm" onclick="confirmClear('expenses')">🗑️ Limpar</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmClear('expenses')"><i class="ph-bold ph-trash"></i> Limpar</button>
             </div>
             <div class="danger-item">
-              <div class="danger-item-title">🖨️ Limpar impressoras</div>
+              <div class="danger-item-title"><i class="ph-bold ph-printer"></i> Limpar impressoras</div>
               <div class="danger-item-desc">Remove todas as impressoras e o seu histórico de manutenções.</div>
-              <button class="btn btn-danger btn-sm" onclick="confirmClear('printers')">🗑️ Limpar</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmClear('printers')"><i class="ph-bold ph-trash"></i> Limpar</button>
             </div>
           </div>
         </div>
@@ -433,8 +434,8 @@
       <!-- ACTIVITY LOG -->
       <div class="bo-card bo-grid full">
         <div class="bo-card-header">
-          <div class="bo-card-title">📋 Log de actividade</div>
-          <button class="btn btn-ghost btn-sm" onclick="clearLog()">🗑️ Limpar log</button>
+          <div class="bo-card-title"><i class="ph-bold ph-list-numbers"></i> Log de actividade</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearLog()"><i class="ph-bold ph-trash"></i> Limpar log</button>
         </div>
         <div class="bo-card-body">
           <div class="log-wrap" id="boLog">
@@ -451,8 +452,8 @@
 <div class="modal-overlay" id="importModal" onclick="if(event.target===this)closeImportModal()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="importModalTitle">📥 Importar CSV</div>
-      <button class="modal-close" onclick="closeImportModal()">✕</button>
+      <div class="modal-title" id="importModalTitle"><i class="ph-bold ph-import"></i> Importar CSV</div>
+      <button class="modal-close" onclick="closeImportModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
       <div class="import-preview" id="importPreview"><span style="color:var(--subtle)">A aguardar ficheiro…</span></div>
@@ -465,7 +466,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeImportModal()">Cancelar</button>
-      <button class="btn btn-primary" id="importConfirmBtn" disabled onclick="confirmImport()">✅ Importar</button>
+      <button class="btn btn-primary" id="importConfirmBtn" disabled onclick="confirmImport()"><i class="ph-bold ph-check-circle"></i> Importar</button>
     </div>
   </div>
 </div>
@@ -474,7 +475,7 @@
 <!-- CONFIRM MODAL -->
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
-    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-icon" id="confirmIcon"><i class="ph-bold ph-warning-octagon"></i></div>
     <div class="confirm-title" id="confirmTitle">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
@@ -629,7 +630,7 @@ function exportFilaments() {
   boDownload(`3DZAAP_filamentos_${date()}.csv`, csv);
   setFb('fbFil',`✓ ${filaments.length} filamentos exportados`);
   addLog(`Materiais exportados: ${filaments.length} registos`,'ok');
-  showToast('📥 Materiais exportados!','ok');
+  showToast('<i class="ph-bold ph-download-simple"></i> Materiais exportados!','ok');
 }
 
 function exportOrders() {
@@ -647,7 +648,7 @@ function exportOrders() {
   boDownload(`3DZAAP_pedidos_${date()}.csv`, csv);
   setFb('fbOrd',`✓ ${orders.length} pedidos exportados`);
   addLog(`Pedidos exportados: ${orders.length} registos`,'ok');
-  showToast('📥 Pedidos exportados!','ok');
+  showToast('<i class="ph-bold ph-download-simple"></i> Pedidos exportados!','ok');
 }
 
 function exportExpenses() {
@@ -661,7 +662,7 @@ function exportExpenses() {
   boDownload(`3DZAAP_despesas_${date()}.csv`, csv);
   setFb('fbExp',`✓ ${expenses.length} despesas exportadas`);
   addLog(`Despesas exportadas: ${expenses.length} registos`,'ok');
-  showToast('📥 Despesas exportadas!','ok');
+  showToast('<i class="ph-bold ph-download-simple"></i> Despesas exportadas!','ok');
 }
 
 
@@ -679,7 +680,7 @@ function exportPrinters() {
   boDownload(`3DZAAP_impressoras_${date()}.csv`, csv);
   setFb('fbPrt',`✓ ${printers.length} impressoras exportadas`);
   addLog(`Impressoras exportadas: ${printers.length} registos`,'ok');
-  showToast('📥 Impressoras exportadas!','ok');
+  showToast('<i class="ph-bold ph-download-simple"></i> Impressoras exportadas!','ok');
 }
 
 function exportAll() {
@@ -720,7 +721,7 @@ function exportAll() {
   boDownload(`3DZAAP_backup_${d}.csv`, csv);
   setFb('fbBackup',`✓ ${filaments.length} fil. + ${orders.length} ped. + ${expenses.length} desp. + ${printers.length} imp.`);
   addLog(`Backup completo exportado: ${filaments.length} filamentos, ${orders.length} pedidos, ${expenses.length} despesas, ${printers.length} impressoras`,'ok');
-  showToast('💾 Backup exportado!','ok');
+  showToast('<i class="ph-bold ph-floppy-disk"></i> Backup exportado!','ok');
 }
 
 // ── IMPORT ─────────────────────────────
@@ -728,12 +729,12 @@ function triggerImport(type) {
   _importType = type;
   _importData = null;
   const titles = {
-    all:'🔄 Restaurar Backup (CSV)',
-    filaments:'📥 Importar Materiais (CSV)',
-    orders:'📥 Importar Pedidos (CSV)',
-    expenses:'📥 Importar Despesas (CSV)'
+    all:'<i class="ph-bold ph-arrows-clockwise"></i> Restaurar Backup (CSV)',
+    filaments:'<i class="ph-bold ph-download-simple"></i> Importar Materiais (CSV)',
+    orders:'<i class="ph-bold ph-download-simple"></i> Importar Pedidos (CSV)',
+    expenses:'<i class="ph-bold ph-download-simple"></i> Importar Despesas (CSV)'
   };
-  document.getElementById('importModalTitle').textContent = titles[type]||'📥 Importar CSV';
+  document.getElementById('importModalTitle').textContent = titles[type]||'<i class="ph-bold ph-download-simple"></i> Importar CSV';
   document.getElementById('importPreview').innerHTML = '<span style="color:var(--subtle)">A aguardar ficheiro…</span>';
   document.getElementById('mergeRow').style.display = 'none';
   document.getElementById('importConfirmBtn').disabled = true;
@@ -760,7 +761,7 @@ function handleFile(e) {
       else if (_importType === 'expenses') parseExpensesCSV(text);
       else if (_importType === 'all')      parseAllCSV(text);
     } catch(err) {
-      document.getElementById('importPreview').innerHTML = `<span style="color:var(--danger)">❌ ${escH(err.message)}</span>`;
+      document.getElementById('importPreview').innerHTML = `<span style="color:var(--danger)"><i class="ph-bold ph-x-circle"></i> ${escH(err.message)}</span>`;
       document.getElementById('importConfirmBtn').disabled = true;
     }
   };
@@ -802,7 +803,7 @@ function parseFilamentsCSV(text) {
   }
   if(!records.length) throw new Error('Nenhum filamento válido encontrado.');
   _importData={kind:'filaments',records};
-  showPreview(`✅ <strong>${records.length} filamentos</strong> prontos para importar`,
+  showPreview(`<i class="ph-bold ph-check-circle"></i> <strong>${records.length} filamentos</strong> prontos para importar`,
     records.slice(0,4).map(f=>`• ${f.type} ${f.variation} — ${f.colorName||f.colorHex}`).join('<br>')
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
@@ -932,7 +933,7 @@ function parseOrdersCSV(text) {
   }
   if(!records.length) throw new Error('Nenhum pedido válido encontrado.');
   _importData={kind:'orders',records};
-  showPreview(`✅ <strong>${records.length} pedidos</strong> prontos para importar`,
+  showPreview(`<i class="ph-bold ph-check-circle"></i> <strong>${records.length} pedidos</strong> prontos para importar`,
     records.slice(0,4).map(o=>`• ${o.orderNumber||'—'} — ${o.clientName} | ${((_cfg&&_cfg._currSymbol)||'€')}${o.total.toFixed(2)}`).join('<br>')
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
@@ -958,7 +959,7 @@ function parseExpensesCSV(text) {
   if(!records.length) throw new Error('Nenhuma despesa válida encontrada.');
   _importData={kind:'expenses',records};
   const total=records.reduce((s,e)=>s+(e.value||0),0);
-  showPreview(`✅ <strong>${records.length} despesas</strong> — total ${((_cfg&&_cfg._currSymbol)||'€')}${total.toFixed(2)}`,
+  showPreview(`<i class="ph-bold ph-check-circle"></i> <strong>${records.length} despesas</strong> — total ${((_cfg&&_cfg._currSymbol)||'€')}${total.toFixed(2)}`,
     records.slice(0,4).map(e=>`• ${e.date} — ${e.description} (${((_cfg&&_cfg._currSymbol)||'€')}${(e.value||0).toFixed(2)})`).join('<br>')
     +(records.length>4?`<br><em>…e mais ${records.length-4}</em>`:''));
 }
@@ -993,9 +994,9 @@ function parseAllCSV(text) {
   if(!parsedFil.length&&!parsedOrd.length&&!parsedExp.length) throw new Error('Nenhum dado encontrado no ficheiro de backup.');
   _importData={kind:'all',filaments:parsedFil,orders:parsedOrd,expenses:parsedExp};
   showPreview(
-    `✅ Backup — <strong>${parsedFil.length}</strong> fil. + <strong>${parsedOrd.length}</strong> ped. + <strong>${parsedExp.length}</strong> desp.`,
+    `<i class="ph-bold ph-check-circle"></i> Backup — <strong>${parsedFil.length}</strong> fil. + <strong>${parsedOrd.length}</strong> ped. + <strong>${parsedExp.length}</strong> desp.`,
     [...parsedFil.slice(0,2).map(f=>`🎨 ${f.type} ${f.variation}`),
-     ...parsedOrd.slice(0,2).map(o=>`📦 ${o.orderNumber||'—'} — ${o.clientName}`),
+     ...parsedOrd.slice(0,2).map(o=>`<i class="ph-bold ph-package"></i> ${o.orderNumber||'—'} — ${o.clientName}`),
      ...parsedExp.slice(0,1).map(e=>`🧾 ${e.description}`)].join('<br>')
   );
 }
@@ -1043,7 +1044,7 @@ async function confirmImport() {
     try {
       await DB.saveAllFilaments(filaments);
       setFb('fbImportFil',`✓ ${filRecs.length} materiais importados`);
-    } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`❌ Erro: ${e.message}`,true); }
+    } catch(e) { console.error('saveAllFilaments',e); setFb('fbImportFil',`<i class="ph-bold ph-x-circle"></i> Erro: ${e.message}`,true); }
   }
   if(ordRecs !== null) {
     const ordNorm = ordRecs.map(function(o){ return Object.assign({},o,{createdAt:normDate(o.createdAt),dueDate:normDate(o.dueDate),paymentDate:normDate(o.paymentDate),status:normStatus(o.status),paymentStatus:normPayment(o.paymentStatus)}); });
@@ -1051,14 +1052,14 @@ async function confirmImport() {
     try {
       await DB.saveAllOrders(orders);
       setFb('fbImportOrd',`✓ ${ordNorm.length} pedidos importados`);
-    } catch(e) { console.error('saveAllOrders',e); setFb('fbImportOrd',`❌ Erro: ${e.message}`,true); }
+    } catch(e) { console.error('saveAllOrders',e); setFb('fbImportOrd',`<i class="ph-bold ph-x-circle"></i> Erro: ${e.message}`,true); }
   }
   if(expRecs !== null) {
     expenses = mergeArr(expenses, expRecs);
     try {
       await DB.saveAllExpenses(expenses);
       setFb('fbImportExp',`✓ ${expRecs.length} despesas importadas`);
-    } catch(e) { console.error('saveAllExpenses',e); setFb('fbImportExp',`❌ Erro: ${e.message}`,true); }
+    } catch(e) { console.error('saveAllExpenses',e); setFb('fbImportExp',`<i class="ph-bold ph-x-circle"></i> Erro: ${e.message}`,true); }
   }
   if(d.kind==='all') setFb('fbImportAll',`✓ Backup restaurado`);
 
@@ -1068,7 +1069,7 @@ async function confirmImport() {
   addLog(label,'ok');
   refreshStats();
   closeImportModal();
-  showToast('✅ Importação concluída!','ok');
+  showToast('<i class="ph-bold ph-check-circle"></i> Importação concluída!','ok');
 }
 
 // ── CLEAR DATA ─────────────────────────
@@ -1078,7 +1079,7 @@ function confirmClear(type) {
   document.getElementById('confirmTitle').textContent = `Limpar ${labels[type]}?`;
   document.getElementById('confirmMsg').textContent =
     `Vais eliminar permanentemente ${counts[type]} ${labels[type]}. Esta acção é irreversível.\n\nFaz um backup primeiro se quiseres guardar os dados.`;
-  document.getElementById('confirmOkBtn').textContent = `🗑️ Limpar ${labels[type]}`;
+  document.getElementById('confirmOkBtn').textContent = `<i class="ph-bold ph-trash"></i> Limpar ${labels[type]}`;
   document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); clearData(type); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
@@ -1090,22 +1091,22 @@ async function clearData(type) {
     const count=filaments.length; filaments=[];
     try{ await DB.saveAllFilaments([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Materiais eliminados: ${count} registos`,'warn');
-    showToast(`🗑️ ${count} filamentos eliminados`,'');
+    showToast(`<i class="ph-bold ph-trash"></i> ${count} filamentos eliminados`,'');
   } else if(type==='orders'){
     const count=orders.length; orders=[];
     try{ await DB.saveAllOrders([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Pedidos eliminados: ${count} registos`,'warn');
-    showToast(`🗑️ ${count} pedidos eliminados`,'');
+    showToast(`<i class="ph-bold ph-trash"></i> ${count} pedidos eliminados`,'');
   } else if(type==='expenses'){
     const count=expenses.length; expenses=[];
     try{ await DB.saveAllExpenses([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Despesas eliminadas: ${count} registos`,'warn');
-    showToast(`🗑️ ${count} despesas eliminadas`,'');
+    showToast(`<i class="ph-bold ph-trash"></i> ${count} despesas eliminadas`,'');
   } else if(type==='printers'){
     const count=printers.length; printers=[];
     try{ await DB.saveAllPrinters([]); } catch(e){ showToast('Erro ao limpar: '+e.message,'err'); }
     addLog(`Impressoras eliminadas: ${count} registos`,'warn');
-    showToast(`🗑️ ${count} impressoras eliminadas`,'');
+    showToast(`<i class="ph-bold ph-trash"></i> ${count} impressoras eliminadas`,'');
   }
   refreshStats();
 }
@@ -1148,7 +1149,7 @@ async function clearLog() {
   activityLog = [];
   try { await DB.clearLog(); } catch(e) {}
   renderLog();
-  showToast('🗑️ Log limpo','');
+  showToast('<i class="ph-bold ph-trash"></i> Log limpo','');
 }
 
 // ── USER MENU ──────────────────────────
@@ -1191,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>

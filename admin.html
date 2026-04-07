@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <script>
 (function(){
   var t = localStorage.getItem('3dzaap_theme') || 'light';
@@ -451,17 +452,17 @@
     <div class="topbar">
       <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
       <div class="topbar-center">
-        <strong id="topbarTitle">🛡️ Admin</strong>
+        <strong id="topbarTitle"><i class="ph-bold ph-shield-check"></i> Admin</strong>
       </div>
       <div class="topbar-right">
-        <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Tema">🌙</button>
+        <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Tema"><i class="ph-bold ph-moon"></i></button>
       </div>
     </div>
 
     <div class="page" id="mainContent">
       <!-- Populated by JS after auth check -->
       <div class="access-denied" id="accessDenied" style="display:none">
-        <div class="access-denied-icon">🚫</div>
+        <div class="access-denied-icon"><i class="ph-bold ph-prohibit"></i></div>
         <div class="access-denied-title">Acesso restrito</div>
         <div class="access-denied-sub">Este módulo é exclusivo do administrador do 3DZAAP.</div>
         <a href="dashboard.html" class="btn btn-primary" style="margin-top:16px">
@@ -474,7 +475,7 @@
         <!-- ── PAGE HEADER ────────────────────────────── -->
         <div class="page-header">
           <div>
-            <h1>🛡️ Painel de Administração</h1>
+            <h1><i class="ph-bold ph-shield-check"></i> Painel de Administração</h1>
             <p class="page-sub">Gestão global do SaaS — empresas, assinaturas e métricas</p>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
@@ -488,25 +489,25 @@
         <!-- ── KPI CARDS ──────────────────────────────── -->
         <div class="kpi-grid">
           <div class="kpi-card" style="animation-delay:.05s">
-            <div class="kpi-icon">🏢</div>
+            <div class="kpi-icon"><i class="ph-bold ph-buildings"></i></div>
             <div class="kpi-val" id="kpiCompanies">—</div>
             <div class="kpi-lbl">Empresas ativas</div>
             <div class="kpi-delta" id="kpiCompaniesD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.1s">
-            <div class="kpi-icon">💶</div>
+            <div class="kpi-icon"><i class="ph-bold ph-currency-eur"></i></div>
             <div class="kpi-val" id="kpiMrr">—</div>
             <div class="kpi-lbl">MRR estimado</div>
             <div class="kpi-delta" id="kpiMrrD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.15s">
-            <div class="kpi-icon">⏳</div>
+            <div class="kpi-icon"><i class="ph-bold ph-hourglass"></i></div>
             <div class="kpi-val" id="kpiTrials">—</div>
             <div class="kpi-lbl">Em trial</div>
             <div class="kpi-delta" id="kpiTrialsD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.2s">
-            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-icon"><i class="ph-bold ph-warning-octagon"></i></div>
             <div class="kpi-val" id="kpiPastDue">—</div>
             <div class="kpi-lbl">Pagamentos em atraso</div>
             <div class="kpi-delta" id="kpiPastDueD"></div>
@@ -543,7 +544,7 @@
         <div class="admin-panel active" id="tab-customers">
           <div class="admin-toolbar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px">
             <div class="admin-search-wrap" style="flex:1; min-width:200px">
-              <span class="admin-search-icon">🔍</span>
+              <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
               <input class="admin-search form-input" id="searchCustomers" placeholder="Pesquisar empresa, slug ou ID…" oninput="filterCustomers()">
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap">
@@ -571,10 +572,10 @@
 
           <div class="ad-card">
             <div class="ad-card-header">
-              <div class="ad-card-title">🏢 Empresas e Assinaturas</div>
+              <div class="ad-card-title"><i class="ph-bold ph-buildings"></i> Empresas e Assinaturas</div>
               <div style="display:flex; gap:10px; align-items:center">
                 <span class="badge" id="customersCount" style="background:var(--blue-g);color:var(--blue)">0</span>
-                <button class="btn btn-ghost btn-sm" onclick="syncStripe()">🔄 Stripe</button>
+                <button class="btn btn-ghost btn-sm" onclick="syncStripe()"><i class="ph-bold ph-arrows-clockwise"></i> Stripe</button>
               </div>
             </div>
             <div class="ad-card-body" style="padding:0;overflow-x:auto">
@@ -605,13 +606,13 @@
         <div class="admin-panel" id="tab-users">
           <div class="admin-toolbar">
             <div class="admin-search-wrap">
-              <span class="admin-search-icon">🔍</span>
+              <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
               <input class="admin-search form-input" id="searchUsers" placeholder="Pesquisar email ou nome…" oninput="filterUsers()">
             </div>
           </div>
           <div class="ad-card">
             <div class="ad-card-header">
-              <div class="ad-card-title">👥 Utilizadores</div>
+              <div class="ad-card-title"><i class="ph-bold ph-users"></i> Utilizadores</div>
               <span class="badge" id="usersCount" style="background:var(--blue-g);color:var(--blue)">0</span>
             </div>
             <div class="ad-card-body" style="padding:0;overflow-x:auto">
@@ -641,13 +642,13 @@
         <div class="admin-panel" id="tab-metrics">
           <div class="admin-grid three">
             <div class="ad-card" style="animation-delay:.05s">
-              <div class="ad-card-header"><div class="ad-card-title">📊 Distribuição por plano</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-chart-bar"></i> Distribuição por plano</div></div>
               <div class="ad-card-body" id="planDistChart">
                 <div style="display:flex;flex-direction:column;gap:10px" id="planDistBars"></div>
               </div>
             </div>
             <div class="ad-card" style="animation-delay:.1s">
-              <div class="ad-card-header"><div class="ad-card-title">🔄 Conversão Trial→Pago</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-arrows-clockwise"></i> Conversão Trial→Pago</div></div>
               <div class="ad-card-body" style="text-align:center">
                 <div style="font-size:2.8rem;font-weight:800;color:var(--blue);font-family:var(--mono)" id="conversionRate">—%</div>
                 <div style="font-size:.78rem;color:var(--muted);margin-top:6px">dos trials converteram para pago</div>
@@ -664,7 +665,7 @@
               </div>
             </div>
             <div class="ad-card" style="animation-delay:.15s">
-              <div class="ad-card-header"><div class="ad-card-title">🧩 Uso por módulo</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-puzzle-piece"></i> Uso por módulo</div></div>
               <div class="ad-card-body" id="moduleUsage">
                 <div style="display:flex;flex-direction:column;gap:8px" id="moduleUsageBars"></div>
               </div>
@@ -672,7 +673,7 @@
           </div>
           <div class="ad-card">
             <div class="ad-card-header">
-              <div class="ad-card-title">📈 MRR — últimos 12 meses</div>
+              <div class="ad-card-title"><i class="ph-bold ph-chart-line-up"></i> MRR — últimos 12 meses</div>
             </div>
             <div class="ad-card-body">
               <div class="chart-wrap" id="mrrChart"></div>
@@ -681,7 +682,7 @@
           </div>
           <div class="ad-card" style="margin-top:20px">
             <div class="ad-card-header">
-              <div class="ad-card-title">🏆 Top 10 empresas por receita</div>
+              <div class="ad-card-title"><i class="ph-bold ph-trophy"></i> Top 10 empresas por receita</div>
             </div>
             <div class="ad-card-body" style="padding:0;overflow-x:auto">
               <table class="admin-table">
@@ -704,7 +705,7 @@
 
             <!-- BROADCAST -->
             <div class="ad-card">
-              <div class="ad-card-header"><div class="ad-card-title">📢 Broadcast de mensagem</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-megaphone"></i> Broadcast de mensagem</div></div>
               <div class="ad-card-body">
                 <div class="form-group" style="margin-bottom:12px">
                   <label class="form-label">Destinatários</label>
@@ -719,9 +720,9 @@
                 <div class="form-group" style="margin-bottom:12px">
                   <label class="form-label">Tipo</label>
                   <select class="form-select" id="broadcastType">
-                    <option value="info">ℹ️ Informação</option>
-                    <option value="warning">⚠️ Aviso</option>
-                    <option value="success">✅ Novidade</option>
+                    <option value="info"><i class="ph-bold ph-info"></i> Informação</option>
+                    <option value="warning"><i class="ph-bold ph-warning-octagon"></i> Aviso</option>
+                    <option value="success"><i class="ph-bold ph-check-circle"></i> Novidade</option>
                   </select>
                 </div>
                 <div class="form-group" style="margin-bottom:12px">
@@ -737,8 +738,8 @@
                   <input type="datetime-local" class="form-input" id="broadcastExpires" title="Deixa em branco para não expirar automaticamente">
                 </div>
                 <div style="display:flex;gap:10px">
-                  <button class="btn btn-ghost btn-sm" onclick="previewBroadcast()">👁️ Pré-visualizar</button>
-                  <button class="btn btn-primary btn-sm" onclick="sendBroadcast()">📢 Enviar</button>
+                  <button class="btn btn-ghost btn-sm" onclick="previewBroadcast()"><i class="ph-bold ph-eye"></i> Pré-visualizar</button>
+                  <button class="btn btn-primary btn-sm" onclick="sendBroadcast()"><i class="ph-bold ph-megaphone"></i> Enviar</button>
                 </div>
                 <div class="form-hint" id="broadcastFb" style="margin-top:8px"></div>
               </div>
@@ -747,10 +748,10 @@
             <!-- BROADCASTS ATIVOS -->
             <div class="ad-card">
               <div class="ad-card-header">
-                <div class="ad-card-title">📋 Broadcasts ativos</div>
+                <div class="ad-card-title"><i class="ph-bold ph-list-numbers"></i> Broadcasts ativos</div>
                 <div style="display:flex;gap:8px;align-items:center">
                   <span class="badge" id="broadcastsCount" style="background:var(--blue-g);color:var(--blue)">0</span>
-                  <button class="btn btn-ghost btn-sm" onclick="loadBroadcasts()">🔄</button>
+                  <button class="btn btn-ghost btn-sm" onclick="loadBroadcasts()"><i class="ph-bold ph-arrows-clockwise"></i></button>
                 </div>
               </div>
               <div class="ad-card-body">
@@ -767,7 +768,7 @@
 
             <!-- FEATURE FLAGS -->
             <div class="ad-card">
-              <div class="ad-card-header"><div class="ad-card-title">🚩 Feature Flags</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-flag"></i> Feature Flags</div></div>
               <div class="ad-card-body">
                 <div class="flag-row">
                   <div class="flag-info">
@@ -837,7 +838,7 @@
                       <option value="business">Business</option>
                     </select>
                   </div>
-                  <button class="btn btn-ghost btn-sm" onclick="suspendCompany()">⛔ Suspender empresa</button>
+                  <button class="btn btn-ghost btn-sm" onclick="suspendCompany()"><i class="ph-bold ph-prohibit"></i> Suspender empresa</button>
                   <button class="btn btn-ghost btn-sm" onclick="unsuspendCompany()">✅ Reativar empresa</button>
                 </div>
                 <div class="form-hint" id="opFb" style="margin-top:10px"></div>
@@ -855,7 +856,7 @@
             <div class="ad-card-header">
               <div class="ad-card-title">📋 Log de auditoria</div>
               <div style="display:flex;gap:8px">
-                <button class="btn btn-ghost btn-sm" onclick="loadAuditLog()">🔄 Atualizar</button>
+                <button class="btn btn-ghost btn-sm" onclick="loadAuditLog()"><i class="ph-bold ph-arrows-clockwise"></i> Atualizar</button>
                 <button class="btn btn-ghost btn-sm" onclick="exportAuditLog()">⬇️ Exportar</button>
               </div>
             </div>
@@ -1181,7 +1182,7 @@ function updateKPIs() {
   // ── Delta: Past due — contextual (sem comparação temporal, é estado atual)
   const pdEl = document.getElementById('kpiPastDueD');
   if (pdEl) {
-    pdEl.textContent = pastDue > 0 ? `⚠️ Requer atenção` : '✅ Tudo em ordem';
+    pdEl.textContent = pastDue > 0 ? `<i class="ph-bold ph-warning-octagon"></i> Requer atenção` : '<i class="ph-bold ph-check-circle"></i> Tudo em ordem';
     pdEl.className   = 'kpi-delta ' + (pastDue > 0 ? 'down' : 'up');
   }
 }
@@ -1263,14 +1264,14 @@ function renderCustomersTable(data) {
       <td>
         <div class="action-btns">
           <button class="btn-action" onclick="loginAsCompany('${c.slug}')" title="Aceder como empresa">🚀</button>
-          <button class="btn-action" onclick="openCompanyDetail('${c.id}')" title="Ver Detalhes">🔍</button>
+          <button class="btn-action" onclick="openCompanyDetail('${c.id}')" title="Ver Detalhes"><i class="ph-bold ph-magnifying-glass"></i></button>
           ${(plan === 'trial' || subStatus === 'canceled' || subStatus === 'blocked')
             ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso">⏳</button>`
             : ''}
           <button class="btn-action ${isSuspended ? '' : 'danger'}" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
-            ${isSuspended ? '✅' : '⛔'}
+            ${isSuspended ? '✅' : '<i class="ph-bold ph-prohibit"></i>'}
           </button>
-          <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')" title="Excluir Definitivamente">🗑️</button>
+          <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')" title="Excluir Definitivamente"><i class="ph-bold ph-trash"></i></button>
         </div>
       </td>
     </tr>`;
@@ -1419,14 +1420,14 @@ function renderMetrics() {
   const settingsUsers  = active.filter(c => ['trial','business','business_ano'].includes(c.plan)).length;
   const dashboardUsers = active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
   const moduleUsage = [
-    { name: '📐 Calculadora',   count: activeCount,    total: activeCount, gate: null },
-    { name: '🎨 Materiais',     count: activeCount,    total: activeCount, gate: 'Starter: max 10' },
-    { name: '🖨️ Impressoras',  count: activeCount,    total: activeCount, gate: 'Starter: max 1' },
-    { name: '📦 Pedidos',       count: ordersUsers,    total: activeCount, gate: 'Pro+' },
-    { name: '💰 Financeiro',    count: financialUsers, total: activeCount, gate: 'Business' },
-    { name: '🗄️ BackOffice',   count: backofficeUsers, total: activeCount, gate: 'Pro+' },
-    { name: '⚙️ Configurações', count: settingsUsers,  total: activeCount, gate: 'Business' },
-    { name: '🏠 Dashboard',     count: dashboardUsers, total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-ruler"></i> Calculadora',   count: activeCount,    total: activeCount, gate: null },
+    { name: '<i class="ph-bold ph-palette"></i> Materiais',     count: activeCount,    total: activeCount, gate: 'Starter: max 10' },
+    { name: '<i class="ph-bold ph-printer"></i> Impressoras',  count: activeCount,    total: activeCount, gate: 'Starter: max 1' },
+    { name: '<i class="ph-bold ph-package"></i> Pedidos',       count: ordersUsers,    total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-currency-dollar"></i> Financeiro',    count: financialUsers, total: activeCount, gate: 'Business' },
+    { name: '<i class="ph-bold ph-archive"></i> BackOffice',   count: backofficeUsers, total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-gear"></i> Configurações', count: settingsUsers,  total: activeCount, gate: 'Business' },
+    { name: '<i class="ph-bold ph-house"></i> Dashboard',     count: dashboardUsers, total: activeCount, gate: 'Pro+' },
   ];
   document.getElementById('moduleUsageBars').innerHTML = moduleUsage.map(m => {
     const pct = Math.round((m.count / m.total) * 100);
@@ -1469,7 +1470,7 @@ function renderMetrics() {
   document.getElementById('topCompaniesBody').innerHTML = sorted.length
     ? sorted.map((c, i) => `<tr>
         <td class="mono" style="color:var(--muted)">${i+1}</td>
-        <td><div style="font-weight:700">${escH(c.name)}</div>${c.is_suspended ? '<div style="font-size:.68rem;color:var(--danger)">⛔ suspenso</div>' : ''}</td>
+        <td><div style="font-weight:700">${escH(c.name)}</div>${c.is_suspended ? '<div style="font-size:.68rem;color:var(--danger)"><i class="ph-bold ph-prohibit"></i> suspenso</div>' : ''}</td>
         <td><span class="plan-badge plan-${c.plan||'trial'}">${c.plan||'trial'}</span></td>
         <td class="mono">€ ${(PLAN_MRR[c.plan]||0).toFixed(2)}/mês</td>
         <td class="mono">${fmtDate(c.created_at)}</td>
@@ -1650,7 +1651,7 @@ function loginAsCompany(slug) {
 function confirmSuspendCustomer(id, name, currentStatus) {
   const isSuspended = !!currentStatus;
   showConfirm(
-    isSuspended ? '✅ Reativar conta' : '⛔ Suspender conta',
+    isSuspended ? '✅ Reativar conta' : '<i class="ph-bold ph-prohibit"></i> Suspender conta',
     isSuspended ? `Deseja reativar o acesso de "${name}"?` : `Deseja suspender "${name}"? Todos os utilizadores desta empresa perderão acesso imediato.`,
     async () => {
       try {
@@ -1662,7 +1663,7 @@ function confirmSuspendCustomer(id, name, currentStatus) {
         if (error) throw error;
         
         await _adminAudit(isSuspended ? 'unsuspend' : 'suspend', `Empresa: ${name} (${id})`);
-        showToast(isSuspended ? '✅ Conta reativada' : '⛔ Conta suspensa', 'ok');
+        showToast(isSuspended ? '✅ Conta reativada' : '<i class="ph-bold ph-prohibit"></i> Conta suspensa', 'ok');
         await refreshAll();
       } catch(e) {
         showToast('Erro na operação: ' + e.message, 'err');
@@ -1695,7 +1696,7 @@ async function quickExtendTrial(companyId) {
 }
 
 async function syncStripe() {
-  showToast('🔄 A verificar sincronização Stripe...', '');
+  showToast('<i class="ph-bold ph-arrows-clockwise"></i> A verificar sincronização Stripe...', '');
   // Simulating sync call - In production this calls a webhook-trigger or Edge Function
   setTimeout(() => {
     showToast('✅ Dashboards e Assinaturas sincronizados com Stripe.', 'ok');
@@ -1756,7 +1757,7 @@ function renderBroadcastsList() {
   }
 
   const targetLabels = { all:'Todos', trial:'Trial', past_due:'Em atraso', pro:'Pro', business:'Business' };
-  const typeIcons    = { info:'ℹ️', warning:'⚠️', success:'✅' };
+  const typeIcons    = { info:'<i class="ph-bold ph-info"></i>', warning:'<i class="ph-bold ph-warning-octagon"></i>', success:'<i class="ph-bold ph-check-circle"></i>' };
 
   el.innerHTML = list.map(b => {
     const expired  = b.expires_at && new Date(b.expires_at) < now;
@@ -1817,7 +1818,7 @@ async function toggleBroadcast(id, currentlyActive) {
 
 async function deleteBroadcast(id, title) {
   showConfirm(
-    '🗑️ Eliminar broadcast',
+    '<i class="ph-bold ph-trash"></i> Eliminar broadcast',
     `Eliminar permanentemente o broadcast "${title}"?\n\nEsta ação não pode ser revertida.`,
     async () => {
       try {
@@ -1829,7 +1830,7 @@ async function deleteBroadcast(id, title) {
         await _adminAudit('broadcast_delete', `id=${id} title=${title}`);
         _broadcasts = _broadcasts.filter(x => x.id !== id);
         renderBroadcastsList();
-        showToast('🗑️ Broadcast eliminado', 'ok');
+        showToast('<i class="ph-bold ph-trash"></i> Broadcast eliminado', 'ok');
       } catch(e) {
         showToast('Erro ao eliminar: ' + e.message, 'err');
       }
@@ -1871,7 +1872,7 @@ function previewBroadcast() {
   const title = document.getElementById('broadcastTitle').value || '(sem título)';
   const msg   = document.getElementById('broadcastMsg').value || '(sem mensagem)';
   const type  = document.getElementById('broadcastType').value;
-  const icons = { info:'ℹ️', warning:'⚠️', success:'✅' };
+  const icons = { info:'<i class="ph-bold ph-info"></i>', warning:'<i class="ph-bold ph-warning-octagon"></i>', success:'<i class="ph-bold ph-check-circle"></i>' };
   showToast(`${icons[type]||'📢'} ${title}: ${msg}`, type === 'success' ? 'ok' : '');
 }
 
@@ -1942,7 +1943,7 @@ async function _adminAction(action, params) {
     } else if (action === 'suspend') {
       const { error } = await _adminSb().from('companies').update({ is_suspended: true }).eq('id', params.companyId);
       if (error) throw error;
-      showToast('⛔ Empresa suspensa', 'ok');
+      showToast('<i class="ph-bold ph-prohibit"></i> Empresa suspensa', 'ok');
     } else if (action === 'unsuspend') {
       const { error } = await _adminSb().from('companies').update({ is_suspended: false }).eq('id', params.companyId);
       if (error) throw error;

@@ -19,6 +19,7 @@
 <script src="utils.js"></script>
 <script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
 /* ── BOTÃO PARÂMETROS AVANÇADOS (inline no header) */
@@ -533,6 +534,7 @@
 .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
 [data-theme="dark"] .gc-popover-item { color: var(--dark); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 
@@ -573,7 +575,7 @@
     <div class="page-content">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="calc.page_title">📐 Calculadora de Custos</h1>
+          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora de Custos</h1>
           <p data-i18n="calc.page_desc">Define o teu preço com base no material, tempo e custos de máquina</p>
         </div>
       </div>
@@ -596,7 +598,7 @@
             
             <div class="form-section">
               <div class="section-title">
-                <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)">🏷️</div>
+                <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-tag"></i></div>
                 <span data-i18n="calc.print_name_label">Projeto</span>
               </div>
               <div class="fields-grid">
@@ -610,15 +612,15 @@
             <div id="sectionSimple">
               <div class="form-section">
                 <div class="section-title">
-                  <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)">📦</div>
+                  <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-package"></i></div>
                   <span data-i18n="calc.sections.config">Configuração</span>
                 </div>
                 <div class="fields-grid">
                   <div class="field full">
                     <label data-i18n="calc.mode_label">Modo de impressão</label>
                     <div class="mode-toggle">
-                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm">🖨️ FDM — Filamento</button>
-                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" data-i18n="calc.mode_resin">🧪 Resina (SLA)</button>
+                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm"><i class="ph-bold ph-printer"></i> FDM — Filamento</button>
+                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" data-i18n="calc.mode_resin"><i class="ph-bold ph-flask"></i> Resina (SLA)</button>
                     </div>
                   </div>
                   <div class="field full">
@@ -651,11 +653,11 @@
               <div class="form-section">
                 <div class="section-title" style="justify-content: space-between; display: flex;">
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)">🏗️</div>
+                    <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)"><i class="ph-bold ph-sketch-logo"></i></div>
                     <span data-i18n="calc.sections.project">Mesa</span>
                   </div>
                   <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
-                    <span>➕</span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
+                    <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
                   </button>
                 </div>
                 <div id="mesasContainer" style="margin-top:10px;">
@@ -667,7 +669,7 @@
             <!-- Configurações partilhadas (Máquina) -->
             <div class="form-section">
               <div class="section-title">
-                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7">🖨️</div>
+                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
                 <span data-i18n="calc.sections.machine">Máquina</span>
               </div>
               <div class="fields-grid">
@@ -686,7 +688,7 @@
           </div>
           <div class="card-footer">
             <button class="btn-clear" onclick="clearCalculator()">
-              <span>🗑️</span> <span data-i18n="calc.buttons.clear">Limpar</span>
+              <span><i class="ph-bold ph-trash"></i></span> <span data-i18n="calc.buttons.clear">Limpar</span>
             </button>
           </div>
         </div>
@@ -733,10 +735,10 @@
 
             <div class="results-actions">
               <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
-                <span data-i18n="calc.buttons.create_order">📦 Criar Pedido</span>
+                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
               </button>
               <button class="btn-criar-pedido visible" style="background:var(--success-g);color:var(--success);border-color:var(--success-border)" onclick="saveToHistory()">
-                <span data-i18n="calc.buttons.save_history">💾 Guardar Cálculo</span>
+                <span data-i18n="calc.buttons.save_history"><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</span>
               </button>
               <button class="btn-wa" onclick="sendWhatsApp()">
                 <span class="btn-wa-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.462 3.426 1.262 4.876l-1.287 4.703 4.814-1.263c1.393.759 2.977 1.191 4.661 1.191l.011-.001c5.508 0 9.988-4.479 9.988-9.987 0-5.507-4.479-9.987-9.987-9.987zm4.567 14.113c-.19.533-1.096.997-1.545 1.055-.449.059-.89.096-2.502-.546-1.944-.775-3.197-2.753-3.294-2.882-.097-.129-.79-.848-.79-1.614 0-.766.403-1.144.545-1.294.142-.15.309-.188.412-.188h.262c.097 0 .227.001.326.234.1.234.341.831.371.892.03.061.05.132.01.213-.04.081-.06.132-.121.203-.061.071-.129.158-.184.213-.061.061-.125.127-.054.248.071.121.315.519.676.841.465.414.856.541.977.602.121.061.191.051.262-.03.072-.082.306-.356.388-.474.082-.119.162-.099.274-.059.112.04.708.334.831.395.122.06.203.091.233.14.03.05.03.291-.16.824z"/></svg></span>
@@ -747,7 +749,7 @@
                   <span data-i18n="calc.buttons.copy">Copiar</span>
                 </button>
                 <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
-                  <span data-i18n="calc.buttons.adjust">⚙️ Ajustar %</span>
+                  <span data-i18n="calc.buttons.adjust"><i class="ph-bold ph-gear"></i> Ajustar %</span>
                 </button>
               </div>
             </div>
@@ -757,15 +759,15 @@
 
       <div class="page-header" style="margin-top:40px">
         <div class="page-header-text">
-          <h2 data-i18n="calc.history_title">🕐 Histórico de Cálculos</h2>
+          <h2 data-i18n="calc.history_title"><i class="ph-bold ph-clock"></i> Histórico de Cálculos</h2>
         </div>
         <div class="history-count" id="historyCount">0 registos</div>
       </div>
       <!-- CARD HISTÓRICO -->
       <div class="glass-card" style="margin-bottom:40px; min-height: 200px;">
         <div id="historyEmpty" class="history-empty" style="padding:40px; text-align:center; color:var(--muted)">
-           <div style="font-size:2rem; margin-bottom:10px">🕐</div>
-           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong>💾 Guardar Cálculo</strong> nos resultados para registar aqui.</div>
+           <div style="font-size:2rem; margin-bottom:10px"><i class="ph-bold ph-clock"></i></div>
+           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</strong> nos resultados para registar aqui.</div>
         </div>
         <div class="table-container">
           <table class="history-table" id="historyTable" style="display:none">
@@ -794,8 +796,8 @@
 <!-- PAINEL AVANÇADO FLUTUANTE -->
 <div class="adv-panel" id="advPanel">
   <div class="adv-header">
-    <div class="adv-title" data-i18n="calc.adv_title">⚙️ Parâmetros Avançados</div>
-    <button class="adv-close" onclick="closeAdvPanel()">✕</button>
+    <div class="adv-title" data-i18n="calc.adv_title"><i class="ph-bold ph-gear"></i> Parâmetros Avançados</div>
+    <button class="adv-close" onclick="closeAdvPanel()"><i class="ph-bold ph-x"></i></button>
   </div>
   <div class="adv-body">
     <p class="adv-desc" data-i18n="calc.adv_desc">
@@ -804,7 +806,7 @@
     </p>
     <div class="adv-section">
       <div class="adv-section-title">
-        <div class="adv-section-icon si-orange">⚙️</div>
+        <div class="adv-section-icon si-orange"><i class="ph-bold ph-gear"></i></div>
         <span data-i18n="calc.adv_amort_ener_section">Amortização &amp; Energia</span>
       </div>
       <div class="adv-grid">
@@ -828,7 +830,7 @@
     </div>
     <div class="adv-section">
       <div class="adv-section-title">
-        <div class="adv-section-icon si-purple">📈</div>
+        <div class="adv-section-icon si-purple"><i class="ph-bold ph-chart-line-up"></i></div>
         <span data-i18n="calc.adv_perdas_margem_section">Perdas &amp; Margem</span>
       </div>
       <div class="adv-grid">
@@ -851,7 +853,7 @@
     </div>
   </div>
   <div class="adv-footer">
-    <button class="btn-adv-save" onclick="saveAsDefaults()" data-i18n="calc.adv_save_as_defaults">💾 Guardar como padrão</button>
+    <button class="btn-adv-save" onclick="saveAsDefaults()" data-i18n="calc.adv_save_as_defaults"><i class="ph-bold ph-floppy-disk"></i> Guardar como padrão</button>
     <button class="btn-adv-cancel" onclick="closeAdvPanel()" data-i18n="calc.adv_close_btn">Fechar</button>
   </div>
 </div>
@@ -861,7 +863,7 @@
 <!-- CONFIRM MODAL -->
 <div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
-    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-icon"><i class="ph-bold ph-trash"></i></div>
     <div class="confirm-title" id="confirmTitle" data-i18n="orders.confirm.delete_title">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg" data-i18n="orders.confirm.delete_msg"></div>
     <div class="confirm-btns">
@@ -994,7 +996,7 @@ async function loadUserData() {
 function initThemeToggle() {
   const theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   const btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 }
 
 // ── HELPERS ───────────────────────────
@@ -1011,6 +1013,7 @@ function setSl(id, val, min, max) {
   }
 }
 function updateSliderLabels() {
+  const icons = { mat: '<i class="ph-bold ph-circles-three"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
   const pairs = [
     { s: 'failureSlider', v: 'failureVal' },
     { s: 'indirectSlider', v: 'indirectVal' },
@@ -1253,10 +1256,10 @@ function renderMesas() {
     
     hdr.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <span style="font-size:1.1rem">🔲</span>
+        <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
         <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
       </div>
-      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem" onclick="deleteMesa(${m.id})">🗑️</button>
+      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem" onclick="deleteMesa(${m.id})"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
     
@@ -1293,7 +1296,7 @@ function renderMesas() {
           <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
           <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
           <td style="text-align:right">
-            <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})">✕</button>
+            <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})"><i class="ph-bold ph-x"></i></button>
           </td>
         </tr>
       `;
@@ -1323,7 +1326,7 @@ function renderMesas() {
     ftr.style.background = 'var(--bg)';
     ftr.innerHTML = `
       <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600" onclick="addPartToMesa(${m.id})">
-        <span>➕</span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
+        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
       </button>
     `;
     mDiv.appendChild(ftr);
@@ -1406,7 +1409,7 @@ function criarPedido() {
     if (typeof UI !== 'undefined' && UI.showFeatureGate) {
       UI.showFeatureGate('orders');
     } else {
-      showToast('⚠️ Funcionalidade indisponível no teu plano atual.', 'err');
+      showToast('<i class="ph-bold ph-warning-octagon"></i> Funcionalidade indisponível no teu plano atual.', 'err');
     }
     return;
   }
@@ -1420,7 +1423,7 @@ function criarPedido() {
   var t_pecas = window.i18n ? (window.i18n.getNestedTranslation('calc.table.part') || 'peças').toLowerCase() : 'peças';
   
   var modeLabel = i.tech === 'resin' ? (window.i18n ? window.i18n.getNestedTranslation('calc.modes.resin')||'Resina' : 'Resina') : (window.i18n ? window.i18n.getNestedTranslation('calc.modes.fdm')||'FDM' : 'FDM');
-  modeLabel = modeLabel.replace(/🖨️ |🧪 | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
+  modeLabel = modeLabel.replace(/<i class="ph-bold ph-printer"><\/i> |<i class="ph-bold ph-flask"><\/i> | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
   
   var desc = name || (i.mode === 'advanced'
     ? t_projeto + ' ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' ' + t_pecas
@@ -1465,7 +1468,7 @@ function criarPedido() {
   }
 
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
-  showToast(i18n.getNestedTranslation('calc.toasts.prefilling_order') || '📦 A abrir pedido pré-preenchido…', 'ok');
+  showToast(i18n.getNestedTranslation('calc.toasts.prefilling_order') || '<i class="ph-bold ph-package"></i> A abrir pedido pré-preenchido…', 'ok');
   setTimeout(function() { window.location.href = 'orders.html?from=calc'; }, 600);
 }
 
@@ -1490,7 +1493,7 @@ function renderPrintersDropdown() {
   const filtered = _userPrinters.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
   
   filtered.forEach(p => {
-    html += `<option value="${p.id}">🖨️ ${p.customName || p.model} (${p.brand})</option>`;
+    html += `<option value="${p.id}"><i class="ph-bold ph-printer"></i> ${p.customName || p.model} (${p.brand})</option>`;
   });
   sel.innerHTML = html;
 }
@@ -1670,11 +1673,11 @@ function sendWhatsApp() {
   const i = getInputs();
   const r = computeResults(i);
   if (r.finalPrice <= 0) {
-    showToast('⚠️ Calcula um valor primeiro', 'err');
+    showToast('<i class="ph-bold ph-warning-octagon"></i> Calcula um valor primeiro', 'err');
     return;
   }
 
-  let msg = `🎨 *Orçamento de Impressão 3D*\n\n`;
+  let msg = `<i class="ph-bold ph-palette"></i> *Orçamento de Impressão 3D*\n\n`;
   if (i.mode === 'simple') {
     msg += `📍 *Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
     msg += `⚖️ *Peso:* ${i.weight}g\n`;
@@ -1686,7 +1689,7 @@ function sendWhatsApp() {
   }
   
   msg += `\n💰 *Total:* ${fmtCurrency(r.finalPrice)}\n`;
-  msg += `📍 _Obrigado pela preferência!_\n\n🚀 Gerado via *3DZAAP*`;
+  msg += `📍 _Obrigado pela preferência!_\n\n<i class="ph-bold ph-rocket-launch"></i> Gerado via *3DZAAP*`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -1707,7 +1710,7 @@ function clearCalculator(){
   loadCompanyDefaults();
   renderMesas();
   liveCalc();
-  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '🗑️ Campos limpos','');
+  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Campos limpos','');
 }
 
 function applyPrinterSelect(id) {
@@ -1743,7 +1746,7 @@ function clearFields(){
   setV('resinPrice',35); setV('resinVolume',20); setV('resinDensity',1.1);
   setV('resinPrintTime',2); setV('uvLampPower',60); setV('washCureTime',20);
   updateSliderLabels(); liveCalc();
-  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '🗑️ Campos limpos','');
+  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Campos limpos','');
 }
 
 // ── SLIDERS ────────────────────────────
@@ -1783,7 +1786,7 @@ async function saveAsDefaults(){
   try{
     await Auth.updateCompany({ config: defaults });
     closeAdvPanel();
-    showToast(i18n.getNestedTranslation('calc.toasts.defaults_saved') || '✅ Parâmetros padrão guardados!','ok');
+    showToast(i18n.getNestedTranslation('calc.toasts.defaults_saved') || '<i class="ph-bold ph-check-circle"></i> Parâmetros padrão guardados!','ok');
   }catch(e){
     showToast((i18n.getNestedTranslation('calc.toasts.error_saving') || 'Erro ao guardar: ').replace('{message}', e.message),'err');
   }
@@ -1817,7 +1820,7 @@ async function doSaveHistory() {
   _persistHistory();
   renderHistory();
   closeSaveChoice();
-  showToast(i18n.getNestedTranslation('calc.toasts.saved') || '💾 Guardado no histórico!','ok');
+  showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-floppy-disk"></i> Guardado no histórico!','ok');
 }
 
 async function doSaveProduct() {
@@ -1847,7 +1850,7 @@ async function doSaveProduct() {
     };
     
     await DB.saveProduct(payload);
-    showToast('📦 Produto criado na sua biblioteca!', 'ok');
+    showToast('<i class="ph-bold ph-package"></i> Produto criado na sua biblioteca!', 'ok');
     closeSaveChoice();
   } catch(e) {
     showToast('Erro ao criar produto: ' + e.message, 'err');
@@ -1885,8 +1888,8 @@ function renderHistory(){
     if(emptyEl){
       emptyEl.style.display='flex';
       emptyEl.innerHTML=calcHistory.length
-        ?`<div class="history-empty-icon">🔍</div><div>` + (i18n.getNestedTranslation('calc.history_not_found') || 'Nenhum resultado para "{query}"').replace('{query}', `<strong>"${escH(raw)}"</strong>`) + `</div>`
-        :`<div class="history-empty-icon">🕐</div><div>` + (i18n.getNestedTranslation('calc.history_empty_session') || 'Sem cálculos guardados nesta sessão.<br>Clica em <strong>💾 Guardar</strong> nos resultados para registar aqui.') + `</div>`;
+        ?`<div class="history-empty-icon"><i class="ph-bold ph-magnifying-glass"></i></div><div>` + (i18n.getNestedTranslation('calc.history_not_found') || 'Nenhum resultado para "{query}"').replace('{query}', `<strong>"${escH(raw)}"</strong>`) + `</div>`
+        :`<div class="history-empty-icon"><i class="ph-bold ph-clock"></i></div><div>` + (i18n.getNestedTranslation('calc.history_empty_session') || 'Sem cálculos guardados nesta sessão.<br>Clica em <strong><i class="ph-bold ph-floppy-disk"></i> Guardar</strong> nos resultados para registar aqui.') + `</div>`;
     }
     if(tableEl) tableEl.style.display='none';
     return;
@@ -1922,7 +1925,7 @@ function renderHistory(){
       +'<td class="td-time">'+e.time+'</td>'
       +'<td class="td-actions">'
         +'<button class="btn-restore" onclick="event.stopPropagation();restoreHistory('+e.id+')">↩ '+restoreBtnLabel+'</button>'
-        +'<button class="btn-del" onclick="event.stopPropagation();deleteHistory('+e.id+')" title="Remover">✕</button>'
+        +'<button class="btn-del" onclick="event.stopPropagation();deleteHistory('+e.id+')" title="Remover"><i class="ph-bold ph-x"></i></button>'
       +'</td></tr>';
   }).join('');
 }
@@ -1964,7 +1967,7 @@ function restoreHistory(id){
   setSl('marginSlider',i.profitMargin,0,100);
   updateSliderLabels();liveCalc();
   window.scrollTo({top:0,behavior:'smooth'});
-  showToast('↩ Cálculo restaurado','ok');
+  showToast('<i class="ph-bold ph-arrow-counter-clockwise"></i> Cálculo restaurado','ok');
 }
 
 function deleteHistory(id){calcHistory=calcHistory.filter(h=>h.id!==id);_persistHistory();renderHistory();}
@@ -1973,7 +1976,7 @@ function clearHistory(){
   showConfirm(
     i18n.getNestedTranslation('calc.confirm_title') || 'Limpar histórico?',
     i18n.getNestedTranslation('calc.confirm_msg') || 'Esta acção remove todos os registos guardados e não pode ser desfeita.',
-    ()=>{calcHistory=[];_persistHistory();renderHistory();showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '🗑️ Histórico limpo','');}
+    ()=>{calcHistory=[];_persistHistory();renderHistory();showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Histórico limpo','');}
   );
 }
 function showConfirm(title,msg,onConfirm){
@@ -2006,12 +2009,13 @@ function exportCalcCSV(){
       ['PREÇO FINAL',r.finalPrice.toFixed(2)]]);
   var ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
   dlCSV(rows.map(function(r){return r.join(';');}).join('\n'),'calculo_'+ts+'.csv');
-  showToast(i18n.getNestedTranslation('calc.toasts.csv_exported') || '📄 CSV exportado!','ok');
+  showToast(i18n.getNestedTranslation('calc.toasts.csv_exported') || '<i class="ph-bold ph-file-csv"></i> CSV exportado!','ok');
 }
 
 
 
 function copyResults(){
+  const icons = { mat: '<i class="ph-bold ph-circles-three"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
   const i=getInputs();const r=computeResults(i);
   const name=document.getElementById('printName').value.trim();
   const sym=getCurrencySymbol();
@@ -2019,7 +2023,7 @@ function copyResults(){
   const W=26; // column width for alignment
   const row=(lbl,val)=>lbl.padEnd(W)+sym+val;
   const txt=[
-    name?`📐 ${name}`:null,
+    name?`<i class="ph-bold ph-ruler"></i> ${name}`:null,
     `Cálculo de Impressão 3D — ${new Date().toLocaleString(i18n.currentLocale)}`,
     `Modo: ${modeLabel}`,
     '─'.repeat(42),
@@ -2028,15 +2032,15 @@ function copyResults(){
     row('Custo eletricidade:',   r.electricityCost.toFixed(2)),
     row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
     row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
-    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCost.toFixed(2)),
-    row(`+ Margem (${i.profitMargin}%):`, r.marginCost.toFixed(2)),
+    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCosts.toFixed(2)),
+    row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
     '─'.repeat(42),
     row('Preço unitário:',       r.unitPrice.toFixed(2)),
-    row(`💰 PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
+    row(`${icons.money} PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
   ].filter(Boolean).join('\n');
   const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
   if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(txt).then(()=>{showToast(i18n.getNestedTranslation('calc.toasts.saved') || '📋 Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
+    navigator.clipboard.writeText(txt).then(()=>{showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
   }else{fbCopy(txt);}
 }
 function _buildClientMsg(){
@@ -2052,14 +2056,14 @@ function _buildClientMsg(){
   // Professional WhatsApp formatting
   const lines=[
     '━━━━━━━━━━━━━━━━━━━━',
-    '📄 *' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
+    '<i class="ph-bold ph-file-csv"></i> *' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
     '━━━━━━━━━━━━━━━━━━━━',
     ...(clientName ? ['👋 *' + i18n.getNestedTranslation('calc.wa.greeting', {name: clientName}) + '*', ''] : []),
     '🏢 *'+companyName+'*',
     '📅 *' + i18n.getNestedTranslation('calc.wa.date') + ':* '+date,
     '',
-    '📐 *' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
-    '🖨️ *' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
+    '<i class="ph-bold ph-ruler"></i> *' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
+    '<i class="ph-bold ph-printer"></i> *' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
     '🔢 *' + i18n.getNestedTranslation('calc.wa.qty') + ':* '+qty+' ' + i18n.getNestedTranslation('calc.qty_unit'),
     '',
     '------------------------------------',
@@ -2074,7 +2078,7 @@ function _buildClientMsg(){
     '',
     '━━━━━━━━━━━━━━━━━━━━',
     '⏳ ' + i18n.getNestedTranslation('calc.wa.validity'),
-    '🚀 ' + i18n.getNestedTranslation('calc.wa.powered_by'),
+    '<i class="ph-bold ph-rocket-launch"></i> ' + i18n.getNestedTranslation('calc.wa.powered_by'),
     '━━━━━━━━━━━━━━━━━━━━'
   ];
 
@@ -2099,7 +2103,7 @@ function copyForClient(){
     if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
   };
   if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(txt).then(()=>{showToast('📋 ' + i18n.getNestedTranslation('calc.toasts.saved'),'ok');flash();}).catch(()=>fbClientCopy(txt));
+    navigator.clipboard.writeText(txt).then(()=>{showToast('<i class="ph-bold ph-copy"></i> ' + i18n.getNestedTranslation('calc.toasts.saved'),'ok');flash();}).catch(()=>fbClientCopy(txt));
   }else{fbClientCopy(txt);}
 }
 
@@ -2109,14 +2113,14 @@ function copyForClient(){
 function fbClientCopy(t){
   const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
   document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '📋 Orçamento copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Orçamento copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
   document.body.removeChild(ta);
 }
 
 function fbCopy(t){
   const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
   document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '📋 Copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
   document.body.removeChild(ta);
 }
 
@@ -2176,13 +2180,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- NOVO: Modal de Escolha ao Guardar -->
 <div class="modal-overlay" id="saveChoiceOverlay" onclick="if(event.target===this)closeSaveChoice()">
   <div class="modal" style="max-width:400px; text-align:center; padding:30px 20px">
-    <div style="font-size:2.4rem; margin-bottom:12px">💾</div>
+    <div style="font-size:2.4rem; margin-bottom:12px"><i class="ph-bold ph-floppy-disk"></i></div>
     <h3 style="margin-bottom:8px">Onde desejas guardar?</h3>
     <p style="font-size:0.85rem; color:var(--muted); margin-bottom:24px; line-height:1.4">
       Podes guardar no histórico rápido para consulta ou criar um novo modelo na tua biblioteca de produtos.
     </p>
     <div style="display:flex; flex-direction:column; gap:10px">
-      <button class="btn btn-primary" onclick="doSaveProduct()">📦 Criar Novo Produto</button>
+      <button class="btn btn-primary" onclick="doSaveProduct()"><i class="ph-bold ph-package"></i> Criar Novo Produto</button>
       <button class="btn btn-ghost" style="border:1.5px solid var(--border)" onclick="doSaveHistory()">🕐 Apenas no Histórico</button>
       <button class="btn btn-ghost" onclick="closeSaveChoice()">Cancelar</button>
     </div>

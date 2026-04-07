@@ -23,27 +23,27 @@ const Sidebar = (() => {
     {
       section: 'Principal', i18nKey: 'nav.principal',
       items: [
-        { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '🏠', label: 'Início',       lockId: 'navLockDashboard' },
-        { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '📐', label: 'Calculadora' },
-        { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '📦', label: 'Pedidos',      lockId: 'navLockOrders' },
-        { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '👥', label: 'Clientes',     lockId: 'navLockClients' },
-        { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '💰', label: 'Financeiro',   lockId: 'navLockFinancial' },
+        { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '<i class="ph-bold ph-house"></i>', label: 'Início',       lockId: 'navLockDashboard' },
+        { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '<i class="ph-bold ph-calculator"></i>', label: 'Calculadora' },
+        { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '<i class="ph-bold ph-package"></i>', label: 'Pedidos',      lockId: 'navLockOrders' },
+        { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '<i class="ph-bold ph-users"></i>', label: 'Clientes',     lockId: 'navLockClients' },
+        { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '<i class="ph-bold ph-currency-dollar"></i>', label: 'Financeiro',   lockId: 'navLockFinancial' },
       ]
     },
     {
       section: 'Gestão', i18nKey: 'nav.gestao',
       items: [
-        { id: 'products',   i18nKey: 'nav.products',   href: 'products.html',   icon: '📂', label: 'Produtos',     lockId: 'navLockProducts' },
-        { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '🎨', label: 'Materiais' },
-        { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '🖨️', label: 'Impressoras' },
-        { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '🗄️', label: 'BackOffice',  lockId: 'navLockBackoffice' },
+        { id: 'products',   i18nKey: 'nav.products',   href: 'products.html',   icon: '<i class="ph-bold ph-folder"></i>', label: 'Produtos',     lockId: 'navLockProducts' },
+        { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '<i class="ph-bold ph-palette"></i>', label: 'Materiais' },
+        { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '<i class="ph-bold ph-printer"></i>', label: 'Impressoras' },
+        { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '<i class="ph-bold ph-archive"></i>', label: 'BackOffice',  lockId: 'navLockBackoffice' },
       ]
     },
     {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
-        { id: 'settings', i18nKey: 'nav.settings', href: 'settings.html', icon: '⚙️', label: 'Definições', lockId: 'navLockSettings' },
-        { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '🛡️', label: 'Admin', superAdmin: true },
+        { id: 'settings', i18nKey: 'nav.settings', href: 'settings.html', icon: '<i class="ph-bold ph-gear"></i>', label: 'Definições', lockId: 'navLockSettings' },
+        { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '<i class="ph-bold ph-shield-check"></i>', label: 'Admin', superAdmin: true },
       ]
     },
   ];
@@ -102,10 +102,10 @@ const Sidebar = (() => {
 
   <div class="sidebar-footer">
     <div class="user-dropdown" id="sidebarUserDropdown">
-      <a class="dd-item" href="settings.html?tab=assinatura">💳 <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
-      <a class="dd-item" href="index.html">🌐 <span data-i18n="nav.go_to_lander">Ver landing page</span></a>
+      <a class="dd-item" href="settings.html?tab=assinatura"><i class="ph-bold ph-credit-card"></i> <span data-i18n="nav.manage_subscription">Gerir assinatura</span></a>
+      <a class="dd-item" href="index.html"><i class="ph-bold ph-globe"></i> <span data-i18n="nav.go_to_lander">Ver landing page</span></a>
       <div class="dd-divider"></div>
-      <a class="dd-item danger" onclick="Sidebar._doLogout();return false;">🚪 <span data-i18n="nav.logout">Sair</span></a>
+      <a class="dd-item danger" onclick="Sidebar._doLogout();return false;"><i class="ph-bold ph-door-open"></i> <span data-i18n="nav.logout">Sair</span></a>
     </div>
     <div class="user-row" id="sidebarUserRow" onclick="Sidebar._toggleUserMenu()">
       <div class="user-avatar" id="sidebarUserAvatar">—</div>
@@ -113,7 +113,7 @@ const Sidebar = (() => {
         <div class="user-name" id="sidebarUserName">—</div>
         <div class="user-email" id="sidebarUserEmail">—</div>
       </div>
-      <span class="user-chevron" id="sidebarUserChevron">▲</span>
+      <span class="user-chevron" id="sidebarUserChevron"><i class="ph-bold ph-caret-up"></i></span>
     </div>
   </div>
 </aside>`;
@@ -135,7 +135,7 @@ const Sidebar = (() => {
     // Sync theme button icon (button is hardcoded in each page's topbar HTML)
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const btn = document.getElementById('topbarThemeToggle');
-    if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
+    if (btn) btn.innerHTML = isDark ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 
     // Bind global click to close user menu
     document.addEventListener('click', e => {
@@ -231,7 +231,7 @@ const Sidebar = (() => {
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('3dzaap_theme', next);
     document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
-      btn.innerHTML = next === 'dark' ? '☀️' : '🌙';
+      btn.innerHTML = next === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
     });
   }
 

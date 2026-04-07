@@ -463,6 +463,7 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 
@@ -553,7 +554,7 @@
         </div>
         <div class="sub-cta">
           <a class="btn-sub" onclick="navigate('billing')" data-i18n="dash.sub_banner.upgrade">Upgrade agora →</a>
-          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar">✕</button>
+          <button class="btn-dismiss" onclick="dismissBanner()" title="Fechar"><i class="ph-bold ph-x"></i></button>
         </div>
       </div>
     </div>
@@ -574,7 +575,7 @@
       <!-- Health Score Card -->
       <div class="health-card" id="healthCard" style="margin-bottom:16px;">
         <div class="health-left">
-          <div class="health-title" data-i18n="dash.health.title">⚡ Saúde do Negócio</div>
+          <div class="health-title" data-i18n="dash.health.title"><i class="ph-bold ph-lightning"></i> Saúde do Negócio</div>
           <div class="health-score-row">
             <span class="health-score-number" id="healthNumber">—</span>
             <span class="health-score-max">/100</span>
@@ -607,13 +608,13 @@
       <div class="quick-actions-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;background:var(--bg-card);padding:12px 20px;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh-sm);animation:fadeUp .6s var(--ease) .2s both;">
         <span style="font-size:0.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-right:8px" data-i18n="dash.actions.quick_start">Início Rápido:</span>
         <a class="btn btn-primary btn-sm" href="calculator.html" style="height:32px;font-size:0.85rem;padding:0 12px">
-          <span style="margin-right:6px">📐</span> <span data-i18n="dash.actions.calc">Novo Cálculo</span>
+          <span style="margin-right:6px"><i class="ph-bold ph-calculator"></i></span> <span data-i18n="dash.actions.calc">Novo Cálculo</span>
         </a>
         <a class="btn btn-outline btn-sm" onclick="handleFeatureClick('orders','Pedidos','Pro')" href="#" style="height:32px;font-size:0.85rem;padding:0 12px">
-          <span style="margin-right:6px">📦</span> <span data-i18n="dash.actions.order">Novo Pedido</span>
+          <span style="margin-right:6px"><i class="ph-bold ph-package"></i></span> <span data-i18n="dash.actions.order">Novo Pedido</span>
         </a>
         <a class="btn btn-outline btn-sm" href="materials.html" style="height:32px;font-size:0.85rem;padding:0 12px">
-          <span style="margin-right:6px">🎨</span> <span data-i18n="dash.actions.mat">Novo Material</span>
+          <span style="margin-right:6px"><i class="ph-bold ph-palette"></i></span> <span data-i18n="dash.actions.mat">Novo Material</span>
         </a>
       </div>
 
@@ -623,7 +624,7 @@
         <!-- Financial: Cash Flow -->
         <div class="stat-card-v2">
           <div class="stat-v2-header">
-            <div class="stat-v2-icon-wrap" style="background:rgba(59,143,212,0.1); color:var(--blue)">💰</div>
+            <div class="stat-v2-icon-wrap" style="background:rgba(59,143,212,0.1); color:var(--blue)"><i class="ph-bold ph-currency-dollar"></i></div>
             <div class="stat-v2-badge badge-up" id="revBadge">+0%</div>
           </div>
           <div class="stat-v2-value-wrap">
@@ -640,8 +641,8 @@
         <!-- Operations: Pipeline -->
         <div class="stat-card-v2">
           <div class="stat-v2-header">
-            <div class="stat-v2-icon-wrap" style="background:rgba(139,92,246,0.1); color:var(--purple)">🔄</div>
-            <div class="stat-v2-badge badge-neu" style="background:none; border:none; color:var(--muted)">Total: <span id="statOrders">0</span></div>
+            <div class="stat-v2-icon-wrap" style="background:rgba(139,92,246,0.1); color:var(--purple)"><i class="ph-bold ph-arrows-clockwise"></i></div>
+            <div class="stat-v2-badge badge-neu" style="background:none; border:none; color:var(--muted)"><span data-i18n="dash.stats.total_label">Total:</span> <span id="statOrders">0</span></div>
           </div>
           
           <div class="stat-v2-label" style="font-size:1.1rem; color:var(--dark); margin-bottom:12px" data-i18n="dash.stats.pipeline">Pipeline de Pedidos</div>
@@ -654,26 +655,26 @@
           </div>
 
           <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted)">
-            <div title="Orçamento/Validação">📝 <span data-i18n="dash.stats.pipe_approval">Aprovação:</span> <strong id="pipeValBudget">0</strong></div>
-            <div title="Em Produção">🖨️ <span data-i18n="dash.stats.pipe_prod">Produção:</span> <strong id="pipeValProd">0</strong></div>
-            <div title="Pronto para entrega">✅ <span data-i18n="dash.stats.pipe_done">Pronto:</span> <strong id="pipeValDone">0</strong></div>
+            <div title="Orçamento/Validação"><i class="ph-bold ph-file-text"></i> <span data-i18n="dash.stats.pipe_approval">Aprovação:</span> <strong id="pipeValBudget">0</strong></div>
+            <div title="Em Produção"><i class="ph-bold ph-printer"></i> <span data-i18n="dash.stats.pipe_prod">Produção:</span> <strong id="pipeValProd">0</strong></div>
+            <div title="Pronto para entrega"><i class="ph-bold ph-check-circle"></i> <span data-i18n="dash.stats.pipe_done">Pronto:</span> <strong id="pipeValDone">0</strong></div>
           </div>
         </div>
 
         <!-- 3D Print Farm Status -->
         <div class="stat-card-v2">
           <div class="stat-v2-header">
-            <div class="stat-v2-icon-wrap" style="background:rgba(100,116,139,0.1); color:var(--muted)">🏭</div>
+            <div class="stat-v2-icon-wrap" style="background:rgba(100,116,139,0.1); color:var(--muted)"><i class="ph-bold ph-factory"></i></div>
             <div class="stat-v2-badge" style="background:none; border:none; color:var(--muted)" data-i18n="dash.stats.op_status">Estado Operativo</div>
           </div>
 
           <div class="farm-status-grid">
             <div id="stockMiniCard" class="farm-mini-card">
-              <span class="farm-mini-label" data-i18n="dash.stats.crit_stock">📦 Stock Crítico</span>
+              <span class="farm-mini-label" data-i18n="dash.stats.crit_stock"><i class="ph-bold ph-package"></i> Stock Crítico</span>
               <span id="statStock" class="farm-mini-value" style="color:var(--orange)">0</span>
             </div>
             <div class="farm-mini-card">
-              <span class="farm-mini-label" data-i18n="dash.stats.fleet_online_label">🖨️ Farm Online</span>
+              <span class="farm-mini-label" data-i18n="dash.stats.fleet_online_label"><i class="ph-bold ph-printer"></i> Farm Online</span>
               <span id="efficiencyLabel" class="farm-mini-value" style="color:var(--blue)">0/0</span>
             </div>
           </div>
@@ -686,12 +687,12 @@
         <!-- To-Do Hub / Recent Orders -->
         <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
           <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:16px">
-            <div class="card-title" data-i18n="dash.cards.action_hub">📋 Pedidos em foco para hoje</div>
+            <div class="card-title" data-i18n="dash.cards.action_hub"><i class="ph-bold ph-list-numbers"></i> Pedidos em foco para hoje</div>
             <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ir para Pedidos →</a>
           </div>
           <div class="card-body" id="recentOrdersBody" style="padding-top:16px">
             <div class="empty-state">
-              <div class="empty-icon">✅</div>
+              <div class="empty-icon"><i class="ph-bold ph-check-circle"></i></div>
               <div class="empty-text" data-i18n="dash.cards.empty_orders">Tudo em dia!<br>Sem pedidos pendentes de ação.</div>
             </div>
           </div>
@@ -702,7 +703,7 @@
           <!-- Filament Alerts -->
           <div class="card" id="filamentAlertsCard">
             <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
-              <div class="card-title" data-i18n="dash.cards.fil_alerts" style="font-size:.9rem;color:var(--danger)">⚠️ Avisos de Stock</div>
+              <div class="card-title" data-i18n="dash.cards.fil_alerts" style="font-size:.9rem;color:var(--danger)"><i class="ph-bold ph-warning-octagon"></i> Avisos de Stock</div>
               <a class="card-action" href="materials.html" data-i18n="dash.cards.manage">Gerir →</a>
             </div>
             <div class="card-body" id="filamentAlertsBody" style="padding-top:12px">
@@ -713,7 +714,7 @@
             <!-- Printer Alerts -->
           <div class="card" id="printerAlertsCard">
             <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
-              <div class="card-title" data-i18n="dash.cards.print_alerts" style="font-size:.9rem;color:var(--danger)">🖨️ Anomalias Frota</div>
+              <div class="card-title" data-i18n="dash.cards.print_alerts" style="font-size:.9rem;color:var(--danger)"><i class="ph-bold ph-printer"></i> Anomalias Frota</div>
               <a class="card-action" href="printers.html" data-i18n="dash.cards.manage">Gerir →</a>
             </div>
             <div class="card-body" id="printerAlertsBody" style="padding-top:12px">
@@ -841,8 +842,8 @@ function renderGreeting() {
   const period = window.i18n ? (window.i18n.getNestedTranslation('dash.greeting.'+periodKey) || periodKey) : (h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite');
   
   const firstName = state.user.name.split(' ')[0];
-  const tpl = window.i18n ? (window.i18n.getNestedTranslation('dash.greeting.welcome') || '{period}, {name}! 👋') : '{period}, {name}! 👋';
-  document.getElementById('greetingText').textContent = tpl.replace('{period}', period).replace('{name}', firstName);
+  const tpl = window.i18n ? (window.i18n.getNestedTranslation('dash.greeting.welcome') || '{period}, {name}! <i class="ph-bold ph-hand-waving"></i>') : '{period}, {name}! <i class="ph-bold ph-hand-waving"></i>';
+  document.getElementById('greetingText').innerHTML = tpl.replace('{period}', period).replace('{name}', firstName);
 }
 
 // fmtCurrency is provided by utils.js (supports EUR, BRL, USD, GBP via _cfg)
@@ -890,7 +891,7 @@ function renderBanner() {
   // Se plano não for trial e estiver expirado: Mostrar banner Blocked!
   if (plan !== 'trial' && isExpired) {
     inner.className = 'sub-banner-inner warning-banner';
-    icon.textContent = '⛔';
+    icon.innerHTML = '<i class="ph-bold ph-prohibit"></i>';
     title.textContent = t('dash.sub_banner.overdue_active') || 'Acesso Bloqueado / Assinatura Expirada';
     sub.textContent   = t('dash.sub_banner.overdue_desc') || 'A validade desta conta expirou. Por favor, contacte a administração.';
     return; // não esconde o banner
@@ -903,19 +904,19 @@ function renderBanner() {
     const days = state.company.trialDaysLeft ?? 14;
     const s = days !== 1 ? 's' : '';
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
-    icon.textContent = days <= 3 ? '🚨' : '⏰';
+    icon.innerHTML = days <= 3 ? '<i class="ph-bold ph-warning-octagon"></i>' : '<i class="ph-bold ph-timer"></i>';
     title.textContent = t('dash.sub_banner.trial_active', { n: days, s }) ||
       `Período experimental ativo — ${days} dia${s} restante${s}`;
     sub.textContent = t('dash.sub_banner.trial_desc') ||
       'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar.';
   } else if (plan === 'starter') {
     inner.className = 'sub-banner-inner active-banner';
-    icon.textContent = '✅';
+    icon.textContent = '<i class="ph-bold ph-check-circle"></i>';
     title.textContent = t('dash.sub_banner.starter_active') || 'Plano Starter activo';
     sub.textContent   = t('dash.sub_banner.starter_desc') || 'Upgrade para Pro ou Business para desbloquear Pedidos e Financeiro.';
   } else if (plan === 'pro') {
     inner.className = 'sub-banner-inner active-banner';
-    icon.textContent = '✅';
+    icon.textContent = '<i class="ph-bold ph-check-circle"></i>';
     title.textContent = t('dash.sub_banner.pro_active') || 'Plano Pro activo';
     sub.textContent   = t('dash.sub_banner.pro_desc') || 'Upgrade para Business para desbloquear o módulo Financeiro.';
   } else if (plan === 'business') {
@@ -953,19 +954,19 @@ function calcHealthScore() {
   const isCfg    = _cfg && (_cfg.setup_done === true || _cfg.electricityPrice !== 0.22);
 
   if (hasLogo) { score += 10; }
-  else { insights.push({t:'warn', icon:'🖼️', key:'setup_logo_miss', page:'settings.html?tab=marca'}); }
+  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-image"></i>', key:'setup_logo_miss', page:'settings.html?tab=marca'}); }
 
   if (hasSig) { score += 10; }
-  else { insights.push({t:'warn', icon:'✍️', key:'setup_sig_miss', page:'settings.html?tab=marca'}); }
+  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-signature"></i>', key:'setup_sig_miss', page:'settings.html?tab=marca'}); }
 
   if (hasPrnt) { score += 10; }
-  else { insights.push({t:'bad', icon:'🖨️', key:'setup_printers_miss', page:'printers.html'}); }
+  else { insights.push({t:'bad', icon:'<i class="ph-bold ph-printer"></i>', key:'setup_printers_miss', page:'printers.html'}); }
 
   if (hasMat) { score += 10; }
-  else { insights.push({t:'bad', icon:'🎨', key:'setup_materials_miss', page:'materials.html'}); }
+  else { insights.push({t:'bad', icon:'<i class="ph-bold ph-palette"></i>', key:'setup_materials_miss', page:'materials.html'}); }
 
   if (isCfg) { score += 10; }
-  else { insights.push({t:'warn', icon:'⚡', key:'setup_configs_miss', page:'settings.html?tab=preferencias'}); }
+  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-lightning"></i>', key:'setup_configs_miss', page:'settings.html?tab=preferencias'}); }
 
   // 2. PERFORMANCE & REVENUE (50 pts) — O(N) single pass
   let doneCount = 0;
@@ -1009,19 +1010,19 @@ function calcHealthScore() {
   if (orders.length > 0) { 
     score += 10; 
   } else {
-    insights.push({t:'warn', icon:'📦', key:'perf_no_orders', page:'calculator.html'});
+    insights.push({t:'warn', icon:'<i class="ph-bold ph-package"></i>', key:'perf_no_orders', page:'calculator.html'});
   }
 
   if (openCount > 0) {
     if (lateCount === 0) score += 10;
-    else insights.push({t:'bad', icon:'⏰', key:'perf_late_orders', page:'orders.html'});
+    else insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', page:'orders.html'});
     
     if (unpaid === 0) score += 10;
-    else insights.push({t:'warn', icon:'💰', key:'perf_unpaid_orders', page:'orders.html'});
+    else insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'perf_unpaid_orders', page:'orders.html'});
   } else if (orders.length > 0) {
     // Se não tem pedidos abertos mas já teve pedidos, bónus de limpeza
     score += 20;
-    insights.push({t:'ok', icon:'✅', key:'perf_all_clear'}); 
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear'}); 
   }
   
   // Filament stock score — Sincronizado com os cards
@@ -1030,7 +1031,7 @@ function calcHealthScore() {
   if (hasMat && !hasCritical) {
     score += 10;
   } else if (hasMat && hasCritical) {
-    insights.push({t:'bad', icon:'⚠️', key:'perf_stock_low', page:'materials.html'});
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-warning-octagon"></i>', key:'perf_stock_low', page:'materials.html'});
   }
 
   // Trend Score (10 pts)
@@ -1039,10 +1040,10 @@ function calcHealthScore() {
     const change = (revThis - revPrev) / revPrev;
     if (change < -0.1) {
       trendScore = 5;
-      insights.push({t:'warn', icon:'📉', key:'rev_warn', vars:{p:Math.round(change*100)*-1}});
+      insights.push({t:'warn', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_warn', vars:{p:Math.round(change*100)*-1}});
     } else if (change < -0.3) {
       trendScore = 0;
-      insights.push({t:'bad', icon:'📉', key:'rev_bad', vars:{p:Math.round(change*100)*-1}});
+      insights.push({t:'bad', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_bad', vars:{p:Math.round(change*100)*-1}});
     } else if (change > 0) {
       // Opcional: mostrar tendência positiva apenas se score for alto
     }
@@ -1094,7 +1095,7 @@ function calcHealthScore() {
   const l_vs = t('dash.health.vs') || 'vs ontem';
   if (prevScore >= 0 && prevScore !== score) {
     const diff = score - prevScore;
-    deltaEl.textContent = (diff > 0 ? '▲ +' : '▼ ') + diff + ' ' + l_vs;
+    deltaEl.innerHTML = (diff > 0 ? '<i class="ph-bold ph-caret-up"></i> +' : '<i class="ph-bold ph-caret-down"></i> ') + diff + ' ' + l_vs;
     deltaEl.style.color = diff > 0 ? 'var(--success)' : 'var(--danger)';
   } else if (prevScore === score) {
     deltaEl.textContent = (t('dash.health.equal') || '→ igual ao último acesso');
@@ -1111,7 +1112,7 @@ function calcHealthScore() {
   // Se score for 100, mostrar apenas mensagem de sucesso
   if (score >= 100) {
     insightsEl.innerHTML = `<div class="health-insight ok" style="grid-column: 1/-1; justify-content: center;">
-      <span class="health-insight-icon">🏆</span>
+      <span class="health-insight-icon"><i class="ph-bold ph-trophy"></i></span>
       <span>${t('dash.health.perfect') || 'Parabéns! O teu negócio está totalmente configurado e saudável.'}</span>
     </div>`;
   } else {
@@ -1243,7 +1244,7 @@ function renderRecentOrders() {
 
   if (!recent.length) {
     el.innerHTML = `<div class="empty-state">
-        <div class="empty-icon" style="font-size:2rem;margin-bottom:8px">🎉</div>
+        <div class="empty-icon" style="font-size:2rem;margin-bottom:8px"><i class="ph-bold ph-confetti"></i></div>
         <div class="empty-text" style="color:var(--dark);font-weight:600">${window.i18n ? window.i18n.getNestedTranslation('dash.cards.all_ok') || 'Tudo em dia!' : 'Tudo em dia!'}</div>
         <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Neste momento não tem tarefas pendentes.<br>Sem pedidos ativos.</div>
       </div>`;
@@ -1297,7 +1298,7 @@ function renderPrinterAlerts() {
     document.getElementById('printerAlertsCard').style.display = 'none';
     const key = printers.length > 0 ? 'dash.cards.all_ok_print' : 'dash.cards.empty_print';
     const fallback = printers.length > 0 ? 'Todas as impressoras OK.<br>Sem alertas de manutenção.' : 'Ainda não tens impressoras registadas.';
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🖨️</div><div class="empty-text">${window.i18n.getNestedTranslation(key) || fallback}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="ph-bold ph-printer"></i></div><div class="empty-text">${window.i18n.getNestedTranslation(key) || fallback}</div></div>`;
     return;
   }
   
@@ -1325,7 +1326,7 @@ function renderPrinterAlerts() {
       : (tc('dash.cards.printer_type_fdm') || 'FDM');
     const hoursLabel = tc('dash.cards.printer_hours_used', { h: p.hoursUsed || 0 }) || `${p.hoursUsed||0}h usadas`;
     return `<div class="fil-item">
-      <div style="font-size:1.2rem;flex-shrink:0">🖨️</div>
+      <div style="font-size:1.2rem;flex-shrink:0"><i class="ph-bold ph-printer"></i></div>
       <div class="fil-info">
         <div class="fil-name">${escH(p.brand)} ${escH(p.model)}</div>
         <div class="fil-sub">${typeLabel} · ${hoursLabel}</div>
@@ -1350,7 +1351,7 @@ function renderFilamentAlerts() {
     .slice(0, 6);
 
   if (!alerts.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">${window.i18n.getNestedTranslation('dash.cards.empty_fil') || 'Sem alertas de stock.<br>O teu inventário está em ordem!'}</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="ph-bold ph-check-circle"></i></div><div class="empty-text">${window.i18n.getNestedTranslation('dash.cards.empty_fil') || 'Sem alertas de stock.<br>O teu inventário está em ordem!'}</div></div>`;
     return;
   }
 
@@ -1492,7 +1493,9 @@ function navigate(page) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + page);
   if (navEl) navEl.classList.add('active');
-  document.getElementById('topbarTitle').textContent = getPageTitle(page);
+  // Se for uma string de ícone, usar innerHTML
+  const title = getPageTitle(page);
+  document.getElementById('topbarTitle').innerHTML = title.includes('<i ') ? title : title;
 
   closeSidebar();
   return false;
@@ -1519,7 +1522,7 @@ document.addEventListener('click', e => {
 
 async function doLogout() {
   Sidebar._closeUserMenu();
-  const msg = window.i18n ? (window.i18n.getNestedTranslation('nav.logout_toast') || 'Sessão terminada. Até logo! 👋') : 'Sessão terminada. Até logo! 👋';
+  const msg = window.i18n ? (window.i18n.getNestedTranslation('nav.logout_toast') || 'Sessão terminada. Até logo! <i class="ph-bold ph-hand-waving"></i>') : 'Sessão terminada. Até logo! <i class="ph-bold ph-hand-waving"></i>';
   showToast(msg, 'ok');
   setTimeout(() => Auth.logout(), 1000);
 }
@@ -1565,16 +1568,16 @@ async function loadBroadcasts() {
     if (!stack) return;
     stack.style.display = 'flex';
 
-    const icons = { info: 'ℹ️', warning: '⚠️', success: '✅' };
+    const icons = { info: '<i class="ph-bold ph-info"></i>', warning: '<i class="ph-bold ph-warning-octagon"></i>', success: '<i class="ph-bold ph-check-circle"></i>' };
 
     stack.innerHTML = toShow.map(b => `
       <div class="broadcast-banner bc-${b.type || 'info'}" id="bc-${b.id}">
-        <span class="broadcast-icon">${icons[b.type] || '📢'}</span>
+        <span class="broadcast-icon">${icons[b.type] || '<i class="ph-bold ph-megaphone"></i>'}</span>
         <div class="broadcast-body">
           <div class="broadcast-title">${escH(b.title)}</div>
           <div class="broadcast-msg">${escH(b.message)}</div>
         </div>
-        <button class="broadcast-close" onclick="dismissBroadcast('${b.id}')" title="Fechar">✕</button>
+        <button class="broadcast-close" onclick="dismissBroadcast('${b.id}')" title="Fechar"><i class="ph-bold ph-x"></i></button>
       </div>`).join('');
 
   } catch(e) {

@@ -384,12 +384,13 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 <div class="bg"></div>
 <div class="orb o1"></div>
 <div class="orb o2"></div>
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
@@ -402,7 +403,7 @@
       <div class="topbar-breadcrumb">
         <a href="dashboard.html" data-i18n="nav.home">Dashboard</a>
         <span>›</span>
-        <strong id="topbarTitle" data-i18n="materials.title">🎨 Materiais</strong>
+        <strong id="topbarTitle" data-i18n="materials.title"><i class="ph-bold ph-palette"></i> Materiais</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -411,7 +412,7 @@
               onclick="Sidebar.toggleTheme()"
               title="Alternar Tema"
               class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -431,7 +432,7 @@
               <button id="topbarHelpBtn"
                 class="gc-btn gc-help-btn"
                 onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';"
-                aria-label="Ajuda">?</button>
+                aria-label="Ajuda"><i class="ph-bold ph-question"></i></button>
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
                 <div class="gc-popover-title" data-i18n="nav.help_title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
@@ -443,7 +444,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -455,25 +456,25 @@
     <div class="page">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 id="pageTitle" data-i18n="materials.title">🎨 Materiais</h1>
+          <h1 id="pageTitle" data-i18n="materials.title"><i class="ph-bold ph-palette"></i> Materiais</h1>
           <p id="pageSubtitle" data-i18n="materials.subtitle">Gere o teu stock de materiais FDM e resinas SLA/MSLA</p>
         </div>
         <div class="page-header-actions">
-          <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="materials.btn_csv">📄 Exportar CSV</button>
-          <button class="btn btn-ghost" onclick="openPackModal()" data-i18n="materials.btn_pack">＋ Pack</button>
-          <button class="btn btn-primary" id="btnNew" onclick="openModal()" data-i18n="materials.btn_new">＋ Material</button>
+          <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="materials.btn_csv"><i class="ph-bold ph-file-csv"></i> Exportar CSV</button>
+          <button class="btn btn-ghost" onclick="openPackModal()" data-i18n="materials.btn_pack"><i class="ph-bold ph-plus"></i> Pack</button>
+          <button class="btn btn-primary" id="btnNew" onclick="openModal()" data-i18n="materials.btn_new"><i class="ph-bold ph-plus"></i> Material</button>
         </div>
       </div>
 
       <!-- Material Class Toggle -->
       <div class="material-toggle">
         <button class="mat-btn fdm active" id="toggleFDM" onclick="setView('fdm')">
-          <span class="mat-btn-icon">🧵</span>
+          <span class="mat-btn-icon"><i class="ph-bold ph-circles-three"></i></span>
           <span data-i18n="materials.toggle_fdm">Filamentos FDM</span>
           <span class="mat-btn-count" id="countFDM">0</span>
         </button>
         <button class="mat-btn resin" id="toggleResin" onclick="setView('resin')">
-          <span class="mat-btn-icon">🧪</span>
+          <span class="mat-btn-icon"><i class="ph-bold ph-flask"></i></span>
           <span data-i18n="materials.toggle_resin">Resinas SLA/MSLA</span>
           <span class="mat-btn-count" id="countResin">0</span>
         </button>
@@ -482,7 +483,7 @@
       <!-- Stats -->
       <div class="stats-row" id="statsRow">
         <div class="stat-mini stat-has-tip">
-          <div class="stat-mini-icon si-blue" id="statIcon">🎨</div>
+          <div class="stat-mini-icon si-blue" id="statIcon"><i class="ph-bold ph-palette"></i></div>
           <div>
             <div class="stat-mini-val" id="statTotal">0</div>
             <div class="stat-mini-lbl"><span data-i18n="materials.stats.total">Total</span> · <span id="statUnit">0 kg</span></div>
@@ -490,7 +491,7 @@
           <div class="stat-tooltip" id="tipTotal"></div>
         </div>
         <div class="stat-mini stat-has-tip">
-          <div class="stat-mini-icon si-green">✅</div>
+          <div class="stat-mini-icon si-green"><i class="ph-bold ph-check-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statStock">0</div>
             <div class="stat-mini-lbl" data-i18n="materials.stats.in_stock">Em stock</div>
@@ -498,7 +499,7 @@
           <div class="stat-tooltip" id="tipStock"></div>
         </div>
         <div class="stat-mini stat-has-tip">
-          <div class="stat-mini-icon si-orange">🟠</div>
+          <div class="stat-mini-icon si-orange"><i class="ph-bold ph-warning-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statLow">0</div>
             <div class="stat-mini-lbl" data-i18n="materials.stats.low_stock">Stock baixo</div>
@@ -506,7 +507,7 @@
           <div class="stat-tooltip" id="tipLow"></div>
         </div>
         <div class="stat-mini stat-has-tip">
-          <div class="stat-mini-icon si-red">❌</div>
+          <div class="stat-mini-icon si-red"><i class="ph-bold ph-x-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statEmpty">0</div>
             <div class="stat-mini-lbl" id="statEmptyLbl" data-i18n="materials.stats.out_of_stock">Esgotados</div>
@@ -518,7 +519,7 @@
       <!-- Filters -->
       <div class="filters-bar">
         <div class="filter-search-wrap">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
           <input type="text" id="filterSearch" class="filter-search" placeholder="Pesquisar…" oninput="applyFilters()" data-i18n="[placeholder]materials.filters.search_placeholder">
         </div>
         <div class="filter-sep"></div>
@@ -541,7 +542,7 @@
       <div class="table-card">
         <div class="table-wrap">
           <div class="table-empty" id="tableEmpty" style="display:flex">
-            <div class="table-empty-icon">🎨</div>
+            <div class="table-empty-icon"><i class="ph-bold ph-palette"></i></div>
             <h3 data-i18n="materials.table.empty_title">Sem materiais ainda</h3>
             <p data-i18n="materials.table.empty_desc">Adiciona o teu primeiro material clicando em <strong>＋ Novo material</strong> acima.</p>
           </div>
@@ -560,13 +561,13 @@
 <div class="modal-overlay" id="packOverlay" onclick="if(event.target===this)closePackModal()">
   <div class="modal" id="packBox" style="max-width:680px">
     <div class="modal-header">
-      <div class="modal-title" data-i18n="materials.modal_pack.title">📦 Adicionar Pack de Materiais</div>
-      <button class="modal-close" onclick="closePackModal()">✕</button>
+      <div class="modal-title" data-i18n="materials.modal_pack.title"><i class="ph-bold ph-package"></i> Adicionar Pack de Materiais</div>
+      <button class="modal-close" onclick="closePackModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
 
       <!-- Identificação do pack -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">🏷️</div><span data-i18n="materials.modal_pack.section_id">Identificação do Pack</span></div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue"><i class="ph-bold ph-tag"></i></div><span data-i18n="materials.modal_pack.section_id">Identificação do Pack</span></div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" data-i18n="materials.modal_pack.lbl_id">ID do Pack</label>
@@ -583,13 +584,13 @@
       </div>
 
       <!-- Tipo de material -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div><span data-i18n="materials.modal_pack.section_material">Material (igual para todas as cores)</span></div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue"><i class="ph-bold ph-list-numbers"></i></div><span data-i18n="materials.modal_pack.section_material">Material (igual para todas as cores)</span></div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" data-i18n="materials.modal_pack.lbl_class">Classe</label>
           <div class="material-toggle" style="margin-bottom:0">
-            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')">🧵 <span data-i18n="materials.modal_pack.fdm">Filamento</span></button>
-            <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')">🧪 <span data-i18n="materials.modal_pack.resin">Resina</span></button>
+            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')"><i class="ph-bold ph-circles-three"></i> <span data-i18n="materials.modal_pack.fdm">Filamento</span></button>
+            <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')"><i class="ph-bold ph-flask"></i> <span data-i18n="materials.modal_pack.resin">Resina</span></button>
           </div>
         </div>
       </div>
@@ -643,7 +644,7 @@
       </div>
 
       <!-- Lista de cores -->
-      <div class="form-section-divider"><div class="form-section-divider-icon si-green">🎨</div><span data-i18n="materials.modal_pack.section_colors">Cores do Pack</span></div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green"><i class="ph-bold ph-palette"></i></div><span data-i18n="materials.modal_pack.section_colors">Cores do Pack</span></div>
       <div id="pkColorList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
       <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()" data-i18n="materials.modal_pack.btn_add_color">＋ Adicionar cor</button>
       <div id="pkCostWarning" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(245,148,58,0.1);border:1px solid rgba(245,148,58,0.35);border-radius:8px;font-size:.8rem;color:var(--orange)"></div>
@@ -653,7 +654,7 @@
       <div style="font-size:.8rem;color:var(--muted)" id="pkSummary"></div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="closePackModal()" data-i18n="materials.modal_pack.btn_cancel">Cancelar</button>
-        <button class="btn btn-primary" onclick="savePack()" data-i18n="materials.modal_pack.btn_save">💾 Guardar Pack</button>
+        <button class="btn btn-primary" onclick="savePack()" data-i18n="materials.modal_pack.btn_save"><i class="ph-bold ph-floppy-disk"></i> Guardar Pack</button>
       </div>
     </div>
   </div>
@@ -670,16 +671,16 @@
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modalBox">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle" data-i18n="materials.modal_mat.title_new">＋ Novo Material</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title" id="modalTitle" data-i18n="materials.modal_mat.title_new"><i class="ph-bold ph-plus"></i> Novo Material</div>
+      <button class="modal-close" onclick="closeModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
 
       <!-- Material class toggle (só em modo "novo") -->
       <div id="modalMatToggleWrap">
         <div class="modal-mat-toggle">
-          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')">🧵 <span data-i18n="materials.modal_pack.fdm">Filamento FDM</span></button>
-          <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')">🧪 <span data-i18n="materials.modal_pack.resin">Resina SLA/MSLA</span></button>
+          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')"><i class="ph-bold ph-circles-three"></i> <span data-i18n="materials.modal_pack.fdm">Filamento FDM</span></button>
+          <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')"><i class="ph-bold ph-flask"></i> <span data-i18n="materials.modal_pack.resin">Resina SLA/MSLA</span></button>
         </div>
       </div>
 
@@ -694,7 +695,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue">📋</div>Identificação</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue"><i class="ph-bold ph-clipboard-text"></i></div>Identificação</div>
 
       <!-- FDM fields -->
       <div id="fdmFields">
@@ -779,7 +780,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-green">📦</div>Stock</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green"><i class="ph-bold ph-package"></i></div>Stock</div>
 
       <!-- FDM Stock -->
       <div id="fdmStock">
@@ -854,7 +855,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()" data-i18n="materials.modal_mat.btn_cancel">Cancelar</button>
-      <button class="btn btn-primary" id="btnSave" onclick="saveMaterial()" data-i18n="materials.modal_mat.btn_save">💾 Guardar</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveMaterial()" data-i18n="materials.modal_mat.btn_save"><i class="ph-bold ph-floppy-disk"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -1153,9 +1154,9 @@ function expiryDisplay(expiry) {
   if (!expiry) return '<span class="expiry-ok">—</span>';
   var _ec=String(expiry).slice(0,10); var _ed=new Date(_ec+'T12:00:00');
   const days = Math.ceil((_ed - new Date()) / 86400000);
-  if (days < 0)   return `<span class="expiry-warn">⚠️ Expirado</span>`;
-  if (days < 30)  return `<span class="expiry-warn">⚠️ ${days}d</span>`;
-  if (days < 90)  return `<span style="color:var(--warning);font-size:.78rem;font-weight:700">⚠️ ${days}d</span>`;
+  if (days < 0)   return `<span class="expiry-warn"><i class="ph-bold ph-warning-octagon"></i> Expirado</span>`;
+  if (days < 30)  return `<span class="expiry-warn"><i class="ph-bold ph-warning-octagon"></i> ${days}d</span>`;
+  if (days < 90)  return `<span style="color:var(--warning);font-size:.78rem;font-weight:700"><i class="ph-bold ph-warning-octagon"></i> ${days}d</span>`;
   const d = new Date(expiry);
   return `<span class="expiry-ok">${d.toLocaleDateString('pt-PT',{month:'short',year:'numeric'})}</span>`;
 }
@@ -1284,8 +1285,8 @@ function renderTable() {
       <td>${m.packId ? `<span class="pack-badge" onclick="showPackSiblings(event,'${escH(m.packId)}')" title="${escH(m.packId.replace(/-\d{10,}$/, ''))}">🏷️ ${escH(m.packId.replace(/-\d{10,}$/, ''))}</span>` : '<span style="color:var(--muted);font-size:.75rem">—</span>'}</td>
       <td>${renderBadge(m)}</td>
       <td class="cell-actions">
-        <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar">✏️</button>
-        <button class="btn-icon del" onclick="confirmDelete('${m.id}')" title="Eliminar">🗑️</button>
+        <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+        <button class="btn-icon del" onclick="confirmDelete('${m.id}')" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -1324,7 +1325,7 @@ function renderTable() {
         <div class="mob-fil-bottom">
           <div class="mob-fil-actions">
             <button class="btn-icon" onclick="openModal('${m.id}')">✏️ Editar</button>
-            <button class="btn-icon del" onclick="confirmDelete('${m.id}')">🗑️</button>
+            <button class="btn-icon del" onclick="confirmDelete('${m.id}')"><i class="ph-bold ph-trash"></i></button>
           </div>
         </div>
       </div>`;
@@ -1532,7 +1533,7 @@ async function saveMaterial() {
   if (isFDM) {
     const total  = Math.max(0, parseInt(document.getElementById('fTotal').value)  || 0);
     const inUse  = Math.max(0, parseInt(document.getElementById('fInUse').value)  || 0);
-    if (inUse > total) { showToast('⚠️ "Em uso" não pode ser maior que "Total"', 'err'); return; }
+    if (inUse > total) { showToast('<i class="ph-bold ph-warning-octagon"></i> "Em uso" não pode ser maior que "Total"', 'err'); return; }
     record = {
       materialClass: 'fdm',
       material_class: 'fdm',
@@ -1551,7 +1552,7 @@ async function saveMaterial() {
   } else {
     const total = Math.max(0, parseInt(document.getElementById('rTotal').value) || 0);
     const inUse = Math.max(0, parseInt(document.getElementById('rInUse').value) || 0);
-    if (inUse > total) { showToast('⚠️ "Em uso" não pode ser maior que "Total"', 'err'); return; }
+    if (inUse > total) { showToast('<i class="ph-bold ph-warning-octagon"></i> "Em uso" não pode ser maior que "Total"', 'err'); return; }
     const expiry     = document.getElementById('rExpiry').value || null;
     const wavelength = document.getElementById('rWavelength').value;
     const notesStr   = [notes, wavelength ? wavelength + 'nm' : ''].filter(Boolean).join(' · ');
@@ -1615,7 +1616,7 @@ async function deleteMaterial(id) {
     allMaterials = allMaterials.filter(m => m.id !== id);
     updateToggleCounts();
     applyFilters();
-    showToast('🗑️ ' + i18n.getNestedTranslation('materials.toasts.deleted'), '');
+    showToast('<i class="ph-bold ph-trash"></i> ' + i18n.getNestedTranslation('materials.toasts.deleted'), '');
   } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
@@ -1689,7 +1690,7 @@ function showUpgradeNotice(module) {
         <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${t('materials.limits.banner_desc')}</div>
       </div>
       <a href="billing.html" style="padding:8px 14px;background:var(--blue);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap">${t('materials.limits.btn_plans')}</a>
-      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px">✕</button>
+      <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:var(--subtle);font-size:1rem;padding:2px 4px"><i class="ph-bold ph-x"></i></button>
     `;
     document.body.appendChild(banner);
     setTimeout(() => banner?.remove(), 8000);
@@ -1988,7 +1989,7 @@ function pkRenderRows() {
           <input type="number" class="form-input pk-cost-input" value="${r.cost.toFixed(2)}"
             min="0" step="0.01" oninput="pkUpdateRowCost(${i}, this.value)" style="width:80px">
         </div>
-        <button class="pk-remove-btn" onclick="pkRemoveColorRow(${i})" title="Remover">✕</button>
+        <button class="pk-remove-btn" onclick="pkRemoveColorRow(${i})" title="Remover"><i class="ph-bold ph-x"></i></button>
       </div>
       <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
         <span class="pk-override-toggle" onclick="pkToggleOverride(${i})">
@@ -2102,7 +2103,7 @@ function pkCheckCostBalance() {
   if (total > 0 && Math.abs(sumCosts - total) > 0.02) {
     warn.style.display = '';
     const sym = getCurrencySymbol();
-    warn.textContent = `⚠️ A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
+    warn.textContent = `<i class="ph-bold ph-warning-octagon"></i> A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
   } else {
     warn.style.display = 'none';
   }
@@ -2132,11 +2133,11 @@ async function savePack() {
   const rollSize  = isFDM ? document.getElementById('pkRollSize').value
                           : document.getElementById('pkBottleSize').value;
 
-  if (!type)           { showToast('⚠️ Seleciona o tipo de material', 'err'); return; }
-  if (!brands.length)  { showToast('⚠️ Adiciona pelo menos uma marca', 'err'); return; }
+  if (!type)           { showToast('<i class="ph-bold ph-warning-octagon"></i> Seleciona o tipo de material', 'err'); return; }
+  if (!brands.length)  { showToast('<i class="ph-bold ph-warning-octagon"></i> Adiciona pelo menos uma marca', 'err'); return; }
 
   const validRows = _pkColorRows.filter(r => r.name.trim());
-  if (!validRows.length) { showToast('⚠️ Adiciona pelo menos uma cor com nome', 'err'); return; }
+  if (!validRows.length) { showToast('<i class="ph-bold ph-warning-octagon"></i> Adiciona pelo menos uma cor com nome', 'err'); return; }
 
   // packId: slug seguro, max 80 chars
   const slugName = packName.toLowerCase()
@@ -2182,12 +2183,12 @@ async function savePack() {
     applyFilters();
     closePackModal();
     _pkCommitNum(_pkCurrentNum); // only increment counter on successful save
-    showToast(`✅ Pack "${packName}" adicionado — ${validRows.length} cor${validRows.length!==1?'es':''} registadas!`, 'ok');
+    showToast('<i class="ph-bold ph-check-circle"></i> Pack "' + packName + '" adicionado — ' + validRows.length + ' cor' + (validRows.length!==1?'es':'') + ' registadas!', 'ok');
   } catch(e) {
     showToast('Erro ao guardar pack: ' + e.message, 'err');
   } finally {
     btn.disabled = false;
-    btn.textContent = '💾 Guardar Pack';
+    btn.textContent = '<i class="ph-bold ph-floppy-disk"></i> Guardar Pack';
   }
 }
 

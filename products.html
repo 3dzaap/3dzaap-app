@@ -72,6 +72,7 @@
   .mob-prod-list { display: flex; }
 }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 
@@ -107,12 +108,12 @@
     <div class="page">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="nav.products">📂 Produtos</h1>
+          <h1 data-i18n="nav.products"><i class="ph-bold ph-folder"></i> Produtos</h1>
           <p data-i18n="products.subtitle">Biblioteca de peças recorrentes e configuradas para produção.</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-primary" onclick="openProductModal()">
-            <span>＋</span> <span data-i18n="products.btn_new">Novo Produto</span>
+            <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="products.btn_new">Novo Produto</span>
           </button>
         </div>
       </div>
@@ -120,7 +121,7 @@
       <!-- Filters Wrapper -->
       <div class="filters-bar">
         <div class="filter-search-wrap">
-          <span class="filter-search-icon">🔍</span>
+          <span class="filter-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
           <input type="text" id="productSearchInput" class="filter-search" 
                  placeholder="Pesquisar por nome ou descrição..." 
                  oninput="renderProducts()" data-i18n="[placeholder]products.search_placeholder">
@@ -132,7 +133,7 @@
       <div class="table-card">
         <div class="table-wrap">
           <div id="productsEmpty" class="table-empty" style="display:none">
-            <div class="table-empty-icon">📂</div>
+            <div class="table-empty-icon"><i class="ph-bold ph-folder"></i></div>
             <h3 data-i18n="products.empty_title">Biblioteca vazia</h3>
             <p data-i18n="products.empty_desc">Cria o teu primeiro produto ou guarda um directamente da Calculadora.</p>
           </div>
@@ -161,13 +162,13 @@
 <div class="modal-overlay" id="productModalOverlay" onclick="if(event.target===this)closeProductModal()">
   <div class="modal" style="max-width:620px">
     <div class="modal-header">
-      <div class="modal-title" id="productModalTitle">📂 Novo Produto</div>
-      <button class="modal-close" onclick="closeProductModal()">✕</button>
+      <div class="modal-title" id="productModalTitle"><i class="ph-bold ph-folder"></i> Novo Produto</div>
+      <button class="modal-close" onclick="closeProductModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
       
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-blue">🏷️</div>
+        <div class="form-section-divider-icon si-blue"><i class="ph-bold ph-tag"></i></div>
         <span data-i18n="products.modal.sec_basic">Informação Geral</span>
       </div>
 
@@ -186,7 +187,7 @@
       </div>
 
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-purple">⚙️</div>
+        <div class="form-section-divider-icon si-purple"><i class="ph-bold ph-gear"></i></div>
         <span data-i18n="products.modal.sec_tech">Ficha Técnica</span>
       </div>
 
@@ -194,8 +195,8 @@
         <div class="form-group">
           <label class="form-label" data-i18n="products.modal.lbl_tech">Tecnologia</label>
           <select id="prTech" class="form-select" onchange="onTechChange()">
-            <option value="fdm" data-i18n="products.modal.tech_fdm">🧵 FDM</option>
-            <option value="resin" data-i18n="products.modal.tech_resin">🧪 Resina</option>
+            <option value="fdm" data-i18n="products.modal.tech_fdm"><i class="ph-bold ph-circles-three"></i> FDM</option>
+            <option value="resin" data-i18n="products.modal.tech_resin"><i class="ph-bold ph-flask"></i> Resina</option>
           </select>
         </div>
         <div class="form-group">
@@ -225,7 +226,7 @@
     </div>
     <div class="modal-footer">
       <div style="flex:1">
-        <button class="btn btn-ghost color-danger btn-sm" id="btnDeleteProduct" style="display:none" onclick="confirmDelProduct()" data-i18n="common.delete">🗑️ Apagar</button>
+        <button class="btn btn-ghost color-danger btn-sm" id="btnDeleteProduct" style="display:none" onclick="confirmDelProduct()" data-i18n="common.delete"><i class="ph-bold ph-trash"></i> Apagar</button>
       </div>
       <button class="btn btn-ghost" onclick="closeProductModal()" data-i18n="common.cancel">Cancelar</button>
       <button class="btn btn-primary" id="btnSaveProduct" onclick="saveProduct()">
@@ -328,7 +329,7 @@ function renderProducts() {
       <tr class="exp-tr ${isExpanded ? 'is-expanded' : ''}" onclick="toggleProductExpand('${p.id}')">
         <td>
           <div class="cell-product">
-            <div class="prod-icon-box">📦</div>
+            <div class="prod-icon-box"><i class="ph-bold ph-package"></i></div>
             <div>
               <div class="prod-name-main" style="display:flex; align-items:center; gap:8px">
                 ${escH(p.name)}
@@ -340,7 +341,7 @@ function renderProducts() {
         </td>
         <td>
           <span class="mat-badge ${isResin?'mat-resin':'mat-fdm'}">
-             ${isResin?'🧪 Resina':'🧵 FDM'}
+             ${isResin?'<i class="ph-bold ph-flask"></i> Resina':'<i class="ph-bold ph-circles-three"></i> FDM'}
           </span>
         </td>
         <td class="cell-mono">${weight.toFixed(1)}${isResin?'ml':'g'}</td>
@@ -348,10 +349,10 @@ function renderProducts() {
         <td class="cell-mono" style="color:var(--blue); font-weight:800">${fmtCurrency(p.salePrice)}</td>
         <td>
           <div style="display:flex; justify-content:flex-end; gap:6px" onclick="event.stopPropagation()">
-            <button class="btn-icon" onclick="calculateProduct('${p.id}')" title="Calcular">🧪</button>
-            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')" title="Gerar Pedido">🛒</button>
-            <button class="btn-icon" onclick="openProductModal('${p.id}')" title="Editar">✏️</button>
-            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')" title="Excluir">🗑️</button>
+            <button class="btn-icon" onclick="calculateProduct('${p.id}')" title="Calcular"><i class="ph-bold ph-calculator"></i></button>
+            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')" title="Gerar Pedido"><i class="ph-bold ph-shopping-cart"></i></button>
+            <button class="btn-icon" onclick="openProductModal('${p.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')" title="Excluir"><i class="ph-bold ph-trash"></i></button>
           </div>
         </td>
       </tr>
@@ -365,7 +366,7 @@ function renderProducts() {
               </p>
             </div>
             <div class="summary-card">
-              <div class="summary-title">🧪 Resumo Técnico</div>
+              <div class="summary-title"><i class="ph-bold ph-flask"></i> Resumo Técnico</div>
               <div class="summary-grid">
                 <div class="summary-item">
                   <label>Consumo</label>
@@ -409,10 +410,10 @@ function renderProducts() {
             </div>
           </div>
           <div style="display:flex; gap:6px" onclick="event.stopPropagation()">
-            <button class="btn-icon" onclick="calculateProduct('${p.id}')">🧪</button>
-            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')">🛒</button>
-            <button class="btn-icon" onclick="openProductModal('${p.id}')">✏️</button>
-            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')">🗑️</button>
+            <button class="btn-icon" onclick="calculateProduct('${p.id}')"><i class="ph-bold ph-calculator"></i></button>
+            <button class="btn-icon" onclick="createOrderFromProduct('${p.id}')"><i class="ph-bold ph-shopping-cart"></i></button>
+            <button class="btn-icon" onclick="openProductModal('${p.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
+            <button class="btn-icon btn-trash" onclick="deleteProduct('${p.id}')"><i class="ph-bold ph-trash"></i></button>
           </div>
         </div>
         <div class="mob-expand-area ${isExpanded ? 'is-expanded' : ''}">
@@ -440,7 +441,7 @@ async function deleteProduct(id) {
     if(!p) return;
     
     await DB.deleteProduct(id);
-    showToast('🗑️ Produto excluído com sucesso.', 'ok');
+    showToast('<i class="ph-bold ph-trash"></i> Produto excluído com sucesso.', 'ok');
     loadData(); // Reload list
   } catch(e) {
     showToast('Erro ao excluir produto: ' + e.message, 'err');
@@ -465,7 +466,7 @@ function openProductModal(id = null) {
   const btnDel = document.getElementById('btnDeleteProduct');
   
   if(id) {
-    title.textContent = '✏️ Editar Produto';
+    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Produto';
     btnDel.style.display = 'block';
     const p = products.find(x => x.id === id);
     if(p) {
@@ -481,7 +482,7 @@ function openProductModal(id = null) {
       onTechChange();
     }
   } else {
-    title.textContent = '📂 Novo Produto';
+    title.textContent = '<i class="ph-bold ph-folder"></i> Novo Produto';
     btnDel.style.display = 'none';
     document.getElementById('prName').value = '';
     document.getElementById('prPrice').value = '';
@@ -538,7 +539,7 @@ async function saveProduct() {
     } else {
       products.unshift(saved);
     }
-    showToast('✅ Produto gravado com sucesso!', 'ok');
+    showToast('<i class="ph-bold ph-check-circle"></i> Produto gravado com sucesso!', 'ok');
     closeProductModal();
     renderProducts();
   } catch(e) {
@@ -555,7 +556,7 @@ async function confirmDelProduct() {
   try {
     await DB.deleteProduct(_editPrId);
     products = products.filter(p => p.id !== _editPrId);
-    showToast('🗑️ Produto removido.', 'ok');
+    showToast('<i class="ph-bold ph-trash"></i> Produto removido.', 'ok');
     closeProductModal();
     renderProducts();
   } catch(e) {
@@ -583,7 +584,7 @@ function createOrderFromProduct(id) {
   };
   
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
-  showToast('📦 A carregar dados do produto para novo pedido...', 'ok');
+  showToast('<i class="ph-bold ph-package"></i> A carregar dados do produto para novo pedido...', 'ok');
   setTimeout(() => { window.location.href = 'orders.html?from=product'; }, 800);
 }
 

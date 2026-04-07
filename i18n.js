@@ -34,6 +34,7 @@ const i18n = {
             document.documentElement.lang = locale;
         } catch (error) {
             console.warn(`[i18n] Failed to load ${locale}:`, error.message);
+            showToast('<i class="ph-bold ph-x-circle"></i> Erro: ' + error.message, 'err');
         }
     },
 
@@ -143,7 +144,7 @@ const i18n = {
         // Sync the topbar theme button icon
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
-            btn.innerHTML = isDark ? '☀️' : '🌙';
+            btn.innerHTML = isDark ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
         });
     }
 };

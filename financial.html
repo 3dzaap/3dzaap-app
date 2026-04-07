@@ -275,6 +275,7 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
@@ -288,7 +289,7 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-breadcrumb">
-        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="nav.financial">💰 Financeiro</strong>
+        <a href="dashboard.html" data-i18n="nav.home">Dashboard</a><span>›</span><strong data-i18n="nav.financial"><i class="ph-bold ph-currency-dollar"></i> Financeiro</strong>
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
@@ -340,7 +341,7 @@
 
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="financial.title">💰 Financeiro</h1>
+          <h1 data-i18n="financial.title"><i class="ph-bold ph-currency-dollar"></i> Financeiro</h1>
           <p data-i18n="financial.subtitle">Relatório de receitas e desempenho por período</p>
         </div>
         <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap">
@@ -352,7 +353,7 @@
         <label for="periodoInput" data-i18n="financial.lbl_period" style="margin-right:4px">📅 Período:</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="month" id="periodoInput" style="height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--rm);outline:none;font-family:var(--f);font-size:0.85rem;font-weight:600;color:var(--dark)">
-          <button class="btn btn-primary" onclick="renderAll()" style="height:34px;padding:0 14px;font-size:0.8rem">🔍 Pesquisar</button>
+          <button class="btn btn-primary" onclick="renderAll()" style="height:34px;padding:0 14px;font-size:0.8rem"><i class="ph-bold ph-magnifying-glass"></i> Pesquisar</button>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="setToday()" data-i18n="financial.btn_month" style="margin-left:6px">Mês atual</button>
         <span id="periodoLabel" style="font-size:.78rem;color:var(--subtle);margin-left:4px"></span>
@@ -397,16 +398,16 @@
           </table>
         </div>
         <div class="fin-card">
-          <div class="fin-card-title" data-i18n="financial.card_done">✅ Pedidos Concluídos</div>
+          <div class="fin-card-title" data-i18n="financial.card_done"><i class="ph-bold ph-check-circle"></i> Pedidos Concluídos</div>
           <div id="doneStats" style="font-size:.84rem;color:var(--muted)" data-i18n="settings.team.loading">A carregar…</div>
         </div>
       </div>
 
       <div class="fin-card">
-        <div class="fin-card-title" data-i18n="financial.card_all">📋 Todos os pedidos do período</div>
+        <div class="fin-card-title" data-i18n="financial.card_all"><i class="ph-bold ph-list-numbers"></i> Todos os pedidos do período</div>
         <div class="table-wrap">
           <div id="ordersEmpty" class="fin-empty" style="display:none">
-            <div class="fin-empty-icon">📋</div>
+            <div class="fin-empty-icon"><i class="ph-bold ph-list-numbers"></i></div>
             <p data-i18n="financial.empty_period">Sem pedidos neste período.</p>
           </div>
           <table class="fin-orders-table" id="ordersTable" style="display:none">
@@ -451,7 +452,7 @@
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
       <div class="modal-title" id="expenseModalTitle">💸 Nova Despesa</div>
-      <button class="modal-close" onclick="closeExpModal()">✕</button>
+      <button class="modal-close" onclick="closeExpModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -482,7 +483,7 @@
     </div>
     <div class="modal-actions" style="border-top:1px solid var(--border);padding:14px 24px;display:flex;justify-content:flex-end;gap:10px">
       <button class="btn btn-ghost" onclick="closeExpModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveExp()">💾 Guardar Despesa</button>
+      <button class="btn btn-primary" onclick="saveExp()"><i class="ph-bold ph-floppy-disk"></i> Guardar Despesa</button>
     </div>
   </div>
 </div>
@@ -669,8 +670,8 @@ function renderAll() {
         <td style="font-weight:600">${escH(e.description||'')}</td>
         <td class="r" style="font-weight:700;color:#dc2626">${fmtCurrency(e.value||0)}</td>
         <td class="r" style="white-space:nowrap">
-           <button class="btn-icon" onclick="openExpModal('${e.id}')" title="Editar">✏️</button>
-           <button class="btn-icon del" onclick="confirmDelExp('${e.id}')" title="Apagar">🗑️</button>
+           <button class="btn-icon" onclick="openExpModal('${e.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+           <button class="btn-icon del" onclick="confirmDelExp('${e.id}')" title="Apagar"><i class="ph-bold ph-trash"></i></button>
         </td>
       </tr>
     `).join('');
@@ -688,8 +689,8 @@ function renderAll() {
         <div class="mob-fin-right">
            <div class="mob-fin-total" style="color:#dc2626">${fmtCurrency(e.value||0)}</div>
            <div style="margin-top:4px">
-             <button class="btn-icon" onclick="openExpModal('${e.id}')">✏️</button>
-             <button class="btn-icon del" onclick="confirmDelExp('${e.id}')">🗑️</button>
+             <button class="btn-icon" onclick="openExpModal('${e.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
+             <button class="btn-icon del" onclick="confirmDelExp('${e.id}')"><i class="ph-bold ph-trash"></i></button>
            </div>
         </div>
       </div>`).join('');
@@ -848,7 +849,7 @@ function openExpModal(id = null) {
   const overlay = document.getElementById('expenseModalOverlay');
   const title = document.getElementById('expenseModalTitle');
   if (id) {
-    title.textContent = '✏️ Editar Despesa';
+    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Despesa';
     const e = expenses.find(x => x.id === id);
     if(e) {
        document.getElementById('expDate').value = e.date || '';

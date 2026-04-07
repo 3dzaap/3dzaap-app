@@ -252,6 +252,7 @@
 }
 [data-theme="dark"] .gc-popover-item { color: var(--dark, #e2e8f0); }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
 <body class="dashboard-body">
 
@@ -321,7 +322,7 @@
     <div class="page">
       <div class="page-header">
         <div class="page-header-text">
-          <h1 data-i18n="settings.title">⚙️ Configurações</h1>
+          <h1 data-i18n="settings.title"><i class="ph-bold ph-gear"></i> Configurações</h1>
           <p data-i18n="settings.subtitle">Gerencie o perfil, marca, preferências e equipe</p>
         </div>
       </div>
@@ -329,12 +330,12 @@
       <div class="settings-grid">
         <!-- INTERNAL NAV (Horizontal at Top) -->
         <nav class="settings-nav">
-          <button class="settings-nav-btn active" data-tab="empresa">🏢 <span data-i18n="settings.tabs.company">Empresa</span></button>
-          <button class="settings-nav-btn" data-tab="marca">🎨 <span data-i18n="settings.tabs.brand">Marca</span></button>
-          <button class="settings-nav-btn" data-tab="preferencias">⚙️ <span data-i18n="settings.tabs.prefs">Preferências</span></button>
-          <button class="settings-nav-btn" data-tab="notificacoes">🔔 <span data-i18n="settings.tabs.notifs">Notificações</span></button>
-          <button class="settings-nav-btn" data-tab="equipa">👥 <span data-i18n="settings.tabs.team">Equipa</span></button>
-          <button class="settings-nav-btn" data-tab="assinatura">💳 <span data-i18n="settings.tabs.sub">Assinatura</span></button>
+          <button class="settings-nav-btn active" data-tab="empresa"><i class="ph-bold ph-buildings"></i> <span data-i18n="settings.tabs.company">Empresa</span></button>
+          <button class="settings-nav-btn" data-tab="marca"><i class="ph-bold ph-palette"></i> <span data-i18n="settings.tabs.brand">Marca</span></button>
+          <button class="settings-nav-btn" data-tab="preferencias"><i class="ph-bold ph-gear"></i> <span data-i18n="settings.tabs.prefs">Preferências</span></button>
+          <button class="settings-nav-btn" data-tab="notificacoes"><i class="ph-bold ph-bell"></i> <span data-i18n="settings.tabs.notifs">Notificações</span></button>
+          <button class="settings-nav-btn" data-tab="equipa"><i class="ph-bold ph-users"></i> <span data-i18n="settings.tabs.team">Equipa</span></button>
+          <button class="settings-nav-btn" data-tab="assinatura"><i class="ph-bold ph-credit-card"></i> <span data-i18n="settings.tabs.sub">Assinatura</span></button>
         </nav>
 
         <!-- CONTENT PANELS -->
@@ -380,7 +381,7 @@
           <!-- TAB: MARCA -->
           <div class="settings-panel" id="tab-marca" style="display:none">
             <div class="settings-card">
-              <div class="settings-card-title"><span data-i18n="settings.brand.logo_title">🎨 Logo da Empresa</span></div>
+              <div class="settings-card-title"><span data-i18n="settings.brand.logo_title"><i class="ph-bold ph-palette"></i> Logo da Empresa</span></div>
               <p class="toggle-desc" data-i18n="settings.brand.logo_hint">PNG ou JPG, máx 512KB. Aparece no sidebar e nos recibos.</p>
               
               <div class="logo-upload-area">
@@ -390,7 +391,7 @@
                 <div class="logo-upload-actions">
                   <input type="file" id="logoFile" accept="image/*" style="display:none">
                   <button class="btn btn-primary btn-sm" onclick="document.getElementById('logoFile').click()" data-i18n="settings.brand.btn_file">📁 Escolher Ficheiro</button>
-                  <button class="btn btn-ghost btn-sm del" id="btnRemoveLogo" style="display:none" data-i18n="settings.brand.btn_remove">🗑️ Remover</button>
+                  <button class="btn btn-ghost btn-sm del" id="btnRemoveLogo" style="display:none" data-i18n="settings.brand.btn_remove"><i class="ph-bold ph-trash"></i> Remover</button>
                 </div>
               </div>
               <div class="form-group" style="margin-top:16px">
@@ -410,7 +411,7 @@
                 <div class="logo-upload-actions">
                   <input type="file" id="sigFile" accept="image/png" style="display:none">
                   <button class="btn btn-primary btn-sm" onclick="document.getElementById('sigFile').click()" data-i18n="settings.brand.btn_file">📁 Escolher Ficheiro</button>
-                  <button class="btn btn-ghost btn-sm del" id="btnRemoveSig" style="display:none" data-i18n="settings.brand.btn_remove">🗑️ Remover</button>
+                  <button class="btn btn-ghost btn-sm del" id="btnRemoveSig" style="display:none" data-i18n="settings.brand.btn_remove"><i class="ph-bold ph-trash"></i> Remover</button>
                 </div>
               </div>
             </div>
@@ -514,7 +515,7 @@
                 </label>
               </div>
 
-              <div class="settings-card-title" style="margin-top:24px"><span data-i18n="settings.notifs.fin_title">💰 Alertas Financeiros</span></div>
+              <div class="settings-card-title" style="margin-top:24px"><span data-i18n="settings.notifs.fin_title"><i class="ph-bold ph-currency-dollar"></i> Alertas Financeiros</span></div>
               <div class="toggle-row">
                 <div class="toggle-info">
                   <div class="toggle-label" data-i18n="settings.notifs.overdue">Pagamentos em atraso</div>
@@ -542,7 +543,7 @@
           <div class="settings-panel" id="tab-equipa" style="display:none">
             <div class="settings-card">
               <div class="settings-card-title" style="justify-content:space-between">
-                <span data-i18n="settings.team.active">👥 Membros Ativos</span>
+                <span data-i18n="settings.team.active"><i class="ph-bold ph-users"></i> Membros Ativos</span>
                 <button class="btn btn-primary btn-sm" id="btnInvite" data-i18n="settings.team.invite_btn">+ Convidar</button>
               </div>
               <div id="membersList">
@@ -559,7 +560,7 @@
           <!-- TAB: ASSINATURA -->
           <div class="settings-panel" id="tab-assinatura" style="display:none">
             <div class="settings-card">
-              <div class="settings-card-title"><span data-i18n="settings.sub.title">💳 Detalhes da Assinatura</span></div>
+              <div class="settings-card-title"><span data-i18n="settings.sub.title"><i class="ph-bold ph-credit-card"></i> Detalhes da Assinatura</span></div>
               
               <div style="display:flex; justify-content:space-between; align-items:center; background:var(--blue-g); padding:20px; border-radius:16px; border:1.5px solid var(--blue)">
                 <div>
@@ -643,7 +644,7 @@
   <div class="save-bar-msg" id="saveBarMsg">💡 <span data-i18n="settings.save_bar.unsaved">Alterações não guardadas</span></div>
   <div class="save-bar-btns">
     <button class="btn btn-ghost" id="btnDiscard" data-i18n="common.cancel">Cancelar</button>
-    <button class="btn btn-primary" id="btnSaveAll" data-i18n="common.save">💾 Guardar tudo</button>
+    <button class="btn btn-primary" id="btnSaveAll" data-i18n="common.save"><i class="ph-bold ph-floppy-disk"></i> Guardar tudo</button>
   </div>
 </div>
 
@@ -914,12 +915,12 @@ async function saveAll() {
     // Update local lang if changed
     localStorage.setItem('3dzaap_lang', cfg.lang);
     
-    showToast('✅ Guardado com sucesso!', 'ok');
+    showToast('<i class="ph-bold ph-check-circle"></i> Guardado com sucesso!', 'ok');
     setTimeout(() => window.location.reload(), 1000);
   } catch(err) {
-    showToast('❌ Erro: ' + err.message, 'err');
+    showToast('<i class="ph-bold ph-x-circle"></i> Erro: ' + err.message, 'err');
     btn.disabled = false;
-    btn.innerHTML = '💾 Guardar tudo';
+    btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Guardar tudo';
   }
 }
 
@@ -1100,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>

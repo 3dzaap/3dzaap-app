@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
 :root{
   --blue:#3B8FD4; --blue-d:#2a6fb0; --blue-dd:#1a4f80; --blue-lt:#72B8F0; --blue-g:rgba(59,143,212,0.10);
@@ -226,7 +227,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <!-- LOGIN -->
       <div id="loginForm">
-        <div class="form-title">Bem-vindo de volta 👋</div>
+        <div class="form-title">Bem-vindo de volta <i class="ph-bold ph-hand-waving"></i></div>
         <div class="form-sub">Sem conta? <span onclick="switchTab('signup')">Regista-te grátis</span></div>
         <button class="btn-google" onclick="googleAuth()">
           <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
@@ -236,7 +237,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="field" id="f-email-l">
           <label>Email</label>
           <div class="field-wrap">
-            <span class="ico">✉️</span>
+            <span class="ico"><i class="ph-bold ph-envelope"></i></span>
             <input type="email" class="inp" id="loginEmail" placeholder="tu@empresa.com" autocomplete="email">
           </div>
           <div class="field-error">Email inválido</div>
@@ -244,9 +245,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="field" id="f-pass-l">
           <label>Password</label>
           <div class="field-wrap">
-            <span class="ico">🔒</span>
+            <span class="ico"><i class="ph-bold ph-lock"></i></span>
             <input type="password" class="inp" id="loginPass" placeholder="••••••••" autocomplete="current-password">
-            <button class="eye-btn" onclick="toggleEye('loginPass',this)" type="button">👁️</button>
+            <button class="eye-btn" onclick="toggleEye('loginPass',this)" type="button"><i class="ph-bold ph-eye"></i></button>
           </div>
           <a href="#" class="forgot" onclick="showReset(event)">Esqueceu a password?</a>
           <div class="field-error">Password incorrecta</div>
@@ -259,13 +260,13 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <!-- FORGOT PASSWORD -->
       <div id="resetForm" style="display:none">
-        <div class="form-title">Recuperar password 🔑</div>
+        <div class="form-title">Recuperar password <i class="ph-bold ph-key"></i></div>
         <div class="form-sub">Envia-mos um link para o teu email. <span onclick="cancelReset()">Voltar ao login</span></div>
         <div id="resetInputArea">
           <div class="field">
             <label>Email da conta</label>
             <div class="field-wrap">
-              <span class="ico">✉️</span>
+              <span class="ico"><i class="ph-bold ph-envelope"></i></span>
               <input type="email" class="inp" id="resetEmail" placeholder="tu@empresa.com">
             </div>
           </div>
@@ -275,7 +276,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           </button>
         </div>
         <div class="reset-sent" id="resetSent">
-          <div class="icon">📬</div>
+          <div class="icon"><i class="ph-bold ph-envelope-open"></i></div>
           <h3>Email enviado!</h3>
           <p>Verifica a tua caixa de entrada e segue as instruções.</p>
           <button class="btn-primary" style="margin-top:20px" onclick="cancelReset()">
@@ -287,7 +288,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 
       <!-- SIGNUP -->
       <div id="signupForm" style="display:none">
-        <div class="form-title">Começa grátis hoje 🚀</div>
+        <div class="form-title">Começa grátis hoje <i class="ph-bold ph-rocket-launch"></i></div>
         <div class="form-sub">14 dias de trial completo. Sem cartão. <span onclick="switchTab('login')">Já tens conta?</span></div>
         <button class="btn-google" onclick="googleAuth()">
           <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
@@ -298,7 +299,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="field" id="f-fname">
             <label>Primeiro nome</label>
             <div class="field-wrap">
-              <span class="ico">👤</span>
+              <span class="ico"><i class="ph-bold ph-user"></i></span>
               <input type="text" class="inp" id="signupFname" placeholder="João" autocomplete="given-name">
             </div>
             <div class="field-error">Campo obrigatório</div>
@@ -306,7 +307,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="field" id="f-lname">
             <label>Apelido</label>
             <div class="field-wrap">
-              <span class="ico">👤</span>
+              <span class="ico"><i class="ph-bold ph-user"></i></span>
               <input type="text" class="inp" id="signupLname" placeholder="Silva" autocomplete="family-name">
             </div>
             <div class="field-error">Campo obrigatório</div>
@@ -315,7 +316,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="field" id="f-email-s">
           <label>Email profissional</label>
           <div class="field-wrap">
-            <span class="ico">✉️</span>
+            <span class="ico"><i class="ph-bold ph-envelope"></i></span>
             <input type="email" class="inp" id="signupEmail" placeholder="tu@empresa.com" autocomplete="email">
           </div>
           <div class="field-error">Email inválido</div>
@@ -323,9 +324,9 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="field" id="f-pass-s">
           <label>Password</label>
           <div class="field-wrap">
-            <span class="ico">🔒</span>
+            <span class="ico"><i class="ph-bold ph-lock"></i></span>
             <input type="password" class="inp" id="signupPass" placeholder="Mínimo 8 caracteres" autocomplete="new-password" oninput="checkPasswordStrength(this.value)">
-            <button class="eye-btn" onclick="toggleEye('signupPass',this)" type="button">👁️</button>
+            <button class="eye-btn" onclick="toggleEye('signupPass',this)" type="button"><i class="ph-bold ph-eye"></i></button>
           </div>
           <div class="pw-bar"><div class="pw-fill" id="pwFill"></div></div>
           <div class="field-hint" id="pwHint">Use letras, números e símbolos</div>
@@ -350,13 +351,13 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <!-- STEP 1 -->
       <div class="step-panel active" id="step1">
         <div class="steps-header">
-          <div class="steps-title">🏭 A tua empresa</div>
+          <div class="steps-title"><i class="ph-bold ph-buildings"></i> A tua empresa</div>
           <div class="steps-sub">Estes dados aparecem nos recibos e documentos</div>
         </div>
         <div class="field" id="f-cname">
           <label>Nome da empresa</label>
           <div class="field-wrap">
-            <span class="ico">🏢</span>
+            <span class="ico"><i class="ph-bold ph-buildings"></i></span>
             <input type="text" class="inp" id="companyName" placeholder="Ex: PrintLab Studio" oninput="generateSlug(this.value)" autocomplete="organization">
           </div>
           <div class="slug-preview" id="slugPreview"></div>
@@ -374,7 +375,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="field">
           <label>País <span style="color:var(--subtle);font-weight:500">(moeda e pagamentos)</span></label>
           <div class="field-wrap">
-            <span class="ico">🌍</span>
+            <span class="ico"><i class="ph-bold ph-globe"></i></span>
             <select class="inp" id="companyCountry" style="appearance:none;cursor:pointer">
               <option value="pt">🇵🇹 Portugal</option>
               <option value="br">🇧🇷 Brasil</option>
@@ -392,7 +393,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <label>Logótipo <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
             <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
               <label for="logoUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s">
-                🖼️ Upload
+                <i class="ph-bold ph-image"></i> Upload
                 <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadBrandingFile(this, 'logo')">
               </label>
               <div id="logoPreviewWrap" style="display:none;align-items:center;gap:8px">
@@ -405,7 +406,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
             <label>Assinatura <span style="font-weight:400;color:var(--muted);font-size:.8em">(opcional)</span></label>
             <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
               <label for="sigUpload" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1.5px dashed rgba(59,143,212,.35);background:rgba(59,143,212,.06);cursor:pointer;font-size:.82rem;font-weight:600;color:var(--blue);transition:all .18s">
-                ✍️ Upload
+                <i class="ph-bold ph-signature"></i> Upload
                 <input type="file" id="sigUpload" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="loadBrandingFile(this, 'sig')">
               </label>
               <div id="sigPreviewWrap" style="display:none;align-items:center;gap:8px">
@@ -428,7 +429,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <div class="steps-title">✨ Escolhe o teu plano</div>
           <div class="steps-sub">Todos os planos incluem 14 dias de trial grátis</div>
         </div>
-        <div class="trial-info">🎁 <span>14 dias grátis em qualquer plano — sem cartão necessário</span></div>
+        <div class="trial-info"><i class="ph-bold ph-gift"></i> <span>14 dias grátis em qualquer plano — sem cartão necessário</span></div>
         <div class="plan-toggle-wrap">
           <span class="pt-lbl" id="lbl-mon">Mensal</span>
           <div class="pt-sw" id="planToggle" onclick="toggleBilling()"></div>
@@ -463,7 +464,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           </div>
         </div>
         <button class="btn-primary" id="finishBtn" style="margin-top:16px" onclick="finishOnboarding()">
-          <span class="btn-label">🚀 Finalizar e entrar no Dashboard</span>
+          <span class="btn-label"><i class="ph-bold ph-rocket-launch"></i> Finalizar e entrar no Dashboard</span>
           <div class="spinner"></div>
         </button>
         <div style="text-align:center;margin-top:10px">
@@ -476,16 +477,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     <!-- ═══ SUCCESS PANEL ═══ -->
     <div id="successPanel" style="display:none">
       <div class="success-screen">
-        <div class="success-icon">🎉</div>
+        <div class="success-icon"><i class="ph-bold ph-confetti"></i></div>
         <h2>Tudo pronto!</h2>
         <div class="company-pill" id="successCompanyPill"></div>
         <p>A tua conta foi criada com sucesso.<br>O teu trial de 14 dias começa agora.</p>
         
         <div id="waActivationWrap" style="margin-bottom:20px; background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2); border-radius:16px; padding:16px">
-          <div style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase; margin-bottom:8px">🚀 Ativação Prioritária</div>
+          <div style="font-size:0.75rem; font-weight:700; color:#15803d; text-transform:uppercase; margin-bottom:8px"><i class="ph-bold ph-rocket-launch"></i> Ativação Prioritária</div>
           <p style="font-size:0.82rem; color:#15803d; margin-bottom:12px">Queres começar a faturar já? Envia uma mensagem para o nosso suporte técnico.</p>
           <button class="btn-primary" id="waActivateBtn" style="background:linear-gradient(135deg,#25D366,#128C7E); box-shadow:0 6px 16px rgba(37,211,102,0.25); margin-top:0">
-            <span class="btn-label">Falar no WhatsApp</span>
+            <span class="btn-label"><i class="ph-bold ph-whatsapp-logo"></i> Falar no WhatsApp</span>
           </button>
         </div>
 
@@ -713,7 +714,7 @@ async function finishOnboarding() {
 
     document.getElementById('onboardingPanel').style.display = 'none';
     document.getElementById('successPanel').style.display    = 'block';
-    document.getElementById('successCompanyPill').textContent = '🏭 ' + (STATE.form.companyName || 'Empresa');
+    document.getElementById('successCompanyPill').innerHTML = '<i class="ph-bold ph-buildings"></i> ' + (STATE.form.companyName || 'Empresa');
 
     if (result.needsEmailConfirm) {
       // Confirmação de email necessária
