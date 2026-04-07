@@ -343,7 +343,9 @@ function renderProducts() {
              ${isResin?'🧪 Resina':'🧵 FDM'}
           </span>
         </td>
-        <td class="cell-mono">${fmtCurrency(p.salePrice)}</td>
+        <td class="cell-mono">${weight.toFixed(1)}${isResin?'ml':'g'}</td>
+        <td class="cell-mono">${time.toFixed(1)}h</td>
+        <td class="cell-mono" style="color:var(--blue); font-weight:800">${fmtCurrency(p.salePrice)}</td>
         <td>
           <div style="display:flex; justify-content:flex-end; gap:6px" onclick="event.stopPropagation()">
             <button class="btn-icon" onclick="calculateProduct('${p.id}')" title="Calcular">🧪</button>
@@ -354,7 +356,7 @@ function renderProducts() {
         </td>
       </tr>
       <tr class="details-tr ${isExpanded ? 'is-expanded' : ''}">
-        <td colspan="4">
+        <td colspan="6">
           <div class="details-pane">
             <div class="summary-card">
               <div class="summary-title">📁 Descrição</div>
