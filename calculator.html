@@ -619,7 +619,7 @@
                   <div class="field full">
                     <label data-i18n="calc.mode_label">Modo de impressão</label>
                     <div class="mode-toggle">
-                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm"><i class="ph-bold ph-printer"></i> FDM — Filamento</button>
+                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm"><i class="ph-bold ph-vinyl-record"></i> FDM — Filamento</button>
                       <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" data-i18n="calc.mode_resin"><i class="ph-bold ph-flask"></i> Resina (SLA)</button>
                     </div>
                   </div>
@@ -637,7 +637,7 @@
                     </div>
                   </div>
                   <div class="field">
-                    <label data-i18n="calc.fields.weight">Peso (g)</label>
+                    <label><span data-i18n="calc.fields.weight">Peso</span> (<span class="unit-weight">g</span>)</label>
                     <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
                   </div>
                   <div class="field">
@@ -1069,6 +1069,7 @@ function setTechMode(tech) {
   const currency = _sessionData?.currency || '€';
   const unitLabel = document.getElementById('labelFilPrice');
   if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
+  document.querySelectorAll('.unit-weight').forEach(el => el.textContent = tech === 'resin' ? 'ml' : 'g');
   
   // Filter materials if they are loaded
   renderSelectors();
@@ -1292,7 +1293,7 @@ function renderMesas() {
               ${filteredMaterials.length === 0 ? `<option disabled>(Sem materiais)</option>` : matOptions}
             </select>
           </td>
-          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="g"></td>
+          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${_activeTech === 'resin' ? 'ml' : 'g'}"></td>
           <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
           <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
           <td style="text-align:right">
@@ -1308,7 +1309,7 @@ function renderMesas() {
           <tr>
             <th data-i18n="calc.table.part">${i18n.getNestedTranslation('calc.table.part')||'Peça'}</th>
             <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
-            <th data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')||'Peso (g)'}</th>
+            <th><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${_activeTech === 'resin' ? 'ml' : 'g'})</th>
             <th data-i18n="calc.table.qty">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
             <th data-i18n="calc.table.time_h">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
             <th></th>
@@ -1423,7 +1424,7 @@ function criarPedido() {
   var t_pecas = window.i18n ? (window.i18n.getNestedTranslation('calc.table.part') || 'peças').toLowerCase() : 'peças';
   
   var modeLabel = i.tech === 'resin' ? (window.i18n ? window.i18n.getNestedTranslation('calc.modes.resin')||'Resina' : 'Resina') : (window.i18n ? window.i18n.getNestedTranslation('calc.modes.fdm')||'FDM' : 'FDM');
-  modeLabel = modeLabel.replace(/<i class="ph-bold ph-printer"><\/i> |<i class="ph-bold ph-flask"><\/i> | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
+  modeLabel = modeLabel.replace(/<i class="ph-bold ph-vinyl-record"><\/i> |<i class="ph-bold ph-flask"><\/i> | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
   
   var desc = name || (i.mode === 'advanced'
     ? t_projeto + ' ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' ' + t_pecas
