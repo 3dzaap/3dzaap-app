@@ -118,7 +118,7 @@ var _toastTimer;
 function showToast(msg, type) {
   var t = document.getElementById('toast');
   if (!t) return;
-  t.textContent = msg;
+  t.innerHTML = msg;
   t.className = 'toast show ' + (type || '');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3000);
