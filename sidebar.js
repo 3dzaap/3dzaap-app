@@ -93,7 +93,7 @@ const Sidebar = (() => {
       <div class="company-avatar" id="sidebarCompanyAvatar">—</div>
       <div class="company-info" style="flex-direction:row; align-items:center; justify-content:space-between; gap:4px;">
         <span class="company-name" id="sidebarCompanyName">—</span>
-        <i class="ph-bold ph-seal-check" style="color:var(--blue); font-size:1.15rem; flex-shrink:0;"></i>
+        <i id="sidebarPlanIcon" class="ph-bold ph-seal-check" style="color:var(--blue); font-size:1.15rem; flex-shrink:0;"></i>
         <span id="sidebarPlanBadge" style="display:none;">—</span>
       </div>
     </div>
@@ -102,6 +102,12 @@ const Sidebar = (() => {
   <nav class="sidebar-nav">
     ${navHTML}
   </nav>
+
+  <div class="sidebar-cta" id="sidebarTrialCTA" style="display:none; padding: 0 16px 14px; flex-shrink:0;">
+    <button class="btn btn-orange" style="width:100%; justify-content:center; box-shadow:0 4px 14px rgba(245,148,58,.25);" onclick="window.location.href='settings.html?tab=assinatura'">
+      <i class="ph-bold ph-star"></i> <span data-i18n="nav.upgrade_cta">Fazer Upgrade</span>
+    </button>
+  </div>
 
   <div class="sidebar-footer">
     <div class="user-dropdown" id="sidebarUserDropdown">
@@ -181,6 +187,20 @@ const Sidebar = (() => {
     _setText('sidebarPlanBadge', translatedPlan);
     const tooltipEl = document.getElementById('sidebarPlanTooltip');
     if(tooltipEl) tooltipEl.title = `Plano: ${translatedPlan} (Clicar para gerir)`;
+
+    const ctaEl = document.getElementById('sidebarTrialCTA');
+    if(ctaEl) ctaEl.style.display = (plan === 'trial') ? 'block' : 'none';
+
+    const planIconEl = document.getElementById('sidebarPlanIcon');
+    if(planIconEl) {
+      if (plan === 'trial') {
+        planIconEl.className = 'ph-bold ph-seal';
+        planIconEl.style.color = 'var(--muted)';
+      } else {
+        planIconEl.className = 'ph-bold ph-seal-check';
+        planIconEl.style.color = 'var(--blue)'; // Indicador visual ativo/pago
+      }
+    }
 
     const avatarEl = document.getElementById('sidebarCompanyAvatar');
     if (avatarEl) {
