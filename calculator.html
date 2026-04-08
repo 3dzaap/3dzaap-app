@@ -1071,10 +1071,19 @@ function setTechMode(tech) {
   if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
   document.querySelectorAll('.unit-weight').forEach(el => el.textContent = tech === 'resin' ? 'ml' : 'g');
   
+  // Update all mesas to match global tech switch, clearing material if changed
+  if (_calcMode === 'advanced') {
+    _mesas.forEach(m => {
+      if (m.tech !== tech) {
+        m.tech = tech;
+        m.parts.forEach(p => { p.materialId = ''; });
+      }
+    });
+  }
+  
   // Filter materials if they are loaded
   renderSelectors();
   if (_calcMode === 'advanced') {
-    // preserve current focused inputs if any, but since it's a tech change, refreshing is fine
     renderMesas();
   }
   liveCalc();
@@ -1168,8 +1177,18 @@ function applyPrinterSelect(id) {
 
 function addMesa() {
   const mId = Date.now() + Math.random();
-  _mesas.push({ id: mId, name: 'Mesa ' + (_mesas.length + 1), parts: [] });
+  _mesas.push({ id: mId, name: 'Mesa ' + (_mesas.length + 1), tech: _activeTech || 'fdm', parts: [] });
   addPartToMesa(mId, false);
+  renderMesas();
+  liveCalc();
+}
+
+function updateMesaTech(mId, tech) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m) {
+    m.tech = tech;
+    m.parts.forEach(p => { p.materialId = ''; }); // Limpar material selecionado
+  }
   renderMesas();
   liveCalc();
 }
@@ -1234,11 +1253,11 @@ function renderMesas() {
   const container = document.getElementById('mesasContainer');
   if (!container) return;
   container.innerHTML = '';
-  
-  const filterClass = _activeTech === 'resin' ? 'resin' : 'fdm';
-  const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === filterClass);
 
   _mesas.forEach((m, idx) => {
+    const mTech = m.tech || 'fdm';
+    const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === mTech);
+
     const mDiv = document.createElement('div');
     mDiv.style.marginBottom = '20px';
     mDiv.style.border = '1px solid var(--border)';
@@ -1280,7 +1299,7 @@ function renderMesas() {
         const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
         const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
         const txt = `${brand} ${matName}`.trim();
-        const priceUnit = _activeTech === 'resin' ? '/L' : '/kg';
+        const priceUnit = mTech === 'resin' ? '/L' : '/kg';
         return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${txt} (${fmtCurrency(f.price)}${priceUnit})</option>`;
       }).join('');
       
@@ -1293,7 +1312,7 @@ function renderMesas() {
               ${filteredMaterials.length === 0 ? `<option disabled>(Sem materiais)</option>` : matOptions}
             </select>
           </td>
-          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${_activeTech === 'resin' ? 'ml' : 'g'}"></td>
+          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
           <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
           <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
           <td style="text-align:right">
@@ -1309,7 +1328,7 @@ function renderMesas() {
           <tr>
             <th data-i18n="calc.table.part">${i18n.getNestedTranslation('calc.table.part')||'Peça'}</th>
             <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
-            <th><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${_activeTech === 'resin' ? 'ml' : 'g'})</th>
+            <th><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${mTech === 'resin' ? 'ml' : 'g'})</th>
             <th data-i18n="calc.table.qty">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
             <th data-i18n="calc.table.time_h">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
             <th></th>
