@@ -89,14 +89,12 @@ const Sidebar = (() => {
   </div>
 
   <div class="sidebar-company">
-    <div class="company-pill" onclick="window.location.href='settings.html?tab=assinatura'" title="Gerir Plano" style="cursor:pointer">
+    <div class="company-pill" onclick="window.location.href='settings.html?tab=assinatura'" id="sidebarPlanTooltip" title="Gerir Plano" style="cursor:pointer">
       <div class="company-avatar" id="sidebarCompanyAvatar">—</div>
-      <div class="company-info">
+      <div class="company-info" style="flex-direction:row; align-items:center; justify-content:space-between; gap:4px;">
         <span class="company-name" id="sidebarCompanyName">—</span>
-        <span class="company-plan">
-          <i class="ph-bold ph-seal-check"></i>
-          <span id="sidebarPlanBadge">—</span>
-        </span>
+        <i class="ph-bold ph-seal-check" style="color:var(--blue); font-size:1.15rem; flex-shrink:0;"></i>
+        <span id="sidebarPlanBadge" style="display:none;">—</span>
       </div>
     </div>
   </div>
@@ -181,6 +179,8 @@ const Sidebar = (() => {
       ? i18n.t(`sidebar.plans.${plan}`) 
       : (planLabels[plan] || 'Trial');
     _setText('sidebarPlanBadge', translatedPlan);
+    const tooltipEl = document.getElementById('sidebarPlanTooltip');
+    if(tooltipEl) tooltipEl.title = `Plano: ${translatedPlan} (Clicar para gerir)`;
 
     const avatarEl = document.getElementById('sidebarCompanyAvatar');
     if (avatarEl) {
