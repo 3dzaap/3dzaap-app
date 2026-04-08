@@ -616,11 +616,11 @@
                   <span data-i18n="calc.sections.config">Configuração</span>
                 </div>
                 <div class="fields-grid">
-                  <div class="field full">
-                    <label data-i18n="calc.mode_label">Modo de impressão</label>
-                    <div class="mode-toggle">
-                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" data-i18n="calc.mode_fdm"><i class="ph-bold ph-vinyl-record"></i> FDM — Filamento</button>
-                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" data-i18n="calc.mode_resin"><i class="ph-bold ph-flask"></i> Resina (SLA)</button>
+                  <div class="field full" style="flex-direction:row; justify-content:space-between; align-items:center;">
+                    <label data-i18n="calc.labels.print_mode" style="margin-bottom:0">Modo de impressão</label>
+                    <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="font-size:0.7rem; padding:5px 8px"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="font-size:0.7rem; padding:5px 8px"><i class="ph-bold ph-flask"></i> Resina</button>
                     </div>
                   </div>
                   <div class="field full">
@@ -746,10 +746,10 @@
               </button>
               <div class="results-actions-row">
                 <button class="btn-action" onclick="copyResults()">
-                  <span data-i18n="calc.buttons.copy">Copiar</span>
+                  <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
                 </button>
                 <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
-                  <span data-i18n="calc.buttons.adjust"><i class="ph-bold ph-gear"></i> Ajustar %</span>
+                  <span><i class="ph-bold ph-gear"></i> <span data-i18n="calc.buttons.parameters">Parâmetros</span></span>
                 </button>
               </div>
             </div>
