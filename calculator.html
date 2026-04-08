@@ -1704,11 +1704,10 @@ function sendWhatsApp() {
   let msg = `*Orçamento de Impressão 3D*\n\n`;
   if (i.mode === 'simple') {
     msg += `*Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
-    msg += `*Peso:* ${i.weight}g\n`;
   } else {
     msg += `*Projeto Multi-Peças*\n`;
     i.parts.forEach(p => {
-      msg += `• ${p.qty}x ${p.name || 'Peça'} (${p.weight}g)\n`;
+      msg += `• ${p.qty}x ${p.name || 'Peça'}\n`;
     });
   }
   
