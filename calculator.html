@@ -947,8 +947,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (src.printName) setEl('printName', src.printName);
       if (src.tech) setTechMode(src.tech);
       
-      // Restore common financial parameters
-      const common = ['printerPrice','printerLife','electricityPrice','powerConsumption','failureRate','indirectCosts','profitMargin'];
+      // Restore printer-specific financial parameters
+      const common = ['printerPrice','printerLife','powerConsumption'];
       common.forEach(k => { if (src[k] !== undefined) setEl(k, src[k]); });
 
       // Detect and set calculation mode
