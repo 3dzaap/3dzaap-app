@@ -430,7 +430,11 @@ async function init() {
       renderPortal();
     }
   } catch (err) {
-    renderError('Não encontrado', err.message, '<i class="ph-bold ph-file-text"></i>');
+    if (err.message === 'portal.err_expired_desc') {
+      renderError(t('portal.err_expired_title'), t(err.message), '<i class="ph-bold ph-hourglass"></i>');
+    } else {
+      renderError('Não encontrado', err.message, '<i class="ph-bold ph-file-text"></i>');
+    }
   }
 }
 
@@ -517,6 +521,7 @@ function renderPortal() {
           <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid') : t('portal.rcpt_title_os')}</div>
           <div class="rcpt-number">${_order.orderNumber}</div>
           <div class="rcpt-date">${t('portal.issued_at')} ${new Date().toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>
+          ${_order.expiresAt ? `<div class="rcpt-date" style="color:var(--orange);font-weight:700;font-size:0.58rem;opacity:0.9">${t('portal.link_valid_until')}: ${new Date(_order.expiresAt).toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>` : ''}
         </div>
       </div>
 
@@ -606,24 +611,24 @@ function renderPortal() {
 
 function renderTracker() {
   const steps = [
-    { k: 'orcamento',  l: t('status.orcamento'), i: '<i class="ph-bold ph-hourglass"></i>' },
-    { k: 'modelagem',  l: t('status.modelagem'), i: '<i class="ph-bold ph-ruler"></i>' },
-    { k: 'validacao',  l: t('status.validacao'), i: '<i class="ph-bold ph-check-circle"></i>' },
-    { k: 'fila',       l: t('status.fila'),      i: '<i class="ph-bold ph-package"></i>' },
-    { k: 'printing',   l: t('status.printing'),  i: '<i class="ph-bold ph-printer"></i>' },
-    { k: 'preparacao', l: t('status.preparacao'),i: '<i class="ph-bold ph-broom"></i>' },
-    { k: 'done',       l: t('status.done'),      i: '<i class="ph-bold ph-flag-checkered"></i>' }
+    { k: 'orcamento',  l: t('portal.tracker_step_1'), i: '<i class="ph-bold ph-hourglass"></i>' },
+    { k: 'modelagem',  l: t('portal.tracker_step_2'), i: '<i class="ph-bold ph-ruler"></i>' },
+    { k: 'validacao',  l: t('portal.tracker_step_3'), i: '<i class="ph-bold ph-check-circle"></i>' },
+    { k: 'fila',       l: t('portal.tracker_step_4'),      i: '<i class="ph-bold ph-package"></i>' },
+    { k: 'printing',   l: t('portal.tracker_step_5'),  i: '<i class="ph-bold ph-printer"></i>' },
+    { k: 'preparacao', l: t('portal.tracker_step_6'),i: '<i class="ph-bold ph-rocket-launch"></i>' },
+    { k: 'done',       l: t('portal.tracker_step_7'),      i: '<i class="ph-bold ph-flag-checkered"></i>' }
   ];
   
-  // Mapping current order status to one of the 7 steps
-  const status = _order.status;
+  // Revised mapping for intuitive 7-step flow
+  const s = _order.status;
   let stepIdx = 0;
-  if (status === 'modelagem') stepIdx = 1;
-  else if (status === 'validacao') stepIdx = 2;
-  else if (status === 'aprovado' || status === 'fila') stepIdx = 3;
-  else if (status === 'printing') stepIdx = 4;
-  else if (status === 'preparacao') stepIdx = 5;
-  else if (status === 'enviado' || status === 'done') stepIdx = 6;
+  if (s === 'modelagem') stepIdx = 1;
+  else if (s === 'validacao') stepIdx = 2;
+  else if (s === 'aprovado' || s === 'fila') stepIdx = 3;
+  else if (s === 'printing') stepIdx = 4;
+  else if (s === 'preparacao' || s === 'enviado') stepIdx = 5;
+  else if (s === 'done') stepIdx = 6;
   
   const stepPercent = (stepIdx / (steps.length - 1)) * 100;
 

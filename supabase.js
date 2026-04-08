@@ -366,6 +366,12 @@ const DB = {
       if (error) throw error;
       return _mapOrderFromDB(data);
     } else {
+      // Set default expiration for new orders if not provided (7 days)
+      if (!row.expires_at) {
+        const d = new Date();
+        d.setDate(d.getDate() + 7);
+        row.expires_at = d.toISOString();
+      }
       const { data, error } = await _sb
         .from('orders').insert({ ...row, company_id: _companyId })
         .select().single();
@@ -411,6 +417,11 @@ const DB = {
       .single();
 
     if (error || !row) throw new Error('Pedido ou Orçamento não encontrado.');
+    
+    // Check expiration for tracking link
+    if (row.expires_at && new Date(row.expires_at) < new Date()) {
+      throw new Error('portal.err_expired_desc'); // We throw the i18n key to handle in portal or friendly message
+    }
     
     const order = _mapOrderFromDB(row);
     const company = row.companies || {};

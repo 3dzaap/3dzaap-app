@@ -463,6 +463,12 @@
           <input type="date" id="oDueDate" class="form-input">
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><span data-i18n="orders.modal.lbl_expires_at">Link expira em</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
+          <input type="date" id="oExpiresAt" class="form-input">
+        </div>
+      </div>
       <div class="form-row full" style="margin-bottom:0">
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Observações</span> <span data-i18n="orders.modal.opt">(opcional)</span></label>
@@ -1112,7 +1118,10 @@ function renderOrders(keepExpandId) {
             ${i18n.getNestedTranslation(itemsCountKey, {n: its.length})}
           </div>
         </td>
-        <td>${renderStatusBadge(o.status)}</td>
+        <td>
+          ${renderStatusBadge(o.status)}
+          ${o.expiresAt && new Date(o.expiresAt) < new Date() ? `<br><span style="font-size:0.6rem;color:var(--danger);font-weight:700;text-transform:uppercase;margin-top:4px;display:inline-block">Link ${i18n.getNestedTranslation('status.status_expired')}</span>` : ''}
+        </td>
         <td>${renderPaymentBadge(o.paymentStatus)}</td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
@@ -1543,6 +1552,7 @@ function openModal(id = null) {
     document.getElementById('oCreatedAt').value = _toDateStr(o.createdAt);
     document.getElementById('oDueDate').value = _toDateStr(o.dueDate);
     document.getElementById('oNotes').value = o.notes || '';
+    document.getElementById('oExpiresAt').value = o.expiresAt ? o.expiresAt.split('T')[0] : '';
     const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0,filamentId:'',weightG:''}];
     // Normalize items: support old calculator format (qty/weight/total → quantity/weightG/unitPrice)
     its.forEach(it => addOrderItem(_normalizeItem(it)));
@@ -1557,6 +1567,12 @@ function openModal(id = null) {
     document.getElementById('oCreatedAt').value = new Date().toISOString().split('T')[0];
     document.getElementById('oDueDate').value = '';
     document.getElementById('oNotes').value = '';
+    
+    // Set default expiration (Today + 7 days)
+    const defExp = new Date();
+    defExp.setDate(defExp.getDate() + 7);
+    document.getElementById('oExpiresAt').value = defExp.toISOString().split('T')[0];
+
     addOrderItem();
   }
   document.getElementById('clientSugs').style.display = 'none';
@@ -1775,6 +1791,7 @@ async function saveOrder() {
     createdAt: document.getElementById('oCreatedAt').value,
     dueDate: document.getElementById('oDueDate').value,
     notes: document.getElementById('oNotes').value.trim(),
+    expiresAt: document.getElementById('oExpiresAt').value ? new Date(document.getElementById('oExpiresAt').value).toISOString() : null,
     updatedAt: new Date().toISOString(),
   };
 
