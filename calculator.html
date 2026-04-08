@@ -632,17 +632,17 @@
                   <div class="field full">
                     <label data-i18n="calc.filament_price_label">Preço do material</label>
                     <div class="field-wrap">
-                      <input type="number" id="filamentPrice" value="25" step="0.01" min="0" oninput="liveCalc()">
+                      <input type="number" id="filamentPrice" value="0" step="0.01" min="0" oninput="liveCalc()">
                       <span class="field-unit" id="labelFilPrice">/kg</span>
                     </div>
                   </div>
                   <div class="field">
                     <label><span data-i18n="calc.fields.weight">Peso</span> (<span class="unit-weight">g</span>)</label>
-                    <input type="number" id="partWeight" value="50" step="0.1" min="0" oninput="liveCalc()">
+                    <input type="number" id="partWeight" value="0" step="0.1" min="0" oninput="liveCalc()">
                   </div>
                   <div class="field">
                     <label data-i18n="calc.fields.time">Tempo (h)</label>
-                    <input type="number" id="printTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                    <input type="number" id="printTime" value="0" step="0.1" min="0" oninput="liveCalc()">
                   </div>
                 </div>
               </div>
@@ -878,7 +878,7 @@
 //  DEFAULTS — homologated
 // ══════════════════════════════════════
 const HARDCODED_DEFAULTS = {
-  filamentPrice:25,partWeight:50,printTime:3,
+  filamentPrice:0,partWeight:0,printTime:0,
   printerPrice:600,printerLife:5000,powerConsumption:200,
   electricityPrice:0.22,failureRate:5,indirectCosts:10,profitMargin:30,
 };
@@ -957,7 +957,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (mode === 'simple') {
         if (src.weight !== undefined) setEl('partWeight', src.weight);
-        if (src.time !== undefined)   setEl('printTime', src.time);
+        if (src.time !== undefined)      setEl('printTime', src.time);
+        else if (src.printTime !== undefined) setEl('printTime', src.printTime);
         if (src.materialId) {
           const mSel = document.getElementById('fMaterialSelect');
           if (mSel) {
@@ -1726,17 +1727,17 @@ function sendWhatsApp() {
 function clearCalculator(){
   document.querySelectorAll('.inp, .part-input').forEach(i=> {
     if(i.type==='checkbox') i.checked=false;
-    else if(i.tagName!=='SELECT'&&i.id!=='filamentPrice') i.value='';
+    else if(i.tagName!=='SELECT') i.value='';
   });
   
   _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
   addPartToMesa(_mesas[0].id, false);
   
-  if(_activeTech==='fdm') setV('filamentPrice',25);
-  else setV('filamentPrice',40);
+  // Reset fields to 0 to avoid confusion
+  setV('filamentPrice', 0);
+  setV('partWeight', 0);
+  setV('printTime', 0);
   
-  setV('partWeight',50);setV('printTime',2);
-  loadCompanyDefaults();
   renderMesas();
   liveCalc();
   showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Campos limpos','');
