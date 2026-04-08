@@ -1279,10 +1279,10 @@ function renderMesas() {
         <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
         <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
       </div>
-      <select class="inp" style="width: auto; padding: 4px 30px 4px 10px; font-size: 0.8rem; height: auto;" onchange="updateMesaTech(${m.id}, this.value)">
-        <option value="fdm" ${mTech==='fdm'?'selected':''}>FDM — Filamento</option>
-        <option value="resin" ${mTech==='resin'?'selected':''}>Resina (SLA)</option>
-      </select>
+      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+      </div>
       <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
