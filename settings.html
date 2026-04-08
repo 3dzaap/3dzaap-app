@@ -274,7 +274,10 @@
       </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
-            <!-- Theme Toggle -->
+            <button id="topbarThemeToggle"
+              onclick="Sidebar.toggleTheme()"
+              title="Alternar Tema"
+              class="gc-btn"
               aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
@@ -858,6 +861,9 @@ function wireEvents() {
     document.getElementById('btnRemoveLogo').style.display = 'none';
     markDirty();
   });
+  // Team
+  const btnInvite = document.getElementById('btnInvite');
+  if (btnInvite) btnInvite.addEventListener('click', openInviteModal);
 }
 
 function handleFile(e, type) {
@@ -937,15 +943,115 @@ function applyCrop() {
   closeCropModal();
 }
 
-// Team / Sub Stubs
+// Team / Sub Management
+function openInviteModal() {
+  document.getElementById('inviteModal').style.display = 'flex';
+  document.getElementById('inviteEmail').value = '';
+  document.getElementById('inviteEmail').focus();
+}
+
+function closeInviteModal() {
+  document.getElementById('inviteModal').style.display = 'none';
+}
+
+async function sendInvite() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  
+  if (!email || !email.includes('@')) {
+    showToast('Por favor, insira um email válido.', 'err');
+    return;
+  }
+  
+  const btn = document.querySelector('#inviteModal .btn-primary');
+  const oldText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '⌛ ...';
+  
+  try {
+    await DB.createInvite(email, role);
+    showToast('<i class="ph-bold ph-paper-plane-tilt"></i> Convite enviado!', 'ok');
+    closeInviteModal();
+    loadTeam(); // Refresh
+  } catch (err) {
+    showToast('Erro ao convidar: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = oldText;
+  }
+}
+
 async function loadTeam() {
-  const list = document.getElementById('membersList');
-  // Simple fake data or DB call if ready
-  list.innerHTML = `<div class="member-row">
-    <div class="member-avatar">AD</div>
-    <div class="member-info"><div class="member-name">Admin</div><div class="member-email">${_session.email || ''}</div></div>
-    <span class="role-badge role-owner">Owner</span>
-  </div>`;
+  const membersList = document.getElementById('membersList');
+  const invitesCard = document.getElementById('invitesCard');
+  const invitesList = document.getElementById('invitesList');
+  
+  try {
+    const [members, invites] = await Promise.all([
+      DB.getMembers(),
+      DB.getInvites()
+    ]);
+    
+    // Render Members
+    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
+    membersList.innerHTML = members.map(m => `
+      <div class="member-row">
+        <div class="member-avatar">${(m.user_email || 'U').charAt(0).toUpperCase()}</div>
+        <div class="member-info">
+          <div class="member-name">${m.user_email || 'Utilizador'}</div>
+          <div class="member-email">${fmtDate(m.joined_at)}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px">
+          <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
+          ${(_session.role === 'owner' && m.user_id !== _session.user_id) ? 
+            `<button class="btn-icon del" onclick="confirmRemoveMember('${m.id}')" title="Remover"><i class="ph-bold ph-trash"></i></button>` : ''}
+        </div>
+      </div>
+    `).join('');
+    
+    // Render Invites
+    if (invites && invites.length > 0) {
+      invitesCard.style.display = 'block';
+      invitesList.innerHTML = invites.map(inv => `
+        <div class="member-row">
+          <div class="member-avatar" style="background:var(--bg-hover-s); color:var(--muted)"><i class="ph-bold ph-envelope"></i></div>
+          <div class="member-info">
+            <div class="member-name">${inv.email}</div>
+            <div class="member-email">Pendente • Funçaõ: ${roleMap[inv.role] || inv.role}</div>
+          </div>
+          <button class="btn-icon del" onclick="confirmCancelInvite('${inv.id}')" title="Cancelar"><i class="ph-bold ph-x-circle"></i></button>
+        </div>
+      `).join('');
+    } else {
+      invitesCard.style.display = 'none';
+    }
+    
+  } catch (err) {
+    console.error('[3DZAAP] team load err:', err);
+    membersList.innerHTML = `<div style="padding:20px; color:var(--danger)">Erro ao carregar equipa: ${err.message}</div>`;
+  }
+}
+
+async function confirmRemoveMember(id) {
+  if (!confirm('Tem a certeza que deseja remover este membro da equipa?')) return;
+  try {
+    await DB.removeMember(id);
+    showToast('Membro removido.', 'ok');
+    loadTeam();
+  } catch (err) {
+    showToast('Erro ao remover: ' + err.message, 'err');
+  }
+}
+
+async function confirmCancelInvite(id) {
+  if (!confirm('Deseja cancelar este convite pendente?')) return;
+  try {
+    await DB.cancelInvite(id);
+    showToast('Convite cancelado.', 'ok');
+    loadTeam();
+  } catch (err) {
+    showToast('Erro ao cancelar: ' + err.message, 'err');
+  }
 }
 
 async function updateSubTab() {

@@ -913,7 +913,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadUserData();
   await loadInitialData();
   await loadCompanyDefaults();
-  applyDefaultsToForm();
+  
+  // ── Load from Product Library / Recalculate ──────────────────
+  const rawData = localStorage.getItem('3dzaap_calc_load');
+  
+  if (!rawData) {
+    applyDefaultsToForm();
+  }
   
   // Garantir que impressoras de utilizador também sejam carregadas para o dropdown legado
   try {
@@ -924,9 +930,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyFeatureGating();
   renderHistory();
   
-  // ── Load from Product Library ──────────────────────────────
   try {
-    const raw = localStorage.getItem('3dzaap_calc_load');
+    const raw = rawData;
     if (raw) {
       const data = JSON.parse(raw);
       localStorage.removeItem('3dzaap_calc_load');
