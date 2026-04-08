@@ -749,7 +749,7 @@
                   <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
                 </button>
                 <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
-                  <span><i class="ph-bold ph-gear"></i> <span data-i18n="calc.buttons.parameters">Parâmetros</span></span>
+                  <span><span data-i18n="calc.buttons.parameters">Parâmetros</span> <i class="ph-bold ph-gear"></i></span>
                 </button>
               </div>
             </div>
@@ -1316,9 +1316,9 @@ function renderMesas() {
               ${filteredMaterials.length === 0 ? `<option disabled>(Sem materiais)</option>` : matOptions}
             </select>
           </td>
-          <td><input type="number" class="part-input" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
-          <td><input type="number" class="part-input" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
-          <td><input type="number" class="part-input" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
           <td style="text-align:right">
             <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})"><i class="ph-bold ph-x"></i></button>
           </td>
@@ -1332,9 +1332,9 @@ function renderMesas() {
           <tr>
             <th data-i18n="calc.table.part">${i18n.getNestedTranslation('calc.table.part')||'Peça'}</th>
             <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
-            <th><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${mTech === 'resin' ? 'ml' : 'g'})</th>
-            <th data-i18n="calc.table.qty">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
-            <th data-i18n="calc.table.time_h">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
+            <th style="text-align:right"><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${mTech === 'resin' ? 'ml' : 'g'})</th>
+            <th data-i18n="calc.table.qty" style="text-align:right">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
+            <th data-i18n="calc.table.time_h" style="text-align:right">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
             <th></th>
           </tr>
         </thead>
