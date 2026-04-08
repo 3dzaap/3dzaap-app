@@ -2108,8 +2108,8 @@ async function deleteCustomer() {
 }
 
 function showConfirm(title, msg, onOk) {
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmTitle').innerHTML = title;
+  document.getElementById('confirmMsg').innerHTML   = msg;
   document.getElementById('confirmOkBtn').onclick     = () => { closeConfirm(); onOk(); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
