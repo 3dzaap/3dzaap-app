@@ -1465,6 +1465,7 @@ function criarPedido() {
       unit_price: parseFloat(r.unitPrice.toFixed(2)),
       material_id: _selectedMaterial ? _selectedMaterial.id : null,
       material_cost: parseFloat((r.materialCost * (i.qty || 1)).toFixed(4)),
+      time: i.time,
       _from_calc: true
     };
   } else {

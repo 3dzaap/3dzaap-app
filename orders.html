@@ -770,11 +770,14 @@ function recalculateItem(rowId) {
   const materialId = row.querySelector('.item-select').value;
   const weight = parseFloat(row.querySelector('input[min="0"]').value) || 0;
   
+  const it = _items.find(i => i._id === rowId) || {};
+  
   const loadData = {
     printName: description || 'Item do Pedido',
     weight: weight,
     tech: _isResinMaterial(materialId) ? 'resin' : 'fdm',
-    materialId: materialId
+    materialId: materialId,
+    time: it.printTime || 0
   };
   
   localStorage.setItem('3dzaap_calc_load', JSON.stringify(loadData));
@@ -1614,7 +1617,8 @@ function applyCalcPrefill(p) {
         quantity: p.quantity || 1,
         weightG: p.mode === 'resin' ? p.resin_volume : p.filament_weight,
         unitPrice: p.unit_price || 0,
-        filamentId: p.material_id || ''
+        filamentId: p.material_id || '',
+        printTime: p.time || 0
       });
     }
 
@@ -1653,6 +1657,7 @@ function _normalizeItem(it) {
     filamentId:  it.filamentId || '',
     weightG:     it.weightG || it.weight || '',
     material:    it.material || '',
+    printTime:   it.printTime || it.time || 0,
   };
 }
 
