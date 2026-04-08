@@ -299,7 +299,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -966,12 +966,12 @@ async function lookupAddress() {
     if(addr) {
       const current = document.getElementById('clAddress').value;
       document.getElementById('clAddress').value = (current ? current + '\n' : '') + addr;
-      showToast('<i class="ph-bold ph-check-circle"></i> Morada encontrada!', 'ok');
+      showToast('Morada encontrada!', 'ok');
     } else {
-      showToast('❌ Código postal não encontrado.', 'err');
+      showToast('Código postal não encontrado.', 'err');
     }
   } catch(e) {
-    showToast('❌ Erro na pesquisa.', 'err');
+    showToast('Erro na pesquisa.', 'err');
   } finally {
     btn.disabled = false;
     btn.textContent = oldText;
@@ -1003,9 +1003,9 @@ async function saveClientFromOrder() {
     _dbClients.unshift(saved);
     selectClient(saved);
     closeClientModal();
-    showToast('<i class="ph-bold ph-check-circle"></i> Cliente registado e selecionado!', 'ok');
+    showToast('Cliente registado e selecionado!', 'ok');
   } catch(e) {
-    showToast('❌ Erro ao gravar cliente: ' + e.message, 'err');
+    showToast('Erro ao gravar cliente: ' + e.message, 'err');
   } finally {
     btn.disabled = false;
   }
@@ -1129,7 +1129,7 @@ function renderOrders(keepExpandId) {
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px"><i class="ph-bold ph-pencil-simple"></i></button>
           <button class="btn-icon del" onclick="confirmDelete('${o.id}')" title="Eliminar" style="margin-right:4px"><i class="ph-bold ph-trash"></i></button>
-          <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')">▼</button>
+          <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')"><i class="ph-bold ph-caret-down"></i></button>
         </td>
       </tr>
       <tr class="expand-details" id="exp-${o.id}">
@@ -1202,7 +1202,7 @@ function renderOrders(keepExpandId) {
           </div>
         </div>
         <div class="mob-ord-actions">
-          <button onclick="event.stopPropagation();toggleMobExpand('${o.id}')" id="mcb-${o.id}">▼ Detalhes</button>
+          <button onclick="event.stopPropagation();toggleMobExpand('${o.id}')" id="mcb-${o.id}"><i class="ph-bold ph-caret-down"></i> Detalhes</button>
           <button onclick="event.stopPropagation();openModal('${o.id}')" data-i18n="orders.card.btn_edit"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
           <button class="del" onclick="event.stopPropagation();confirmDelete('${o.id}')" data-i18n="orders.details.delete"><i class="ph-bold ph-trash-simple"></i> Eliminar</button>
         </div>
@@ -1253,9 +1253,9 @@ function toggleMobExpand(id) {
   if (!exp) return;
   const isOpen = exp.classList.contains('open');
   document.querySelectorAll('.mob-ord-expand.open').forEach(el => el.classList.remove('open'));
-  document.querySelectorAll('#mobCardList button').forEach(b => { if (b.id.startsWith('mcb-')) b.textContent = '▼ Detalhes'; });
+  document.querySelectorAll('#mobCardList button').forEach(b => { if (b.id.startsWith('mcb-')) b.innerHTML = '<i class="ph-bold ph-caret-down"></i> Detalhes'; });
   if (!isOpen) { 
-    exp.classList.add('open'); if (btn) btn.textContent = '▲ Fechar'; 
+    exp.classList.add('open'); if (btn) btn.innerHTML = '<i class="ph-bold ph-caret-up"></i> Fechar'; 
     // Auto-scroll mobile
     setTimeout(() => {
       exp.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1626,7 +1626,7 @@ function applyCalcPrefill(p) {
       dueDateEl.style.transition  = 'border-color .3s, box-shadow .3s';
       dueDateEl.style.borderColor = 'var(--orange)';
       dueDateEl.style.boxShadow   = '0 0 0 3px rgba(245,148,58,.18)';
-      dueDateEl.placeholder = '📅 Importante — define o prazo de entrega';
+      dueDateEl.placeholder = 'Importante — define o prazo de entrega';
       setTimeout(() => {
         dueDateEl.style.borderColor = '';
         dueDateEl.style.boxShadow   = '';
@@ -1728,7 +1728,7 @@ function addOrderItem(item = null) {
       oninput="updateItem('${id}','unitPrice',this.value)">
     <div style="display:flex; gap:4px">
       <button type="button" class="btn btn-ghost btn-sm" style="padding:4px; font-size:0.9rem; border:none; color:var(--muted)" onclick="recalculateItem('${id}')" title="Recalcular na Calculadora"><i class="ph-bold ph-calculator"></i></button>
-      <button type="button" class="item-remove" onclick="removeItem('${id}')">×</button>
+      <button type="button" class="item-remove" onclick="removeItem('${id}')"><i class="ph-bold ph-x"></i></button>
     </div>`;
   list.appendChild(row);
   // Actualizar unidade após append (DOM já existe)
@@ -1968,7 +1968,7 @@ async function printReceipt(id) {
         <div class="rcpt-brand"><span style="color:#3b8fd4">3D</span><span style="color:#F5943A">ZAAP</span></div>
         <div class="rcpt-tagline">${t('nav.tagline','Printing Manager')}</div>
       </div>
-      <div class="rcpt-thanks">${t('orders.rcpt.thanks','Obrigado pela sua confiança! 🙏')}</div>
+      <div class="rcpt-thanks">${t('orders.rcpt.thanks','Obrigado pela sua confiança!')}</div>
     </div>`;
   document.getElementById('rcptOverlay').classList.add('open');
 }
@@ -1980,7 +1980,7 @@ async function sendWhatsAppTracking(id) {
   const btn = document.querySelector(`#exp-${id} button[onclick^="sendWhatsAppTracking"]`);
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '⏳...';
+  btn.innerHTML = '...';
 
   try {
     let token = o.shareToken;
@@ -2005,14 +2005,14 @@ async function sendWhatsAppTracking(id) {
     const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
     const portalUrl = base + '/portal.html?t=' + token;
     
-    let msg = `🎨 *Olá ${o.clientName}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:\n\n🚀 ${portalUrl}`;
+    let msg = `*Olá ${o.clientName}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:\n\n${portalUrl}`;
     
     if (o.status === 'orcamento') {
-      msg = `<i class="ph-bold ph-file-text"></i> *Olá ${o.clientName}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:\n\n🔗 ${portalUrl}`;
+      msg = `*Olá ${o.clientName}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:\n\n${portalUrl}`;
     }
 
     if (passphrase) {
-      msg += `\n\n🔑 *Código de acesso:* ${passphrase}`;
+      msg += `\n\n*Código de acesso:* ${passphrase}`;
     }
 
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
@@ -2071,7 +2071,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 <\/script>
 </body></html>`);
@@ -2160,18 +2160,18 @@ document.head.appendChild(style);
         </div>
       </div>
       <div class="form-section-divider">
-        <div class="form-section-divider-icon si-orange">🏡</div>
+        <div class="form-section-divider-icon si-orange"><i class="ph-bold ph-house"></i></div>
         <span data-i18n="clients.modal.sec_billing">Morada e Faturação</span>
       </div>
       <div class="form-row three">
         <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_country">País</label>
           <select id="clCountry" class="form-select">
-            <option value="PT">🇵🇹 Portugal</option>
-            <option value="BR">🇧🇷 Brasil</option>
-            <option value="ES">🇪🇸 Espanha</option>
-            <option value="UK">🇬🇧 Reino Unido</option>
-            <option value="US">🇺🇸 EUA</option>
+            <option value="PT">Portugal</option>
+            <option value="BR">Brasil</option>
+            <option value="ES">Espanha</option>
+            <option value="UK">Reino Unido</option>
+            <option value="US">EUA</option>
           </select>
         </div>
         <div class="form-group" style="grid-column: span 2">

@@ -493,7 +493,7 @@
       <div class="topbar-actions">
 
         <div class="topbar-notif" onclick="showToast(window.i18n.getNestedTranslation('dash.no_notifs') || 'Sem notificações por agora','')">
-          🔔
+          <i class="ph-bold ph-bell"></i>
         </div>
         </div>
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
@@ -503,7 +503,7 @@
               onclick="Sidebar.toggleTheme()"
               title="Alternar Tema"
               class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -534,7 +534,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -547,7 +547,7 @@
     <!-- Subscription Banner -->
     <div class="sub-banner" id="subBanner">
       <div class="sub-banner-inner" id="subBannerInner">
-        <span class="sub-icon" id="subIcon">⏰</span>
+        <span class="sub-icon" id="subIcon"><i class="ph-bold ph-clock"></i></span>
         <div class="sub-text">
           <div class="sub-title" id="subTitle" data-i18n="dash.sub_banner.trial_active">Período experimental ativo — 14 dias restantes</div>
           <div class="sub-sub" id="subSub" data-i18n="dash.sub_banner.trial_desc">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o período experimental.</div>
@@ -567,7 +567,7 @@
 
       <!-- Greeting -->
       <div class="greeting">
-        <h1 id="greetingText">Bem-vindo! 👋</h1>
+        <h1 id="greetingText">Bem-vindo!</h1>
         <p data-i18n="dash.greeting.summary">Aqui está o resumo da tua actividade</p>
         <div class="greeting-date" id="greetingDate"></div>
       </div>
@@ -584,7 +584,7 @@
           <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
           <div class="health-insights" id="healthInsights"></div>
           <div class="health-due-tip" id="healthDueTip" style="display:none">
-            <span>💡</span>
+            <span><i class="ph-bold ph-lightbulb"></i></span>
             <span data-i18n="dash.health.tip">Adiciona uma <strong>data de entrega</strong> aos pedidos para o score detectar atrasos e proteger a tua reputação.</span>
           </div>
         </div>
@@ -1627,7 +1627,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>

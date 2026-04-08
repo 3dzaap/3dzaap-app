@@ -179,11 +179,11 @@
         <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_country">País</label>
           <select id="clCountry" class="form-select">
-            <option value="PT">🇵🇹 Portugal</option>
-            <option value="BR">🇧🇷 Brasil</option>
-            <option value="ES">🇪🇸 Espanha</option>
-            <option value="UK">🇬🇧 Reino Unido</option>
-            <option value="US">🇺🇸 EUA</option>
+            <option value="PT">Portugal</option>
+            <option value="BR">Brasil</option>
+            <option value="ES">Espanha</option>
+            <option value="UK">Reino Unido</option>
+            <option value="US">EUA</option>
           </select>
         </div>
         <div class="form-group" style="grid-column: span 2">
@@ -438,9 +438,9 @@ async function lookupAddress() {
     }
     
     addrEl.value = result;
-    showToast('📍 Morada localizada!', 'ok');
+    showToast('Morada localizada!', 'ok');
   } catch(e) {
-    showToast('❌ ' + e.message, 'err');
+    showToast(e.message, 'err');
   } finally {
     btn.disabled = false;
     btn.textContent = window.i18n ? i18n.getNestedTranslation('clients.modal.btn_lookup') : 'Procurar';
@@ -513,11 +513,11 @@ async function saveClient() {
     } else {
       clients.unshift(saved);
     }
-    showToast('<i class="ph-bold ph-check-circle"></i> Cliente gravado com sucesso!', 'ok');
+    showToast('Cliente gravado com sucesso!', 'ok');
     closeClientModal();
     renderClients();
   } catch(e) {
-    showToast('❌ Erro ao gravar cliente: ' + e.message, 'err');
+    showToast('Erro ao gravar cliente: ' + e.message, 'err');
   } finally {
     _isSaving = false;
     btn.disabled = false;
@@ -529,10 +529,10 @@ async function confirmDelClient(id) {
   try {
     await DB.deleteClient(id);
     clients = clients.filter(x => x.id !== id);
-    showToast('<i class="ph-bold ph-trash"></i> Cliente removido.', 'ok');
+    showToast('Cliente removido.', 'ok');
     renderClients();
   } catch(e) {
-    showToast('❌ Erro ao remover: ' + e.message, 'err');
+    showToast('Erro ao remover: ' + e.message, 'err');
   }
 }
 

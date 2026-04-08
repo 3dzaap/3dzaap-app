@@ -305,7 +305,7 @@
                 <div class="action-feedback" id="fbBackup"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-primary btn-sm" onclick="exportAll()">⬇️ Exportar</button>
+                <button class="btn btn-primary btn-sm" onclick="exportAll()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
             <div class="action-row">
@@ -315,7 +315,7 @@
                 <div class="action-feedback" id="fbFil"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="exportFilaments()">⬇️ Exportar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportFilaments()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
             <div class="action-row">
@@ -325,7 +325,7 @@
                 <div class="action-feedback" id="fbOrd"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="exportOrders()">⬇️ Exportar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportOrders()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
             <div class="action-row">
@@ -335,7 +335,7 @@
                 <div class="action-feedback" id="fbExp"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="exportExpenses()">⬇️ Exportar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportExpenses()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
             <div class="action-row">
@@ -345,7 +345,7 @@
                 <div class="action-feedback" id="fbPrt"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="exportPrinters()">⬇️ Exportar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportPrinters()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
           </div>
@@ -362,7 +362,7 @@
                 <div class="action-feedback" id="fbImportAll"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-primary btn-sm" onclick="triggerImport('all')">⬆️ Restaurar</button>
+                <button class="btn btn-primary btn-sm" onclick="triggerImport('all')"><i class="ph-bold ph-upload-simple"></i> Restaurar</button>
               </div>
             </div>
             <div class="action-row">
@@ -372,7 +372,7 @@
                 <div class="action-feedback" id="fbImportFil"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="triggerImport('filaments')">⬆️ Importar</button>
+                <button class="btn btn-ghost btn-sm" onclick="triggerImport('filaments')"><i class="ph-bold ph-upload-simple"></i> Importar</button>
               </div>
             </div>
             <div class="action-row">
@@ -382,7 +382,7 @@
                 <div class="action-feedback" id="fbImportOrd"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="triggerImport('orders')">⬆️ Importar</button>
+                <button class="btn btn-ghost btn-sm" onclick="triggerImport('orders')"><i class="ph-bold ph-upload-simple"></i> Importar</button>
               </div>
             </div>
             <div class="action-row">
@@ -392,7 +392,7 @@
                 <div class="action-feedback" id="fbImportExp"></div>
               </div>
               <div class="action-btns">
-                <button class="btn btn-ghost btn-sm" onclick="triggerImport('expenses')">⬆️ Importar</button>
+                <button class="btn btn-ghost btn-sm" onclick="triggerImport('expenses')"><i class="ph-bold ph-upload-simple"></i> Importar</button>
               </div>
             </div>
           </div>
@@ -734,8 +734,8 @@ function triggerImport(type) {
     orders:'<i class="ph-bold ph-download-simple"></i> Importar Pedidos (CSV)',
     expenses:'<i class="ph-bold ph-download-simple"></i> Importar Despesas (CSV)'
   };
-  document.getElementById('importModalTitle').textContent = titles[type]||'<i class="ph-bold ph-download-simple"></i> Importar CSV';
-  document.getElementById('importPreview').innerHTML = '<span style="color:var(--subtle)">A aguardar ficheiro…</span>';
+  document.getElementById('importModalTitle').innerHTML = titles[type]||'<i class="ph-bold ph-download-simple"></i> Importar CSV';
+  document.getElementById('importPreview').innerHTML = '<span style="color:var(--subtle)">A aguardar ficheiro...</span>';
   document.getElementById('mergeRow').style.display = 'none';
   document.getElementById('importConfirmBtn').disabled = true;
   document.getElementById('mergeCheck').checked = true;
@@ -995,9 +995,9 @@ function parseAllCSV(text) {
   _importData={kind:'all',filaments:parsedFil,orders:parsedOrd,expenses:parsedExp};
   showPreview(
     `<i class="ph-bold ph-check-circle"></i> Backup — <strong>${parsedFil.length}</strong> fil. + <strong>${parsedOrd.length}</strong> ped. + <strong>${parsedExp.length}</strong> desp.`,
-    [...parsedFil.slice(0,2).map(f=>`🎨 ${f.type} ${f.variation}`),
+    [...parsedFil.slice(0,2).map(f=>`<i class="ph-bold ph-palette"></i> ${f.type} ${f.variation}`),
      ...parsedOrd.slice(0,2).map(o=>`<i class="ph-bold ph-package"></i> ${o.orderNumber||'—'} — ${o.clientName}`),
-     ...parsedExp.slice(0,1).map(e=>`🧾 ${e.description}`)].join('<br>')
+     ...parsedExp.slice(0,1).map(e=>`<i class="ph-bold ph-receipt"></i> ${e.description}`)].join('<br>')
   );
 }
 

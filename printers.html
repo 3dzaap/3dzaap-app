@@ -392,7 +392,6 @@
               <option value="en-US">🇺🇸 US</option>
               <option value="en-GB">🇬🇧 UK</option>
               <option value="es">🇪🇸 ES</option>
-              <option value="en-GB">🇬🇧 UK</option>
             </select>
 
             <!-- Help Popover -->
@@ -581,7 +580,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider" style="margin-top:18px" data-i18n="printers.modal.section_maint">🔧 Manutenção preventiva</div>
+      <div class="form-section-divider" style="margin-top:18px" data-i18n="printers.modal.section_maint"><i class="ph-bold ph-wrench"></i> Manutenção preventiva</div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" data-i18n="printers.modal.lbl_maint_interval">Intervalo de manutenção (horas)</label>
@@ -631,7 +630,7 @@
       <div class="printer-hours-wrap" id="detailHoursWrap"></div>
 
       <!-- Maintenance history -->
-      <div class="maint-section-title">🔧 Histórico de manutenções</div>
+      <div class="maint-section-title"><i class="ph-bold ph-clock-counter-clockwise"></i> Histórico de manutenções</div>
       <div id="maintList" class="maint-list"></div>
 
       <!-- Add maintenance form -->
@@ -675,7 +674,7 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeDetailModal()">Fechar</button>
       <button class="btn btn-ghost" onclick="openPrinterModal(_detailPrinterId)"><i class="ph-bold ph-pencil-simple"></i> Editar impressora</button>
-      <button class="btn btn-primary" onclick="saveMaintenance()">🔧 Registar</button>
+      <button class="btn btn-primary" onclick="saveMaintenance()"><i class="ph-bold ph-wrench"></i> Registar</button>
     </div>
   </div>
 </div>
@@ -1454,7 +1453,7 @@ function _showPrinterUpgradeNotice() {
     banner.id = 'upgradeBanner';
     banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-card);border:1.5px solid var(--orange);border-radius:var(--rm);padding:14px 20px;box-shadow:var(--sh-float);display:flex;align-items:center;gap:14px;max-width:420px;width:90%;animation:fadeUp .3s var(--ease)';
     banner.innerHTML = `
-      <div style="font-size:1.4rem">🔒</div>
+      <div style="font-size:1.4rem"><i class="ph-bold ph-lock"></i></div>
       <div style="flex:1">
         <div style="font-weight:800;font-size:.88rem;color:var(--dark)">Limite do plano Starter</div>
         <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Faz upgrade para <strong>Pro</strong> e adiciona impressoras ilimitadas.</div>
@@ -1501,7 +1500,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>

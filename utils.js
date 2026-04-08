@@ -131,7 +131,7 @@ function showToast(msg, type) {
 //   - Theme is stored in localStorage '3dzaap_theme': 'light' | 'dark'
 //   - Default is always 'light' when nothing is stored
 //   - Never follows OS preference — only changed by explicit user action:
-//       a) Clicking the ☀️/🌙 toggle button (calls toggleTheme)
+//       a) Clicking the Sun/Moon toggle button (calls toggleTheme)
 //       b) Changing in Settings page and saving
 //   - Every page <head> must apply theme early to avoid flash:
 //       <script>
@@ -146,7 +146,7 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('3dzaap_theme', t);
   var b = document.getElementById('themeToggle');
-  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
+  if (b) b.innerHTML = t === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 }
 
 function toggleTheme() {
@@ -157,21 +157,20 @@ function toggleTheme() {
 function initThemeToggle() {
   var t = document.documentElement.getAttribute('data-theme') || 'light';
   var b = document.getElementById('themeToggle');
-  if (b) b.textContent = t === 'dark' ? '☀️' : '🌙';
+  if (b) b.innerHTML = t === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 }
 // ── UI COMPONENTS ─────────────────────────────────────────────
 var UI = {
   _gateConfig: {
-    orders:     { icon:'📦', title:'Módulo Pedidos', sub:'Gere pedidos de clientes, acompanha o pipeline de produção e gera ordens de serviço.', plans:['pro','business'] },
-    financial:  { icon:'💰', title:'Módulo Financeiro', sub:'Análise completa de receitas, relatórios mensais e exportação financeira.', plans:['business'] },
-    backoffice: { icon:'🗄️', title:'BackOffice', sub:'Importação/Exportação de dados, backups e ferramentas avançadas.', plans:['pro','business'] },
-    settings:   { icon:'⚙️', title:'Configurações', sub:'Personalize a sua empresa, faturação e preferências da plataforma.', plans:['business'] },
-    materials:  { icon:'🎨', title:'Gestão de Materiais', sub:'Controle de stock avançado e estatísticas de consumo.', plans:['starter','pro','business'] },
-    printers:   { icon:'🖨️', title:'Gestão de Impressoras', sub:'Monitorização de horas de uso e alertas de manutenção.', plans:['starter','pro','business'] }
+    orders:     { icon:'<i class="ph-bold ph-shopping-cart"></i>', title:'Gestão de Encomendas', sub:'Controlo total do fluxo de produção e histórico de pedidos.', plans:['pro','business'] },
+    financial:  { icon:'<i class="ph-bold ph-money"></i>', title:'Módulo Financeiro', sub:'Análise completa de receitas, relatórios mensais e exportação financeira.', plans:['business'] },
+    backoffice: { icon:'<i class="ph-bold ph-layout"></i>', title:'Portal do Cliente', sub:'Área exclusiva para os teus clientes submeterem pedidos e orçamentarem.', plans:['pro','business'] },
+    materials:  { icon:'<i class="ph-bold ph-palette"></i>', title:'Gestão de Materiais', sub:'Controle de stock avançado e estatísticas de consumo.', plans:['starter','pro','business'] },
+    printers:   { icon:'<i class="ph-bold ph-printer"></i>', title:'Gestão de Impressoras', sub:'Monitorização de horas de uso e alertas de manutenção.', plans:['starter','pro','business'] }
   },
 
   showFeatureGate: function(moduleKey) {
-    var cfg = this._gateConfig[moduleKey] || { icon:'🔒', title:'Módulo Restrito', sub:'Este módulo requer um plano superior.', plans:['pro'] };
+    var cfg = this._gateConfig[moduleKey] || { icon:'<i class="ph-bold ph-lock"></i>', title:'Módulo Restrito', sub:'Este módulo requer um plano superior.', plans:['pro'] };
     
     // Create overlay if not exists
     var overlay = document.getElementById('gateOverlay');
@@ -185,12 +184,14 @@ var UI = {
     var planLabels = window.PLAN_LABELS || { starter:'Starter', pro:'Pro', business:'Business' };
     var planPrices = window.PLAN_PRICES || { starter: '€ 9.90', pro: '€ 19.90', business: '€ 39.90' };
 
-    var plansHtml = cfg.plans.map(function(p) {
-      return '<div class="gate-plan-row required">' +
-             '<span class="gate-plan-name">✅ ' + (planLabels[p] || p.toUpperCase()) + '</span>' +
-             '<span class="gate-plan-price">' + (planPrices[p] || '') + '</span>' +
-             '</div>';
-    }).join('');
+    var plansHtml = '<div class="gate-plans">' +
+      cfg.plans.map(function(p) {
+        return '<div class="gate-plan-row required">' +
+               '<span class="gate-plan-name"><i class="ph-bold ph-check-circle"></i> ' + (planLabels[p] || p.toUpperCase()) + '</span>' +
+               '<span class="gate-plan-price">' + (planPrices[p] || '') + '</span>' +
+               '</div>';
+      }).join('') +
+      '</div>';
 
     overlay.innerHTML = 
       '<div class="gate-modal">' +
@@ -199,7 +200,7 @@ var UI = {
         '<p class="gate-sub">' + cfg.sub + '</p>' +
         '<div class="gate-plans">' + plansHtml + '</div>' +
         '<div class="gate-actions">' +
-          '<a href="settings.html?tab=assinatura" class="btn-upgrade-premium">🚀 Fazer Upgrade Agora</a>' +
+          '<a href="settings.html?tab=assinatura" class="btn-upgrade-premium">Fazer Upgrade Agora</a>' +
           '<button class="btn-gate-cancel" onclick="UI.closeFeatureGate()">Voltar</button>' +
         '</div>' +
       '</div>';

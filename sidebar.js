@@ -91,8 +91,13 @@ const Sidebar = (() => {
   <div class="sidebar-company">
     <div class="company-pill" onclick="window.location.href='settings.html?tab=assinatura'" title="Gerir Plano" style="cursor:pointer">
       <div class="company-avatar" id="sidebarCompanyAvatar">—</div>
-      <span class="company-name" id="sidebarCompanyName">—</span>
-      <span class="company-plan" id="sidebarPlanBadge">—</span>
+      <div class="company-info">
+        <span class="company-name" id="sidebarCompanyName">—</span>
+        <span class="company-plan">
+          <i class="ph-bold ph-seal-check"></i>
+          <span id="sidebarPlanBadge">—</span>
+        </span>
+      </div>
     </div>
   </div>
 
@@ -171,7 +176,11 @@ const Sidebar = (() => {
     _setText('sidebarUserEmail',   session.email);
     _setText('sidebarUserAvatar',  initials);
     _setText('sidebarCompanyName', companyName);
-    _setText('sidebarPlanBadge',   planLabels[plan] || 'Trial');
+
+    const translatedPlan = (window.i18n && typeof i18n.t === 'function') 
+      ? i18n.t(`sidebar.plans.${plan}`) 
+      : (planLabels[plan] || 'Trial');
+    _setText('sidebarPlanBadge', translatedPlan);
 
     const avatarEl = document.getElementById('sidebarCompanyAvatar');
     if (avatarEl) {
@@ -269,7 +278,7 @@ const Sidebar = (() => {
 
   async function _doLogout() {
     _closeUserMenu();
-    if (typeof showToast === 'function') showToast('Sessão terminada. Até logo! 👋', 'ok');
+    if (typeof showToast === 'function') showToast('Sessão terminada. Até logo!', 'ok');
     setTimeout(() => Auth.logout(), 1000);
   }
 

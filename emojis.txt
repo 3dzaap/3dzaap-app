@@ -1,0 +1,45 @@
+admin.html:799:              <div class="ad-card-header"><div class="ad-card-title">⚙️ Operações manuais</div></div>
+admin.html:807:                    <button class="btn btn-ghost btn-sm" onclick="extendTrial()" style="flex:1">⏳ Estender trial</button>
+admin.html:821:                  <button class="btn btn-ghost btn-sm" onclick="unsuspendCompany()">✅ Reativar empresa</button>
+admin.html:861:      <div class="modal-title" id="companyDetailTitle">🏢 Empresa</div>
+admin.html:876:    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+admin.html:1248:            ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso">⏳</button>`
+admin.html:1251:            ${isSuspended ? '✅' : '<i class="ph-bold ph-prohibit"></i>'}
+admin.html:1521:    <div style="font-size:.78rem;font-weight:700;margin-bottom:10px">⏳ PRORROGAR ACESSO</div>
+admin.html:1526:      <button class="btn btn-primary btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}')">✅ Confirmar Prorrogação</button>
+admin.html:1578:    showToast(`✅ Acesso de ${companyName} prorrogado por +${days} dias (até ${base.toLocaleDateString('pt-PT')})`, 'ok');
+admin.html:1613:      showToast(`✅ Plano de ${c.name} atualizado para ${newPlan}`, 'ok');
+admin.html:1633:    isSuspended ? '✅ Reativar conta' : '<i class="ph-bold ph-prohibit"></i> Suspender conta',
+admin.html:1645:        showToast(isSuspended ? '✅ Conta reativada' : '<i class="ph-bold ph-prohibit"></i> Conta suspensa', 'ok');
+admin.html:1670:    showToast(`⏳ Trial de ${c.name} estendido por ${trialDays} dias`, 'ok');
+admin.html:1681:    showToast('✅ Dashboards e Assinaturas sincronizados com Stripe.', 'ok');
+admin.html:1758:          <span>👥 ${targetLabels[b.target] || b.target}</span>
+admin.html:1760:          <span>📅 ${fmtDate(b.created_at)}</span>
+admin.html:1792:    showToast(newVal ? '✅ Broadcast ativado' : '⏸ Broadcast desativado', 'ok');
+admin.html:1835:      document.getElementById('broadcastFb').textContent = '✅ Broadcast enviado!';
+admin.html:1845:      document.getElementById('broadcastFb').textContent = '❌ Erro: ' + e.message;
+admin.html:1862:    showToast(`✅ Flag "${flag}" atualizado`, 'ok');
+admin.html:1917:      showToast(`✅ Trial estendido ${params.days} dias`, 'ok');
+admin.html:1921:      showToast(`✅ Plano alterado para ${params.plan}`, 'ok');
+admin.html:1929:      showToast('✅ Empresa reativada', 'ok');
+admin.html:1933:      showToast(`⚠️ Impersonation: requer Edge Function em produção`, '');
+admin.html:1939:      showToast(`⚠️ Ban: requer Edge Function em produção`, '');
+admin.html:1948:    document.getElementById('opFb').textContent = `✅ Ação "${action}" executada`;
+admin.html:1951:    document.getElementById('opFb').textContent = '❌ Erro: ' + e.message;
+admin.html:1986:        showToast(`✅ Super Admin concedido a ${companyName}`, 'ok');
+admin.html:1990:        showToast(`✅ Super Admin revogado de ${companyName}`, 'ok');
+admin.html:2022:      showToast('⚠️ Edge Function necessária — ação registada no audit log', '');
+admin.html:2038:      showToast('⚠️ Edge Function necessária — ação registada no audit log', '');
+backoffice.html:998:    [...parsedFil.slice(0,2).map(f=>`🎨 ${f.type} ${f.variation}`),
+calculator.html:1682:    msg += `📍 *Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
+calculator.html:1691:  msg += `\n💰 *Total:* ${fmtCurrency(r.finalPrice)}\n`;
+dashboard.html:1630:  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+financial.html:931:  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+materials.html:673:        <div class="color-section-title">🎨 Cor do material</div>
+materials.html:2135:  btn.textContent = '⏳ A guardar…';
+orders.html:1983:  btn.innerHTML = '⏳...';
+orders.html:2008:    let msg = `🎨 *Olá ${o.clientName}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:\n\n🚀 ${portalUrl}`;
+orders.html:2074:  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+printers.html:1456:      <div style="font-size:1.4rem">🔒</div>
+printers.html:1503:  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+utils.js:134://       a) Clicking the ☀️/🌙 toggle button (calls toggleTheme)

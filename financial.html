@@ -260,7 +260,7 @@
 </head>
 <body>
 <div class="bg"></div><div class="orb o1"></div><div class="orb o2"></div>
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
 <script src="utils.js"></script>
@@ -275,11 +275,7 @@
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
             <!-- Theme Toggle -->
-            <button id="topbarThemeToggle"
-              onclick="Sidebar.toggleTheme()"
-              title="Alternar Tema"
-              class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -310,7 +306,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -331,7 +327,7 @@
       </div>
 
       <div class="fin-period-bar">
-        <label for="periodoInput" data-i18n="financial.lbl_period" style="margin-right:4px">📅 Período:</label>
+        <label for="periodoInput" data-i18n="financial.lbl_period" style="margin-right:4px"><i class="ph-bold ph-calendar"></i> Período:</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="month" id="periodoInput" style="height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--rm);outline:none;font-family:var(--f);font-size:0.85rem;font-weight:600;color:var(--dark)">
           <button class="btn btn-primary" onclick="renderAll()" style="height:34px;padding:0 14px;font-size:0.8rem"><i class="ph-bold ph-magnifying-glass"></i> Pesquisar</button>
@@ -370,7 +366,7 @@
 
       <div class="fin-grid">
         <div class="fin-card">
-          <div class="fin-card-title" data-i18n="financial.card_status">📊 Distribuição por estado</div>
+          <div class="fin-card-title" data-i18n="financial.card_status"><i class="ph-bold ph-chart-pie"></i> Distribuição por estado</div>
           <table class="fin-status-table">
             <thead><tr><th data-i18n="financial.th_status">Estado</th><th class="r" data-i18n="financial.th_qty">Qtd</th><th class="r" id="finThTotal">Total</th></tr></thead>
             <tbody id="statusTableBody">
@@ -406,8 +402,8 @@
 
       <div class="fin-card" style="margin-top:20px">
         <div class="fin-card-title" style="justify-content:space-between">
-          <span>💸 Despesas do período</span>
-          <button class="btn btn-primary btn-sm" onclick="openExpModal()">+ Nova Despesa</button>
+          <span><i class="ph-bold ph-receipt"></i> Despesas do período</span>
+          <button class="btn btn-primary btn-sm" onclick="openExpModal()"><i class="ph-bold ph-plus"></i> Nova Despesa</button>
         </div>
         <div class="table-wrap">
           <div id="expEmpty" class="fin-empty" style="display:none">
@@ -432,7 +428,7 @@
 <div class="modal-overlay" id="expenseModalOverlay" onclick="if(event.target===this)closeExpModal()">
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
-      <div class="modal-title" id="expenseModalTitle">💸 Nova Despesa</div>
+      <div class="modal-title" id="expenseModalTitle"><i class="ph-bold ph-receipt"></i> Nova Despesa</div>
       <button class="modal-close" onclick="closeExpModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
@@ -932,7 +928,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>

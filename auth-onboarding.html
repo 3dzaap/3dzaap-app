@@ -600,10 +600,10 @@ async function doLogin() {
     setBusy('loginBtn', false);
     const msg = err.message || '';
     if (msg.match(/invalid|credentials|password/i)) {
-      toast('❌ Email ou password incorrectos.', 'err');
+      toast('<i class="ph-bold ph-x-circle"></i> Email ou password incorrectos.', 'err');
       setErr('f-email-l', true); setErr('f-pass-l', true);
     } else if (msg.match(/rate.limit|security|24 sec|429/i)) {
-      toast('⏳ Demasiadas tentativas. Aguarda 60 segundos.', 'err');
+      toast('Demasiadas tentativas. Aguarda 60 segundos.', 'err');
     } else {
       toast('Erro: ' + (msg || 'Tenta novamente.'), 'err');
     }
@@ -718,12 +718,12 @@ async function finishOnboarding() {
 
     if (result.needsEmailConfirm) {
       // Confirmação de email necessária
-      document.getElementById('successPanel').querySelector('h2').textContent = 'Confirma o teu email 📬';
+      document.getElementById('successPanel').querySelector('h2').textContent = 'Confirma o teu email';
       document.getElementById('successPanel').querySelector('p').innerHTML =
         'Enviámos um email de confirmação para <strong>' + STATE.form.email + '</strong>.<br>' +
         'Clica no link para activar a conta e entrar no dashboard.';
       document.getElementById('successPanel').querySelector('.btn-primary').style.display = 'none';
-      toast('✅ Verifica o teu email para confirmar a conta.', 'ok');
+      toast('<i class="ph-bold ph-check-circle"></i> Verifica o teu email para confirmar a conta.', 'ok');
     } else {
       toast('Conta criada com sucesso! 🎉', 'ok');
       
@@ -747,15 +747,15 @@ async function finishOnboarding() {
 
     const msg = err.message || '';
     if (msg.match(/429|rate.limit|security|24 sec/i)) {
-      toast('⏳ Email bloqueado temporariamente. Usa um email diferente ou aguarda 1 hora.', 'err');
+      toast('Email bloqueado temporariamente. Usa um email diferente ou aguarda 1 hora.', 'err');
       // Não resetar o mutex — forçar uso de email diferente
       return;
     } else if (msg.match(/already.registered|already.been|User already/i)) {
-      toast('❌ Este email já tem conta. Usa o login.', 'err');
+      toast('<i class="ph-bold ph-x-circle"></i> Este email já tem conta. Usa o login.', 'err');
     } else if (msg.match(/password|weak/i)) {
-      toast('❌ A password deve ter pelo menos 6 caracteres.', 'err');
+      toast('<i class="ph-bold ph-x-circle"></i> A password deve ter pelo menos 6 caracteres.', 'err');
     } else if (msg.match(/empresa|company/i)) {
-      toast('⚠️ Conta criada. Erro ao criar empresa: ' + msg, 'err');
+      toast('<i class="ph-bold ph-warning-octagon"></i> Conta criada. Erro ao criar empresa: ' + msg, 'err');
     } else {
       toast('Erro: ' + (msg || 'Tenta novamente.'), 'err');
     }
@@ -887,7 +887,7 @@ function toggleEye(id, btn) {
   const inp = document.getElementById(id);
   const isText = inp.type === 'text';
   inp.type    = isText ? 'password' : 'text';
-  btn.textContent = isText ? '👁️' : '🙈';
+  btn.innerHTML = isText ? '<i class="ph-bold ph-eye"></i>' : '<i class="ph-bold ph-eye-slash"></i>';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -928,7 +928,7 @@ function setBusy(id, busy) {
 let _toastTimer;
 function toast(msg, type = '') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  t.innerHTML   = msg;
   t.className   = 'toast show ' + type;
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove('show'), 4000);

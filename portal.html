@@ -700,7 +700,7 @@ async function handleAction(action) {
   
   try {
     const btn = (action === 'approve') ? document.querySelector('.btn-approve') : document.querySelector('.btn-decline');
-    if (btn) { btn.disabled = true; btn.innerHTML = '⏳...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '...'; }
     
     await DB.respondToQuote(_token, action);
     

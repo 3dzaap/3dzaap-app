@@ -94,7 +94,7 @@
       </div>
       
       <div class="topbar-actions">
-        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem">🌙</button>
+        <button id="topbarThemeToggle" class="topbar-notif" onclick="Sidebar.toggleTheme()" style="font-size: 1.1rem"><i class="ph-bold ph-moon"></i></button>
         <select id="topbarLangSelect" class="form-select" style="width: auto; padding: 4px 28px 4px 10px; font-size: 0.75rem" onchange="window.i18n && window.i18n.setLanguage(this.value)">
           <option value="pt-PT">🇵🇹 PT</option>
           <option value="pt-BR">🇧🇷 BR</option>
@@ -195,7 +195,7 @@
         <div class="form-group">
           <label class="form-label" data-i18n="products.modal.lbl_tech">Tecnologia</label>
           <select id="prTech" class="form-select" onchange="onTechChange()">
-            <option value="fdm" data-i18n="products.modal.tech_fdm"><i class="ph-bold ph-circles-three"></i> FDM</option>
+            <option value="fdm" data-i18n="products.modal.tech_fdm"><i class="ph-bold ph-vinyl-record"></i> FDM</option>
             <option value="resin" data-i18n="products.modal.tech_resin"><i class="ph-bold ph-flask"></i> Resina</option>
           </select>
         </div>
@@ -341,7 +341,7 @@ function renderProducts() {
         </td>
         <td>
           <span class="mat-badge ${isResin?'mat-resin':'mat-fdm'}">
-             ${isResin?'<i class="ph-bold ph-flask"></i> Resina':'<i class="ph-bold ph-circles-three"></i> FDM'}
+             ${isResin?'<i class="ph-bold ph-flask"></i> Resina':'<i class="ph-bold ph-vinyl-record"></i> FDM'}
           </span>
         </td>
         <td class="cell-mono">${weight.toFixed(1)}${isResin?'ml':'g'}</td>
@@ -403,7 +403,7 @@ function renderProducts() {
       <div class="mob-prod-card" onclick="toggleProductExpand('${p.id}')">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <div style="display:flex; gap:12px; align-items:center">
-            <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem">📦</div>
+            <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem"><i class="ph-bold ph-package"></i></div>
             <div>
               <div class="prod-name-main" style="font-size:0.85rem">${escH(p.name)}</div>
               <div style="font-family:var(--mono); font-size:0.78rem; color:var(--blue); font-weight:700">${fmtCurrency(p.salePrice)}</div>
@@ -543,7 +543,7 @@ async function saveProduct() {
     closeProductModal();
     renderProducts();
   } catch(e) {
-    showToast('❌ Erro ao gravar: ' + e.message, 'err');
+    showToast('<i class="ph-bold ph-x-circle"></i> Erro ao gravar: ' + e.message, 'err');
   } finally {
     _isSaving = false;
     btn.disabled = false;
@@ -560,7 +560,7 @@ async function confirmDelProduct() {
     closeProductModal();
     renderProducts();
   } catch(e) {
-    showToast('❌ Erro: ' + e.message, 'err');
+    showToast('<i class="ph-bold ph-x-circle"></i> Erro: ' + e.message, 'err');
   }
 }
 

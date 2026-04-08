@@ -542,7 +542,7 @@
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 
-<button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 <div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
 
@@ -559,7 +559,7 @@
       <div class="topbar-actions">
         <div class="global-ctrls" id="globalCtrls">
           <!-- Theme Toggle -->
-          <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme">🌙</button>
+          <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <!-- Language Selector -->
           <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
             <option value="pt-PT">🇵🇹 PT</option>
@@ -741,7 +741,7 @@
                 <span data-i18n="calc.buttons.save_history"><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</span>
               </button>
               <button class="btn-wa" onclick="sendWhatsApp()">
-                <span class="btn-wa-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.012 2c-5.508 0-9.987 4.479-9.987 9.987 0 1.763.462 3.426 1.262 4.876l-1.287 4.703 4.814-1.263c1.393.759 2.977 1.191 4.661 1.191l.011-.001c5.508 0 9.988-4.479 9.988-9.987 0-5.507-4.479-9.987-9.987-9.987zm4.567 14.113c-.19.533-1.096.997-1.545 1.055-.449.059-.89.096-2.502-.546-1.944-.775-3.197-2.753-3.294-2.882-.097-.129-.79-.848-.79-1.614 0-.766.403-1.144.545-1.294.142-.15.309-.188.412-.188h.262c.097 0 .227.001.326.234.1.234.341.831.371.892.03.061.05.132.01.213-.04.081-.06.132-.121.203-.061.071-.129.158-.184.213-.061.061-.125.127-.054.248.071.121.315.519.676.841.465.414.856.541.977.602.121.061.191.051.262-.03.072-.082.306-.356.388-.474.082-.119.162-.099.274-.059.112.04.708.334.831.395.122.06.203.091.233.14.03.05.03.291-.16.824z"/></svg></span>
+                <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
                 <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
               </button>
               <div class="results-actions-row">
@@ -1013,7 +1013,7 @@ function setSl(id, val, min, max) {
   }
 }
 function updateSliderLabels() {
-  const icons = { mat: '<i class="ph-bold ph-circles-three"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
+  const icons = { mat: '<i class="ph-bold ph-vinyl-record"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
   const pairs = [
     { s: 'failureSlider', v: 'failureVal' },
     { s: 'indirectSlider', v: 'indirectVal' },
@@ -1677,19 +1677,19 @@ function sendWhatsApp() {
     return;
   }
 
-  let msg = `<i class="ph-bold ph-palette"></i> *Orçamento de Impressão 3D*\n\n`;
+  let msg = `*Orçamento de Impressão 3D*\n\n`;
   if (i.mode === 'simple') {
-    msg += `📍 *Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
-    msg += `⚖️ *Peso:* ${i.weight}g\n`;
+    msg += `*Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
+    msg += `*Peso:* ${i.weight}g\n`;
   } else {
-    msg += `📂 *Projeto Multi-Peças*\n`;
+    msg += `*Projeto Multi-Peças*\n`;
     i.parts.forEach(p => {
       msg += `• ${p.qty}x ${p.name || 'Peça'} (${p.weight}g)\n`;
     });
   }
   
-  msg += `\n💰 *Total:* ${fmtCurrency(r.finalPrice)}\n`;
-  msg += `📍 _Obrigado pela preferência!_\n\n<i class="ph-bold ph-rocket-launch"></i> Gerado via *3DZAAP*`;
+  msg += `\n*Total:* ${fmtCurrency(r.finalPrice)}\n`;
+  msg += `*Obrigado pela preferência!*\n\nGerado via *3DZAAP*`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -1924,7 +1924,7 @@ function renderHistory(){
       +'<td class="td-price">'+fmtCurrency(e.results.finalPrice)+'</td>'
       +'<td class="td-time">'+e.time+'</td>'
       +'<td class="td-actions">'
-        +'<button class="btn-restore" onclick="event.stopPropagation();restoreHistory('+e.id+')">↩ '+restoreBtnLabel+'</button>'
+        +'<button class="btn-restore" onclick="event.stopPropagation();restoreHistory('+e.id+')"><i class="ph-bold ph-arrow-counter-clockwise"></i> '+restoreBtnLabel+'</button>'
         +'<button class="btn-del" onclick="event.stopPropagation();deleteHistory('+e.id+')" title="Remover"><i class="ph-bold ph-x"></i></button>'
       +'</td></tr>';
   }).join('');
@@ -2015,7 +2015,7 @@ function exportCalcCSV(){
 
 
 function copyResults(){
-  const icons = { mat: '<i class="ph-bold ph-circles-three"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
+  const icons = { mat: '<i class="ph-bold ph-vinyl-record"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
   const i=getInputs();const r=computeResults(i);
   const name=document.getElementById('printName').value.trim();
   const sym=getCurrencySymbol();
@@ -2023,7 +2023,7 @@ function copyResults(){
   const W=26; // column width for alignment
   const row=(lbl,val)=>lbl.padEnd(W)+sym+val;
   const txt=[
-    name?`<i class="ph-bold ph-ruler"></i> ${name}`:null,
+    name?`${name}`:null,
     `Cálculo de Impressão 3D — ${new Date().toLocaleString(i18n.currentLocale)}`,
     `Modo: ${modeLabel}`,
     '─'.repeat(42),
@@ -2036,7 +2036,7 @@ function copyResults(){
     row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
     '─'.repeat(42),
     row('Preço unitário:',       r.unitPrice.toFixed(2)),
-    row(`${icons.money} PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
+    row(`PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
   ].filter(Boolean).join('\n');
   const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
   if(navigator.clipboard&&window.isSecureContext){
@@ -2056,29 +2056,29 @@ function _buildClientMsg(){
   // Professional WhatsApp formatting
   const lines=[
     '━━━━━━━━━━━━━━━━━━━━',
-    '<i class="ph-bold ph-file-csv"></i> *' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
+    '*' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
     '━━━━━━━━━━━━━━━━━━━━',
-    ...(clientName ? ['👋 *' + i18n.getNestedTranslation('calc.wa.greeting', {name: clientName}) + '*', ''] : []),
-    '🏢 *'+companyName+'*',
-    '📅 *' + i18n.getNestedTranslation('calc.wa.date') + ':* '+date,
+    ...(clientName ? ['*' + i18n.getNestedTranslation('calc.wa.greeting', {name: clientName}) + '*', ''] : []),
+    '*'+companyName+'*',
+    '*' + i18n.getNestedTranslation('calc.wa.date') + ':* '+date,
     '',
-    '<i class="ph-bold ph-ruler"></i> *' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
-    '<i class="ph-bold ph-printer"></i> *' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
-    '🔢 *' + i18n.getNestedTranslation('calc.wa.qty') + ':* '+qty+' ' + i18n.getNestedTranslation('calc.qty_unit'),
+    '*' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
+    '*' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
+    '*' + i18n.getNestedTranslation('calc.wa.qty') + ':* '+qty+' ' + i18n.getNestedTranslation('calc.qty_unit'),
     '',
     '------------------------------------',
-    '📝 *' + i18n.getNestedTranslation('calc.wa.tech_detail') + ':*',
+    '*' + i18n.getNestedTranslation('calc.wa.tech_detail') + ':*',
     i.mode==='resin' ? '• ' + i18n.getNestedTranslation('calc.wa.est_vol') + ': '+i.resinVolume+'ml' : '• ' + i18n.getNestedTranslation('calc.wa.est_weight') + ': '+i.partWeight+'g',
     '• ' + i18n.getNestedTranslation('calc.wa.est_time') + ': '+i.printTime+'h',
     '------------------------------------',
     '',
-    '💰 *' + i18n.getNestedTranslation('calc.wa.values') + ':*',
+    '*' + i18n.getNestedTranslation('calc.wa.values') + ':*',
     '• ' + i18n.getNestedTranslation('calc.wa.unit_price') + ': '+sym+' '+r.unitPrice.toFixed(2),
     '• *' + i18n.getNestedTranslation('calc.wa.total') + ': '+sym+' '+r.finalPrice.toFixed(2)+'*',
     '',
     '━━━━━━━━━━━━━━━━━━━━',
-    '⏳ ' + i18n.getNestedTranslation('calc.wa.validity'),
-    '<i class="ph-bold ph-rocket-launch"></i> ' + i18n.getNestedTranslation('calc.wa.powered_by'),
+    i18n.getNestedTranslation('calc.wa.validity'),
+    i18n.getNestedTranslation('calc.wa.powered_by'),
     '━━━━━━━━━━━━━━━━━━━━'
   ];
 
@@ -2187,7 +2187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </p>
     <div style="display:flex; flex-direction:column; gap:10px">
       <button class="btn btn-primary" onclick="doSaveProduct()"><i class="ph-bold ph-package"></i> Criar Novo Produto</button>
-      <button class="btn btn-ghost" style="border:1.5px solid var(--border)" onclick="doSaveHistory()">🕐 Apenas no Histórico</button>
+      <button class="btn btn-ghost" style="border:1.5px solid var(--border)" onclick="doSaveHistory()"><i class="ph-bold ph-clock"></i> Apenas no Histórico</button>
       <button class="btn btn-ghost" onclick="closeSaveChoice()">Cancelar</button>
     </div>
   </div>

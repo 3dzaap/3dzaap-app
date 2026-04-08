@@ -257,7 +257,7 @@
 <body class="dashboard-body">
 
 <!-- Mobile toggle -->
-<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu"><i class="ph-bold ph-list"></i></button>
 <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
 
 <div class="layout">
@@ -275,11 +275,7 @@
           <!-- ── GLOBAL CONTROLS (lang + theme + help) ────────── -->
           <div class="global-ctrls" id="globalCtrls">
             <!-- Theme Toggle -->
-            <button id="topbarThemeToggle"
-              onclick="Sidebar.toggleTheme()"
-              title="Alternar Tema"
-              class="gc-btn"
-              aria-label="Toggle theme">🌙</button>
+              aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
 
             <!-- Language Selector -->
             <select id="topbarLangSelect"
@@ -310,7 +306,7 @@
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                  <span style="font-size:1rem">✉️</span>
+                  <i class="ph-bold ph-envelope"></i>
                   suporte@3dzaap.com
                 </a>
               </div>
@@ -344,7 +340,7 @@
           <!-- TAB: EMPRESA -->
           <div class="settings-panel active" id="tab-empresa">
             <div class="settings-card">
-              <div class="settings-card-title"><span data-i18n="settings.company.title">🏢 Informações da Empresa</span></div>
+              <div class="settings-card-title"><span data-i18n="settings.company.title"><i class="ph-bold ph-buildings"></i> Informações da Empresa</span></div>
               <div class="form-grid">
                 <div class="form-group full">
                   <label class="form-label"><span data-i18n="settings.company.name">Nome da empresa</span> <span class="hint" data-i18n="settings.company.hint_req">*</span></label>
@@ -390,7 +386,7 @@
                 </div>
                 <div class="logo-upload-actions">
                   <input type="file" id="logoFile" accept="image/*" style="display:none">
-                  <button class="btn btn-primary btn-sm" onclick="document.getElementById('logoFile').click()" data-i18n="settings.brand.btn_file">📁 Escolher Ficheiro</button>
+                  <button class="btn btn-primary btn-sm" onclick="document.getElementById('logoFile').click()" data-i18n="settings.brand.btn_file"><i class="ph-bold ph-folder-open"></i> Escolher Ficheiro</button>
                   <button class="btn btn-ghost btn-sm del" id="btnRemoveLogo" style="display:none" data-i18n="settings.brand.btn_remove"><i class="ph-bold ph-trash"></i> Remover</button>
                 </div>
               </div>
@@ -401,7 +397,7 @@
 
               <div style="height:1px; background:var(--border); margin:12px 0"></div>
 
-              <div class="settings-card-title"><span data-i18n="settings.brand.sig_title">🖋️ Assinatura Digital</span></div>
+              <div class="settings-card-title"><span data-i18n="settings.brand.sig_title"><i class="ph-bold ph-pencil-line"></i> Assinatura Digital</span></div>
               <p class="toggle-desc" data-i18n="settings.brand.sig_hint">PNG com fundo transparente, máx 512KB. Aparece nos recibos.</p>
               
               <div class="logo-upload-area">
@@ -410,7 +406,7 @@
                 </div>
                 <div class="logo-upload-actions">
                   <input type="file" id="sigFile" accept="image/png" style="display:none">
-                  <button class="btn btn-primary btn-sm" onclick="document.getElementById('sigFile').click()" data-i18n="settings.brand.btn_file">📁 Escolher Ficheiro</button>
+                  <button class="btn btn-primary btn-sm" onclick="document.getElementById('sigFile').click()" data-i18n="settings.brand.btn_file"><i class="ph-bold ph-folder-open"></i> Escolher Ficheiro</button>
                   <button class="btn btn-ghost btn-sm del" id="btnRemoveSig" style="display:none" data-i18n="settings.brand.btn_remove"><i class="ph-bold ph-trash"></i> Remover</button>
                 </div>
               </div>
@@ -427,11 +423,11 @@
                   <div style="display:flex; gap:12px">
                     <label style="flex:1; cursor:pointer">
                       <input type="radio" name="prefTheme" value="light" style="display:none" checked>
-                      <div class="toggle-row" id="themeLightOption" style="justify-content:center; padding:12px">☀️ <span data-i18n="settings.prefs.theme_light">Claro</span></div>
+                      <div class="toggle-row" id="themeLightOption" style="justify-content:center; padding:12px"><i class="ph-bold ph-sun"></i> <span data-i18n="settings.prefs.theme_light">Claro</span></div>
                     </label>
                     <label style="flex:1; cursor:pointer">
                       <input type="radio" name="prefTheme" value="dark" style="display:none">
-                      <div class="toggle-row" id="themeDarkOption" style="justify-content:center; padding:12px">🌙 <span data-i18n="settings.prefs.theme_dark">Escuro</span></div>
+                      <div class="toggle-row" id="themeDarkOption" style="justify-content:center; padding:12px"><i class="ph-bold ph-moon"></i> <span data-i18n="settings.prefs.theme_dark">Escuro</span></div>
                     </label>
                   </div>
                 </div>
@@ -493,7 +489,7 @@
           <!-- TAB: NOTIFICACOES -->
           <div class="settings-panel" id="tab-notificacoes" style="display:none">
             <div class="settings-card">
-              <div class="settings-card-title"><span data-i18n="settings.notifs.stock_title">🔔 Alertas de Stock</span></div>
+              <div class="settings-card-title"><span data-i18n="settings.notifs.stock_title"><i class="ph-bold ph-bell"></i> Alertas de Stock</span></div>
               <div class="toggle-row">
                 <div class="toggle-info">
                   <div class="toggle-label" data-i18n="settings.notifs.stock_out">Alerta de material esgotado</div>
@@ -544,7 +540,7 @@
             <div class="settings-card">
               <div class="settings-card-title" style="justify-content:space-between">
                 <span data-i18n="settings.team.active"><i class="ph-bold ph-users"></i> Membros Ativos</span>
-                <button class="btn btn-primary btn-sm" id="btnInvite" data-i18n="settings.team.invite_btn">+ Convidar</button>
+                <button class="btn btn-primary btn-sm" id="btnInvite" data-i18n="settings.team.invite_btn"><i class="ph-bold ph-plus"></i> Convidar</button>
               </div>
               <div id="membersList">
                 <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar membros...</div>
@@ -552,7 +548,7 @@
             </div>
             
             <div class="settings-card" id="invitesCard" style="display:none; margin-top:24px">
-               <div class="settings-card-title"><span data-i18n="settings.team.pending">📧 Convites Pendentes</span></div>
+               <div class="settings-card-title"><span data-i18n="settings.team.pending"><i class="ph-bold ph-envelope"></i> Convites Pendentes</span></div>
                <div id="invitesList"></div>
             </div>
           </div>
@@ -641,7 +637,7 @@
 
 <!-- SAVE BAR -->
 <div class="save-bar" id="saveBar">
-  <div class="save-bar-msg" id="saveBarMsg">💡 <span data-i18n="settings.save_bar.unsaved">Alterações não guardadas</span></div>
+  <div class="save-bar-msg" id="saveBarMsg"><i class="ph-bold ph-lightbulb"></i> <span data-i18n="settings.save_bar.unsaved">Alterações não guardadas</span></div>
   <div class="save-bar-btns">
     <button class="btn btn-ghost" id="btnDiscard" data-i18n="common.cancel">Cancelar</button>
     <button class="btn btn-primary" id="btnSaveAll" data-i18n="common.save"><i class="ph-bold ph-floppy-disk"></i> Guardar tudo</button>

@@ -434,7 +434,7 @@
   <div class="main">
 
     <div class="topbar">
-      <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+      <button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
       <div class="topbar-center">
         <strong id="topbarTitle"><i class="ph-bold ph-shield-check"></i> Admin</strong>
       </div>
@@ -450,7 +450,7 @@
         <div class="access-denied-title">Acesso restrito</div>
         <div class="access-denied-sub">Este módulo é exclusivo do administrador do 3DZAAP.</div>
         <a href="dashboard.html" class="btn btn-primary" style="margin-top:16px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <i class="ph-bold ph-arrow-left"></i>
           Voltar ao Dashboard
         </a>
       </div>
@@ -464,7 +464,7 @@
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn btn-ghost btn-sm" onclick="refreshAll()" id="btnRefresh">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <i class="ph-bold ph-arrows-clockwise"></i>
               Atualizar
             </button>
           </div>
@@ -501,24 +501,19 @@
         <!-- ── TABS ───────────────────────────────────── -->
         <div class="admin-tabs" role="tablist">
           <button class="admin-tab active" onclick="switchTab('customers')" role="tab" id="tab-btn-customers" aria-selected="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Clientes
+            <i class="ph-bold ph-users"></i> Clientes
           </button>
           <button class="admin-tab" onclick="switchTab('users')" role="tab" id="tab-btn-users">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Utilizadores
+            <i class="ph-bold ph-user-circle"></i> Utilizadores
           </button>
           <button class="admin-tab" onclick="switchTab('metrics')" role="tab" id="tab-btn-metrics">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Métricas
+            <i class="ph-bold ph-chart-line"></i> Métricas
           </button>
           <button class="admin-tab" onclick="switchTab('tools')" role="tab" id="tab-btn-tools">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            Ferramentas
+            <i class="ph-bold ph-wrench"></i> Ferramentas
           </button>
           <button class="admin-tab" onclick="switchTab('audit')" role="tab" id="tab-btn-audit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Auditoria
+            <i class="ph-bold ph-eye"></i> Auditoria
           </button>
         </div>
 
@@ -791,17 +786,17 @@
               <div class="ad-card-body">
                 <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Exporta dados de todas as empresas para análise externa. Inclui apenas metadados — não inclui dados privados dos clientes finais.</p>
                 <div style="display:flex;flex-direction:column;gap:8px">
-                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('companies')">⬇️ Empresas (CSV)</button>
-                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('subscriptions')">⬇️ Assinaturas (CSV)</button>
-                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('revenue')">⬇️ Receita por mês (CSV)</button>
-                  <button class="btn btn-primary btn-sm" onclick="exportGlobal('full')">⬇️ Export completo</button>
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('companies')"><i class="ph-bold ph-download-simple"></i> Empresas (CSV)</button>
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('subscriptions')"><i class="ph-bold ph-download-simple"></i> Assinaturas (CSV)</button>
+                  <button class="btn btn-ghost btn-sm" onclick="exportGlobal('revenue')"><i class="ph-bold ph-download-simple"></i> Receita por mês (CSV)</button>
+                  <button class="btn btn-primary btn-sm" onclick="exportGlobal('full')"><i class="ph-bold ph-download-simple"></i> Export completo</button>
                 </div>
               </div>
             </div>
 
             <!-- EXTEND TRIAL / FORCE PLAN -->
             <div class="ad-card">
-              <div class="ad-card-header"><div class="ad-card-title">⚙️ Operações manuais</div></div>
+              <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-gear"></i> Operações manuais</div></div>
               <div class="ad-card-body">
                 <div class="form-group" style="margin-bottom:12px">
                   <label class="form-label">Empresa (ID ou nome)</label>
@@ -809,7 +804,7 @@
                 </div>
                 <div style="display:flex;flex-direction:column;gap:8px">
                   <div style="display:flex;gap:8px;align-items:center">
-                    <button class="btn btn-ghost btn-sm" onclick="extendTrial()" style="flex:1">⏳ Estender trial</button>
+                    <button class="btn btn-ghost btn-sm" onclick="extendTrial()" style="flex:1"><i class="ph-bold ph-hourglass"></i> Estender trial</button>
                     <input type="number" class="form-input" id="extendDays" value="7" min="1" max="90" style="width:60px;text-align:center" title="Dias">
                     <span style="font-size:.78rem;color:var(--muted)">dias</span>
                   </div>
@@ -823,7 +818,7 @@
                     </select>
                   </div>
                   <button class="btn btn-ghost btn-sm" onclick="suspendCompany()"><i class="ph-bold ph-prohibit"></i> Suspender empresa</button>
-                  <button class="btn btn-ghost btn-sm" onclick="unsuspendCompany()">✅ Reativar empresa</button>
+                  <button class="btn btn-ghost btn-sm" onclick="unsuspendCompany()"><i class="ph-bold ph-check-circle"></i> Reativar empresa</button>
                 </div>
                 <div class="form-hint" id="opFb" style="margin-top:10px"></div>
               </div>
@@ -841,7 +836,7 @@
               <div class="ad-card-title">📋 Log de auditoria</div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-ghost btn-sm" onclick="loadAuditLog()"><i class="ph-bold ph-arrows-clockwise"></i> Atualizar</button>
-                <button class="btn btn-ghost btn-sm" onclick="exportAuditLog()">⬇️ Exportar</button>
+                <button class="btn btn-ghost btn-sm" onclick="exportAuditLog()"><i class="ph-bold ph-download-simple"></i> Exportar</button>
               </div>
             </div>
             <div class="ad-card-body">
@@ -863,7 +858,7 @@
 <div class="modal-overlay" id="companyDetailOverlay" onclick="if(event.target===this)closeCompanyDetail()">
   <div class="modal" style="max-width:680px">
     <div class="modal-header">
-      <div class="modal-title" id="companyDetailTitle">🏢 Empresa</div>
+      <div class="modal-title" id="companyDetailTitle"><i class="ph-bold ph-buildings"></i> Empresa</div>
       <button class="modal-close" onclick="closeCompanyDetail()">✕</button>
     </div>
     <div class="modal-body" id="companyDetailBody"></div>
@@ -878,7 +873,7 @@
 ══════════════════════════════════════════════════════════ -->
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
-    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-icon" id="confirmIcon"><i class="ph-bold ph-warning"></i></div>
     <div class="confirm-title" id="confirmTitle">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
@@ -1247,13 +1242,13 @@ function renderCustomersTable(data) {
       <td class="mono" style="font-size:.75rem;color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-action" onclick="loginAsCompany('${c.slug}')" title="Aceder como empresa">🚀</button>
+          <button class="btn-action" onclick="loginAsCompany('${c.slug}')" title="Aceder como empresa"><i class="ph-bold ph-rocket-launch"></i></button>
           <button class="btn-action" onclick="openCompanyDetail('${c.id}')" title="Ver Detalhes"><i class="ph-bold ph-magnifying-glass"></i></button>
           ${(plan === 'trial' || subStatus === 'canceled' || subStatus === 'blocked')
-            ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso">⏳</button>`
+            ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso"><i class="ph-bold ph-hourglass"></i></button>`
             : ''}
           <button class="btn-action ${isSuspended ? '' : 'danger'}" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
-            ${isSuspended ? '✅' : '<i class="ph-bold ph-prohibit"></i>'}
+            ${isSuspended ? '<i class="ph-bold ph-check-circle"></i>' : '<i class="ph-bold ph-prohibit"></i>'}
           </button>
           <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')" title="Excluir Definitivamente"><i class="ph-bold ph-trash"></i></button>
         </div>
@@ -1523,12 +1518,12 @@ function openCompanyDetail(companyId) {
       </div>
     </div>
     <hr style="margin:20px 0;border-color:var(--border)">
-    <div style="font-size:.78rem;font-weight:700;margin-bottom:10px">⏳ PRORROGAR ACESSO</div>
+    <div style="font-size:.78rem;font-weight:700;margin-bottom:10px"><i class="ph-bold ph-hourglass-high"></i> PRORROGAR ACESSO</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <input type="number" id="extendDaysInput" min="1" max="365" value="30"
         style="width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:.88rem;font-weight:700">
       <span style="font-size:.82rem;color:var(--muted)">dias a partir de hoje</span>
-      <button class="btn btn-primary btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}')">✅ Confirmar Prorrogação</button>
+      <button class="btn btn-primary btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}')"><i class="ph-bold ph-check-circle"></i> Confirmar Prorrogação</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',7)">+7 dias</button>
@@ -1580,7 +1575,7 @@ async function doExtendAccess(companyId, companyName, fixedDays) {
       .eq('id', companyId);
     if (error) throw error;
     await _adminAudit('extend_access', `Empresa: ${companyName} (${companyId}) +${days} dias → ${base.toLocaleDateString('pt-PT')}`);
-    showToast(`✅ Acesso de ${companyName} prorrogado por +${days} dias (até ${base.toLocaleDateString('pt-PT')})`, 'ok');
+    showToast(`<i class="ph-bold ph-check-circle"></i> Acesso de ${companyName} prorrogado por +${days} dias (até ${base.toLocaleDateString('pt-PT')})`, 'ok');
     closeCompanyDetail();
     await refreshAll();
   } catch(e) {
@@ -1615,7 +1610,7 @@ async function changeCustomerPlan(companyId, newPlan) {
       if (error) throw error;
       
       await _adminAudit('plan_change', `Empresa: ${c.name} (${companyId}) -> Plano: ${newPlan}`);
-      showToast(`✅ Plano de ${c.name} atualizado para ${newPlan}`, 'ok');
+      showToast(`<i class="ph-bold ph-check-circle"></i> Plano de ${c.name} atualizado para ${newPlan}`, 'ok');
       await refreshAll();
     } catch(e) {
       showToast('Erro ao mudar plano: ' + e.message, 'err');
@@ -1625,7 +1620,7 @@ async function changeCustomerPlan(companyId, newPlan) {
 
 function loginAsCompany(slug) {
   if (!slug) return;
-  showToast('🚀 A redirecionar para a empresa...', '');
+  showToast('<i class="ph-bold ph-rocket-launch"></i> A redirecionar para a empresa...', '');
   // Impersonation strategy: we save a flag in localStorage that sidebar/dashboard can read
   // to allow the admin to see the UI. In production, this requires an Edge Function + JWT switch.
   localStorage.setItem('3dzaap_impersonate_slug', slug);
@@ -1635,7 +1630,7 @@ function loginAsCompany(slug) {
 function confirmSuspendCustomer(id, name, currentStatus) {
   const isSuspended = !!currentStatus;
   showConfirm(
-    isSuspended ? '✅ Reativar conta' : '<i class="ph-bold ph-prohibit"></i> Suspender conta',
+    isSuspended ? '<i class="ph-bold ph-check-circle"></i> Reativar conta' : '<i class="ph-bold ph-prohibit"></i> Suspender conta',
     isSuspended ? `Deseja reativar o acesso de "${name}"?` : `Deseja suspender "${name}"? Todos os utilizadores desta empresa perderão acesso imediato.`,
     async () => {
       try {
@@ -1647,7 +1642,7 @@ function confirmSuspendCustomer(id, name, currentStatus) {
         if (error) throw error;
         
         await _adminAudit(isSuspended ? 'unsuspend' : 'suspend', `Empresa: ${name} (${id})`);
-        showToast(isSuspended ? '✅ Conta reativada' : '<i class="ph-bold ph-prohibit"></i> Conta suspensa', 'ok');
+        showToast(isSuspended ? '<i class="ph-bold ph-check-circle"></i> Conta reativada' : '<i class="ph-bold ph-prohibit"></i> Conta suspensa', 'ok');
         await refreshAll();
       } catch(e) {
         showToast('Erro na operação: ' + e.message, 'err');
@@ -1672,7 +1667,7 @@ async function quickExtendTrial(companyId) {
     if (error) throw error;
     
     await _adminAudit('extend_trial', `Empresa: ${c.name} (+${trialDays} dias)`);
-    showToast(`⏳ Trial de ${c.name} estendido por ${trialDays} dias`, 'ok');
+    showToast(`<i class="ph-bold ph-hourglass-high"></i> Trial de ${c.name} estendido por ${trialDays} dias`, 'ok');
     await refreshAll();
   } catch(e) {
     showToast('Erro ao estender: ' + e.message, 'err');
@@ -1683,7 +1678,7 @@ async function syncStripe() {
   showToast('<i class="ph-bold ph-arrows-clockwise"></i> A verificar sincronização Stripe...', '');
   // Simulating sync call - In production this calls a webhook-trigger or Edge Function
   setTimeout(() => {
-    showToast('✅ Dashboards e Assinaturas sincronizados com Stripe.', 'ok');
+    showToast('<i class="ph-bold ph-check-circle"></i> Dashboards e Assinaturas sincronizados com Stripe.', 'ok');
     refreshAll();
   }, 1200);
 }
@@ -1760,9 +1755,9 @@ function renderBroadcastsList() {
         </div>
         <div class="bc-item-msg">${escH(b.message)}</div>
         <div class="bc-item-meta">
-          <span>👥 ${targetLabels[b.target] || b.target}</span>
+          <span><i class="ph-bold ph-users"></i> ${targetLabels[b.target] || b.target}</span>
           <span>·</span>
-          <span>📅 ${fmtDate(b.created_at)}</span>
+          <span><i class="ph-bold ph-calendar"></i> ${fmtDate(b.created_at)}</span>
           <span>·</span>
           <span>${expStr}</span>
         </div>
@@ -1794,7 +1789,7 @@ async function toggleBroadcast(id, currentlyActive) {
     const b = _broadcasts.find(x => x.id === id);
     if (b) b.active = newVal;
     renderBroadcastsList();
-    showToast(newVal ? '✅ Broadcast ativado' : '⏸ Broadcast desativado', 'ok');
+    showToast(newVal ? '<i class="ph-bold ph-check-circle"></i> Broadcast ativado' : '<i class="ph-bold ph-pause"></i> Broadcast desativado', 'ok');
   } catch(e) {
     showToast(`Erro ao ${label}: ${e.message}`, 'err');
   }
@@ -1830,24 +1825,24 @@ async function sendBroadcast() {
   const expiresRaw = document.getElementById('broadcastExpires')?.value;
   if (!title || !msg) { showToast('Preenche título e mensagem', 'err'); return; }
   const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
-  showConfirm('📢 Enviar broadcast', `Enviar mensagem "${title}" para: ${target}?`, async () => {
+  showConfirm('<i class="ph-bold ph-megaphone"></i> Enviar broadcast', `Enviar mensagem "${title}" para: ${target}?`, async () => {
     try {
       const payload = { title, message: msg, target, type, active: true };
       if (expiresAt) payload.expires_at = expiresAt;
       const { error } = await _adminSb().from('admin_broadcasts').insert(payload);
       if (error) throw error;
       await _adminAudit('broadcast', `Broadcast enviado (${target}): ${title}`);
-      document.getElementById('broadcastFb').textContent = '✅ Broadcast enviado!';
+      document.getElementById('broadcastFb').innerHTML = '<i class="ph-bold ph-check-circle"></i> Broadcast enviado!';
       // Reset form
       document.getElementById('broadcastTitle').value = '';
       document.getElementById('broadcastMsg').value   = '';
       if (document.getElementById('broadcastExpires')) document.getElementById('broadcastExpires').value = '';
-      showToast('📢 Broadcast enviado!', 'ok');
+      showToast('<i class="ph-bold ph-megaphone"></i> Broadcast enviado!', 'ok');
       await loadBroadcasts(); // refresh list
       setTimeout(() => { const fb = document.getElementById('broadcastFb'); if (fb) fb.textContent = ''; }, 4000);
     } catch(e) {
       showToast('Erro: ' + e.message, 'err');
-      document.getElementById('broadcastFb').textContent = '❌ Erro: ' + e.message;
+      document.getElementById('broadcastFb').innerHTML = '<i class="ph-bold ph-x-circle"></i> Erro: ' + e.message;
     }
   });
 }
@@ -1864,7 +1859,7 @@ async function saveFlag(flag, value) {
   try {
     await _adminSb().from('admin_flags').upsert({ flag, value: String(value), updated_at: new Date().toISOString() }, { onConflict: 'flag' });
     await _adminAudit('flag_change', `Feature flag "${flag}" → ${value}`);
-    showToast(`✅ Flag "${flag}" atualizado`, 'ok');
+    showToast(`<i class="ph-bold ph-check-circle"></i> Flag "${flag}" atualizado`, 'ok');
   } catch(e) {
     showToast('Erro ao guardar flag: ' + e.message, 'err');
   }
@@ -1895,7 +1890,7 @@ function exportGlobal(type) {
   const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:filename, style:'display:none'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(a.href),3000);
-  showToast('📥 Exportado: ' + filename, 'ok');
+  showToast('<i class="ph-bold ph-download-simple"></i> Exportado: ' + filename, 'ok');
 }
 
 function exportAuditLog() {
@@ -1919,11 +1914,11 @@ async function _adminAction(action, params) {
       newEnd.setDate(newEnd.getDate() + (params.days || 7));
       const { error } = await _adminSb().from('companies').update({ trial_ends_at: newEnd.toISOString() }).eq('id', params.companyId);
       if (error) throw error;
-      showToast(`✅ Trial estendido ${params.days} dias`, 'ok');
+      showToast(`<i class="ph-bold ph-check-circle"></i> Trial estendido ${params.days} dias`, 'ok');
     } else if (action === 'force_plan') {
       const { error } = await _adminSb().from('companies').update({ plan: params.plan }).eq('id', params.companyId);
       if (error) throw error;
-      showToast(`✅ Plano alterado para ${params.plan}`, 'ok');
+      showToast(`<i class="ph-bold ph-check-circle"></i> Plano alterado para ${params.plan}`, 'ok');
     } else if (action === 'suspend') {
       const { error } = await _adminSb().from('companies').update({ is_suspended: true }).eq('id', params.companyId);
       if (error) throw error;
@@ -1931,29 +1926,29 @@ async function _adminAction(action, params) {
     } else if (action === 'unsuspend') {
       const { error } = await _adminSb().from('companies').update({ is_suspended: false }).eq('id', params.companyId);
       if (error) throw error;
-      showToast('✅ Empresa reativada', 'ok');
+      showToast('<i class="ph-bold ph-check-circle"></i> Empresa reativada', 'ok');
     } else if (action === 'impersonate') {
       // Requires Edge Function with service_role in production.
       // Stub: logs audit + shows instructions.
-      showToast(`⚠️ Impersonation: requer Edge Function em produção`, '');
-      document.getElementById('opFb').textContent =
-        `ℹ️ Para impersonar ${params.userId}: deploy edge-fn/admin-impersonate com service_role.`;
+      showToast(`<i class="ph-bold ph-warning-octagon"></i> Impersonation: requer Edge Function em produção`, '');
+      document.getElementById('opFb').innerHTML =
+        `<i class="ph-bold ph-info"></i> Para impersonar ${params.userId}: deploy edge-fn/admin-impersonate com service_role.`;
       return; // skip refreshAll
     } else if (action === 'ban_user') {
       // Requires Edge Function with service_role to call auth.admin.deleteUser()
-      showToast(`⚠️ Ban: requer Edge Function em produção`, '');
-      document.getElementById('opFb').textContent =
-        `ℹ️ Para banir ${params.userId}: deploy edge-fn/admin-ban-user com service_role.`;
+      showToast(`<i class="ph-bold ph-warning-octagon"></i> Ban: requer Edge Function em produção`, '');
+      document.getElementById('opFb').innerHTML =
+        `<i class="ph-bold ph-info"></i> Para banir ${params.userId}: deploy edge-fn/admin-ban-user com service_role.`;
       return; // skip refreshAll
     } else {
-      showToast(`Ação "${action}" não reconhecida`, 'err');
+      showToast(`<i class="ph-bold ph-warning-octagon"></i> Ação "${action}" não reconhecida`, 'err');
       return;
     }
     await refreshAll();
-    document.getElementById('opFb').textContent = `✅ Ação "${action}" executada`;
+    document.getElementById('opFb').innerHTML = `<i class="ph-bold ph-check-circle"></i> Ação "${action}" executada`;
   } catch(e) {
-    showToast('Erro: ' + e.message, 'err');
-    document.getElementById('opFb').textContent = '❌ Erro: ' + e.message;
+    showToast('<i class="ph-bold ph-x-circle"></i> Erro: ' + e.message, 'err');
+    document.getElementById('opFb').innerHTML = '<i class="ph-bold ph-x-circle"></i> Erro: ' + e.message;
   }
 }
 
@@ -1980,7 +1975,7 @@ async function toggleSuperAdmin(userId, companyName, grant) {
     ? `Dar acesso Super Admin ao utilizador "${userId}" (${companyName})?\n\nEste utilizador poderá aceder ao painel Admin e gerir outros super admins.`
     : `Revogar Super Admin de "${userId}" (${companyName})?\n\nEste utilizador perderá acesso ao painel Admin.`;
 
-  showConfirm(`🛡️ ${action}`, msg, async () => {
+  showConfirm(action, msg, async () => {
     try {
       if (grant) {
         // Find email from memberships data (best effort)
@@ -1988,11 +1983,11 @@ async function toggleSuperAdmin(userId, companyName, grant) {
         const email = u?.email || userId;
         await Auth.setSuperAdmin(userId, email, _currentAdminEmail);
         await _adminAuditSA('grant_super_admin', `userId=${userId} company=${companyName}`);
-        showToast(`✅ Super Admin concedido a ${companyName}`, 'ok');
+        showToast(`<i class="ph-bold ph-check-circle"></i> Super Admin concedido a ${companyName}`, 'ok');
       } else {
         await Auth.revokeSuperAdmin(userId);
         await _adminAuditSA('revoke_super_admin', `userId=${userId} company=${companyName}`);
-        showToast(`✅ Super Admin revogado de ${companyName}`, 'ok');
+        showToast(`<i class="ph-bold ph-check-circle"></i> Super Admin revogado de ${companyName}`, 'ok');
       }
       await loadSuperAdmins();
       renderUsersTable(_users);
@@ -2018,15 +2013,15 @@ async function _adminAuditSA(action, detail) {
 async function impersonateUser(userId, companyName) {
   if (!userId) { showToast('ID de utilizador em falta', 'err'); return; }
   showConfirm(
-    '👤 Impersonar utilizador',
+    '<i class="ph-bold ph-user-focus"></i> Impersonar utilizador',
     `Impersonar utilizador "${userId}" (${companyName})?
 
 Esta ação requer a Edge Function "admin-impersonate" com service_role em produção.`,
     async () => {
       await _adminAudit('impersonate_attempt', `userId=${userId} company=${companyName}`);
-      showToast('⚠️ Edge Function necessária — ação registada no audit log', '');
-      document.getElementById('opFb').textContent =
-        `ℹ️ Impersonation de ${userId}: deploy supabase/functions/admin-impersonate com service_role.`;
+      showToast('<i class="ph-bold ph-warning-octagon"></i> Edge Function necessária — ação registada no audit log', '');
+      document.getElementById('opFb').innerHTML =
+        `<i class="ph-bold ph-info"></i> Impersonation de ${userId}: deploy supabase/functions/admin-impersonate com service_role.`;
     }
   );
 }
@@ -2034,15 +2029,15 @@ Esta ação requer a Edge Function "admin-impersonate" com service_role em produ
 async function confirmBanUser(userId, companyName) {
   if (!userId) { showToast('ID de utilizador em falta', 'err'); return; }
   showConfirm(
-    '🚫 Banir utilizador',
+    '<i class="ph-bold ph-prohibit"></i> Banir utilizador',
     `Banir PERMANENTEMENTE o utilizador "${userId}" (${companyName})?
 
 Esta ação remove o acesso Auth via Edge Function com service_role.`,
     async () => {
       await _adminAudit('ban_attempt', `userId=${userId} company=${companyName}`);
-      showToast('⚠️ Edge Function necessária — ação registada no audit log', '');
-      document.getElementById('opFb').textContent =
-        `ℹ️ Ban de ${userId}: deploy supabase/functions/admin-ban-user com service_role.`;
+      showToast('<i class="ph-bold ph-warning-octagon"></i> Edge Function necessária — ação registada no audit log', '');
+      document.getElementById('opFb').innerHTML =
+        `<i class="ph-bold ph-info"></i> Ban de ${userId}: deploy supabase/functions/admin-ban-user com service_role.`;
     }
   );
 }

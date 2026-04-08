@@ -409,7 +409,6 @@
               <option value="en-US">🇺🇸 US</option>
               <option value="en-GB">🇬🇧 UK</option>
               <option value="es">🇪🇸 ES</option>
-              <option value="en-GB">🇬🇧 UK</option>
             </select>
 
             <!-- Help Popover -->
@@ -421,11 +420,11 @@
               <div id="topbarHelpPopover" class="gc-popover" style="display:none">
                 <div class="gc-popover-title" data-i18n="nav.help_title">Contacte-nos</div>
                 <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt="">
+                  <i class="ph-bold ph-whatsapp-logo"></i>
                   WhatsApp
                 </a>
                 <a href="https://instagram.com/3dzaap" target="_blank" class="gc-popover-item">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="18" height="18" alt="">
+                  <i class="ph-bold ph-instagram-logo"></i>
                   @3dzaap
                 </a>
                 <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
@@ -454,7 +453,7 @@
       <!-- Material Class Toggle -->
       <div class="material-toggle">
         <button class="mat-btn fdm active" id="toggleFDM" onclick="setView('fdm')">
-          <span class="mat-btn-icon"><i class="ph-bold ph-circles-three"></i></span>
+          <span class="mat-btn-icon"><i class="ph-bold ph-vinyl-record"></i></span>
           <span data-i18n="materials.toggle_fdm">Filamentos FDM</span>
           <span class="mat-btn-count" id="countFDM">0</span>
         </button>
@@ -574,7 +573,7 @@
         <div class="form-group">
           <label class="form-label" data-i18n="materials.modal_pack.lbl_class">Classe</label>
           <div class="material-toggle" style="margin-bottom:0">
-            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')"><i class="ph-bold ph-circles-three"></i> <span data-i18n="materials.modal_pack.fdm">Filamento</span></button>
+            <button class="mat-btn active" id="pkToggleFDM" onclick="pkSetClass('fdm')"><i class="ph-bold ph-vinyl-record"></i> <span data-i18n="materials.modal_pack.fdm">Filamento</span></button>
             <button class="mat-btn" id="pkToggleResin" onclick="pkSetClass('resin')"><i class="ph-bold ph-flask"></i> <span data-i18n="materials.modal_pack.resin">Resina</span></button>
           </div>
         </div>
@@ -664,14 +663,14 @@
       <!-- Material class toggle (só em modo "novo") -->
       <div id="modalMatToggleWrap">
         <div class="modal-mat-toggle">
-          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')"><i class="ph-bold ph-circles-three"></i> <span data-i18n="materials.modal_pack.fdm">Filamento FDM</span></button>
+          <button class="modal-mat-btn fdm active" id="mToggleFDM" onclick="setModalClass('fdm')"><i class="ph-bold ph-vinyl-record"></i> <span data-i18n="materials.modal_pack.fdm">Filamento FDM</span></button>
           <button class="modal-mat-btn resin" id="mToggleResin" onclick="setModalClass('resin')"><i class="ph-bold ph-flask"></i> <span data-i18n="materials.modal_pack.resin">Resina SLA/MSLA</span></button>
         </div>
       </div>
 
       <!-- Cor -->
       <div class="color-section">
-        <div class="color-section-title">🎨 Cor do material</div>
+        <div class="color-section-title"><i class="ph-bold ph-palette"></i> Cor do material</div>
         <div class="color-presets" id="colorPresets"></div>
         <div class="color-custom-row">
           <div class="color-swatch-preview" id="colorSwatchPreview" style="background:#3B8FD4"></div>
@@ -829,7 +828,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-orange">📝</div><span data-i18n="orders.modal.lbl_notes">Notas</span></div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-orange"><i class="ph-bold ph-note"></i></div><span data-i18n="orders.modal.lbl_notes">Notas</span></div>
       <div class="form-row full">
         <div class="form-group">
           <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Notas</span> <span data-i18n="materials.modal_mat.opt">(opcional)</span></label>
@@ -848,7 +847,7 @@
 <!-- ══ CONFIRM MODAL ═════════════════════ -->
 <div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-modal">
-    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-icon"><i class="ph-bold ph-trash"></i></div>
     <div class="confirm-title" id="confirmTitle" data-i18n="materials.confirm_delete_title">Confirmar</div>
     <div class="confirm-msg" id="confirmMsg"></div>
     <div class="confirm-btns">
@@ -989,11 +988,11 @@ function setView(cls) {
   document.getElementById('toggleResin').classList.toggle('active', cls === 'resin');
 
   const isFDM = cls === 'fdm';
-  document.getElementById('pageTitle').textContent    = isFDM ? '🧵 Filamentos FDM' : '🧪 Resinas SLA/MSLA';
+  document.getElementById('pageTitle').textContent    = isFDM ? 'Filamentos FDM' : 'Resinas SLA/MSLA';
   document.getElementById('pageSubtitle').textContent = isFDM
     ? 'Gere o teu stock de materiais — tipos, cores, marcas e bobinas'
     : 'Gere o teu stock de resinas — tipos, frascos e datas de validade';
-  document.getElementById('statIcon').textContent     = isFDM ? '🎨' : '🧪';
+  document.getElementById('statIcon').innerHTML     = isFDM ? '<i class="ph-bold ph-palette"></i>' : '<i class="ph-bold ph-flask"></i>';
   document.getElementById('statEmptyLbl').setAttribute('data-i18n', 'materials.stats.out_of_stock');
   if (window.i18n) i18n.translatePage();
 
@@ -1201,8 +1200,8 @@ function renderTable() {
   if (!filtered.length) {
     emptyEl.style.display = 'flex';
     emptyEl.innerHTML = allMaterials.filter(m=>(m.materialClass||m.material_class||'fdm')===currentView).length
-      ? `<div class="table-empty-icon">🔍</div><h3 data-i18n="orders.table.empty_search">Sem resultados</h3><p data-i18n="materials.table.no_results_desc">Nenhum material corresponde aos filtros.</p>`
-      : `<div class="table-empty-icon">${isFDM?'🧵':'🧪'}</div><h3 data-i18n="materials.table.empty_title">Sem materiais ainda</h3><p data-i18n="materials.table.empty_desc">Clica em <strong>＋ Novo material</strong> para adicionar.</p>`;
+      ? `<div class="table-empty-icon"><i class="ph-bold ph-magnifying-glass"></i></div><h3 data-i18n="orders.table.empty_search">Sem resultados</h3><p data-i18n="materials.table.no_results_desc">Nenhum material corresponde aos filtros.</p>`
+      : `<div class="table-empty-icon">${isFDM?'<i class="ph-bold ph-vinyl-record"></i>':'<i class="ph-bold ph-flask"></i>'}</div><h3 data-i18n="materials.table.empty_title">Sem materiais ainda</h3><p data-i18n="materials.table.empty_desc">Clica em <strong><i class="ph-bold ph-plus"></i> Novo material</strong> para adicionar.</p>`;
     tableEl.style.display = 'none';
     const mfc = document.getElementById('mobFilList'); if (mfc) mfc.innerHTML = '';
     return;
@@ -1267,7 +1266,7 @@ function renderTable() {
       </div></td>
       <td class="cell-mono">${price}</td>
       ${expiryCol}
-      <td>${m.packId ? `<span class="pack-badge" onclick="showPackSiblings(event,'${escH(m.packId)}')" title="${escH(m.packId.replace(/-\d{10,}$/, ''))}">🏷️ ${escH(m.packId.replace(/-\d{10,}$/, ''))}</span>` : '<span style="color:var(--muted);font-size:.75rem">—</span>'}</td>
+      <td>${m.packId ? `<span class="pack-badge" onclick="showPackSiblings(event,'${escH(m.packId)}')" title="${escH(m.packId.replace(/-\d{10,}$/, ''))}"><i class="ph-bold ph-tag"></i> ${escH(m.packId.replace(/-\d{10,}$/, ''))}</span>` : '<span style="color:var(--muted);font-size:.75rem">—</span>'}</td>
       <td>${renderBadge(m)}</td>
       <td class="cell-actions">
         <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
@@ -1309,7 +1308,7 @@ function renderTable() {
         </div>
         <div class="mob-fil-bottom">
           <div class="mob-fil-actions">
-            <button class="btn-icon" onclick="openModal('${m.id}')">✏️ Editar</button>
+            <button class="btn-icon" onclick="openModal('${m.id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
             <button class="btn-icon del" onclick="confirmDelete('${m.id}')"><i class="ph-bold ph-trash"></i></button>
           </div>
         </div>
@@ -1481,7 +1480,7 @@ function closeModal() {
 function setModalClass(cls) {
   modalClass = cls;
   document.getElementById('mToggleFDM').classList.toggle('active', cls === 'fdm');
-  document.getElementById('mToggleResin').classList.toggle('active', cls === '樹脂');
+  document.getElementById('mToggleResin').classList.toggle('active', cls === 'resin');
   document.getElementById('modalTitle').setAttribute('data-i18n', cls === 'fdm' ? 'materials.modal_mat.title_new' : 'materials.modal_mat.title_new_resin');
   if (window.i18n) i18n.translatePage();
   applyModalClass();
@@ -1669,7 +1668,7 @@ function showUpgradeNotice(module) {
     banner.id = 'upgradeBanner';
     banner.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-card);border:1.5px solid var(--orange);border-radius:var(--rm);padding:14px 20px;box-shadow:var(--sh-float);display:flex;align-items:center;gap:14px;max-width:420px;width:90%;animation:fadeUp .3s var(--ease)';
     banner.innerHTML = `
-      <div style="font-size:1.4rem">🔒</div>
+      <div style="font-size:1.4rem"><i class="ph-bold ph-lock"></i></div>
       <div style="flex:1">
         <div style="font-weight:800;font-size:.88rem;color:var(--dark)">${t('materials.limits.banner_title')}</div>
         <div style="font-size:.78rem;color:var(--muted);margin-top:2px">${t('materials.limits.banner_desc')}</div>
@@ -1723,7 +1722,7 @@ function renderBrandTags(type, arr) {
     arr.forEach(brand => {
       const tag = document.createElement('span');
       tag.className = 'brand-tag';
-      tag.innerHTML = escH(brand) + '<button type="button" onclick="removeBrandTag(\'pk\',\'' + brand.replace(/'/g,"\\'") + '\')">×</button>';
+      tag.innerHTML = escH(brand) + '<button type="button" onclick="removeBrandTag(\'pk\',\'' + brand.replace(/'/g,"\\'") + '\')"><i class="ph-bold ph-x"></i></button>';
       container.appendChild(tag);
     });
     return;
@@ -1739,7 +1738,7 @@ function renderBrandTags(type, arr) {
     arr.forEach(brand => {
       const tag = document.createElement('span');
       tag.className = 'brand-tag';
-      tag.innerHTML = escH(brand) + '<button type="button" title="Remover" onclick="removeBrandTag(\''+type+'\',\''+brand.replace(/'/g,"\\'")+'\')">×</button>';
+      tag.innerHTML = escH(brand) + '<button type="button" title="Remover" onclick="removeBrandTag(\''+type+'\',\''+brand.replace(/'/g,"\\'")+'\')"><i class="ph-bold ph-x"></i></button>';
       container.appendChild(tag);
     });
   }
@@ -1978,7 +1977,7 @@ function pkRenderRows() {
       </div>
       <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
         <span class="pk-override-toggle" onclick="pkToggleOverride(${i})">
-          ${showOverride ? '🔒' : '🌐'} ${showOverride ? i18n.getNestedTranslation('materials.modal_pack.override_on') : i18n.getNestedTranslation('materials.modal_pack.override_off')}
+          <i class="ph-bold ${showOverride ? 'ph-lock' : 'ph-globe'}"></i> ${showOverride ? i18n.getNestedTranslation('materials.modal_pack.override_on') : i18n.getNestedTranslation('materials.modal_pack.override_off')}
           <span style="font-size:.65rem;opacity:.6">(${i18n.getNestedTranslation('materials.modal_pack.override_hint')})</span>
         </span>
       </div>
@@ -2088,7 +2087,7 @@ function pkCheckCostBalance() {
   if (total > 0 && Math.abs(sumCosts - total) > 0.02) {
     warn.style.display = '';
     const sym = getCurrencySymbol();
-    warn.textContent = `<i class="ph-bold ph-warning-octagon"></i> A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
+    warn.innerHTML = `<i class="ph-bold ph-warning-octagon"></i> A soma dos custos individuais (${sym}${sumCosts.toFixed(2)}) difere do preço total do pack (${sym}${total.toFixed(2)}). Ajusta manualmente ou clica em "Redistribuir".`;
   } else {
     warn.style.display = 'none';
   }
@@ -2133,7 +2132,7 @@ async function savePack() {
 
   const btn = document.querySelector('#packBox .btn-primary');
   btn.disabled = true;
-  btn.textContent = '⏳ A guardar…';
+  btn.textContent = 'A guardar...';
 
   try {
     for (const row of validRows) {
@@ -2186,7 +2185,7 @@ function showPackSiblings(event, packId) {
   const siblings = allMaterials.filter(m => m.packId === packId);
 
   const cleanName = packId.replace(/-\d{10,}$/, '');
-  document.getElementById('packPopoverTitle').textContent = `🏷️ ${cleanName}`;
+  document.getElementById('packPopoverTitle').innerHTML = `<i class="ph-bold ph-tag"></i> ${cleanName}`;
 
   document.getElementById('packPopoverList').innerHTML = siblings.map(m => `
     <div style="display:flex;align-items:center;gap:8px">
@@ -2238,7 +2237,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Theme button icon
   var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
   var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
 </body>
