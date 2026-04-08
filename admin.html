@@ -196,25 +196,9 @@
 .s-manual   { background: rgba(139,92,246,.14); color: var(--admin-purple); border-color: rgba(139,92,246,.25); }
 
 /* ── Admin Table ────────────────────────────────────────── */
-.admin-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
-.admin-table thead th {
-  padding: 10px 14px;
-  font-size: .68rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--muted);
-  background: var(--admin-thead-bg);
-  border-bottom: 1.5px solid var(--border);
-  white-space: nowrap;
-}
+.admin-table { font-size: .83rem; }
 .admin-table thead th:first-child { border-radius: 0; }
-.admin-table tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  color: var(--dark);
-}
-.admin-table tbody tr { transition: background .15s; }
-.admin-table tbody tr:hover { background: var(--bg-table-row-hover); }
-.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table tbody td { padding: 12px 14px; }
 
 /* ── Action Buttons (icon-only) ─────────────────────────── */
 .action-btns { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
@@ -578,7 +562,7 @@
                 <button class="btn btn-ghost btn-sm" onclick="syncStripe()"><i class="ph-bold ph-arrows-clockwise"></i> Stripe</button>
               </div>
             </div>
-            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+            <div class="ad-card-body table-wrap" style="padding:0">
               <table class="admin-table">
                 <thead>
                   <tr>
@@ -615,7 +599,7 @@
               <div class="ad-card-title"><i class="ph-bold ph-users"></i> Utilizadores</div>
               <span class="badge" id="usersCount" style="background:var(--blue-g);color:var(--blue)">0</span>
             </div>
-            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+            <div class="ad-card-body table-wrap" style="padding:0">
               <table class="admin-table">
                 <thead>
                   <tr>
@@ -684,7 +668,7 @@
             <div class="ad-card-header">
               <div class="ad-card-title"><i class="ph-bold ph-trophy"></i> Top 10 empresas por receita</div>
             </div>
-            <div class="ad-card-body" style="padding:0;overflow-x:auto">
+            <div class="ad-card-body table-wrap" style="padding:0">
               <table class="admin-table">
                 <thead>
                   <tr><th>#</th><th>Empresa</th><th>Plano</th><th>MRR</th><th>Desde</th></tr>
