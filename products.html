@@ -267,12 +267,26 @@ async function loadMaterials() {
     materials = await DB.getFilaments();
     const sel = document.getElementById('prMaterialId');
     sel.innerHTML = '<option value="">— selecionar material —</option>';
+
+    // Ordenar por Cor + Tipo
+    materials.sort((a, b) => {
+      const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+      const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+      return la.localeCompare(lb);
+    });
+
     materials.forEach(m => {
       const isResin = (m.material_class === 'resin' || m.materialClass === 'resin');
+      const tech = isResin ? 'Resina' : 'FDM';
       const unit = isResin ? 'ml' : 'g';
+      const color = m.colorName || '';
+      const type = m.type || '';
+      const brand = Array.isArray(m.brand) ? m.brand.join(' ') : (m.brand || '');
+      const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
+
       const opt = document.createElement('option');
       opt.value = m.id;
-      opt.textContent = `[${isResin?'Resina':'FDM'}] ${m.colorName || m.name} — ${m.type} (${unit})`;
+      opt.textContent = `${matDisplay} [${tech}] (${unit})`;
       sel.appendChild(opt);
     });
   } catch(e) {
@@ -466,7 +480,7 @@ function openProductModal(id = null) {
   const btnDel = document.getElementById('btnDeleteProduct');
   
   if(id) {
-    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Produto';
+    title.innerHTML = '<i class="ph-bold ph-pencil-simple"></i> Editar Produto';
     btnDel.style.display = 'block';
     const p = products.find(x => x.id === id);
     if(p) {
@@ -482,7 +496,7 @@ function openProductModal(id = null) {
       onTechChange();
     }
   } else {
-    title.textContent = '<i class="ph-bold ph-folder"></i> Novo Produto';
+    title.innerHTML = '<i class="ph-bold ph-folder"></i> Novo Produto';
     btnDel.style.display = 'none';
     document.getElementById('prName').value = '';
     document.getElementById('prPrice').value = '';

@@ -1131,12 +1131,22 @@ function renderSelectors() {
       opt.textContent = '(' + (i18n.getNestedTranslation('calc.empty_materials') || 'Sem materiais registados') + ')';
       mSel.appendChild(opt);
     } else {
+      // Ordenar por Cor + Tipo
+      filtered.sort((a, b) => {
+        const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+        const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+        return la.localeCompare(lb);
+      });
+
       filtered.forEach(f => {
-        const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
+        const color = f.colorName || '';
+        const type = f.type || '';
         const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+        const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
+        
         const opt = document.createElement('option');
         opt.value = f.id;
-        opt.textContent = `${brand} ${matName} (${fmtCurrency(f.price)}${unit})`.trim();
+        opt.textContent = `${matDisplay} (${fmtCurrency(f.price)}${unit})`;
         mSel.appendChild(opt);
       });
     }
@@ -1263,6 +1273,13 @@ function renderMesas() {
     const mTech = m.tech || 'fdm';
     const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === mTech);
 
+    // Ordenar materiais para o modo avançado também
+    filteredMaterials.sort((a, b) => {
+      const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+      const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+      return la.localeCompare(lb);
+    });
+
     const mDiv = document.createElement('div');
     mDiv.style.marginBottom = '20px';
     mDiv.style.border = '1px solid var(--border)';
@@ -1305,11 +1322,12 @@ function renderMesas() {
     let partsHtml = '';
     m.parts.forEach((p, pIdx) => {
       const matOptions = filteredMaterials.map(f => {
-        const matName = f.name || [f.type, f.colorName].filter(Boolean).join(' ') || 'Material';
+        const color = f.colorName || '';
+        const type = f.type || '';
         const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
-        const txt = `${brand} ${matName}`.trim();
+        const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
         const priceUnit = mTech === 'resin' ? '/L' : '/kg';
-        return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${txt} (${fmtCurrency(f.price)}${priceUnit})</option>`;
+        return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${matDisplay} (${fmtCurrency(f.price)}${priceUnit})</option>`;
       }).join('');
       
       partsHtml += `

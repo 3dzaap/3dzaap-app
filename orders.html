@@ -838,17 +838,25 @@ async function applyFeatureGating() {
 // ── LOAD / SAVE DATA ───────────────────
 async function loadData() {
   try {
-    [orders, filaments, lastOrderNumber, printers, _dbClients, _dbProducts] = await Promise.all([
+    const results = await Promise.allSettled([
       DB.getOrders(),
       DB.getFilaments(),
       DB.getLastOrderNumber(),
-      DB.getPrinters().catch(() => []),
-      DB.getClients().catch(() => []),
-      DB.getProducts().catch(() => []),
+      DB.getPrinters(),
+      DB.getClients(),
+      DB.getProducts(),
     ]);
+
+    orders = results[0].status === 'fulfilled' ? results[0].value : [];
+    filaments = results[1].status === 'fulfilled' ? results[1].value : [];
+    lastOrderNumber = results[2].status === 'fulfilled' ? results[2].value : 0;
+    printers = results[3].status === 'fulfilled' ? results[3].value : [];
+    _dbClients = results[4].status === 'fulfilled' ? results[4].value : [];
+    _dbProducts = results[5].status === 'fulfilled' ? results[5].value : [];
+
+    if (results[1].status === 'rejected') console.warn('[3DZAAP] Erro ao carregar materiais:', results[1].reason);
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
-    orders = []; filaments = []; lastOrderNumber = 0; printers = []; _dbClients = []; _dbProducts = [];
   }
   renderOrders();
   updateStats();
@@ -1664,16 +1672,26 @@ function _normalizeItem(it) {
 function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,4); }
 
 function buildMaterialOptions(selectedId) {
-  const none = `<option value="">— sem material —</option>`;
-  if (!filaments.length) return none;
-  // Lista plana — prefixo FDM/Resina em cada entrada
-  const opts = filaments.map(f => {
+  const none = `<option value="">— selecionar material —</option>`;
+  if (!filaments || !filaments.length) return none;
+  
+  // Criar cópia para ordenar sem alterar o array global
+  const sorted = [...filaments].sort((a, b) => {
+    const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+    const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+    return la.localeCompare(lb);
+  });
+
+  const opts = sorted.map(f => {
     const isResin = _isResinMaterial_byObj(f);
-    const prefix  = isResin ? '[Resina]' : '[FDM]';
+    const tech    = isResin ? 'Resina' : 'FDM';
     const unit    = isResin ? 'ml' : 'g';
-    const brand   = f.brand ? ' · ' + escH(Array.isArray(f.brand) ? f.brand.join(', ') : f.brand) : '';
-    const sel     = f.id == selectedId ? 'selected' : '';
-    return `<option value="${f.id}" ${sel}>${prefix} ${escH(f.colorName)} — ${escH(f.type)}${brand} (${unit})</option>`;
+    const color   = f.colorName || '';
+    const type    = f.type || '';
+    const brand   = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+    const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
+    const sel     = String(f.id) === String(selectedId) ? 'selected' : '';
+    return `<option value="${f.id}" ${sel}>${matDisplay} [${tech}] (${unit})</option>`;
   }).join('');
   return none + opts;
 }
