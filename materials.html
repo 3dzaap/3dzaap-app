@@ -445,8 +445,8 @@
         </div>
         <div class="page-header-actions">
           <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="materials.btn_csv"><i class="ph-bold ph-file-csv"></i> Exportar CSV</button>
-          <button class="btn btn-ghost" onclick="openPackModal()" data-i18n="materials.btn_pack"><i class="ph-bold ph-plus"></i> Pack</button>
-          <button class="btn btn-primary" id="btnNew" onclick="openModal()" data-i18n="materials.btn_new"><i class="ph-bold ph-plus"></i> Material</button>
+          <button class="btn btn-ghost" onclick="openPackModal()"><i class="ph-bold ph-plus"></i> <span data-i18n="materials.btn_pack">Pack</span></button>
+          <button class="btn btn-primary" id="btnNew" onclick="openModal()"><i class="ph-bold ph-plus"></i> <span data-i18n="materials.btn_new">Material</span></button>
         </div>
       </div>
 
@@ -630,7 +630,7 @@
       <!-- Lista de cores -->
       <div class="form-section-divider"><div class="form-section-divider-icon si-green"><i class="ph-bold ph-palette"></i></div><span data-i18n="materials.modal_pack.section_colors">Cores do Pack</span></div>
       <div id="pkColorList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()" data-i18n="materials.modal_pack.btn_add_color">＋ Adicionar cor</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="pkAddColorRow()"><span data-i18n="materials.modal_pack.btn_add_color">＋ Adicionar cor</span></button>
       <div id="pkCostWarning" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(245,148,58,0.1);border:1px solid rgba(245,148,58,0.35);border-radius:8px;font-size:.8rem;color:var(--orange)"></div>
 
     </div>
@@ -670,7 +670,7 @@
 
       <!-- Cor -->
       <div class="color-section">
-        <div class="color-section-title"><i class="ph-bold ph-palette"></i> Cor do material</div>
+        <div class="color-section-title"><i class="ph-bold ph-palette"></i> <span data-i18n="materials.modal_mat.lbl_color">Cor do material</span></div>
         <div class="color-presets" id="colorPresets"></div>
         <div class="color-custom-row">
           <div class="color-swatch-preview" id="colorSwatchPreview" style="background:#3B8FD4"></div>
@@ -679,7 +679,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-blue"><i class="ph-bold ph-clipboard-text"></i></div>Identificação</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-blue"><i class="ph-bold ph-clipboard-text"></i></div><span data-i18n="materials.modal_mat.section_id">Identificação</span></div>
 
       <!-- FDM fields -->
       <div id="fdmFields">
@@ -764,7 +764,7 @@
         </div>
       </div>
 
-      <div class="form-section-divider"><div class="form-section-divider-icon si-green"><i class="ph-bold ph-package"></i></div>Stock</div>
+      <div class="form-section-divider"><div class="form-section-divider-icon si-green"><i class="ph-bold ph-package"></i></div><span data-i18n="materials.modal_mat.section_stock">Stock</span></div>
 
       <!-- FDM Stock -->
       <div id="fdmStock">
@@ -786,7 +786,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label" data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo <span data-i18n="materials.modal_mat.unit_rolls">(bobinas)</span></label>
+            <label class="form-label"><span data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo</span> <span data-i18n="materials.modal_mat.unit_rolls">(bobinas)</span></label>
             <input type="number" id="fAlerta" class="form-input mono" value="0" min="0" step="1">
             <div class="form-hint" data-i18n="materials.modal_mat.hint_alert_none">0 = sem alerta</div>
           </div>
@@ -817,7 +817,7 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label" data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo <span data-i18n="materials.modal_mat.unit_bottles">(frascos)</span></label>
+            <label class="form-label"><span data-i18n="materials.modal_mat.lbl_min_alert">Alerta mínimo</span> <span data-i18n="materials.modal_mat.unit_bottles">(frascos)</span></label>
             <input type="number" id="rAlerta" class="form-input mono" value="0" min="0" step="1">
             <div class="form-hint" data-i18n="materials.modal_mat.hint_alert_none">0 = sem alerta</div>
           </div>
@@ -899,14 +899,14 @@ const RESIN_BRANDS = [
 ];
 
 const COLOR_PRESETS = [
-  {name:'Branco',hex:'#FFFFFF'},{name:'Preto',hex:'#1A1A1A'},{name:'Cinzento',hex:'#9CA3AF'},
-  {name:'Cinzento Escuro',hex:'#4B5563'},{name:'Prateado',hex:'#C0C0C0'},{name:'Vermelho',hex:'#EF4444'},
-  {name:'Vermelho Escuro',hex:'#991B1B'},{name:'Rosa',hex:'#F9A8D4'},{name:'Cor-de-rosa',hex:'#EC4899'},
-  {name:'Roxo',hex:'#8B5CF6'},{name:'Azul Marinho',hex:'#1E3A8A'},{name:'Azul',hex:'#3B8FD4'},
-  {name:'Azul Claro',hex:'#60A5FA'},{name:'Ciano',hex:'#06B6D4'},{name:'Teal',hex:'#0D9488'},
-  {name:'Verde Escuro',hex:'#166534'},{name:'Verde',hex:'#22C55E'},{name:'Verde Lima',hex:'#84CC16'},
-  {name:'Amarelo',hex:'#FBBF24'},{name:'Laranja',hex:'#F97316'},{name:'Castanho',hex:'#92400E'},
-  {name:'Bege',hex:'#D4B896'},{name:'Dourado',hex:'#F59E0B'},{name:'Transparente',hex:'#E0F2FE'},
+  {id:'white',hex:'#FFFFFF'},{id:'black',hex:'#1A1A1A'},{id:'gray',hex:'#9CA3AF'},
+  {id:'dark_gray',hex:'#4B5563'},{id:'silver',hex:'#C0C0C0'},{id:'red',hex:'#EF4444'},
+  {id:'dark_red',hex:'#991B1B'},{id:'pink_light',hex:'#F9A8D4'},{id:'pink',hex:'#EC4899'},
+  {id:'purple',hex:'#8B5CF6'},{id:'navy',hex:'#1E3A8A'},{id:'blue',hex:'#3B8FD4'},
+  {id:'light_blue',hex:'#60A5FA'},{id:'cyan',hex:'#06B6D4'},{id:'teal',hex:'#0D9488'},
+  {id:'dark_green',hex:'#166534'},{id:'green',hex:'#22C55E'},{id:'lime',hex:'#84CC16'},
+  {id:'yellow',hex:'#FBBF24'},{id:'orange',hex:'#F97316'},{id:'brown',hex:'#92400E'},
+  {id:'beige',hex:'#D4B896'},{id:'gold',hex:'#F59E0B'},{id:'transparent',hex:'#E0F2FE'},
 ];
 
 // ══════════════════════════════════════
@@ -1045,27 +1045,30 @@ function populateSelects() {
 // ══════════════════════════════════════
 function renderColorPresets() {
   const c = document.getElementById('colorPresets');
+  c.innerHTML = '';
   COLOR_PRESETS.forEach(p => {
     const d = document.createElement('div');
     d.className = 'color-preset';
     d.style.background = p.hex;
-    d.title = p.name;
+    const translatedName = i18n.getNestedTranslation('materials.colors.' + p.id);
+    d.title = translatedName;
     d.dataset.hex = p.hex;
-    d.dataset.name = p.name;
+    d.dataset.id = p.id;
     if (p.hex === '#FFFFFF') d.style.border = '2px solid #e2e8f0';
-    d.onclick = () => selectColorPreset(p.hex, p.name, d);
+    d.onclick = () => selectColorPreset(p.hex, translatedName, d);
     c.appendChild(d);
   });
 }
 
-function selectColorPreset(hex, name, el) {
+function selectColorPreset(hex, translatedName, el) {
   document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
   el.classList.add('selected');
   selectedColor = hex;
   document.getElementById('colorPicker').value = hex;
   document.getElementById('colorSwatchPreview').style.background = hex;
   const cn = document.getElementById('colorName');
-  if (!cn.value || COLOR_PRESETS.some(c => c.name === cn.value)) cn.value = name;
+  // Se estiver vazio ou for um nome de cor padrão (independente do idioma), atualiza
+  cn.value = translatedName;
 }
 
 function onColorPick(hex) {
