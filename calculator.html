@@ -914,12 +914,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadInitialData();
   await loadCompanyDefaults();
   
+  // Always apply company defaults first
+  applyDefaultsToForm();
+  
   // ── Load from Product Library / Recalculate ──────────────────
   const rawData = localStorage.getItem('3dzaap_calc_load');
-  
-  if (!rawData) {
-    applyDefaultsToForm();
-  }
   
   // Garantir que impressoras de utilizador também sejam carregadas para o dropdown legado
   try {
