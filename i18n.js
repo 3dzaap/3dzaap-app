@@ -93,12 +93,17 @@ const i18n = {
      * Retrieve a nested translation by dot-notation key.
      * @param {string} key   e.g. 'dash.sub_banner.trial_active'
      * @param {object} [vars]  optional map of {placeholder: value} to interpolate
+     * @param {string} [defaultVal] optional fallback if key not found
      * @returns {string|null}
      */
-    getNestedTranslation(key, vars) {
-        if (!key) return null;
+    getNestedTranslation(key, vars, defaultVal = null) {
+        if (!key) return defaultVal;
         let val = key.split('.').reduce((obj, i) => (obj ? obj[i] : null), this.translations);
-        if (val && vars && typeof vars === 'object') {
+        
+        // If not found, use defaultVal
+        if (val === null || val === undefined) return defaultVal;
+
+        if (vars && typeof vars === 'object') {
             for (const [k, v] of Object.entries(vars)) {
                 val = val.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
             }
@@ -151,4 +156,4 @@ const i18n = {
 
 document.addEventListener('DOMContentLoaded', () => i18n.init());
 window.i18n = i18n;
-window.t = (key, vars) => i18n.getNestedTranslation(key, vars);
+window.t = (key, vars, fallback) => i18n.getNestedTranslation(key, vars, fallback);

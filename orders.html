@@ -1908,7 +1908,7 @@ async function printReceipt(id) {
   const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
-  const t = (k, val) => window.i18n ? window.i18n.getNestedTranslation(k) || val : val;
+  const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
   const statusMap = {orcamento: t('orders.pipe.budget_tab','Orçamento'),modelagem: t('orders.status.modelagem','Modelagem'),validacao: t('orders.status.validacao','Aprovação'),aprovado: t('orders.status.aprovado','Confirmado'),fila: t('orders.status.fila','Em Fila'),printing: t('orders.status.printing','Produção'),preparacao: t('orders.status.preparacao','Preparação'),enviado: t('orders.status.enviado','Enviado'),done: t('orders.status.done','Concluído')};
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
