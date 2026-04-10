@@ -689,14 +689,14 @@ function updateReceiptModal() {
       <div class="rcpt-section-label">${t('portal.order_items', 'Itens')}</div>
       <div class="rcpt-table-wrap">
         <table class="rcpt-table">
-          <thead><tr><th>DESCRIÇÃO</th><th style="text-align:right">QTD</th><th style="text-align:right">TOTAL</th></tr></thead>
+          <thead><tr><th>${t('portal.th_desc', 'DESCRIÇÃO')}</th><th style="text-align:right">${t('portal.th_qty', 'QTD')}</th><th style="text-align:right">${t('portal.th_total', 'TOTAL')}</th></tr></thead>
           <tbody>
             ${its.map(it => `<tr><td><strong>${it.description}</strong></td><td class="r">${it.quantity||1}</td><td class="r bold">${fmtCurrency((it.quantity||1)*(it.unitPrice||0))}</td></tr>`).join('')}
           </tbody>
         </table>
       </div>
-      <div class="rcpt-grand"><span class="rcpt-grand-lbl">TOTAL</span><span class="rcpt-grand-val">${fmtCurrency(_order.total || 0)}</span></div>
-      ${_order.notes ? `<div class="rcpt-section-label">OBSERVAÇÕES</div><div style="font-size:.8rem;color:var(--muted);line-height:1.6;white-space:pre-wrap">${_order.notes}</div>` : ''}
+      <div class="rcpt-grand"><span class="rcpt-grand-lbl">${t('portal.total_label', 'TOTAL')}</span><span class="rcpt-grand-val">${fmtCurrency(_order.total || 0)}</span></div>
+      ${_order.notes ? `<div class="rcpt-section-label">${t('portal.notes_label', 'OBSERVAÇÕES')}</div><div style="font-size:.8rem;color:var(--muted);line-height:1.6;white-space:pre-wrap">${_order.notes}</div>` : ''}
       <div class="rcpt-sig-row">
         <div></div>
         <div class="rcpt-sig-block">
@@ -768,7 +768,7 @@ function renderButtons() {
     html += `<div style="color:var(--danger);font-weight:700;width:100%;text-align:center">${t('portal.status_declined_msg', 'Pedido Cancelado')}</div>`;
   } else {
     html += `<button class="btn-portal btn-print" onclick="toggleDetails()"><i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes')}</button>
-             <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:#25D366"><i class="ph-bold ph-whatsapp-logo"></i> WhatsApp</button>`;
+             <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:#25D366"><i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp', 'WhatsApp')}</button>`;
   }
   bar.innerHTML = html;
 }
@@ -792,7 +792,7 @@ function notifyOwner() {
 async function printPortalReceipt() {
   try {
     await downloadPDF('printableReceipt', `OS_${_order.orderNumber}.pdf`);
-  } catch (err) { alert('Erro ao gerar PDF.'); }
+  } catch (err) { alert(t('portal.err_pdf', 'Erro ao gerar PDF.')); }
 }
 
 function renderError(title, msg, icon) {
@@ -801,7 +801,7 @@ function renderError(title, msg, icon) {
       <div style="font-size:4rem;margin-bottom:24px">${icon}</div>
       <h1>${title}</h1>
       <p style="color:var(--muted);margin:10px 0">${msg}</p>
-      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">Voltar</a>
+      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">${t('portal.btn_back', 'Voltar')}</a>
     </div>`;
 }
 

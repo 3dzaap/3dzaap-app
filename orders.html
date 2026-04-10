@@ -2035,18 +2035,18 @@ async function sendWhatsAppTracking(id) {
     const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
     const portalUrl = base + '/portal.html?t=' + token;
     
-    let msg = `*Olá ${o.clientName}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:\n\n${portalUrl}`;
+    let msg = t('orders.wa_msg_track', '*Olá {name}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:').replace('{name}', o.clientName) + `\n\n${portalUrl}`;
     
     if (o.status === 'orcamento') {
-      msg = `*Olá ${o.clientName}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:\n\n${portalUrl}`;
+      msg = t('orders.wa_msg_quote', '*Olá {name}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:').replace('{name}', o.clientName) + `\n\n${portalUrl}`;
     }
 
     if (passphrase) {
-      msg += `\n\n*Código de acesso:* ${passphrase}`;
+      msg += `\n\n*${t('orders.wa_msg_pin', 'Código de acesso:')}* ${passphrase}`;
     }
 
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-    showToast('<i class="ph-bold ph-check-circle"></i> Link de tracking pronto!','ok');
+    showToast(`<i class="ph-bold ph-check-circle"></i> ${t('orders.toasts.tracking_sent', 'Link de tracking pronto!')}`,'ok');
   } catch (err) {
     console.error(err);
     showToast('Erro ao gerar link de tracking.','err');
@@ -2069,10 +2069,10 @@ async function printReceiptNow(btn) {
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     });
-    showToast('PDF gerado com sucesso!', 'ok');
+    showToast(t('orders.toasts.pdf_success', 'PDF gerado com sucesso!'), 'ok');
   } catch (err) {
     console.error('Erro ao gerar PDF:', err);
-    showToast('Erro ao gerar PDF.', 'err');
+    showToast(t('orders.toasts.err_pdf', 'Erro ao gerar PDF.'), 'err');
   } finally {
     if(btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
@@ -2080,7 +2080,7 @@ async function printReceiptNow(btn) {
 
 // ── EXPORT CSV ─────────────────────────
 function exportCSV() {
-  if (!orders.length) { showToast('Sem pedidos para exportar','err'); return; }
+  if (!orders.length) { showToast(t('orders.toasts.no_orders_csv', 'Sem pedidos para exportar'),'err'); return; }
   const sym = getCurrencySymbol();
   const headers = ['Nº','Cliente','Email','Telefone','Estado','Pagamento',(`Total (${sym})`),'Data Criação','Prazo','Data Pagamento','Itens','Observações'];
   const rows = orders.map(o => [
@@ -2095,7 +2095,7 @@ function exportCSV() {
   const b = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:`pedidos_${ts}.csv`,style:'display:none'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  showToast('<i class="ph-bold ph-file-csv"></i> CSV exportado!','ok');
+  showToast(`<i class="ph-bold ph-file-csv"></i> ${t('orders.toasts.csv_exported', 'CSV exportado!')}`,'ok');
 }
 
 // ── USER MENU ──────────────────────────

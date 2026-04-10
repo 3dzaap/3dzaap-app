@@ -804,7 +804,7 @@ function exportCSVExtrato() {
 
   const csv = [hdr,...allRows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(sep)).join('\n');
   dlCSV(csv, `extrato_financeiro_${_periodo}.csv`);
-  showToast('📊 Extrato Financeiro exportado!', 'ok');
+  showToast(t('financial.toasts.csv_success', '📊 Extrato Financeiro exportado!'), 'ok');
 }
 
 function toggleUserMenu() { Sidebar._toggleUserMenu(); }
@@ -829,7 +829,7 @@ function openExpModal(id = null) {
   const overlay = document.getElementById('expenseModalOverlay');
   const title = document.getElementById('expenseModalTitle');
   if (id) {
-    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Despesa';
+    title.innerHTML = `<i class="ph-bold ph-pencil-simple"></i> ${t('financial.modal.title_edit', 'Editar Despesa')}`;
     const e = expenses.find(x => x.id === id);
     if(e) {
        document.getElementById('expDate').value = e.date || '';
@@ -838,7 +838,7 @@ function openExpModal(id = null) {
        document.getElementById('expDesc').value = e.description || '';
     }
   } else {
-    title.textContent = '💸 Nova Despesa';
+    title.innerHTML = `<i class="ph-bold ph-plus-circle"></i> ${t('financial.modal.title_new', 'Nova Despesa')}`;
     const nd = new Date();
     document.getElementById('expDate').value = nd.toISOString().split('T')[0];
     document.getElementById('expValue').value = '';
@@ -863,7 +863,7 @@ async function saveExp() {
   const description = document.getElementById('expDesc').value.trim();
 
   if(!date || isNaN(value) || value <= 0 || !description) {
-     showToast('Preenche todos os campos obrigatórios com valores válidos.', 'err');
+     showToast(t('financial.toasts.form_error', 'Preencha todos os campos obrigatórios com valores válidos.'), 'err');
      return;
   }
 
@@ -884,18 +884,18 @@ async function saveExp() {
      } else {
         expenses.push(saved);
      }
-     showToast('Despesa gravada com sucesso!', 'ok');
+     showToast(t('financial.toasts.save_success', 'Despesa gravada com sucesso!'), 'ok');
      closeExpModal();
      renderAll();
   } catch(e) {
-     showToast('Erro ao gravar: ' + e.message, 'err');
+     showToast(t('financial.toasts.err_save', 'Erro ao gravar: ') + e.message, 'err');
   } finally {
      _isSavingExp = false;
   }
 }
 
 async function confirmDelExp(id) {
-  if(!confirm('Tens a certeza que queres apagar esta despesa?')) return;
+  if(!confirm(t('financial.toasts.confirm_del', 'Tem a certeza que deseja apagar esta despesa?'))) return;
   try {
      await DB.deleteExpense(id);
      expenses = expenses.filter(x => x.id !== id);
