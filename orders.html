@@ -1181,6 +1181,7 @@ function renderOrders(keepExpandId) {
       const its = (o.items?.length) ? o.items : [{description:o.description||'',quantity:o.quantity||1,unitPrice:o.unitPrice||0}];
       const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity||it.qty||1)||1) * (parseFloat(it.unitPrice)||0));
       const grand = its.reduce((s,i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
+      const grandWeight = its.reduce((s,i) => s + (parseFloat(i.weightG)||0)*(parseInt(i.quantity||i.qty||1)||1), 0);
       const itemsHtml = its.map(it => `<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description||'—')}</span><span class="mob-item-qty">×${it.quantity||it.qty||1}</span><span class="mob-item-total">${fmtCurrency(_itTotal(it))}</span></div>`).join('');
       
       const nextStatus = STATUS_NEXT[o.status];
