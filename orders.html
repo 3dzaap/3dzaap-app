@@ -502,7 +502,7 @@
     <div id="receiptContent"></div>
     <div class="rcpt-actions-bar">
       <button class="btn btn-ghost btn-sm" onclick="closeReceipt()" data-i18n="orders.receipt.btn_close"><i class="ph-bold ph-x"></i> Fechar</button>
-      <button class="btn btn-primary btn-sm" onclick="printReceiptNow()" data-i18n="orders.receipt.btn_print"><i class="ph-bold ph-printer"></i> Imprimir / PDF</button>
+      <button class="btn btn-primary btn-sm" onclick="printReceiptNow(this)" data-i18n="orders.receipt.btn_print"><i class="ph-bold ph-printer"></i> Imprimir / PDF</button>
     </div>
   </div>
 </div>
@@ -1899,6 +1899,7 @@ async function deleteOrder(id) {
 
 // ── RECEIPT ────────────────────────────
 async function printReceipt(id) {
+  window._lastOpenedOS = (orders.find(x=>x.id===id)||{}).orderNumber;
   const o = orders.find(x=>x.id===id);
   if (!o) return;
   const session = await Auth.getSession().catch(() => ({}));
@@ -2057,55 +2058,24 @@ async function sendWhatsAppTracking(id) {
 
 function closeReceipt() { document.getElementById('rcptOverlay').classList.remove('open'); }
 
-function printReceiptNow() {
-  const content = document.getElementById('receiptContent').innerHTML;
-  // Captura todos os estilos já carregados na página (shared.css + estilos inline)
-  // para garantir que o recibo impresso é visualmente idêntico ao modal no ecrã.
-  // Elimina a necessidade de duplicar CSS aqui.
-  const pageStyles = Array.from(document.styleSheets)
-    .filter(ss => { try { return !!ss.cssRules; } catch(e) { return false; } })
-    .map(ss => Array.from(ss.cssRules).map(r => r.cssText).join('\n'))
-    .join('\n');
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo</title>
-<style>
-${pageStyles}
-/* ── Overrides de impressão ── */
-@media print {
-  body { margin: 0; background: #fff !important; }
-  .rcpt-actions-bar, .rcpt-overlay > *:not(.rcpt-modal) { display: none !important; }
-}
-body { margin: 0; background: #fff; }
-/* FIM DOS ESTILOS CAPTURADOS */
-</style></head><body>${content}
-<script>
-// Close help popover on outside click
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('#topbarHelpBtn') && !e.target.closest('#topbarHelpPopover')) {
-    var p = document.getElementById('topbarHelpPopover');
-    if (p) p.style.display = 'none';
+async function printReceiptNow(btn) {
+  const orig = btn ? btn.innerHTML : '';
+  if(btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> ...'; }
+  
+  try {
+    const filename = `OS_${window._lastOpenedOS || 'doc'}.pdf`;
+    await downloadPDF('receiptContent', filename, {
+      margin: [10, 10],
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    });
+    showToast('PDF gerado com sucesso!', 'ok');
+  } catch (err) {
+    console.error('Erro ao gerar PDF:', err);
+    showToast('Erro ao gerar PDF.', 'err');
+  } finally {
+    if(btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
-});
-// Sync language selector value after i18n init
-document.addEventListener('DOMContentLoaded', function() {
-  var attempt = 0;
-  var iv = setInterval(function() {
-    var sel = document.getElementById('topbarLangSelect');
-    if (sel && window.i18n) {
-      sel.value = window.i18n.currentLocale || localStorage.getItem('3dzaap_lang') || 'pt-PT';
-      clearInterval(iv);
-    }
-    if (++attempt > 20) clearInterval(iv);
-  }, 100);
-  // Theme button icon
-  var theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
-  var btn = document.getElementById('topbarThemeToggle');
-  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
-});
-<\/script>
-</body></html>`);
-  w.document.close();
-  w.onload = () => { w.focus(); w.print(); };
 }
 
 // ── EXPORT CSV ─────────────────────────

@@ -29,14 +29,14 @@ body {
   min-height: 100dvh; 
   display: flex; 
   flex-direction: column;
-  -webkit-text-size-adjust: 100%; /* Prevent font scaling on orientation change */
+  -webkit-text-size-adjust: 100%;
 }
 
 .portal-container {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 24px 12px 140px; /* Reduced side padding, more bottom for actions */
+  padding: 24px 12px 140px;
   flex: 1;
 }
 
@@ -44,21 +44,77 @@ body {
   .portal-container { padding: 16px 8px 140px; }
 }
 
+/* ── Hero Status ─────────────────────────────── */
+.hero-status {
+  background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
+  border-radius: var(--rl);
+  padding: 32px 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--sh-float);
+  animation: fadeUp .6s var(--ease) both;
+}
+[data-theme="light"] .hero-status {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+.hero-status::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59,143,212,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.1);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.hero-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.hero-desc {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 /* ── Progress Tracker ─────────────────────────────── */
 .tracker-card {
   background: var(--bg-card-s);
   border: 1.5px solid var(--border-input);
   border-radius: var(--rl);
-  padding: 32px 24px;
-  margin-bottom: 28px;
+  padding: 28px 24px;
+  margin-bottom: 24px;
   box-shadow: var(--sh-float);
   text-align: center;
 }
 
 .tracker-title { 
-  font-size: 1.15rem; 
+  font-size: 0.85rem; 
   font-weight: 800; 
-  color: var(--black); 
+  color: var(--subtle); 
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   margin-bottom: 24px; 
   display: flex; 
   align-items: center; 
@@ -67,26 +123,20 @@ body {
 }
 
 @media (max-width: 480px) {
-  .tracker-title { font-size: 1rem; margin-bottom: 20px; }
+  .tracker-title { font-size: 0.75rem; margin-bottom: 20px; }
 }
 
 .steps-container {
   padding: 0 10px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  margin-bottom: 10px;
 }
 
 .steps { 
   display: flex; 
   justify-content: space-between; 
   position: relative; 
-  width: 100%; /* Responsive width */
+  width: 100%;
   padding: 10px 0;
-}
-
-@media (max-width: 580px) {
-  .steps { padding: 8px 0; }
 }
 
 .steps::before {
@@ -128,12 +178,59 @@ body {
   flex-direction: column; 
   align-items: center; 
   gap: 10px; 
-  flex: 1; /* Allow steps to grow/shrink equally */
+  flex: 1;
   min-width: 0;
 }
 
-@media (max-width: 480px) {
-  .step { gap: 6px; }
+@media (max-width: 580px) {
+  .steps-container { padding: 0; }
+  .steps { 
+    flex-direction: column; 
+    gap: 0; 
+    align-items: flex-start; 
+    padding: 10px 0 10px 20px;
+  }
+  .steps::before {
+    top: 5px;
+    bottom: 5px;
+    left: 15px;
+    width: 4px;
+    height: auto;
+    right: auto;
+    margin: 0;
+  }
+  .step-line-active {
+    top: 5px;
+    bottom: 5px;
+    left: 15px;
+    width: 4px;
+    height: auto;
+    right: auto;
+    margin: 0;
+  }
+  .step-line-inner {
+    width: 100% !important;
+    height: 0%;
+    transition: height .8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .step {
+    flex-direction: row;
+    gap: 16px;
+    padding: 15px 0;
+    align-items: center;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .step-dot {
+    flex-shrink: 0;
+    width: 32px !important;
+    height: 32px !important;
+    z-index: 5;
+  }
+  .step-lbl {
+    text-align: left !important;
+    font-size: 0.85rem !important;
+  }
 }
 
 .step-dot {
@@ -148,15 +245,6 @@ body {
   font-size: 1rem;
   transition: all .4s var(--ease);
   box-shadow: var(--sh);
-}
-
-@media (max-width: 480px) {
-  .step-dot { 
-    width: 26px; 
-    height: 26px; 
-    border-width: 2.5px;
-    font-size: 0.8rem;
-  }
 }
 
 .step.active .step-dot { 
@@ -184,39 +272,60 @@ body {
   line-height: 1.2;
 }
 
-@media (max-width: 540px) {
-  .step-lbl { font-size: 0.5rem; letter-spacing: 0; }
-}
-
-@media (max-width: 380px) {
-  .step-lbl { font-size: 0.45rem; }
-}
-
 .step.active .step-lbl { color: var(--blue); }
 .step.done .step-lbl { color: var(--dark); }
 
-/* ── ESTADOS (Badges Rápidos) ── */
-.rcpt-status-bar { padding: 8px 16px; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); }
-.rcpt-status-bar.paid { background: rgba(34,197,94,.08); color: #16a34a; }
-.rcpt-status-bar.pending { background: rgba(245,158,11,.08); color: #d97706; }
-.rcpt-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; margin-right: 6px; }
+/* ── Modal Details ─────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal-content {
+  width: 100%;
+  max-width: 700px;
+  animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 20px;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-/* ── RECIBO FOOTER ── */
-.rcpt-sig-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 20px 0; }
-.rcpt-sig-block { text-align: center; min-width: 160px; }
-.rcpt-sig-img { max-height: 50px; margin-bottom: 4px; display: block; margin-left: auto; margin-right: auto; }
-.rcpt-sig-line { height: 1px; background: #cbd5e1; margin-bottom: 4px; }
-.rcpt-sig-name { font-size: .65rem; font-weight: 700; color: #475569; text-transform: uppercase; }
-.rcpt-sig-location { font-size: .6rem; color: #94a3b8; margin-top: 2px; }
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+.modal-close-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+.modal-close-btn:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg); }
 
-.rcpt-footer { margin-top: 32px; padding: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: .7rem; display: flex; justify-content: space-between; align-items: center; }
-.rcpt-brand { font-weight: 900; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; font-size: 1.1rem; display: flex; align-items: center; gap: 4px; }
-.rcpt-brand .b3d { color: var(--blue); }
-.rcpt-brand .bzp { color: var(--orange); }
-.rcpt-tagline { font-size: .6rem; opacity: .6; text-transform: uppercase; letter-spacing: 1px; }
-
-/* ── Receipt View ─────────────────────────────── */
-.rcpt-modal {
+/* ── Receipt Card Styles (In-Modal) ── */
+.rcpt-card {
   background: var(--bg-card-s);
   border-radius: var(--rl);
   width: 100%;
@@ -235,26 +344,25 @@ body {
   justify-content: space-between; 
   gap: 16px;
 }
-
+[data-theme="dark"] .rcpt-header { background: #1e293b; }
 @media (max-width: 580px) {
   .rcpt-header { flex-direction: column; text-align: center; padding: 24px 16px; }
   .rcpt-header-right { text-align: center; }
 }
 
-[data-theme="dark"] .rcpt-header {
-  background: #1e293b;
-}
-
-.rcpt-logo img { height: 44px; width: auto; }
+.rcpt-logo img { height: 44px; width: auto; object-fit: contain; border-radius: 20%; }
 .rcpt-header-right { text-align: right; color: #fff; }
 .rcpt-title { font-size: .65rem; font-weight: 800; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 2px; }
 .rcpt-number { font-family: var(--mono); font-size: 1.3rem; font-weight: 800; margin-top: 4px; }
+.rcpt-date { font-size: 0.75rem; opacity: 0.8; margin-top: 4px; }
+
+.rcpt-status-bar { padding: 10px 20px; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.5px; }
+.rcpt-status-bar.paid { background: rgba(34,197,94,0.12); color: #16a34a; }
+.rcpt-status-bar.pending { background: rgba(245,158,11,0.12); color: #d97706; }
+.rcpt-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; margin-right: 6px; }
 
 .rcpt-body { padding: 24px 20px; }
-
-@media (max-width: 480px) {
-  .rcpt-body { padding: 20px 12px; }
-}
+@media (max-width: 480px) { .rcpt-body { padding: 20px 12px; } }
 
 .rcpt-section-label { 
   font-size: .68rem; 
@@ -288,15 +396,21 @@ body {
   align-items: center; 
   margin-top: 20px; 
 }
-
 [data-theme="dark"] .rcpt-grand { background: #0c1e38; }
-
 .rcpt-grand-lbl { font-size: .75rem; font-weight: 700; opacity: .8; }
 .rcpt-grand-val { font-size: 1.3rem; font-weight: 900; font-family: var(--mono); }
 
-@media (max-width: 480px) {
-  .rcpt-grand-val { font-size: 1.15rem; }
-}
+.rcpt-sig-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 20px 0; }
+.rcpt-sig-block { text-align: center; min-width: 160px; }
+.rcpt-sig-img { max-height: 50px; margin-bottom: 4px; display: block; margin-left: auto; margin-right: auto; }
+.rcpt-sig-line { height: 1px; background: #cbd5e1; margin-bottom: 4px; }
+.rcpt-sig-name { font-size: .65rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+.rcpt-sig-location { font-size: .6rem; color: #94a3b8; margin-top: 2px; }
+
+.rcpt-footer { margin-top: 32px; padding: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: .7rem; display: flex; justify-content: space-between; align-items: center; }
+.rcpt-brand { font-weight: 900; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; font-size: 1.1rem; display: flex; align-items: center; gap: 4px; }
+.rcpt-brand .b3d { color: var(--blue); }
+.rcpt-brand .bzp { color: var(--orange); }
 
 /* ── Actions Bar ─────────────────────────────── */
 .portal-actions {
@@ -316,10 +430,6 @@ body {
   box-shadow: 0 -10px 40px rgba(0,0,0,0.08);
 }
 
-@media (max-width: 480px) {
-  .portal-actions { padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
-}
-
 .btn-portal {
   flex: 1;
   height: 50px;
@@ -335,34 +445,23 @@ body {
   border: none;
   -webkit-appearance: none;
 }
-
-@media (max-width: 480px) {
-  .btn-portal { font-size: 0.82rem; height: 48px; border-radius: 12px; }
-}
-
 .btn-approve { background: var(--success); color: #fff; box-shadow: 0 6px 16px rgba(34,197,94,.3); }
-.btn-approve:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(34,197,94,.4); }
 .btn-decline { background: var(--bg-input); border: 1.5px solid var(--border-input); color: var(--danger); }
-.btn-decline:hover { background: rgba(239,68,68,.1); transform: translateY(-3px); }
 .btn-print { background: var(--bg-btn-ghost); border: 1.5px solid var(--border-input); color: var(--black); }
-.btn-print:hover { background: var(--bg-hover); transform: translateY(-3px); }
 
 /* ── PIN Entry Screen ─────────────────────────────── */
 .pin-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 1001;
   background: var(--bg-page);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
 }
-
 .pin-card {
   background: var(--bg-card-s);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid var(--border-input);
   border-radius: var(--rx);
   padding: 40px 24px;
@@ -372,72 +471,22 @@ body {
   box-shadow: var(--sh-float);
 }
 
-@media (max-width: 480px) {
-  .pin-card { padding: 32px 20px; }
-}
-
-.pin-icon { font-size: 3.5rem; margin-bottom: 24px; }
-.pin-title { font-size: 1.4rem; font-weight: 900; color: var(--black); margin-bottom: 12px; }
-.pin-desc { font-size: .9rem; color: var(--subtle); margin-bottom: 32px; line-height: 1.6; }
-
-.pin-input-group {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 32px;
-}
-
+.pin-input-group { display: flex; justify-content: center; gap: 14px; margin-bottom: 32px; }
 .pin-field {
-  width: 50px;
-  height: 64px;
-  background: var(--bg-input);
+  width: 50px; height: 64px; background: var(--bg-input);
   border: 2px solid rgba(148, 163, 184, 0.4);
-  border-radius: var(--r);
-  font-size: 1.6rem;
-  font-weight: 800;
-  text-align: center;
-  color: var(--black);
-  transition: all .25s var(--ease);
-  flex-shrink: 0;
-  -webkit-appearance: none;
-  appearance: none;
+  border-radius: var(--r); font-size: 1.6rem; font-weight: 800;
+  text-align: center; color: var(--black); -webkit-appearance: none;
 }
+.pin-field:focus { border-color: var(--blue); background: var(--bg-card-s); outline: none; transform: translateY(-2px); }
 
-@media (max-width: 480px) {
-  .pin-field { width: 44px; height: 56px; font-size: 1.4rem; }
-  .pin-input-group { gap: 10px; }
-}
-
-.pin-field:-webkit-autofill, .pin-field:-webkit-autofill:hover, .pin-field:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--black) !important;
-  -webkit-box-shadow: 0 0 0px 1000px var(--bg-input) inset !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-.pin-field:focus {
-  border-color: var(--blue);
-  background: var(--bg-card-s);
-  box-shadow: 0 0 0 5px rgba(59,143,212,.2);
-  outline: none;
-  transform: translateY(-2px);
-}
-
-
-/* ── Loading & Errors ─────────────────────────────── */
+/* ── Loading, Errors & Animations ─────────────────────────────── */
 .portal-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70vh; gap: 20px; color: var(--subtle); }
 .spinner { width: 40px; height: 40px; border: 4px solid var(--bg-input); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.portal-error { text-align: center; padding: 60px 24px; animation: fadeUp .5s var(--ease) both; }
-.error-icon { font-size: 4rem; margin-bottom: 24px; }
-
-/* ── Animations ─────────────────────────────── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 .animate { animation: fadeUp .6s var(--ease) forwards; }
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  75% { transform: translateX(8px); }
-}
+@keyframes shake { 0%, 100% { transform: translateX(0); } 75% { transform: translateX(8px); } }
 .shake { animation: shake .4s var(--ease); }
 
 </style>
@@ -445,19 +494,36 @@ body {
 <body class="animate">
 
 <div class="portal-container" id="portalContent">
-  <!-- Loading State -->
   <div class="portal-loading" id="loadingState">
     <div class="spinner"></div>
     <p data-i18n="portal.loading">A carregar o seu pedido...</p>
   </div>
 </div>
 
-<!-- PIN Overlay (Hidden by default) -->
+<!-- Modal Details Overlay -->
+<div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)toggleDetails()">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div style="color:#fff;font-weight:800;font-size:1.1rem" data-i18n="portal.rcpt_title_os">Detalhes do Pedido</div>
+      <button class="modal-close-btn" onclick="toggleDetails()"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="rcpt-card" id="printableReceipt">
+      <!-- Populated dynamically -->
+    </div>
+    <div style="padding: 20px 0; display:flex; gap:12px; justify-content:center">
+       <button class="btn btn-primary" onclick="printPortalReceipt()" style="width:100%; max-width:280px">
+         <i class="ph-bold ph-download-simple"></i> <span data-i18n="portal.btn_download_pdf">Descarregar PDF</span>
+       </button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN Overlay -->
 <div class="pin-overlay" id="pinOverlay" style="display:none">
   <div class="pin-card" id="pinCard">
-    <div class="pin-icon"><i class="ph-bold ph-lock-key"></i></div>
-    <div class="pin-title" data-i18n="portal.pin_title">Acesso Restrito</div>
-    <div class="pin-desc" data-i18n="portal.pin_desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
+    <div class="pin-icon" style="font-size:3.5rem;margin-bottom:24px"><i class="ph-bold ph-lock-key"></i></div>
+    <div class="pin-title" style="font-size:1.4rem;font-weight:900;margin-bottom:12px" data-i18n="portal.pin_title">Acesso Restrito</div>
+    <div class="pin-desc" style="font-size:.9rem;color:var(--subtle);margin-bottom:32px;line-height:1.6" data-i18n="portal.pin_desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
     <div class="pin-input-group">
       <input type="password" maxlength="1" class="pin-field" id="p1" inputmode="numeric">
       <input type="password" maxlength="1" class="pin-field" id="p2" inputmode="numeric">
@@ -469,68 +535,48 @@ body {
 </div>
 
 <!-- Actions Bar -->
-<div class="portal-actions" id="actionsBar" style="display:none">
-  <!-- Dynamic buttons based on status -->
-</div>
+<div class="portal-actions" id="actionsBar" style="display:none"></div>
 
 <script>
 const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : k;
-
 let _order = null;
 let _company = null;
 const _token = new URLSearchParams(window.location.search).get('t');
 
 async function init() {
-  // Wait for i18n to be ready before rendering
   if (window.i18n) await window.i18n.init();
-
   if (!_token) {
     renderError(t('portal.err_secure_title'), t('portal.err_token_desc'), '<i class="ph-bold ph-magnifying-glass"></i>');
     return;
   }
-
   try {
     const data = await DB.getTrackingInfo(_token);
     _order = data.order;
     _company = data;
-    
-    // Check stored PIN
     const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
-    
-    // Enforcement: Always show PIN screen if a passphrase exists
     if (_order.passphrase && _order.passphrase !== storedPin) {
       showPinScreen();
     } else if (!_order.passphrase) {
-      // Security fall-through for very old orders without PIN
-      renderError(t('portal.err_secure_title'), t('portal.err_secure_desc'), '<i class="ph-bold ph-lock"></i>');
+      renderError(t('portal.err_secure_title', 'Acesso Restrito'), t('portal.err_secure_desc', 'Por favor, use o link oficial enviado pela loja.'), '<i class="ph-bold ph-lock"></i>');
     } else {
       renderPortal();
     }
   } catch (err) {
-    if (err.message === 'portal.err_expired_desc') {
-      renderError(t('portal.err_expired_title'), t(err.message), '<i class="ph-bold ph-hourglass"></i>');
-    } else {
-      renderError('Não encontrado', err.message, '<i class="ph-bold ph-file-text"></i>');
-    }
+    renderError('Erro', err.message, '<i class="ph-bold ph-x-circle"></i>');
   }
 }
 
 function showPinScreen() {
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('pinOverlay').style.display = 'flex';
-  
   const inputs = document.querySelectorAll('.pin-field');
   inputs.forEach((input, idx) => {
     input.addEventListener('input', (e) => {
-      if (e.target.value.length === 1 && idx < inputs.length - 1) {
-        inputs[idx + 1].focus();
-      }
+      if (e.target.value.length === 1 && idx < inputs.length - 1) inputs[idx + 1].focus();
       checkFullPin();
     });
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-        inputs[idx - 1].focus();
-      }
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) inputs[idx - 1].focus();
     });
   });
   inputs[0].focus();
@@ -542,16 +588,12 @@ function checkFullPin() {
   if (pin.length === 4) {
     if (pin === _order.passphrase) {
       sessionStorage.setItem('3dzaap_portal_pin_' + _token, pin);
-      document.getElementById('pinOverlay').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('pinOverlay').style.display = 'none';
-        renderPortal();
-      }, 300);
+      document.getElementById('pinOverlay').style.display = 'none';
+      renderPortal();
     } else {
       const card = document.getElementById('pinCard');
-      const err = document.getElementById('pinError');
       card.classList.add('shake');
-      err.style.display = 'block';
+      document.getElementById('pinError').style.display = 'block';
       inputs.forEach(i => i.value = '');
       inputs[0].focus();
       setTimeout(() => card.classList.remove('shake'), 400);
@@ -563,140 +605,126 @@ function renderPortal() {
   const container = document.getElementById('portalContent');
   const actions = document.getElementById('actionsBar');
   
-  // Decide what to show
-  let html = '';
-  
-  // 1. Tracker Section (Production States)
-  // Show tracker if it's not declined
-  if (_order.status !== 'declined') {
-    html += renderTracker();
-  }
+  let html = renderHeroStatus();
+  if (_order.status !== 'declined') html += renderTracker();
 
-  // 2. Receipt Card
-  const isPaid = _order.paymentStatus === 'pago';
-  const statusLabels = {
-    orcamento: 'Orçamento', modelagem: 'Modelagem', validacao: 'Aprovação', 
-    aprovado: 'Confirmado', fila: 'Em Fila', printing: 'Produção', 
-    preparacao: 'Preparação', enviado: 'Enviado', done: 'Concluído'
-  };
-
+  // "View Details" trigger
   html += `
-    <div class="rcpt-modal" id="printableReceipt">
-      <div class="rcpt-header">
-        <div class="rcpt-logo">
-          ${_company.logoUrl 
-            ? `<img src="${_company.logoUrl}" style="height:38px;width:auto;object-fit:contain;border-radius:22%">` 
-            : `<div class="brand-logo-wrap" style="margin-bottom:0; gap:8px">
-                 <img src="logo.jpg" class="brand-nozzle squacircle" style="width:32px; height:32px; padding:3px">
-                 <div class="brand-text" style="font-size:1.1rem; color:#fff">
-                   <span class="b3d">3D</span><span class="bzp">ZAAP</span><span style="font-weight:500; color:rgba(255,255,255,0.5); font-size:0.8rem"> - Print Manager</span>
-                 </div>
-               </div>`}
-          ${_company.companyName.toUpperCase() !== '3DZAAP' ? `<div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${_company.companyName}</div>` : ''}
-        </div>
-        <div class="rcpt-header-right">
-          <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid') : t('portal.rcpt_title_os')}</div>
-          <div class="rcpt-number">${_order.orderNumber}</div>
-          <div class="rcpt-date">${t('portal.issued_at')} ${new Date().toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>
-          ${_order.expiresAt ? `<div class="rcpt-date" style="color:var(--orange);font-weight:700;font-size:0.58rem;opacity:0.9">${t('portal.link_valid_until')}: ${new Date(_order.expiresAt).toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>` : ''}
-        </div>
-      </div>
-
-      <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
-         <span><span class="rcpt-dot"></span>${isPaid ? '<i class="ph-bold ph-check-circle"></i> ' + t('portal.status_paid') : '<i class="ph-bold ph-hourglass"></i> ' + t('portal.status_awaiting')}</span>
-         <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('portal.order_status')}: <span style="opacity:1;font-size:.68rem">${t('status.' + _order.status) || _order.status}</span></span>
-      </div>
-      
-      <div class="rcpt-body">
-        <div class="rcpt-section-label">${t('portal.client_data')}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div>
-            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">${t('portal.lbl_name')}</div>
-            <div style="font-weight:600;font-size:.9rem;color:var(--black)">${_order.clientName}</div>
-          </div>
-          <div>
-            <div style="font-size:.65rem;color:var(--subtle);font-weight:700">${t('portal.lbl_created_at')}</div>
-            <div style="font-weight:600;font-size:.9rem;color:var(--black)">${new Date(_order.createdAt).toLocaleDateString(window.i18n?.currentLocale || 'pt-PT')}</div>
-          </div>
-        </div>
-
-        <div class="rcpt-section-label">${t('portal.order_items')}</div>
-        <table class="rcpt-table">
-          <thead>
-            <tr>
-              <th>${t('portal.th_desc')}</th>
-              <th style="width:60px;text-align:right">${t('portal.th_qty')}</th>
-              <th style="width:100px;text-align:right;padding-right:0">${t('portal.th_total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${_order.items.map(item => {
-              const qty = item.quantity || item.qty || 1;
-              const unit = item.unitPrice || 0;
-              const rowTotal = qty * unit;
-              return `
-                <tr>
-                  <td>
-                    <strong>${item.description}</strong>
-                  </td>
-                  <td class="r">${qty}</td>
-                  <td class="r bold">${fmtCurrency(rowTotal)}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-
-        <div class="rcpt-grand" style="background:var(--bg-grand-total);border-radius:8px;padding:9px 14px">
-          <span style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase">${t('portal.total')}</span>
-          <span style="font-size:1.1rem;font-weight:800;color:var(--blue)">${fmtCurrency(_order.total || 0)}</span>
-        </div>
-        
-        ${_order.notes ? `
-          <div class="rcpt-section-label"><i class="ph-bold ph-push-pin"></i> ${t('portal.notes')}</div>
-          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;white-space:pre-wrap;word-break:break-word">${_order.notes}</div>
-        ` : ''}
-
-        <div class="rcpt-sig-row">
-          <div></div>
-          <div class="rcpt-sig-block">
-            ${_company.signature ? `<img class="rcpt-sig-img" src="${_company.signature}" alt="Assinatura">` : ''}
-            <div class="rcpt-sig-line"></div>
-            <div class="rcpt-sig-name">${_company.companyName}</div>
-            <div class="rcpt-sig-location">${_company.companyConfig.city || 'Lisboa'}, ${new Date().toLocaleDateString('pt-PT')}</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="rcpt-footer">
-        <div>
-          <div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
-          <div class="rcpt-tagline">Print Manager</div>
-        </div>
-        <div style="font-size:.75rem;font-weight:600;color:var(--blue);opacity:0.8">Obrigado pela sua confiança! <i class="ph-bold ph-hands-praying"></i></div>
-      </div>
+    <div style="text-align:center; padding: 10px 0 20px">
+      <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px">
+        <i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes do Pedido')}
+      </button>
     </div>
   `;
 
   container.innerHTML = html;
-  
-  // 3. Render Buttons
+  updateReceiptModal();
   renderButtons();
   actions.style.display = 'flex';
 }
 
+function renderHeroStatus() {
+  const s = _order.status;
+  let title = t('status.' + s, s);
+  let desc = t('portal.desc_' + s, '');
+
+  if (s === 'orcamento') {
+    title = t('portal.hero_title_quote', 'Orçamento Recebido!');
+    desc = t('portal.hero_desc_quote', 'Analise os detalhes abaixo e aprove para iniciarmos a produção.');
+  } else if (s === 'validacao') {
+    title = t('portal.hero_title_validation', 'Aguardamos sua Aprovação');
+    desc = t('portal.hero_desc_validation', 'A modelagem está pronta. Por favor, valide para continuarmos.');
+  } else if (s === 'aprovado' || s === 'fila') {
+    title = t('portal.hero_title_approved', 'Pedido Confirmado');
+    desc = t('portal.hero_desc_approved', 'O seu pedido está na fila para produção.');
+  } else if (s === 'printing') {
+    title = t('portal.hero_title_printing', 'Em Produção');
+    desc = t('portal.hero_desc_printing', 'A sua peça está a ser impressa neste momento!');
+  } else if (s === 'done') {
+    title = t('portal.hero_title_done', 'Pedido Concluído!');
+    desc = t('portal.hero_desc_done', 'O seu pedido já está pronto.');
+  }
+
+  return `
+    <div class="hero-status">
+      <div class="hero-badge"><i class="ph-bold ph-info"></i> ${t('portal.badge_status', 'ESTADO')}</div>
+      <div class="hero-title">${title}</div>
+      <div class="hero-desc">${desc}</div>
+    </div>
+  `;
+}
+
+function toggleDetails() {
+  const modal = document.getElementById('detailsModal');
+  modal.classList.toggle('open');
+  document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : '';
+}
+
+function updateReceiptModal() {
+  const rcptContainer = document.getElementById('printableReceipt');
+  const isPaid = _order.paymentStatus === 'pago';
+  const its = _order.items || [];
+
+  rcptContainer.innerHTML = `
+    <div class="rcpt-header">
+      <div class="rcpt-logo">
+        ${_company.logoUrl ? `<img src="${_company.logoUrl}">` : `<div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>`}
+      </div>
+      <div class="rcpt-header-right">
+        <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid', 'Recibo de Pagamento') : t('portal.rcpt_title_os', 'Ordem de Serviço')}</div>
+        <div class="rcpt-number">${_order.orderNumber}</div>
+        <div class="rcpt-date">${new Date().toLocaleDateString('pt-PT')}</div>
+      </div>
+    </div>
+    <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
+       <span><span class="rcpt-dot"></span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
+       <span style="opacity:0.7">${t('portal.order_status', 'ESTADO')}: <strong>${t('status.'+_order.status, _order.status).toUpperCase()}</strong></span>
+    </div>
+    <div class="rcpt-body">
+      <div class="rcpt-section-label">${t('portal.client_data', 'Dados do Cliente')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div><div style="font-size:.65rem;color:var(--subtle);font-weight:800">${t('portal.lbl_name', 'NOME')}</div><div style="font-weight:700;font-size:.95rem">${_order.clientName}</div></div>
+        <div><div style="font-size:.65rem;color:var(--subtle);font-weight:800">${t('portal.lbl_created_at', 'DATA')}</div><div style="font-weight:700;font-size:.95rem">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
+      </div>
+      <div class="rcpt-section-label">${t('portal.order_items', 'Itens')}</div>
+      <div class="rcpt-table-wrap">
+        <table class="rcpt-table">
+          <thead><tr><th>DESCRIÇÃO</th><th style="text-align:right">QTD</th><th style="text-align:right">TOTAL</th></tr></thead>
+          <tbody>
+            ${its.map(it => `<tr><td><strong>${it.description}</strong></td><td class="r">${it.quantity||1}</td><td class="r bold">${fmtCurrency((it.quantity||1)*(it.unitPrice||0))}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="rcpt-grand"><span class="rcpt-grand-lbl">TOTAL</span><span class="rcpt-grand-val">${fmtCurrency(_order.total || 0)}</span></div>
+      ${_order.notes ? `<div class="rcpt-section-label">OBSERVAÇÕES</div><div style="font-size:.8rem;color:var(--muted);line-height:1.6;white-space:pre-wrap">${_order.notes}</div>` : ''}
+      <div class="rcpt-sig-row">
+        <div></div>
+        <div class="rcpt-sig-block">
+          ${_company.signature ? `<img class="rcpt-sig-img" src="${_company.signature}">` : ''}
+          <div class="rcpt-sig-line"></div>
+          <div class="rcpt-sig-name">${_company.companyName}</div>
+          <div class="rcpt-sig-location">${_company.companyConfig.city || 'Portugal'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="rcpt-footer">
+      <div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span> <span style="font-size:.6rem;opacity:.5">PRINT MANAGER</span></div>
+      <div style="font-weight:700;color:var(--blue)">Obrigado!</div>
+    </div>
+  `;
+}
+
 function renderTracker() {
   const steps = [
-    { k: 'orcamento',  l: t('portal.tracker_step_1'), i: '<i class="ph-bold ph-hourglass"></i>' },
-    { k: 'modelagem',  l: t('portal.tracker_step_2'), i: '<i class="ph-bold ph-ruler"></i>' },
-    { k: 'validacao',  l: t('portal.tracker_step_3'), i: '<i class="ph-bold ph-check-circle"></i>' },
-    { k: 'fila',       l: t('portal.tracker_step_4'),      i: '<i class="ph-bold ph-package"></i>' },
-    { k: 'printing',   l: t('portal.tracker_step_5'),  i: '<i class="ph-bold ph-printer"></i>' },
-    { k: 'preparacao', l: t('portal.tracker_step_6'),i: '<i class="ph-bold ph-rocket-launch"></i>' },
-    { k: 'done',       l: t('portal.tracker_step_7'),      i: '<i class="ph-bold ph-flag-checkered"></i>' }
+    { k: 'orcamento',  l: t('portal.tracker_step_1', 'Orçamento'), i: '<i class="ph-bold ph-hourglass"></i>' },
+    { k: 'modelagem',  l: t('portal.tracker_step_2', 'Modelagem'), i: '<i class="ph-bold ph-ruler"></i>' },
+    { k: 'validacao',  l: t('portal.tracker_step_3', 'Aprovação'), i: '<i class="ph-bold ph-check-circle"></i>' },
+    { k: 'fila',       l: t('portal.tracker_step_4', 'Em Fila'), i: '<i class="ph-bold ph-package"></i>' },
+    { k: 'printing',   l: t('portal.tracker_step_5', 'Produção'), i: '<i class="ph-bold ph-printer"></i>' },
+    { k: 'preparacao', l: t('portal.tracker_step_6', 'Expedição'), i: '<i class="ph-bold ph-rocket-launch"></i>' },
+    { k: 'done',       l: t('portal.tracker_step_7', 'Concluído'), i: '<i class="ph-bold ph-flag-checkered"></i>' }
   ];
   
-  // Revised mapping for intuitive 7-step flow
   const s = _order.status;
   let stepIdx = 0;
   if (s === 'modelagem') stepIdx = 1;
@@ -707,34 +735,19 @@ function renderTracker() {
   else if (s === 'done') stepIdx = 6;
   
   const stepPercent = (stepIdx / (steps.length - 1)) * 100;
-
-  let stepsHtml = '';
-  steps.forEach((s, i) => {
-    let cls = '';
-    if (i === stepIdx) cls = 'active';
-    else if (i < stepIdx) cls = 'done';
-    
-    stepsHtml += `
-      <div class="step ${cls}">
-        <div class="step-dot">${s.i}</div>
-        <div class="step-lbl">${s.l}</div>
-      </div>
-    `;
-  });
+  let stepsHtml = steps.map((st, i) => {
+    let cls = i === stepIdx ? 'active' : (i < stepIdx ? 'done' : '');
+    return `<div class="step ${cls}"><div class="step-dot">${st.i}</div><div class="step-lbl">${st.l}</div></div>`;
+  }).join('');
 
   return `
     <div class="tracker-card">
-      <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title')}</div>
+      <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title', 'ESTADO DA PRODUÇÃO')}</div>
       <div class="steps-container">
-        <div class="steps">
-          <div class="step-line-active">
-            <div class="step-line-inner" style="width: ${stepPercent}%"></div>
-          </div>
-          ${stepsHtml}
-        </div>
+        <div class="steps"><div class="step-line-active"><div class="step-line-inner" style="width: ${stepPercent}%"></div></div>${stepsHtml}</div>
       </div>
-      <div style="text-align:center;font-size:.85rem;color:var(--subtle);margin-top:24px;font-weight:700;letter-spacing:1px">
-        ${t('portal.curr_status')}: <strong style="color:var(--blue)">${(steps[stepIdx].l||'').toUpperCase()}</strong>
+      <div style="text-align:center;font-size:.85rem;color:var(--subtle);margin-top:24px;font-weight:700">
+        ${t('portal.curr_status', 'STATUS ATUAL')}: <strong style="color:var(--blue)">${(steps[stepIdx].l).toUpperCase()}</strong>
       </div>
     </div>
   `;
@@ -743,98 +756,56 @@ function renderTracker() {
 function renderButtons() {
   const bar = document.getElementById('actionsBar');
   let html = '';
+  const s = _order.status;
   
-  const status = _order.status;
-  const isApproved = !['orcamento', 'modelagem', 'validacao', 'declined'].includes(status);
-  
-  if (status === 'orcamento') {
-    html += `
-      <button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_decline')}</button>
-      <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_budget')}</button>
-    `;
-  } else if (status === 'validacao') {
-    html += `
-      <button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_reject_model')}</button>
-      <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_final')}</button>
-    `;
-  } else if (status === 'declined') {
-    html += `<div style="color:var(--danger);font-weight:700">${t('portal.status_declined_msg')}</div>`;
+  if (s === 'orcamento') {
+    html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_decline', 'Recusar')}</button>
+             <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_budget', 'Aprovar Orçamento')}</button>`;
+  } else if (s === 'validacao') {
+    html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_reject_model', 'Alterações')}</button>
+             <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_final', 'Confirmar Produção')}</button>`;
+  } else if (s === 'declined') {
+    html += `<div style="color:var(--danger);font-weight:700;width:100%;text-align:center">${t('portal.status_declined_msg', 'Pedido Cancelado')}</div>`;
   } else {
-    // Show Print button if approved or further along
-    html += `
-      <button class="btn-portal btn-print" onclick="printPortalReceipt()"><i class="ph-bold ph-printer"></i> ${t('portal.btn_print')}</button>
-      <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:var(--blue)"><i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp')}</button>
-    `;
+    html += `<button class="btn-portal btn-print" onclick="toggleDetails()"><i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes')}</button>
+             <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:#25D366"><i class="ph-bold ph-whatsapp-logo"></i> WhatsApp</button>`;
   }
-  
   bar.innerHTML = html;
 }
 
 async function handleAction(action) {
-  if (action === 'approve') {
-    const confirm = window.confirm(t('portal.confirm_approve'));
-    if (!confirm) return;
-  }
-  
+  if (action === 'approve' && !window.confirm(t('portal.confirm_approve', 'Deseja confirmar esta ação?'))) return;
   try {
-    const btn = (action === 'approve') ? document.querySelector('.btn-approve') : document.querySelector('.btn-decline');
+    const btn = document.querySelector('.btn-approve');
     if (btn) { btn.disabled = true; btn.innerHTML = '...'; }
-    
     await DB.respondToQuote(_token, action);
-    
-    if (action === 'approve') {
-      alert(t('portal.alert_approved'));
-      window.location.reload();
-    } else {
-      alert(t('portal.alert_declined'));
-      window.location.reload();
-    }
-  } catch (err) {
-    alert(t('portal.alert_err') + ': ' + err.message);
-  }
+    window.location.reload();
+  } catch (err) { alert('Erro: ' + err.message); }
 }
 
 function notifyOwner() {
-  const phone = _company.companyConfig?.cPhone || '';
-  const cleanPhone = phone.replace(/\D/g, '');
+  const phone = (_company.companyConfig?.cPhone || '').replace(/\D/g, '');
   const msg = encodeURIComponent(`Olá! Vi o estado do meu pedido ${_order.orderNumber} no portal e gostaria de falar consigo.`);
-  window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
 
-function printPortalReceipt() {
-  const content = document.getElementById('printableReceipt').innerHTML;
-  const pageStyles = Array.from(document.styleSheets)
-    .filter(ss => { try { return !!ss.cssRules; } catch(e) { return false; } })
-    .map(ss => Array.from(ss.cssRules).map(r => r.cssText).join('\n'))
-    .join('\n');
-
-  const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Recibo / OS</title>
-<style>
-${pageStyles}
-@media print {
-  body { margin: 0; background: #fff !important; }
-  .portal-actions, #actionsBar { display: none !important; }
-}
-body { margin: 0; background: #fff; padding: 0; }
-.rcpt-modal { box-shadow: none; border: none; width: 100%; max-width: 100%; margin: 0; padding: 0; }
-</style></head><body><div class="rcpt-modal">${content}</div><script>window.onload=function(){window.print();window.close();}<\/script></body></html>`);
-  w.document.close();
+async function printPortalReceipt() {
+  try {
+    await downloadPDF('printableReceipt', `OS_${_order.orderNumber}.pdf`);
+  } catch (err) { alert('Erro ao gerar PDF.'); }
 }
 
 function renderError(title, msg, icon) {
   document.getElementById('portalContent').innerHTML = `
-    <div class="portal-error">
-      <div class="error-icon">${icon}</div>
+    <div class="portal-error" style="text-align:center;padding:60px 24px">
+      <div style="font-size:4rem;margin-bottom:24px">${icon}</div>
       <h1>${title}</h1>
-      <p style="color:var(--muted);max-width:300px;margin:10px auto">${msg}</p>
-      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">${t('portal.btn_back_home')}</a>
-    </div>
-  `;
+      <p style="color:var(--muted);margin:10px 0">${msg}</p>
+      <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">Voltar</a>
+    </div>`;
 }
 
 init();
 </script>
-<script src="i18n.js"></script>
 </body>
 </html>

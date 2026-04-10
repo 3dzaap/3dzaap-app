@@ -220,3 +220,50 @@ var UI = {
     }
   }
 };
+// ── PDF GENERATION ──────────────────────────────────────────
+/**
+ * Utilitário para gerar PDF de um elemento HTML usando html2pdf.js.
+ * @param {string} elementId  ID do elemento a converter
+ * @param {string} filename   Nome do ficheiro (ex: 'OS-123.pdf')
+ * @param {object} customOpts Opções personalizadas para o html2pdf
+ */
+async function downloadPDF(elementId, filename, customOpts = {}) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.error('[3DZAAP] Elemento para PDF não encontrado:', elementId);
+    return;
+  }
+
+  // Carregar biblioteca via CDN se não estiver carregada
+  if (typeof html2pdf === 'undefined') {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.crossOrigin = 'anonymous';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Falha ao carregar biblioteca PDF'));
+      document.head.appendChild(script);
+    });
+  }
+
+  const opt = {
+    margin: [10, 10],
+    filename: filename || 'documento.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      letterRendering: true,
+      logging: false
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    ...customOpts
+  };
+
+  try {
+    await html2pdf().set(opt).from(element).save();
+  } catch (err) {
+    console.error('[3DZAAP] Erro ao gerar PDF:', err);
+    throw err;
+  }
+}
