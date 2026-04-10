@@ -6,7 +6,7 @@
 <title>3DZAAP — Portal do Cliente</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
@@ -29,14 +29,19 @@ body {
   min-height: 100dvh; 
   display: flex; 
   flex-direction: column;
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling on orientation change */
 }
 
 .portal-container {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 40px 16px 120px;
+  padding: 24px 12px 140px; /* Reduced side padding, more bottom for actions */
   flex: 1;
+}
+
+@media (max-width: 480px) {
+  .portal-container { padding: 16px 8px 140px; }
 }
 
 /* ── Progress Tracker ─────────────────────────────── */
@@ -54,11 +59,15 @@ body {
   font-size: 1.15rem; 
   font-weight: 800; 
   color: var(--black); 
-  margin-bottom: 32px; 
+  margin-bottom: 24px; 
   display: flex; 
   align-items: center; 
   justify-content: center;
   gap: 12px; 
+}
+
+@media (max-width: 480px) {
+  .tracker-title { font-size: 1rem; margin-bottom: 20px; }
 }
 
 .steps-container {
@@ -72,16 +81,20 @@ body {
   display: flex; 
   justify-content: space-between; 
   position: relative; 
-  min-width: 480px; /* Force minimum width for tracker to avoid overlap */
+  width: 100%; /* Responsive width */
   padding: 10px 0;
+}
+
+@media (max-width: 580px) {
+  .steps { padding: 8px 0; }
 }
 
 .steps::before {
   content: "";
   position: absolute;
   top: 25px;
-  left: 0;
-  right: 0;
+  left: 20px;
+  right: 20px;
   height: 4px;
   background: var(--bg-input);
   z-index: 1;
@@ -91,13 +104,21 @@ body {
 .step-line-active {
   position: absolute;
   top: 25px;
-  left: 0;
+  left: 20px;
+  right: 20px;
+  width: auto;
   height: 4px;
-  background: var(--blue);
+  background: transparent;
   z-index: 2;
+  transition: none;
+}
+
+.step-line-inner {
+  height: 100%;
+  background: var(--blue);
   width: 0%;
-  transition: width .8s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 4px;
+  transition: width .8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .step { 
@@ -107,21 +128,35 @@ body {
   flex-direction: column; 
   align-items: center; 
   gap: 10px; 
-  width: 70px; 
+  flex: 1; /* Allow steps to grow/shrink equally */
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .step { gap: 6px; }
 }
 
 .step-dot {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--bg-card-s);
   border: 3px solid var(--bg-input);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: all .4s var(--ease);
   box-shadow: var(--sh);
+}
+
+@media (max-width: 480px) {
+  .step-dot { 
+    width: 26px; 
+    height: 26px; 
+    border-width: 2.5px;
+    font-size: 0.8rem;
+  }
 }
 
 .step.active .step-dot { 
@@ -139,13 +174,22 @@ body {
 }
 
 .step-lbl { 
-  font-size: .62rem; 
+  font-size: .58rem; 
   font-weight: 800; 
   color: var(--subtle); 
   text-transform: uppercase; 
-  letter-spacing: .8px; 
+  letter-spacing: .4px; 
   text-align: center;
   transition: color .3s;
+  line-height: 1.2;
+}
+
+@media (max-width: 540px) {
+  .step-lbl { font-size: 0.5rem; letter-spacing: 0; }
+}
+
+@media (max-width: 380px) {
+  .step-lbl { font-size: 0.45rem; }
 }
 
 .step.active .step-lbl { color: var(--blue); }
@@ -185,10 +229,16 @@ body {
 
 .rcpt-header { 
   background: var(--black); 
-  padding: 24px 30px; 
+  padding: 24px 20px; 
   display: flex; 
   align-items: center; 
   justify-content: space-between; 
+  gap: 16px;
+}
+
+@media (max-width: 580px) {
+  .rcpt-header { flex-direction: column; text-align: center; padding: 24px 16px; }
+  .rcpt-header-right { text-align: center; }
 }
 
 [data-theme="dark"] .rcpt-header {
@@ -200,44 +250,53 @@ body {
 .rcpt-title { font-size: .65rem; font-weight: 800; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 2px; }
 .rcpt-number { font-family: var(--mono); font-size: 1.3rem; font-weight: 800; margin-top: 4px; }
 
-.rcpt-body { padding: 32px 30px; }
+.rcpt-body { padding: 24px 20px; }
+
+@media (max-width: 480px) {
+  .rcpt-body { padding: 20px 12px; }
+}
+
 .rcpt-section-label { 
   font-size: .68rem; 
   font-weight: 900; 
   color: var(--subtle); 
   text-transform: uppercase; 
-  letter-spacing: 1.8px; 
-  margin: 30px 0 14px; 
+  letter-spacing: 1.2px; 
+  margin: 24px 0 12px; 
   border-bottom: 1px solid var(--border-input); 
-  padding-bottom: 10px; 
+  padding-bottom: 8px; 
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .rcpt-section-label:first-child { margin-top: 0; }
 
-.rcpt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
-.rcpt-table { width: 100%; border-collapse: collapse; min-width: 500px; }
-.rcpt-table th { text-align: left; font-size: .68rem; font-weight: 800; color: var(--subtle); padding: 10px 12px; background: var(--bg-table-head); border-radius: 6px; }
-.rcpt-table td { padding: 14px 12px; border-bottom: 1px solid var(--border-input); font-size: .9rem; color: var(--black); }
-.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .85rem; }
-.rcpt-table td.bold { font-weight: 800; text-align: right; }
+.rcpt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; }
+.rcpt-table { width: 100%; border-collapse: collapse; }
+.rcpt-table th { text-align: left; font-size: .65rem; font-weight: 800; color: var(--subtle); padding: 8px 10px; background: var(--bg-table-head); }
+.rcpt-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-input); font-size: .84rem; color: var(--black); }
+.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .78rem; white-space: nowrap; }
+.rcpt-table td.bold { font-weight: 800; text-align: right; white-space: nowrap; }
 
 .rcpt-grand { 
   background: var(--black); 
   color: #fff; 
-  padding: 18px 24px; 
-  border-radius: 14px; 
+  padding: 14px 20px; 
+  border-radius: 12px; 
   display: flex; 
   justify-content: space-between; 
   align-items: center; 
-  margin-top: 24px; 
+  margin-top: 20px; 
 }
 
 [data-theme="dark"] .rcpt-grand { background: #0c1e38; }
 
-.rcpt-grand-lbl { font-size: .85rem; font-weight: 700; opacity: .8; }
-.rcpt-grand-val { font-size: 1.6rem; font-weight: 900; font-family: var(--mono); }
+.rcpt-grand-lbl { font-size: .75rem; font-weight: 700; opacity: .8; }
+.rcpt-grand-val { font-size: 1.3rem; font-weight: 900; font-family: var(--mono); }
+
+@media (max-width: 480px) {
+  .rcpt-grand-val { font-size: 1.15rem; }
+}
 
 /* ── Actions Bar ─────────────────────────────── */
 .portal-actions {
@@ -246,30 +305,39 @@ body {
   left: 0;
   right: 0;
   background: var(--bg-card-s);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1.5px solid var(--border-input);
-  padding: 20px 24px 32px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex;
-  gap: 16px;
-  justify-content: center;
+  gap: 12px;
+  justify-content: stretch;
   z-index: 100;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 480px) {
+  .portal-actions { padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
 }
 
 .btn-portal {
   flex: 1;
-  max-width: 260px;
-  height: 54px;
-  border-radius: 16px;
-  font-size: 1rem;
+  height: 50px;
+  border-radius: 14px;
+  font-size: 0.9rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  transition: all .25s var(--ease);
+  transition: all .2s var(--ease);
   border: none;
+  -webkit-appearance: none;
+}
+
+@media (max-width: 480px) {
+  .btn-portal { font-size: 0.82rem; height: 48px; border-radius: 12px; }
 }
 
 .btn-approve { background: var(--success); color: #fff; box-shadow: 0 6px 16px rgba(34,197,94,.3); }
@@ -297,11 +365,15 @@ body {
   -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid var(--border-input);
   border-radius: var(--rx);
-  padding: 50px 40px;
+  padding: 40px 24px;
   width: 100%;
   max-width: 400px;
   text-align: center;
   box-shadow: var(--sh-float);
+}
+
+@media (max-width: 480px) {
+  .pin-card { padding: 32px 20px; }
 }
 
 .pin-icon { font-size: 3.5rem; margin-bottom: 24px; }
@@ -316,12 +388,12 @@ body {
 }
 
 .pin-field {
-  width: 56px;
-  height: 72px;
+  width: 50px;
+  height: 64px;
   background: var(--bg-input);
-  border: 2px solid rgba(148, 163, 184, 0.4); /* Stronger border to identify fields easily */
+  border: 2px solid rgba(148, 163, 184, 0.4);
   border-radius: var(--r);
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 800;
   text-align: center;
   color: var(--black);
@@ -329,6 +401,11 @@ body {
   flex-shrink: 0;
   -webkit-appearance: none;
   appearance: none;
+}
+
+@media (max-width: 480px) {
+  .pin-field { width: 44px; height: 56px; font-size: 1.4rem; }
+  .pin-input-group { gap: 10px; }
 }
 
 .pin-field:-webkit-autofill, .pin-field:-webkit-autofill:hover, .pin-field:-webkit-autofill:focus {
@@ -577,7 +654,7 @@ function renderPortal() {
         
         ${_order.notes ? `
           <div class="rcpt-section-label"><i class="ph-bold ph-push-pin"></i> ${t('portal.notes')}</div>
-          <div style="font-size:.8rem;color:var(--muted);line-height:1.5">${_order.notes}</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.6;white-space:pre-wrap;word-break:break-word">${_order.notes}</div>
         ` : ''}
 
         <div class="rcpt-sig-row">
@@ -650,7 +727,9 @@ function renderTracker() {
       <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title')}</div>
       <div class="steps-container">
         <div class="steps">
-          <div class="step-line-active" style="width: ${stepPercent}%"></div>
+          <div class="step-line-active">
+            <div class="step-line-inner" style="width: ${stepPercent}%"></div>
+          </div>
           ${stepsHtml}
         </div>
       </div>
