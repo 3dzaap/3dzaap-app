@@ -1887,12 +1887,14 @@ async function doSaveProduct() {
       salePrice: r.finalPrice,
       description: 'Criado a partir da calculadora.',
       config: {
-        mode: i.mode || (_calcMode === 'advanced' ? 'advanced' : 'simple'),
+        mode: i.tech || 'fdm', // Products module expects 'fdm' or 'resin' in mode
+        calc_mode: i.mode || 'simple',
         material_cost: r.materialCost || 0,
-        filament_weight: i.weight || 0,
+        filament_weight: (i.tech === 'fdm') ? (i.weight || 0) : 0,
+        resin_volume: (i.tech === 'resin') ? (i.weight || 0) : 0,
         est_print_hours: i.time || 0,
         material_id: i.materialId || '',
-        _orig_inputs: { ...i, printName: name } // Full snapshot
+        _orig_inputs: { ...i, printName: name } // Full snapshot for restoration
       }
     };
     

@@ -193,7 +193,7 @@
 
       <div class="form-row three">
         <div class="form-group">
-          <label class="form-label" data-i18n="products.modal.lbl_tech">Tecnologia</label>
+          <label class="form-label" data-i18n="products.modal.lbl_tech">Tipo de material</label>
           <select id="prTech" class="form-select" onchange="onTechChange()">
             <option value="fdm" data-i18n="products.modal.tech_fdm"><i class="ph-bold ph-vinyl-record"></i> FDM</option>
             <option value="resin" data-i18n="products.modal.tech_resin"><i class="ph-bold ph-flask"></i> Resina</option>
@@ -432,7 +432,7 @@ function renderProducts() {
         </div>
         <div class="mob-expand-area ${isExpanded ? 'is-expanded' : ''}">
           <div class="summary-grid">
-            <div class="summary-item"><label>Teconologia</label><span>${isResin?'Resina':'FDM'}</span></div>
+            <div class="summary-item"><label data-i18n="products.table.th_tech">Tipo de material</label><span>${isResin?'Resina':'FDM'}</span></div>
             <div class="summary-item"><label>Consumo</label><span>${weight.toFixed(1)}${isResin?'ml':'g'}</span></div>
             <div class="summary-item"><label>Tempo</label><span>${time.toFixed(1)}h</span></div>
             <div class="summary-item"><label>Preço</label><span>${fmtCurrency(p.salePrice)}</span></div>
