@@ -247,16 +247,19 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
   }
 
   const opt = {
-    margin: [10, 10],
+    margin: [10, 5, 10, 5], // [top, left, bottom, right] em mm
     filename: filename || 'documento.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
       scale: 2, 
       useCORS: true, 
       letterRendering: true,
-      logging: false
+      logging: false,
+      scrollY: 0, // Essencial para evitar cortes quando a página tem scroll
+      windowWidth: element.clientWidth // Garante que captura na largura real do elemento
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
     ...customOpts
   };
 
