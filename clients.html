@@ -141,17 +141,10 @@
         <span data-i18n="clients.modal.sec_basic">Informação de Contacto</span>
       </div>
       
-      <div class="form-row full">
-        <div class="form-group">
-          <label class="form-label" data-i18n="clients.modal.lbl_name">Nome Completo *</label>
-          <input type="text" id="clName" class="form-input" placeholder="Ex: João Silva">
-        </div>
-      </div>
-      
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_name">Nome Completo *</label>
-          <input type="text" id="clName" class="form-input" placeholder="João Silva">
+          <input type="text" id="clName" class="form-input" placeholder="Ex: João Silva">
         </div>
         <div class="form-group">
           <label class="form-label" data-i18n="clients.modal.lbl_nif">NIF / Identificação Fiscal</label>
@@ -452,7 +445,7 @@ function openClientModal(id = null) {
   const title = document.getElementById('clientModalTitle');
   
   if(id) {
-    title.textContent = '<i class="ph-bold ph-pencil-simple"></i> Editar Cliente';
+    title.innerHTML = '<i class="ph-bold ph-pencil-simple"></i> Editar Cliente';
     const c = clients.find(x => x.id === id);
     if(c) {
       document.getElementById('clName').value = c.name;
@@ -465,7 +458,7 @@ function openClientModal(id = null) {
       document.getElementById('clZip').value = '';
     }
   } else {
-    title.textContent = '<i class="ph-bold ph-users"></i> Novo Cliente';
+    title.innerHTML = '<i class="ph-bold ph-users"></i> Novo Cliente';
     document.getElementById('clName').value = '';
     document.getElementById('clEmail').value = '';
     document.getElementById('clPhone').value = '';

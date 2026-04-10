@@ -361,7 +361,7 @@
             <thead>
               <tr>
                 <th data-i18n="orders.table.no">Nº</th><th data-i18n="orders.table.client">Cliente</th><th data-i18n="orders.table.status">Estado</th><th data-i18n="orders.table.payment">Pagamento</th>
-                <th data-i18n="orders.table.total">Total</th><th data-i18n="orders.table.created">Criado</th><th data-i18n="orders.table.due">Prazo</th><th></th>
+                <th data-i18n="orders.table.total">Total</th><th style="color:var(--blue);font-weight:700">Peso</th><th data-i18n="orders.table.created">Criado</th><th data-i18n="orders.table.due">Prazo</th><th></th>
               </tr>
             </thead>
             <tbody id="ordTbody"></tbody>
@@ -1098,6 +1098,7 @@ function renderOrders(keepExpandId) {
     // Support legacy items with 'total' field (from old calculator format)
     const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity||it.qty||1)||1) * (parseFloat(it.unitPrice)||0));
     const grand = its.reduce((s,i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
+    const grandWeight = its.reduce((s,i) => s + (parseFloat(i.weightG)||0)*(parseInt(i.quantity||i.qty||1)||1), 0);
     const itemsHtml = its.map((it, idx) => `
       <tr>
         <td>${idx+1}. ${escH(it.description||'—')}</td>
@@ -1135,6 +1136,7 @@ function renderOrders(keepExpandId) {
         </td>
         <td>${renderPaymentBadge(o.paymentStatus)}</td>
         <td class="cell-mono">${fmtCurrency(grand)}</td>
+        <td class="cell-mono" style="color:var(--blue);font-weight:700">${grandWeight > 0 ? grandWeight.toFixed(1).replace('.0','') + 'g' : '—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt?fmtDate(o.createdAt):'—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate?fmtDate(o.dueDate):'—'}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -1187,7 +1189,10 @@ function renderOrders(keepExpandId) {
       return `<div class="mob-ord-card" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber||'—')}</span>
-          <span class="mob-ord-total">${fmtCurrency(grand)}</span>
+          <div style="text-align:right">
+            <div class="mob-ord-total">${fmtCurrency(grand)}</div>
+            <div style="font-size:.65rem;color:var(--blue);font-weight:800;margin-top:2px">${grandWeight > 0 ? grandWeight.toFixed(1).replace('.0','') + 'g' : ''}</div>
+          </div>
         </div>
         <div class="mob-ord-client">${escH(o.clientName)}</div>
         <div class="mob-ord-meta">

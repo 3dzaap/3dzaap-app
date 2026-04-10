@@ -451,12 +451,10 @@ function toggleProductExpand(id) {
 async function deleteProduct(id) {
   if(!confirm('Tens a certeza que desejas excluir este produto permanentemente?')) return;
   try {
-    const p = products.find(x => x.id === id);
-    if(!p) return;
-    
     await DB.deleteProduct(id);
+    products = products.filter(p => p.id !== id);
     showToast('<i class="ph-bold ph-trash"></i> Produto excluído com sucesso.', 'ok');
-    loadData(); // Reload list
+    renderProducts();
   } catch(e) {
     showToast('Erro ao excluir produto: ' + e.message, 'err');
   }
@@ -489,7 +487,14 @@ function openProductModal(id = null) {
       document.getElementById('prDesc').value = p.description || '';
       
       const cfg = p.config || {};
-      document.getElementById('prTech').value = cfg.mode || 'fdm';
+      
+      // Robust detection for legacy products from calculator
+      let tech = cfg.mode || 'fdm';
+      if (tech !== 'fdm' && tech !== 'resin') {
+        tech = cfg.resin_volume ? 'resin' : 'fdm';
+      }
+      
+      document.getElementById('prTech').value = tech;
       document.getElementById('prWeight').value = cfg.filament_weight || cfg.resin_volume || '';
       document.getElementById('prTime').value = cfg.est_print_hours || '';
       document.getElementById('prMaterialId').value = cfg.material_id || '';
