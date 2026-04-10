@@ -512,10 +512,10 @@ function renderPortal() {
             : `<div class="brand-logo-wrap" style="margin-bottom:0; gap:8px">
                  <img src="logo.jpg" class="brand-nozzle squacircle" style="width:32px; height:32px; padding:3px">
                  <div class="brand-text" style="font-size:1.1rem; color:#fff">
-                   <span class="b3d">3D</span><span class="bzp">ZAAP</span>
+                   <span class="b3d">3D</span><span class="bzp">ZAAP</span><span style="font-weight:500; color:rgba(255,255,255,0.5); font-size:0.8rem"> - Print Manager</span>
                  </div>
                </div>`}
-          <div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${_company.companyName}</div>
+          ${_company.companyName.toUpperCase() !== '3DZAAP' ? `<div style="font-size:.6rem;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.05em;text-transform:uppercase">${_company.companyName}</div>` : ''}
         </div>
         <div class="rcpt-header-right">
           <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid') : t('portal.rcpt_title_os')}</div>
