@@ -766,6 +766,27 @@ const DB = {
     const { error } = await _sb.from('products').delete().eq('id', id).eq('company_id', _companyId);
     if (error) throw error;
   },
+
+  // ── MATERIAL CATALOG (GLOBAL LOOKUP) ──────────────────────
+  async getMaterialCatalog() {
+    // Busca global pública de metadados de materiais
+    const [types, variations, brands] = await Promise.all([
+      _sb.from('material_catalog_types').select('material_class, name'),
+      _sb.from('material_catalog_variations').select('material_class, name'),
+      _sb.from('material_catalog_brands').select('material_class, name')
+    ]);
+    
+    const catalog = {
+      fdm:   { types: [], variations: [], brands: [] },
+      resin: { types: [], variations: [], brands: [] }
+    };
+
+    if (types.data) types.data.forEach(t => catalog[t.material_class]?.types.push(t.name));
+    if (variations.data) variations.data.forEach(v => catalog[v.material_class]?.variations.push(v.name));
+    if (brands.data) brands.data.forEach(b => catalog[b.material_class]?.brands.push(b.name));
+
+    return catalog;
+  },
 };
 
 // ============================================================

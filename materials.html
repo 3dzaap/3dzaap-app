@@ -879,24 +879,33 @@ function animateValue(id, start, end, duration) {
 }
 
 // ══════════════════════════════════════
-//  CATÁLOGOS
+//  CATÁLOGOS (DINÂMICOS VIA DB)
 // ══════════════════════════════════════
 
-// FDM
-const FDM_TYPES      = ['PLA','PETG','ABS','TPU','ASA','Nylon','PC','HIPS','PVA','Wood','Carbon','Metal','PLA+','Outros'];
-const FDM_VARIATIONS = ['Basic','Generic','+','PRO','Matte','Silk','Tough','HF (High Flow)','CF (Carbon Fiber)','LW (Lightweight)','ST (Super Tough)','Meta','Glow','Marble','Galaxy','Sparkle','Dual','High Speed','Hyper','Rainbow','Gradient','Aero','Outros'];
-const FDM_ROLL_SIZES = ['1kg','500g','300g','250g','100g'];
-const FDM_BRANDS = [
-  '3D Fuel','3DHoJor','3DXTECH','3DLab','3DJake','3Industry','AMOLEN','Amazon Basics','Anycubic','Atomic Filament','Bambu Lab','Basf Forward AM','CCTREE','Coex','ColorFabb','Creality','Das Filament','DEEPLEE','Devil Design','E3D','Elegoo','Eryone','eSUN','Extrudr','F3D','FFF World','Fiberlogy','Fillamentum','Filament PM','Flashforge','FormFutura','Geeetech','Generic','GIANTARM','GST3D','Hatchbox','Inland','iSANMATE','JAYO','Kimya','Kyboo','Masterprint','MatterHackers','NinjaTek','Overture','Polymaker','Professional LAB','Proto-pasta','Prusa','Prusament','Recreus','Reflow','Sainsmart','SIENOC','SmartFil','SmartMaterials 3D','SmartPrint','SOLEYIN','SUNLU','TECBEARS','TreeD Filaments','Tucab','Voolt3D','Winkle','Outros'
-];
+// Fallbacks de segurança (Hardcode)
+const FALLBACK_CATALOG = {
+  fdm: {
+    types:      ['PLA','PETG','ABS','TPU','ASA','Nylon','PC','HIPS','PVA','Wood','Carbon','Metal','PLA+','Outros'],
+    variations: ['Basic','Generic','+','PRO','Matte','Silk','Tough','HF (High Flow)','CF (Carbon Fiber)','LW (Lightweight)','ST (Super Tough)','Meta','Glow','Marble','Galaxy','Sparkle','Dual','High Speed','Hyper','Rainbow','Gradient','Aero','Outros'],
+    brands:     ['3D Fuel','3DHoJor','3DXTECH','3DLab','3DJake','3Industry','AMOLEN','Amazon Basics','Anycubic','Atomic Filament','Bambu Lab','Basf Forward AM','CCTREE','Coex','ColorFabb','Creality','Das Filament','DEEPLEE','Devil Design','E3D','Elegoo','Eryone','eSUN','Extrudr','F3D','FFF World','Fiberlogy','Fillamentum','Filament PM','Flashforge','FormFutura','Geeetech','Generic','GIANTARM','GST3D','Hatchbox','Inland','iSANMATE','JAYO','Kimya','Kyboo','Masterprint','MatterHackers','NinjaTek','Overture','Polymaker','Professional LAB','Proto-pasta','Prusa','Prusament','Recreus','Reflow','Sainsmart','SIENOC','SmartFil','SmartMaterials 3D','SmartPrint','SOLEYIN','SUNLU','TECBEARS','TreeD Filaments','Tucab','Voolt3D','Winkle','Outros']
+  },
+  resin: {
+    types:      ['Standard','ABS-Like','Water Washable','Castable','Flexible/Elastic','High-Temp','Dental','Engineering','Tough','Transparent','Outros'],
+    variations: ['Standard','Premium','Ultra','Fast','Night','Matte','Glossy','Outros'],
+    brands:     ['3D Systems','3D Resin Solutions','3D Jake','AMOLEN','AmeraLabs','Anycubic','ApplyLabWork','Asiga','Atlas 3D','B9Creator','Bambu Lab','BlueCast','Conjure','Creality','DWS','eSUN','Elegoo','Flashforge','Formlabs','FormFutura','FunToDo','Generic','HARZ Labs','iSANMATE','Jamg He','Kulzer','Liqcreate','Monocure3D','NextDent','Nova3D','Overture','Peopoly','Phrozen','PrimaSelect','Resin8','Resione','Siraya Tech','Skulpt','SpotHardener','SUNLU', 'Zortrax', 'Outros']
+  }
+};
 
-// Resina
-const RESIN_TYPES      = ['Standard','ABS-Like','Water Washable','Castable','Flexible/Elastic','High-Temp','Dental','Engineering','Tough','Transparent','Outros'];
-const RESIN_VARIATIONS = ['Standard','Premium','Ultra','Fast','Night','Matte','Glossy','Outros'];
+// Globais que serão populadas no INIT
+let FDM_TYPES      = FALLBACK_CATALOG.fdm.types;
+let FDM_VARIATIONS = FALLBACK_CATALOG.fdm.variations;
+let FDM_BRANDS     = FALLBACK_CATALOG.fdm.brands;
+const FDM_ROLL_SIZES = ['1kg','500g','300g','250g','100g'];
+
+let RESIN_TYPES      = FALLBACK_CATALOG.resin.types;
+let RESIN_VARIATIONS = FALLBACK_CATALOG.resin.variations;
+let RESIN_BRANDS     = FALLBACK_CATALOG.resin.brands;
 const RESIN_BOTTLE_SIZES = ['500ml','1L','2L','5L'];
-const RESIN_BRANDS = [
-  '3D Systems','3D Resin Solutions','3D Jake','AMOLEN','AmeraLabs','Anycubic','ApplyLabWork','Asiga','Atlas 3D','B9Creator','Bambu Lab','BlueCast','Conjure','Creality','DWS','eSUN','Elegoo','Flashforge','Formlabs','FormFutura','FunToDo','Generic','HARZ Labs','iSANMATE','Jamg He','Kulzer','Liqcreate','Monocure3D','NextDent','Nova3D','Overture','Peopoly','Phrozen','PrimaSelect','Resin8','Resione','Siraya Tech','Skulpt','SpotHardener','SUNLU', 'Zortrax', 'Outros'
-];
 
 const COLOR_PRESETS = [
   {id:'white',hex:'#FFFFFF'},{id:'black',hex:'#1A1A1A'},{id:'gray',hex:'#9CA3AF'},
@@ -925,7 +934,20 @@ let selectedColor = '#3B8FD4';
 // ══════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadUserData();
+  await loadUserData();
+  
+  // ── FETCH CATALOG FROM DB ──────────────────────────────
+  try {
+    const catalog = await DB.getMaterialCatalog();
+    if (catalog.fdm.types.length)      FDM_TYPES      = catalog.fdm.types;
+    if (catalog.fdm.variations.length) FDM_VARIATIONS = catalog.fdm.variations;
+    if (catalog.fdm.brands.length)     FDM_BRANDS     = catalog.fdm.brands;
+    
+    if (catalog.resin.types.length)      RESIN_TYPES      = catalog.resin.types;
+    if (catalog.resin.variations.length) RESIN_VARIATIONS = catalog.resin.variations;
+    if (catalog.resin.brands.length)     RESIN_BRANDS     = catalog.resin.brands;
+  } catch(e) { console.warn('[3DZAAP] Erro ao carregar catálogo dinâmico, usando fallback.', e); }
+
   populateSelects();
   renderColorPresets();
   await loadMaterials();
@@ -935,8 +957,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById(id).addEventListener('input', syncFDMNew));
   ['rTotal','rInUse'].forEach(id =>
     document.getElementById(id).addEventListener('input', syncResinNew));
-}
-);
+});
 
 // ══════════════════════════════════════
 //  AUTH / USER
