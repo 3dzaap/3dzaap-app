@@ -713,9 +713,11 @@ function updateReceiptModal() {
 
   rcptContainer.innerHTML = `
     <div class="rcpt-header">
-      <div style="display:flex; align-items:center; gap:10px">
-        <img src="${_company.logoUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22150%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E3D%3C%2Ftext%3E%3C%2Fsvg%3E'}" style="height:36px; width:auto; border-radius:15%">
-        <div class="rcpt-brand" style="font-family:inherit; font-size:1rem; font-weight:800; color:#fff">${_company.companyName}</div>
+      <div style="display:flex; align-items:center; gap:12px">
+        <img src="logo.jpg" style="height:44px; width:auto; border-radius:18%" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22150%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E3D%3C%2Ftext%3E%3C%2Fsvg%3E';">
+        <div class="rcpt-brand">
+          <span class="b3d">3D</span><span class="bzp">ZAAP</span>
+        </div>
       </div>
       <div class="rcpt-header-right">
         <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid', 'RECIBO DE PAGAMENTO') : t('portal.rcpt_title_os', 'ORDEM DE SERVIÇO')}</div>
