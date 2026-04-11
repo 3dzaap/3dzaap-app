@@ -1107,27 +1107,15 @@ function notifyOwner() {
 
 async function printPortalReceipt() {
   if (!_order) return;
-  const el = document.getElementById('printableReceipt');
-  if (!el) return;
-  
-  // Guardar largura original para restaurar depois
-  const originalStyle = el.style.cssText;
-  
   try {
-    // Forçar largura de desktop para o PDF não sair cortado (especialmente em mobile)
-    el.style.width = '800px';
-    el.style.minWidth = '800px';
-    
     const num = _order.orderNumber || 'recibo';
+    // Usamos um windowWidth fixo na configuração do pdf, sem mexer no DOM visível
     await downloadPDF('printableReceipt', `3DZAAP-${num}.pdf`, {
       html2canvas: { windowWidth: 800 }
     });
   } catch (err) { 
     console.error('Erro ao gerar PDF:', err);
     alert(t('portal.err_pdf', 'Erro ao gerar PDF.')); 
-  } finally {
-    // Restaurar estilo original
-    el.style.cssText = originalStyle;
   }
 }
 
