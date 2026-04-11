@@ -1190,7 +1190,7 @@ function updateKPIs() {
   // ── Delta: Past due — contextual (sem comparação temporal, é estado atual)
   const pdEl = document.getElementById('kpiPastDueD');
   if (pdEl) {
-    pdEl.textContent = pastDue > 0 ? `<i class="ph-bold ph-warning-octagon"></i> Requer atenção` : '<i class="ph-bold ph-check-circle"></i> Tudo em ordem';
+    pdEl.innerHTML = pastDue > 0 ? `<i class="ph-bold ph-warning-octagon"></i> Requer atenção` : '<i class="ph-bold ph-check-circle"></i> Tudo em ordem';
     pdEl.className   = 'kpi-delta ' + (pastDue > 0 ? 'down' : 'up');
   }
 }
