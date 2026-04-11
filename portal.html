@@ -401,11 +401,11 @@ body {
 .rcpt-section-label { 
   font-size: .68rem; 
   font-weight: 900; 
-  color: var(--subtle); 
+  color: #475569; 
   text-transform: uppercase; 
   letter-spacing: 1.2px; 
   margin: 24px 0 12px; 
-  border-bottom: 1px solid var(--border-input); 
+  border-bottom: 1px solid #e2e8f0; 
   padding-bottom: 8px; 
   display: flex;
   align-items: center;
@@ -416,12 +416,12 @@ body {
 .rcpt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; }
 .rcpt-table { width: 100%; border-collapse: collapse; }
 .rcpt-table th { text-align: left; font-size: .65rem; font-weight: 800; color: var(--subtle); padding: 8px 10px; background: var(--bg-table-head); }
-.rcpt-table td { padding: 12px 10px; border-bottom: 1px solid var(--border-input); font-size: .84rem; color: var(--black); }
-.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .78rem; white-space: nowrap; }
-.rcpt-table td.bold { font-weight: 800; text-align: right; white-space: nowrap; }
+.rcpt-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: .84rem; color: #1e293b; }
+.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .78rem; white-space: nowrap; color: #475569; }
+.rcpt-table td.bold { font-weight: 800; text-align: right; white-space: nowrap; color: #0f172a; }
 
 .rcpt-grand { 
-  background: var(--black); 
+  background: #0f172a; 
   color: #fff; 
   padding: 14px 20px; 
   border-radius: 12px; 
@@ -433,6 +433,8 @@ body {
 [data-theme="dark"] .rcpt-grand { background: #0c1e38; }
 .rcpt-grand-lbl { font-size: .75rem; font-weight: 700; opacity: .8; }
 .rcpt-grand-val { font-size: 1.3rem; font-weight: 900; font-family: var(--mono); }
+.rcpt-lbl { font-size: .65rem; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.rcpt-val { font-weight: 700; font-size: 1.05rem; color: #0f172a; margin-top: 2px; }
 
 .rcpt-sig-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 20px 0; }
 .rcpt-sig-block { text-align: center; min-width: 160px; }
@@ -737,8 +739,8 @@ function updateReceiptModal() {
     <div class="rcpt-body">
       <div class="rcpt-section-label">${t('portal.client_data', 'Dados do Cliente')}</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px">
-        <div><div style="font-size:.65rem; color:var(--subtle); font-weight:800">${t('portal.lbl_name', 'NOME')}</div><div style="font-weight:700; font-size:1rem">${_order.clientName}</div></div>
-        <div><div style="font-size:.65rem; color:var(--subtle); font-weight:800">${t('portal.lbl_created_at', 'DATA')}</div><div style="font-weight:700; font-size:1rem">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
+        <div><div class="rcpt-lbl">${t('portal.lbl_name', 'NOME')}</div><div class="rcpt-val">${_order.clientName}</div></div>
+        <div><div class="rcpt-lbl">${t('portal.lbl_created_at', 'DATA')}</div><div class="rcpt-val">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
       </div>
       <div class="rcpt-section-label">${t('portal.order_items', 'Itens do Pedido')}</div>
       <div class="rcpt-table-wrap">

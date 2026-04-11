@@ -545,12 +545,12 @@
     </header>
 
     <!-- Subscription Banner -->
-    <div class="sub-banner" id="subBanner">
+    <div class="sub-banner" id="subBanner" style="display:none">
       <div class="sub-banner-inner" id="subBannerInner">
         <span class="sub-icon" id="subIcon"><i class="ph-bold ph-clock"></i></span>
         <div class="sub-text">
-          <div class="sub-title" id="subTitle" data-i18n="dash.sub_banner.trial_active">Período experimental ativo — 14 dias restantes</div>
-          <div class="sub-sub" id="subSub" data-i18n="dash.sub_banner.trial_desc">Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar o período experimental.</div>
+          <div class="sub-title" id="subTitle"></div>
+          <div class="sub-sub" id="subSub"></div>
         </div>
         <div class="sub-cta">
           <a class="btn-sub" onclick="navigate('billing')" data-i18n="dash.sub_banner.upgrade">Upgrade agora →</a>
@@ -890,17 +890,19 @@ function renderBanner() {
 
   // Se plano não for trial e estiver expirado: Mostrar banner Blocked!
   if (plan !== 'trial' && isExpired) {
+    banner.style.display = 'block';
     inner.className = 'sub-banner-inner warning-banner';
     icon.innerHTML = '<i class="ph-bold ph-prohibit"></i>';
     title.textContent = t('dash.sub_banner.overdue_active') || 'Acesso Bloqueado / Assinatura Expirada';
     sub.textContent   = t('dash.sub_banner.overdue_desc') || 'A validade desta conta expirou. Por favor, contacte a administração.';
-    return; // não esconde o banner
+    return;
   }
 
   // Check if dismissed this session
   if (sessionStorage.getItem('banner_dismissed')) { banner.style.display='none'; return; }
 
   if (plan === 'trial') {
+    banner.style.display = 'block';
     const days = state.company.trialDaysLeft ?? 14;
     const s = days !== 1 ? 's' : '';
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
@@ -910,18 +912,20 @@ function renderBanner() {
     sub.textContent = t('dash.sub_banner.trial_desc') ||
       'Todas as funcionalidades desbloqueadas. Escolhe um plano antes de terminar.';
   } else if (plan === 'starter') {
+    banner.style.display = 'block';
     inner.className = 'sub-banner-inner active-banner';
-    icon.textContent = '<i class="ph-bold ph-check-circle"></i>';
+    icon.innerHTML = '<i class="ph-bold ph-check-circle"></i>';
     title.textContent = t('dash.sub_banner.starter_active') || 'Plano Starter activo';
     sub.textContent   = t('dash.sub_banner.starter_desc') || 'Upgrade para Pro ou Business para desbloquear Pedidos e Financeiro.';
   } else if (plan === 'pro') {
+    banner.style.display = 'block';
     inner.className = 'sub-banner-inner active-banner';
-    icon.textContent = '<i class="ph-bold ph-check-circle"></i>';
+    icon.innerHTML = '<i class="ph-bold ph-check-circle"></i>';
     title.textContent = t('dash.sub_banner.pro_active') || 'Plano Pro activo';
     sub.textContent   = t('dash.sub_banner.pro_desc') || 'Upgrade para Business para desbloquear o módulo Financeiro.';
-  } else if (plan === 'business') {
+  } else {
+    // Business ou qualquer plano pago final
     banner.style.display = 'none';
-    return;
   }
 }
 
