@@ -378,34 +378,34 @@ body {
   justify-content: space-between; 
   gap: 16px;
 }
-[data-theme="dark"] .rcpt-header { background: #1e293b; }
+.rcpt-header { background: #0D1117 !important; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 0; }
 @media (max-width: 580px) {
   .rcpt-header { flex-direction: column; text-align: center; padding: 24px 16px; }
   .rcpt-header-right { text-align: center; }
 }
 
 .rcpt-logo img { height: 44px; width: auto; object-fit: contain; border-radius: 20%; }
-.rcpt-header-right { text-align: right; color: #fff; }
-.rcpt-title { font-size: .65rem; font-weight: 800; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 2px; }
-.rcpt-number { font-family: var(--mono); font-size: 1.3rem; font-weight: 800; margin-top: 4px; }
-.rcpt-date { font-size: 0.75rem; opacity: 0.8; margin-top: 4px; }
+.rcpt-header-right { text-align: right; color: #ffffff !important; }
+.rcpt-title { font-size: .65rem; font-weight: 800; color: rgba(255,255,255,.55) !important; text-transform: uppercase; letter-spacing: 2px; }
+.rcpt-number { font-family: var(--mono); font-size: 1.3rem; font-weight: 800; margin-top: 4px; color: #ffffff !important; }
+.rcpt-date { font-size: 0.75rem; color: rgba(255,255,255,0.7) !important; margin-top: 4px; }
 
-.rcpt-status-bar { padding: 10px 20px; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.5px; }
-.rcpt-status-bar.paid { background: rgba(34,197,94,0.12); color: #16a34a; }
-.rcpt-status-bar.pending { background: rgba(245,158,11,0.12); color: #d97706; }
+.rcpt-status-bar { padding: 12px 20px; font-size: .72rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc !important; }
+.rcpt-status-bar.paid { color: #16a34a !important; }
+.rcpt-status-bar.pending { color: #d97706 !important; }
 .rcpt-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; margin-right: 6px; }
 
-.rcpt-body { padding: 24px 20px; }
+.rcpt-body { padding: 28px 32px; background: #ffffff !important; border-radius: 0 0 20px 20px; }
 @media (max-width: 480px) { .rcpt-body { padding: 20px 12px; } }
 
 .rcpt-section-label { 
   font-size: .68rem; 
   font-weight: 900; 
-  color: #475569; 
+  color: #475569 !important; 
   text-transform: uppercase; 
   letter-spacing: 1.2px; 
   margin: 24px 0 12px; 
-  border-bottom: 1px solid #e2e8f0; 
+  border-bottom: 2px solid #f1f5f9; 
   padding-bottom: 8px; 
   display: flex;
   align-items: center;
@@ -415,34 +415,33 @@ body {
 
 .rcpt-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; }
 .rcpt-table { width: 100%; border-collapse: collapse; }
-.rcpt-table th { text-align: left; font-size: .65rem; font-weight: 800; color: #64748b; padding: 8px 10px; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; }
-.rcpt-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: .84rem; color: #1e293b; }
-.rcpt-table td strong { color: #0f172a; }
-.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .78rem; white-space: nowrap; color: #475569; }
-.rcpt-table td.bold { font-weight: 800; text-align: right; white-space: nowrap; color: #0f172a; }
+.rcpt-table th { text-align: left; font-size: .68rem; font-weight: 900; color: #475569 !important; padding: 12px 10px; background: #f1f5f9 !important; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; }
+.rcpt-table td { padding: 14px 10px; border-bottom: 1px solid #f1f5f9; font-size: .88rem; color: #1e293b !important; }
+.rcpt-table td strong { color: #0f172a !important; font-weight: 800; }
+.rcpt-table td.r { text-align: right; font-family: var(--mono); font-size: .8rem; white-space: nowrap; color: #475569 !important; }
+.rcpt-table td.bold { font-weight: 800; text-align: right; white-space: nowrap; color: #0f172a !important; }
 
 .rcpt-grand { 
-  background: #0f172a; 
-  color: #fff; 
-  padding: 14px 20px; 
-  border-radius: 12px; 
+  background: #0f172a !important; 
+  color: #ffffff !important; 
+  padding: 16px 24px; 
+  border-radius: 14px; 
   display: flex; 
   justify-content: space-between; 
   align-items: center; 
   margin-top: 20px; 
 }
-[data-theme="dark"] .rcpt-grand { background: #0c1e38; }
-.rcpt-grand-lbl { font-size: .75rem; font-weight: 700; opacity: .8; }
-.rcpt-grand-val { font-size: 1.3rem; font-weight: 900; font-family: var(--mono); }
-.rcpt-lbl { font-size: .65rem; color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-.rcpt-val { font-weight: 700; font-size: 1.05rem; color: #0f172a; margin-top: 2px; }
+.rcpt-grand-lbl { font-size: .78rem; font-weight: 800; color: rgba(255,255,255,0.75) !important; }
+.rcpt-grand-val { font-size: 1.45rem; font-weight: 900; font-family: var(--mono); color: #ffffff !important; }
+.rcpt-lbl { font-size: .65rem; color: #64748b !important; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.rcpt-val { font-weight: 700; font-size: 1.05rem; color: #0f172a !important; margin-top: 4px; }
 
-.rcpt-sig-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 20px 0; }
+.rcpt-sig-row { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px 32px; background: #ffffff !important; border-top: 1px solid #f1f5f9; }
 .rcpt-sig-block { text-align: center; min-width: 160px; }
-.rcpt-sig-img { max-height: 50px; margin-bottom: 4px; display: block; margin-left: auto; margin-right: auto; }
-.rcpt-sig-line { height: 1px; background: #cbd5e1; margin-bottom: 4px; }
-.rcpt-sig-name { font-size: .65rem; font-weight: 700; color: #475569; text-transform: uppercase; }
-.rcpt-sig-location { font-size: .6rem; color: #94a3b8; margin-top: 2px; }
+.rcpt-sig-img { max-height: 56px; margin-bottom: 6px; display: block; margin-left: auto; margin-right: auto; }
+.rcpt-sig-line { height: 2px; background: #e2e8f0 !important; margin-bottom: 8px; width: 180px; margin-left: auto; margin-right: auto; }
+.rcpt-sig-name { font-size: .68rem; font-weight: 900; color: #1e293b !important; text-transform: uppercase; }
+.rcpt-sig-location { font-size: .62rem; color: #64748b !important; font-weight: 600; margin-top: 3px; }
 .rcpt-meta { 
   display: grid; 
   grid-template-columns: 1fr 1fr 1fr; 
