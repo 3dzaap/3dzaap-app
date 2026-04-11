@@ -1109,9 +1109,13 @@ async function printPortalReceipt() {
   if (!_order) return;
   try {
     const num = _order.orderNumber || 'recibo';
-    // Usamos um windowWidth fixo na configuração do pdf, sem mexer no DOM visível
-    await downloadPDF('printableReceipt', `3DZAAP-${num}.pdf`, {
-      html2canvas: { windowWidth: 800 }
+    const filename = `3DZAAP-${num}.pdf`;
+    
+    // Sincronizado 100% com o módulo de pedidos para garantir paridade total
+    await downloadPDF('printableReceipt', filename, {
+      margin: [10, 10],
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     });
   } catch (err) { 
     console.error('Erro ao gerar PDF:', err);
