@@ -2665,11 +2665,28 @@
       const orig = btn ? btn.innerHTML : '';
       if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> ...'; }
 
+      const el = document.getElementById('receiptContent');
+      if (!el) {
+        if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+        return;
+      }
+
+      // Guardar largura original para restaurar depois
+      const originalStyle = el.style.cssText;
+
       try {
-        const filename = `OS_${window._lastOpenedOS || 'doc'}.pdf`;
+        // Forçar largura de desktop para o PDF não sair cortado (especialmente em mini-ecrãs/mobile)
+        el.style.width = '800px';
+        el.style.minWidth = '800px';
+
+        const filename = `3DZAAP-${window._lastOpenedOS || 'recibo'}.pdf`;
         await downloadPDF('receiptContent', filename, {
           margin: [10, 10],
-          html2canvas: { scale: 2, useCORS: true },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            windowWidth: 800 
+          },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         });
         showToast(t('orders.toasts.pdf_success', 'PDF gerado com sucesso!'), 'ok');
@@ -2677,6 +2694,8 @@
         console.error('Erro ao gerar PDF:', err);
         showToast(t('orders.toasts.err_pdf', 'Erro ao gerar PDF.'), 'err');
       } finally {
+        // Restaurar estilo original
+        el.style.cssText = originalStyle;
         if (btn) { btn.disabled = false; btn.innerHTML = orig; }
       }
     }

@@ -370,14 +370,6 @@ body {
   border: 1.5px solid var(--border-input);
 }
 
-.rcpt-header { 
-  background: #0D1117; 
-  padding: 24px 20px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 16px;
-}
     .rcpt-header {
       background: #0D1117;
       padding: 24px 28px;
@@ -1114,9 +1106,29 @@ function notifyOwner() {
 }
 
 async function printPortalReceipt() {
+  if (!_order) return;
+  const el = document.getElementById('printableReceipt');
+  if (!el) return;
+  
+  // Guardar largura original para restaurar depois
+  const originalStyle = el.style.cssText;
+  
   try {
-    await downloadPDF('printableReceipt', `OS_${_order.orderNumber}.pdf`);
-  } catch (err) { alert(t('portal.err_pdf', 'Erro ao gerar PDF.')); }
+    // Forçar largura de desktop para o PDF não sair cortado (especialmente em mobile)
+    el.style.width = '800px';
+    el.style.minWidth = '800px';
+    
+    const num = _order.orderNumber || 'recibo';
+    await downloadPDF('printableReceipt', `3DZAAP-${num}.pdf`, {
+      html2canvas: { windowWidth: 800 }
+    });
+  } catch (err) { 
+    console.error('Erro ao gerar PDF:', err);
+    alert(t('portal.err_pdf', 'Erro ao gerar PDF.')); 
+  } finally {
+    // Restaurar estilo original
+    el.style.cssText = originalStyle;
+  }
 }
 
 function renderError(title, msg, icon) {
