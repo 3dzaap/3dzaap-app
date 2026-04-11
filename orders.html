@@ -1723,6 +1723,7 @@
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt ? fmtDate(o.createdAt) : '—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.dueDate ? fmtDate(o.dueDate) : '—'}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="btn-icon" onclick="duplicateOrder('${o.id}')" title="${i18n.getNestedTranslation('orders.details.duplicate')}" style="margin-right:2px"><i class="ph-bold ph-copy"></i></button>
           <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px"><i class="ph-bold ph-pencil-simple"></i></button>
           <button class="btn-icon del" onclick="confirmDelete('${o.id}')" title="Eliminar" style="margin-right:4px"><i class="ph-bold ph-trash"></i></button>
           <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')"><i class="ph-bold ph-caret-down"></i></button>
@@ -1746,6 +1747,7 @@
             <div class="expand-actions">
               ${canAdvance ? `<button class="btn btn-ghost btn-sm" onclick="advanceStatus('${o.id}')"><i class="ph-bold ph-arrows-clockwise"></i> <span data-i18n="orders.details.actions_advance">${i18n.getNestedTranslation('orders.details.actions_advance')}</span> → ${typeof STATUS_LABELS[nextStatus] === 'function' ? STATUS_LABELS[nextStatus]() : STATUS_LABELS[nextStatus]}</button>` : `<span style="font-size:.78rem;color:var(--success);font-weight:700" data-i18n="orders.details.actions_done">${i18n.getNestedTranslation('orders.details.actions_done')}</span>`}
               <button class="btn btn-ghost btn-sm" onclick="${o.paymentStatus === 'pago' ? `togglePayment('${o.id}','pendente')` : `togglePayment('${o.id}','pago')`}">${o.paymentStatus === 'pago' ? i18n.getNestedTranslation('status.pendente') : i18n.getNestedTranslation('status.pago')}</button>
+              <button class="btn btn-ghost btn-sm" onclick="duplicateOrder('${o.id}')"><i class="ph-bold ph-copy"></i> <span data-i18n="orders.details.duplicate">${i18n.getNestedTranslation('orders.details.duplicate')}</span></button>
               <button class="btn btn-ghost btn-sm" onclick="openModal('${o.id}')" data-i18n="orders.card.btn_edit"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
               <button class="btn btn-ghost btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue)" data-i18n="orders.details.receipt"><i class="ph-bold ph-receipt"></i> Recibo</button>
               <button class="btn btn-ghost btn-sm" onclick="sendWhatsAppTracking('${o.id}')" style="color:#25D366;display:flex;align-items:center;gap:4px">
@@ -1797,6 +1799,7 @@
             ${canAdvance ? `<button class="btn btn-primary" onclick="advanceStatus('${o.id}')" style="width:100%"><i class="ph-bold ph-arrows-clockwise"></i> <span data-i18n="orders.details.actions_advance">${i18n.getNestedTranslation('orders.details.actions_advance')}</span> → ${typeof STATUS_LABELS[nextStatus] === 'function' ? STATUS_LABELS[nextStatus]() : STATUS_LABELS[nextStatus]}</button>` : `<div style="font-size:.8rem;color:var(--success);font-weight:700;text-align:center;padding:8px" data-i18n="orders.details.actions_done">${i18n.getNestedTranslation('orders.details.actions_done')}</div>`}
             <div style="display:flex;gap:8px">
               <button class="btn btn-ghost" style="flex:1" onclick="${o.paymentStatus === 'pago' ? `togglePayment('${o.id}','pendente')` : `togglePayment('${o.id}','pago')`}">${o.paymentStatus === 'pago' ? i18n.getNestedTranslation('status.pendente') : i18n.getNestedTranslation('status.pago')}</button>
+              <button class="btn btn-ghost" style="flex:1" onclick="duplicateOrder('${o.id}')"><i class="ph-bold ph-copy"></i> <span data-i18n="orders.details.duplicate">${i18n.getNestedTranslation('orders.details.duplicate')}</span></button>
               <button class="btn btn-ghost" style="flex:1;color:#25D366" onclick="sendWhatsAppTracking('${o.id}')"><i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="orders.details.tracking">${i18n.getNestedTranslation('orders.details.tracking')}</span></button>
             </div>
           </div>
@@ -2123,6 +2126,33 @@
       const msgKey = newStatus === 'pago' ? 'orders.toasts.pay_updated' : 'orders.toasts.pay_updated';
       const payLabel = i18n.getNestedTranslation('status.' + newStatus);
       showToast(i18n.getNestedTranslation('orders.toasts.pay_updated', { p: payLabel }), 'ok');
+    }
+
+    // ── DUPLICATE ORDER ─────────────────────
+    function duplicateOrder(id) {
+      const o = orders.find(x => x.id === id);
+      if (!o) return;
+
+      // Abrir modal como NOVO
+      openModal(null);
+
+      // Preencher com dados do original
+      document.getElementById('oClientName').value = o.clientName || '';
+      document.getElementById('oClientEmail').value = o.clientEmail || '';
+      document.getElementById('oClientPhone').value = o.clientPhone || '';
+      document.getElementById('oClientNif').value = o.clientNif || '';
+      document.getElementById('oClientAddress').value = o.clientAddress || '';
+      document.getElementById('oNotes').value = o.notes || '';
+
+      // Limpar itens padrão de openModal(null)
+      document.getElementById('orderItemsList').innerHTML = '';
+      _items = [];
+
+      // Adicionar itens originais
+      const its = (o.items?.length) ? o.items : [{ description: o.description || '', quantity: o.quantity || 1, unitPrice: o.unitPrice || 0, filamentId: '', weightG: '' }];
+      its.forEach(it => addOrderItem(_normalizeItem(it)));
+
+      showToast('<i class="ph-bold ph-copy"></i> ' + (i18n.getNestedTranslation('orders.details.duplicate') || 'Duplicado') + '. Ajuste os dados e guarde.', 'info');
     }
 
     // ── MODAL ──────────────────────────────
