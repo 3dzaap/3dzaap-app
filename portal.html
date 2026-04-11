@@ -714,48 +714,78 @@ function updateReceiptModal() {
   rcptContainer.innerHTML = `
     <div class="rcpt-header">
       <div class="rcpt-logo">
-        ${_company.logoUrl ? `<img src="${_company.logoUrl}">` : `<div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>`}
+        <img src="${_company.logoUrl || 'https://via.placeholder.com/150'}" alt="Logo">
+        <div style="margin-left:14px; font-weight:900; font-size:1.1rem; color:#fff; letter-spacing:-0.5px">
+          ${_company.companyName}
+        </div>
       </div>
       <div class="rcpt-header-right">
-        <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid', 'Recibo de Pagamento') : t('portal.rcpt_title_os', 'Ordem de Serviço')}</div>
-        <div class="rcpt-number">${_order.orderNumber}</div>
-        <div class="rcpt-date">${new Date().toLocaleDateString('pt-PT')}</div>
+        <div class="rcpt-title" style="color:rgba(255,255,255,0.7); font-size:0.7rem; letter-spacing:1px; margin-bottom: 2px">
+          ${isPaid ? t('portal.rcpt_title_paid', 'RECIBO DE PAGAMENTO') : t('portal.rcpt_title_os', 'ORDEM DE SERVIÇO')}
+        </div>
+        <div class="rcpt-number" style="font-size:1.5rem; line-height:1; margin:0">${_order.orderNumber}</div>
+        <div class="rcpt-date" style="margin-top:6px">${new Date().toLocaleDateString('pt-PT')}</div>
       </div>
     </div>
     <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
-       <span><span class="rcpt-dot"></span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
-       <span style="opacity:0.7">${t('portal.order_status', 'ESTADO')}: <strong>${t('status.'+_order.status, _order.status).toUpperCase()}</strong></span>
+       <div style="display:flex; align-items:center; gap:8px">
+         <span class="rcpt-dot"></span>
+         <span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
+       </div>
+       <div style="font-weight:800; opacity:0.9">
+         ${t('portal.order_status', 'ESTADO')}: ${t('status.'+_order.status, _order.status).toUpperCase()}
+       </div>
     </div>
     <div class="rcpt-body">
       <div class="rcpt-section-label">${t('portal.client_data', 'Dados do Cliente')}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-        <div><div style="font-size:.65rem;color:var(--subtle);font-weight:800">${t('portal.lbl_name', 'NOME')}</div><div style="font-weight:700;font-size:.95rem">${_order.clientName}</div></div>
-        <div><div style="font-size:.65rem;color:var(--subtle);font-weight:800">${t('portal.lbl_created_at', 'DATA')}</div><div style="font-weight:700;font-size:.95rem">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px">
+        <div><div style="font-size:.65rem; color:var(--subtle); font-weight:800">${t('portal.lbl_name', 'NOME')}</div><div style="font-weight:700; font-size:1rem">${_order.clientName}</div></div>
+        <div><div style="font-size:.65rem; color:var(--subtle); font-weight:800">${t('portal.lbl_created_at', 'DATA')}</div><div style="font-weight:700; font-size:1rem">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
       </div>
-      <div class="rcpt-section-label">${t('portal.order_items', 'Itens')}</div>
+      <div class="rcpt-section-label">${t('portal.order_items', 'Itens do Pedido')}</div>
       <div class="rcpt-table-wrap">
         <table class="rcpt-table">
-          <thead><tr><th>${t('portal.th_desc', 'DESCRIÇÃO')}</th><th style="text-align:right">${t('portal.th_qty', 'QTD')}</th><th style="text-align:right">${t('portal.th_total', 'TOTAL')}</th></tr></thead>
+          <thead>
+            <tr>
+              <th>${t('portal.th_desc', 'DESCRIÇÃO')}</th>
+              <th style="text-align:right">${t('portal.th_qty', 'QTD')}</th>
+              <th style="text-align:right">${t('portal.th_price', 'PREÇO UNIT.')}</th>
+              <th style="text-align:right">${t('portal.th_total', 'TOTAL')}</th>
+            </tr>
+          </thead>
           <tbody>
-            ${its.map(it => `<tr><td><strong>${it.description}</strong></td><td class="r">${it.quantity||1}</td><td class="r bold">${fmtCurrency((it.quantity||1)*(it.unitPrice||0))}</td></tr>`).join('')}
+            ${its.map((it, idx) => `
+              <tr>
+                <td><strong>${idx+1}. ${it.description}</strong></td>
+                <td class="r">${it.quantity||1}</td>
+                <td class="r">${fmtCurrency(it.unitPrice||0)}</td>
+                <td class="r bold">${fmtCurrency((it.quantity||1)*(it.unitPrice||0))}</td>
+              </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
-      <div class="rcpt-grand"><span class="rcpt-grand-lbl">${t('portal.total_label', 'TOTAL')}</span><span class="rcpt-grand-val">${fmtCurrency(_order.total || 0)}</span></div>
-      ${_order.notes ? `<div class="rcpt-section-label">${t('portal.notes_label', 'OBSERVAÇÕES')}</div><div style="font-size:.8rem;color:var(--muted);line-height:1.6;white-space:pre-wrap">${_order.notes}</div>` : ''}
+      <div class="rcpt-grand">
+        <span class="rcpt-grand-lbl">${t('portal.total_label', 'TOTAL DESTE PEDIDO')}</span>
+        <span class="rcpt-grand-val">${fmtCurrency(_order.total || 0)}</span>
+      </div>
+      ${_order.notes ? `
+        <div class="rcpt-section-label">${t('portal.notes_label', 'OBSERVAÇÕES')}</div>
+        <div style="font-size:.85rem; color:var(--muted); line-height:1.6; white-space:pre-wrap; background:var(--bg-input); padding:12px; border-radius:8px">${_order.notes}</div>
+      ` : ''}
       <div class="rcpt-sig-row">
         <div></div>
         <div class="rcpt-sig-block">
           ${_company.signature ? `<img class="rcpt-sig-img" src="${_company.signature}">` : ''}
           <div class="rcpt-sig-line"></div>
           <div class="rcpt-sig-name">${_company.companyName}</div>
-          <div class="rcpt-sig-location">${_company.companyConfig.city || 'Portugal'}</div>
+          <div class="rcpt-sig-location">${(_company.companyConfig && _company.companyConfig.city) || 'Portugal'}</div>
         </div>
       </div>
     </div>
     <div class="rcpt-footer">
-      <div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span> <span style="font-size:.6rem;opacity:.5">PRINT MANAGER</span></div>
-      <div style="font-weight:700;color:var(--blue)">Obrigado!</div>
+      <div class="rcpt-brand"><span class="b3d">3D</span><span class="bzp">ZAAP</span> <span style="font-size:.6rem; opacity:.5">PRINT MANAGER</span></div>
+      <div style="font-weight:800; color:var(--blue)">Documento gerado digitalmente.</div>
     </div>
   `;
 }

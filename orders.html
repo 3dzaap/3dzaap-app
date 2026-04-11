@@ -92,75 +92,46 @@
 
 .rcpt-modal{background:var(--bg-card-s);border-radius:var(--rl);width:100%;max-width:700px;box-shadow:var(--sh-float);animation:modalIn .3s var(--ease);margin:auto;overflow:hidden;display:flex;flex-direction:column}
 
-.rcpt-header{background:linear-gradient(135deg,#0D1117 0%,#162032 100%);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
-
-.rcpt-logo{display:flex;align-items:center;gap:8px}
-
-.rcpt-logo img{height:38px;width:auto}
-
+.rcpt-header{background:linear-gradient(135deg,#0D1117 0%,#162032 100%);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.rcpt-logo{display:flex;align-items:center;gap:12px}
+.rcpt-logo img{height:42px;width:auto;border-radius:20%}
 .rcpt-header-right{text-align:right}
+.rcpt-title{font-size:.65rem;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.5px}
+.rcpt-number{font-family:'JetBrains Mono',monospace;font-size:1.45rem;font-weight:900;color:#fff;margin-top:2px}
+.rcpt-date{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:4px}
 
-.rcpt-title{font-size:.62rem;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:2px}
-
-.rcpt-number{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:700;color:#fff;margin-top:2px}
-
-.rcpt-date{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:1px}
-
-.rcpt-status-bar{padding:6px 28px;display:flex;align-items:center;justify-content:space-between;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0}
-
-.rcpt-status-bar.paid{background:#dcfce7;color:#16a34a}
-
-.rcpt-status-bar.pending{background:rgba(245,158,11,.15);color:#ea580c}
-
-.rcpt-dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;margin-right:4px}
-
-.rcpt-body{padding:14px 28px 10px;flex:1}
-
-.rcpt-section-label{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:10px}
-
+.rcpt-status-bar{padding:10px 28px;display:flex;align-items:center;justify-content:space-between;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.rcpt-status-bar.paid{background:rgba(34,197,94,0.1);color:#16a34a}
+.rcpt-status-bar.pending{background:rgba(245,158,11,0.1);color:#ea580c}
+.rcpt-dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block;margin-right:6px}
+.rcpt-body{padding:24px 28px;flex:1}
+.rcpt-section-label{font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);margin-top:20px}
 .rcpt-section-label:first-child{margin-top:0}
 
-.rcpt-client-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 14px;margin-bottom:10px}
+.rcpt-client-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 20px;margin-bottom:16px}
+.rcpt-field-label{font-size:.6rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.rcpt-field-value{font-size:.9rem;font-weight:700;color:var(--dark);margin-top:2px}
 
-.rcpt-field-label{font-size:.6rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-
-.rcpt-field-value{font-size:.78rem;font-weight:600;color:var(--dark);margin-top:1px}
-
-.rcpt-table{width:100%;border-collapse:collapse;font-size:.78rem}
-
-.rcpt-table th{padding:5px 8px;text-align:left;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:var(--bg-hover-s)}
-
+.rcpt-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.rcpt-table th{padding:10px 8px;text-align:left;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:var(--bg-hover-s)}
 .rcpt-table th.r{text-align:right}
-
-.rcpt-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
-
-.rcpt-table td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#475569}
-
-.rcpt-table td.bold{font-weight:700;font-family:'JetBrains Mono',monospace;text-align:right;color:var(--dark)}
-
+.rcpt-table td{padding:12px 8px;border-bottom:1px solid var(--border)}
+.rcpt-table td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#475569}
+.rcpt-table td.bold{font-weight:800;font-family:'JetBrains Mono',monospace;text-align:right;color:var(--dark)}
 .rcpt-table tbody tr:last-child td{border-bottom:none}
 
-.rcpt-grand{display:flex;justify-content:space-between;align-items:center;background:#0D1117;border-radius:8px;padding:9px 14px;margin-top:6px}
+.rcpt-grand{display:flex;justify-content:space-between;align-items:center;background:#0D1117;border-radius:12px;padding:14px 20px;margin-top:10px}
+.rcpt-grand-label{color:rgba(255,255,255,.6);font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.rcpt-grand-value{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800;color:#fff}
 
-.rcpt-grand-label{color:rgba(255,255,255,.55);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.rcpt-notes{margin-top:12px;background:var(--bg-hover-s);border-radius:8px;padding:12px 16px;font-size:.8rem;color:var(--muted);line-height:1.6}
 
-.rcpt-grand-value{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:#fff}
-
-.rcpt-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:8px}
-
-.rcpt-notes{margin-top:8px;background:var(--bg-hover-s);border-radius:6px;padding:7px 10px;font-size:.74rem;color:var(--muted);line-height:1.4}
-
-.rcpt-sig-row{display:flex;align-items:flex-end;justify-content:space-between;padding:10px 28px 8px;border-top:1px solid var(--border);flex-shrink:0}
-
+.rcpt-sig-row{display:flex;align-items:flex-end;justify-content:space-between;padding:20px 28px;border-top:1px solid var(--border);flex-shrink:0}
 .rcpt-sig-block{text-align:center}
-
-.rcpt-sig-img{height:48px;width:auto;display:block;margin:0 auto 2px}
-
-.rcpt-sig-line{width:180px;border-top:1.5px solid var(--border);margin-bottom:4px}
-
-.rcpt-sig-name{font-size:.62rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.7px}
-
-.rcpt-sig-location{font-size:.62rem;color:#94a3b8;margin-top:1px}
+.rcpt-sig-img{height:52px;width:auto;display:block;margin:0 auto 4px}
+.rcpt-sig-line{width:180px;border-top:1.5px solid var(--border);margin-bottom:6px}
+.rcpt-sig-name{font-size:.65rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.7px}
+.rcpt-sig-location{font-size:.65rem;color:#94a3b8;margin-top:2px}
 
 .rcpt-footer{background:var(--bg-hover-s);border-top:1px solid var(--border);padding:9px 28px 30px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 
@@ -1909,97 +1880,119 @@ async function printReceipt(id) {
   const grand = its.reduce((s,i)=>s+(i.quantity||0)*(i.unitPrice||0),0);
   const isPaid = o.paymentStatus === 'pago';
   const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
-  const statusMap = {orcamento: t('orders.pipe.budget_tab','Orçamento'),modelagem: t('orders.status.modelagem','Modelagem'),validacao: t('orders.status.validacao','Aprovação'),aprovado: t('orders.status.aprovado','Confirmado'),fila: t('orders.status.fila','Em Fila'),printing: t('orders.status.printing','Produção'),preparacao: t('orders.status.preparacao','Preparação'),enviado: t('orders.status.enviado','Enviado'),done: t('orders.status.done','Concluído')};
+  
+  const statusLabels = {
+    orcamento: t('status.orcamento', 'Orçamento'),
+    modelagem: t('status.modelagem', 'Modelagem'),
+    validacao: t('status.validacao', 'Aprovação'),
+    aprovado: t('status.aprovado', 'Confirmado'),
+    fila: t('status.fila', 'Em Fila'),
+    printing: t('status.printing', 'Produção'),
+    preparacao: t('status.preparacao', 'Expedição'),
+    enviado: t('status.enviado', 'Enviado'),
+    done: t('status.done', 'Concluído')
+  };
+
   const signature = userData.signature || null;
   const companyName = userData.companyName || '3DZAAP';
   const cfg = userData.config || _cfg || {};
   const logoUrl = cfg.logoUrl || '';
-  const city = cfg.city || 'Lisboa';
-  const today = new Date().toLocaleDateString('pt-PT',{day:'2-digit',month:'long',year:'numeric'});
+  const city = cfg.city || 'Portugal';
+  const today = new Date().toLocaleDateString('pt-PT');
 
-  const itemRows = its.map((it,i) => `
+  const itemRows = its.map((it, i) => `
     <tr>
-      <td>${i+1}. ${escH(it.description||'—')}</td>
+      <td><strong>${i+1}. ${escH(it.description||'—')}</strong></td>
       <td class="r">${it.quantity}</td>
-      <td class="r">${((_cfg&&_cfg._currSymbol)||'€')}${(it.unitPrice||0).toFixed(2)}</td>
-      <td class="bold">${((_cfg&&_cfg._currSymbol)||'€')}${((it.quantity||0)*(it.unitPrice||0)).toFixed(2)}</td>
+      <td class="r">${fmtCurrency(it.unitPrice||0)}</td>
+      <td class="r bold">${fmtCurrency((it.quantity||1)*(it.unitPrice||0))}</td>
     </tr>`).join('');
 
-  const payDateStr = (() => {
-    const d = o.paymentDate ? new Date(o.paymentDate+'T12:00:00') : new Date();
-    return d.toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-  })();
-
-  const sigRow = isPaid
-    ? `<div class="rcpt-sig-row">
-        <div></div>
-        <div class="rcpt-sig-block">
-          ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
-          <div class="rcpt-sig-line"></div>
-          <div class="rcpt-sig-name">${escH(companyName)}</div>
-          <div class="rcpt-sig-location">${escH(city)}, ${today}</div>
-        </div>
-       </div>`
-    : `<div class="rcpt-sig-row" style="justify-content:flex-start">
-        <div style="font-size:.65rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.6px">${t('orders.rcpt.generated','OS gerada em')} ${new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</div>
-       </div>`;
+  const sigRow = `
+    <div class="rcpt-sig-row">
+      <div></div>
+      <div class="rcpt-sig-block">
+        ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
+        <div class="rcpt-sig-line"></div>
+        <div class="rcpt-sig-name">${escH(companyName)}</div>
+        <div class="rcpt-sig-location">${escH(city)}</div>
+      </div>
+    </div>`;
 
   document.getElementById('receiptContent').innerHTML = `
     <div class="rcpt-header">
       <div class="rcpt-logo">
-        <img src="logo.jpg" alt="3DZAAP" style="height:38px;width:auto;object-fit:contain;border-radius:20%">
-        ${logoUrl
-          ? `<div style="border-left:1.5px solid rgba(255,255,255,0.2); height:24px; margin:0 8px"></div>
-             <img src="${logoUrl}" alt="${escH(companyName)}" style="height:34px;width:auto;object-fit:contain;border-radius:22%">`
-          : ''}
-        <div style="font-size:.65rem;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-left:4px">${escH(companyName)}</div>
+        <img src="${logoUrl || 'https://via.placeholder.com/150'}" alt="Logo">
+        <div style="margin-left:14px; font-weight:900; font-size:1.1rem; color:#fff; letter-spacing:-0.5px">
+          ${escH(companyName)}
+        </div>
       </div>
       <div class="rcpt-header-right">
-        <div class="rcpt-title">${isPaid ? t('orders.rcpt.paid_title', 'Recibo de Pagamento') : t('orders.rcpt.service_title', 'Ordem de Serviço')}</div>
-        <div class="rcpt-number">${escH(o.orderNumber||('#'+o.id.slice(-6)))}</div>
-        <div class="rcpt-date">${t('orders.rcpt.issued', 'Emitido em')} ${today}</div>
+        <div class="rcpt-title" style="color:rgba(255,255,255,0.7); font-size:0.7rem; letter-spacing:1px; margin-bottom: 2px">
+          ${isPaid ? t('portal.rcpt_title_paid', 'RECIBO DE PAGAMENTO') : t('portal.rcpt_title_os', 'ORDEM DE SERVIÇO')}
+        </div>
+        <div class="rcpt-number" style="font-size:1.5rem; line-height:1; margin:0">${escH(o.orderNumber)}</div>
+        <div class="rcpt-date" style="margin-top:6px">${today}</div>
       </div>
     </div>
-    ${isPaid
-      ? `<div class="rcpt-status-bar paid">
-           <span><span class="rcpt-dot"></span>${t('orders.rcpt.paid_on','Pago em')} ${payDateStr}</span>
-           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('orders.rcpt.status_label','ESTADO DO PEDIDO:')} <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
-         </div>`
-      : `<div class="rcpt-status-bar pending">
-           <span style="display:flex;align-items:center;gap:5px;opacity:0.75;font-size:.62rem">${t('orders.rcpt.status_label','ESTADO DO PEDIDO:')} <span style="opacity:1;font-size:.68rem">${statusMap[o.status]||o.status}</span></span>
-         </div>`}
+    
+    <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
+       <div style="display:flex; align-items:center; gap:8px">
+         <span class="rcpt-dot"></span>
+         <span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
+       </div>
+       <div style="font-weight:800; opacity:0.9">
+         ${t('portal.order_status', 'ESTADO')}: ${(statusLabels[o.status]||o.status).toUpperCase()}
+       </div>
+    </div>
+
     <div class="rcpt-body">
       <div class="rcpt-section-label">${t('orders.rcpt.client_data','Dados do Cliente')}</div>
       <div class="rcpt-client-grid">
         <div><div class="rcpt-field-label">${t('orders.rcpt.name_label','Nome')}</div><div class="rcpt-field-value">${escH(o.clientName)}</div></div>
-        ${o.clientEmail?`<div><div class="rcpt-field-label">${t('orders.rcpt.email_label','Email')}</div><div class="rcpt-field-value">${escH(o.clientEmail)}</div></div>`:''}
-        ${o.clientPhone?`<div><div class="rcpt-field-label">${t('orders.rcpt.phone_label','Telefone')}</div><div class="rcpt-field-value">${escH(o.clientPhone)}</div></div>`:''}
+        <div><div class="rcpt-field-label">${t('orders.rcpt.date_label','Data do Pedido')}</div><div class="rcpt-field-value">${new Date(o.createdAt).toLocaleDateString('pt-PT')}</div></div>
       </div>
+      
       <div class="rcpt-section-label">${t('orders.rcpt.items_label','Itens do Pedido')}</div>
-      <table class="rcpt-table">
-        <thead><tr><th>${t('orders.rcpt.desc_col','Descrição')}</th><th class="r">${t('orders.rcpt.qty_col','Qtd')}</th><th class="r">${t('orders.rcpt.price_col','Preço Unit.')}</th><th class="r">${t('orders.rcpt.total_col','Total')}</th></tr></thead>
-        <tbody>
-          ${itemRows}
-        </tbody>
-      </table>
+      <div class="rcpt-table-wrap">
+        <table class="rcpt-table">
+          <thead>
+            <tr>
+              <th>${t('orders.rcpt.desc_col','Descrição')}</th>
+              <th class="r">${t('orders.rcpt.qty_col','Qtd')}</th>
+              <th class="r">${t('orders.rcpt.price_col','Preço Unit.')}</th>
+              <th class="r">${t('orders.rcpt.total_col','Total')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemRows}
+          </tbody>
+        </table>
+      </div>
+
       <div class="rcpt-grand">
-        <span class="rcpt-grand-label">${t('orders.rcpt.total_col','Total')}</span>
-        <span class="rcpt-grand-value">${((_cfg&&_cfg._currSymbol)||'€')}${grand.toFixed(2)}</span>
+        <span class="rcpt-grand-label">${t('orders.rcpt.total_col','TOTAL DESTE PEDIDO')}</span>
+        <span class="rcpt-grand-value">${fmtCurrency(grand)}</span>
       </div>
+
       <div class="rcpt-meta">
-        <div><div class="rcpt-field-label">${t('orders.rcpt.created_label','Data de Criação')}</div><div class="rcpt-field-value">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
-        ${o.dueDate?`<div><div class="rcpt-field-label">${t('orders.rcpt.due_label','Prazo de Entrega')}</div><div class="rcpt-field-value">${fmtDate(o.dueDate)}</div></div>`:''}
+        <div><div class="rcpt-field-label">${t('orders.rcpt.created_label','Criado em')}</div><div class="rcpt-field-value">${o.createdAt?fmtDate(o.createdAt):'—'}</div></div>
+        ${o.dueDate?`<div><div class="rcpt-field-label">${t('orders.rcpt.due_label','Prazo')}</div><div class="rcpt-field-value">${fmtDate(o.dueDate)}</div></div>`:''}
       </div>
-      ${o.notes?`<div class="rcpt-notes"><strong>${t('orders.rcpt.notes_label','Observações')}:</strong> ${escH(o.notes)}</div>`:''}
+
+      ${o.notes?`
+        <div class="rcpt-section-label">${t('orders.rcpt.notes_label','Observações')}</div>
+        <div class="rcpt-notes">${escH(o.notes)}</div>
+      `:''}
     </div>
+
     ${sigRow}
+
     <div class="rcpt-footer">
-      <div>
-        <div class="rcpt-brand"><span style="color:#3b8fd4">3D</span><span style="color:#F5943A">ZAAP</span></div>
-        <div class="rcpt-tagline">${t('nav.tagline','Printing Manager')}</div>
-      </div>
-      <div class="rcpt-thanks">${t('orders.rcpt.thanks','Obrigado pela sua confiança!')}</div>
+      <div class="rcpt-brand"><span class="b3d" style="color:var(--blue)">3D</span><span class="bzp" style="color:var(--orange)">ZAAP</span> <span style="font-size:.6rem; opacity:.5">PRINT MANAGER</span></div>
+      <div style="font-weight:800; color:var(--blue)">Documento gerado digitalmente.</div>
     </div>`;
+
   document.getElementById('rcptOverlay').classList.add('open');
 }
 
