@@ -769,11 +769,11 @@ const DB = {
 
   // ── MATERIAL CATALOG (GLOBAL LOOKUP) ──────────────────────
   async getMaterialCatalog() {
-    // Busca global pública de metadados de materiais
+    // Busca global pública de metadados de materiais — agora ordenados alfabeticamente
     const [types, variations, brands] = await Promise.all([
-      _sb.from('material_catalog_types').select('material_class, name'),
-      _sb.from('material_catalog_variations').select('material_class, name'),
-      _sb.from('material_catalog_brands').select('material_class, name')
+      _sb.from('material_catalog_types').select('material_class, name').order('name'),
+      _sb.from('material_catalog_variations').select('material_class, name').order('name'),
+      _sb.from('material_catalog_brands').select('material_class, name').order('name')
     ]);
     
     const catalog = {
