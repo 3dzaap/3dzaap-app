@@ -905,7 +905,7 @@
                   <th style="color:var(--blue);font-weight:700">Peso</th>
                   <th data-i18n="orders.table.created">Criado</th>
                   <th data-i18n="orders.table.due">Prazo</th>
-                  <th></th>
+                  <th style="width:145px;text-align:right"></th>
                 </tr>
               </thead>
               <tbody id="ordTbody"></tbody>
@@ -1730,7 +1730,7 @@
         </td>
       </tr>
       <tr class="expand-details" id="exp-${o.id}">
-        <td colspan="8">
+        <td colspan="9">
           <div class="expand-inner">
             <div class="detail-grid">${detailGrid}${o.notes ? `<div style="grid-column:1/-1"><div class="detail-item-lbl" data-i18n="orders.details.notes">${i18n.getNestedTranslation('orders.details.notes')}</div><div class="detail-item-val">${escH(o.notes)}</div></div>` : ''}</div>
             <div class="items-section-title" data-i18n="orders.details.items_title">${i18n.getNestedTranslation('orders.details.items_title')}</div>

@@ -619,8 +619,8 @@ body {
 /* Table expand row */
 .expand-details      { display: none; background: var(--bg-expand); border-bottom: 1.5px solid var(--border); }
 .expand-details.open { display: table-row; }
-.expand-inner        { padding: 18px 20px; }
-.detail-grid         { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px 20px; margin-bottom: 16px; }
+.expand-inner        { padding: 18px 20px; max-width: 1000px; }
+.detail-grid         { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px 20px; margin-bottom: 20px; }
 .detail-item-lbl     { font-size: .68rem; font-weight: 700; color: var(--subtle); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
 .detail-item-val     { font-size: .84rem; font-weight: 600; color: var(--dark); }
 .items-section-title { font-size: .71rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
