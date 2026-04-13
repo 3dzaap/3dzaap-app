@@ -29,95 +29,65 @@
   --step-num-size: 28px;
 }
 
+/* ── SAAS PADRONIZAÇÃO ───────────────────── */
 .calc-v2-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--v2-gap);
+  gap: 20px;
   align-items: stretch;
   margin-top: 10px;
   width: 100%;
 }
 
-.inputs-column {
+.inputs-column, .results-column {
   display: flex;
   flex-direction: column;
-  gap: var(--v2-gap);
+  gap: 20px;
   min-width: 0;
 }
 
-.results-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--v2-gap);
-  animation: fadeRight .6s var(--ease) both;
-  min-width: 0;
-}
-
-/* ── STEP CARD ────────────────────────────── */
 .step-card {
-  background: var(--v2-card-bg);
+  background: var(--bg-card);
   backdrop-filter: var(--blur);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  box-shadow: var(--sh);
   overflow: hidden;
-  animation: fadeUp .5s var(--ease) both;
+  display: flex;
+  flex-direction: column;
 }
 
 .step-header {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  border-bottom: 1.5px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .step-num {
-  width: var(--step-num-size);
-  height: var(--step-num-size);
-  background: var(--blue);
-  color: white;
+  width: 24px;
+  height: 24px;
+  background: var(--blue-g);
+  color: var(--blue);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 0.85rem;
-  box-shadow: 0 2px 8px rgba(59,143,212,0.3);
+  font-weight: 800;
+  font-size: 0.75rem;
+  border: 1px solid rgba(59,143,212,0.2);
 }
 
 .step-title {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--dark);
 }
 
 .step-body {
-  padding: 22px;
-}
-
-/* ── MODERN INPUTS ───────────────────────── */
-.v2-field-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.v2-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.v2-field.full { grid-column: 1 / -1; }
-
-.v2-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  padding: 16px 20px;
+  flex: 1;
 }
 
 .v2-input-wrap {
@@ -126,25 +96,15 @@
   align-items: center;
 }
 
-.v2-input {
-  width: 100%;
-  padding: 12px 16px;
-  padding-right: 50px; /* Space for units */
-  background: var(--bg-input);
-  border: 1.5px solid var(--border-input);
-  border-radius: 14px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--dark);
+.v2-unit {
+  position: absolute;
+  right: 12px;
   font-family: var(--mono);
-  transition: all 0.22s var(--ease);
-  outline: none;
-}
-
-.v2-input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px var(--blue-g);
-  background: var(--bg-card-s);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--subtle);
+  pointer-events: none;
+  text-transform: uppercase;
 }
 
 /* ── PREMIUM SEGMENTED CONTROL ───────────── */
@@ -731,11 +691,11 @@
           <p data-i18n="calc.page_desc">Design refatorado para máxima produtividade e lucro</p>
         </div>
         
-        <div class="segmented-control" id="calcModeToggle">
-          <button class="segmented-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+        <div class="mode-toggle" id="calcModeToggle">
+          <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple">
             <span data-i18n="calc.modes.simple">Simples</span>
           </button>
-          <button class="segmented-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+          <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
             <span data-i18n="calc.modes.advanced">Avançado</span>
             <span class="pro-badge">Pro</span>
           </button>
@@ -753,31 +713,35 @@
               <div class="step-title">Projeto & Material</div>
             </div>
             <div class="step-body">
-              <div class="v2-field-group">
-                <div class="v2-field full">
-                  <label class="v2-label"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
-                  <input type="text" id="printName" class="v2-input" placeholder="Ex: Miniatura Dragão...">
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
+                  <input type="text" id="printName" class="form-input" placeholder="Ex: Miniatura Dragão...">
                 </div>
-                
-                <div class="v2-field">
-                  <label class="v2-label"><i class="ph-bold ph-package"></i> Modo & Tecnologia</label>
-                  <div class="segmented-control full" id="techModeToggle">
-                    <button class="segmented-opt active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
-                    <button class="segmented-opt" id="modeResin" onclick="setTechMode('resin')">Resina</button>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label"><i class="ph-bold ph-package"></i> Tecnologia</label>
+                  <div class="mode-toggle" id="techModeToggle" style="width: 100%; margin-bottom: 12px;">
+                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
+                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
                   </div>
                 </div>
                 
-                <div class="v2-field">
-                  <label class="v2-label">Preço do Material</label>
+                <div class="form-group">
+                  <label class="form-label">Preço do Material</label>
                   <div class="v2-input-wrap">
-                    <input type="number" id="filamentPrice" class="v2-input" value="0" step="0.01">
+                    <input type="number" id="filamentPrice" class="form-input" value="0" step="0.01" style="font-family:var(--mono)">
                     <span class="v2-unit" id="labelFilPrice">/kg</span>
                   </div>
                 </div>
+              </div>
 
-                <div class="v2-field full">
-                  <label class="v2-label">Material Registado</label>
-                  <select class="v2-input" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="font-family: inherit;">
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label">Material Registado</label>
+                  <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
                     <option value="">Selecionar material...</option>
                   </select>
                 </div>
@@ -792,24 +756,26 @@
               <div class="step-title">Dados de Produção</div>
             </div>
             <div class="step-body">
-              <div class="v2-field-group">
-                <div class="v2-field">
-                  <label class="v2-label"><i class="ph-bold ph-scales"></i> Peso Esperado</label>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label"><i class="ph-bold ph-scales"></i> Peso Esperado</label>
                   <div class="v2-input-wrap">
-                    <input type="number" id="partWeight" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
+                    <input type="number" id="partWeight" class="form-input" value="0" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
                     <span class="v2-unit unit-weight">g</span>
                   </div>
                 </div>
-                <div class="v2-field">
-                  <label class="v2-label"><i class="ph-bold ph-timer"></i> Tempo Estimado</label>
+                <div class="form-group">
+                  <label class="form-label"><i class="ph-bold ph-timer"></i> Tempo Estimado</label>
                   <div class="v2-input-wrap">
-                    <input type="number" id="printTime" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
+                    <input type="number" id="printTime" class="form-input" value="0" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
                     <span class="v2-unit">horas</span>
                   </div>
                 </div>
-                <div class="v2-field full">
-                  <label class="v2-label"><i class="ph-bold ph-printer"></i> Máquina Utilizada</label>
-                  <select class="v2-input" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)" style="font-family: inherit;">
+              </div>
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label"><i class="ph-bold ph-printer"></i> Máquina Utilizada</label>
+                  <select class="form-select" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
                     <option value="">Selecionar impressora...</option>
                   </select>
                 </div>
@@ -822,7 +788,7 @@
             <div class="step-header">
               <div class="step-num">2</div>
               <div class="step-title" style="flex:1">Mesa de Impressão</div>
-              <button class="btn-mkt-manage" onclick="addMesa()"><i class="ph-bold ph-plus"></i> Add Mesa</button>
+              <button class="btn btn-ghost btn-sm" onclick="addMesa()"><i class="ph-bold ph-plus"></i> Mesa</button>
             </div>
             <div class="step-body">
               <div id="mesasContainer"></div>
@@ -845,8 +811,8 @@
             </div>
             <div class="step-body" id="mktBlockBody" style="display:none">
               <div class="mkt-header">
-                <label class="v2-label" data-i18n="calc.mkt.label">Comparar em Marketplaces</label>
-                <button class="btn-mkt-manage" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> <span data-i18n="calc.mkt.add">Adicionar</span></button>
+                <label class="form-label" data-i18n="calc.mkt.label">Comparar em Marketplaces</label>
+                <button class="btn btn-ghost btn-sm" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> <span data-i18n="calc.mkt.add">Adicionar</span></button>
               </div>
               
               <div id="mktChipsContainer" class="mkt-chips">
@@ -857,21 +823,21 @@
                 <!-- Details for comparison if needed, or managed in sidebar -->
               </div>
               
-              <div class="mkt-field-row">
-                <div class="v2-field">
-                  <label class="v2-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
-                  <input type="number" id="mktTaxPct" class="v2-input" step="0.01" oninput="liveCalc()">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
+                  <input type="number" id="mktTaxPct" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
                 </div>
-                <div class="v2-field">
-                  <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
-                  <input type="number" id="mktFixedFee" class="v2-input" step="0.01" oninput="liveCalc()">
+                <div class="form-group">
+                  <label class="form-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
+                  <input type="number" id="mktFixedFee" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
                 </div>
               </div>
               
               <div class="mkt-box">
-                <label class="v2-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
+                <label class="form-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
                 <div class="v2-input-wrap">
-                  <input type="number" id="mktSalePrice" class="v2-input" step="0.01" oninput="liveCalc()" style="font-size: 1.1rem; padding: 10px 14px;">
+                  <input type="number" id="mktSalePrice" class="form-input" step="0.01" oninput="liveCalc()" style="font-size: 1.1rem; font-family:var(--mono)">
                   <span class="v2-unit currency-sym">€</span>
                 </div>
               </div>
@@ -894,26 +860,36 @@
             <div class="hero-label" data-i18n="calc.wa.unit_price">Preço de Venda Sugerido</div>
             <div class="hero-value" id="rFinal">0,00 €</div>
             <div class="hero-margin-badge" id="rMarginBadge" title="Margem de lucro alvo definida nos parâmetros.">
-              <i class="ph-bold ph-chart-line-up"></i> <span data-i18n="settings.prefs.margin">Margem</span>: <span id="labMargPct">30</span>%
+          <!-- MAIN HERO -->
+          <div class="price-hero" style="background: var(--bg-card); padding: 32px 24px; border: 1.5px solid var(--border); border-radius: 24px;">
+            <div class="price-hero-label" data-i18n="calc.results.suggested_price">Preço Sugerido</div>
+            <div class="price-hero-value" id="rFinal">0,00 €</div>
+            
+            <div id="rMarginBadge" class="badge bs-aprovado" style="margin-top: 12px; padding: 6px 16px;">
+              <i class="ph-bold ph-chart-line-up"></i>
+              <span data-i18n="calc.results.margin">Margem</span>: <span id="labMargPct">30</span>%
+            </div>
+
+            <div class="results-actions" style="margin-top: 24px;">
+               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="width: 100%; border-radius: 16px; padding: 14px;">
+                 <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span>
+               </button>
+               <div class="results-actions-row">
+                 <button class="btn btn-ghost" onclick="copyResults()" style="flex:1">
+                   <i class="ph-bold ph-copy"></i> Copiar
+                 </button>
+                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="flex:1">
+                   <i class="ph-bold ph-file-csv"></i> CSV
+                 </button>
+               </div>
+               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; border-radius: 16px; padding: 14px; background: #25D366; border: none; color: white;">
+                 <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
+               </button>
             </div>
           </div>
 
-          <!-- COMPARATIVO MARKETPLACES -->
-          <div class="summary-card" id="mktSummaryCard" style="display:none; border: 1.5px solid var(--blue); background: var(--blue-g);">
-            <div class="summary-title" style="color:var(--blue)">
-              <i class="ph-bold ph-scales"></i> 
-              <span data-i18n="mkt.comparison">Comparação de Canais</span>
-            </div>
-            <div id="mktComparisonContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-              <!-- Comparison rows injected here -->
-            </div>
-          </div>
-
-          <!-- DETALHES DE PRODUÇÃO -->
+          <!-- COSTS BREAKDOWN -->
           <div class="summary-card">
-            <div class="summary-title">
-              <i class="ph-bold ph-info"></i> 
-              <span data-i18n="calc.results_title">Detalhes de Custo</span>
             </div>
             
             <div class="summary-line">
