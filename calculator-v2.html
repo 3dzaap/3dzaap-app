@@ -446,11 +446,17 @@
 
 .calc-v2-container {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 20px;
   align-items: start;
   margin-top: 10px;
   width: 100%;
+}
+
+.v2-columns-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .inputs-column, .middle-column, .results-column {
@@ -461,12 +467,12 @@
 }
 
 @media (max-width: 1200px) {
-  .calc-v2-container { grid-template-columns: 1fr 1fr; }
-  .results-column { grid-column: 1 / -1; }
+  .calc-v2-container { grid-template-columns: 1fr; }
+  .v2-columns-wrapper { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 900px) {
-  .calc-v2-container { grid-template-columns: 1fr; }
+  .v2-columns-wrapper { grid-template-columns: 1fr; }
 }
 
 .v2-modal-content {
@@ -776,6 +782,7 @@
     <div class="page-content" style="padding-top: var(--v2-gap);">
       
       <div class="calc-v2-container">
+        <div class="v2-columns-wrapper">
         <!-- ── LEFT: INPUTS ── -->
         <div class="inputs-column">
           
@@ -1070,6 +1077,7 @@
             <div id="mktComparisonContainer"></div>
           </div>
         </div>
+      </div>
 
         <!-- ── RIGHT: RESULTS SIDEBAR ── -->
         <div class="results-column">
