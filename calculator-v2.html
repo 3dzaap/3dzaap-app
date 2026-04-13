@@ -721,6 +721,8 @@
       <div class="topbar-actions">
         <!-- Marketplace Mode Toggle or other stats can go here if needed -->
         <div class="global-ctrls" id="globalCtrls">
+          <!-- Advanced Params (Gear) -->
+          <button id="advBtn" onclick="toggleAdvPanel()" class="gc-btn" title="Parâmetros Avançados"><i class="ph-bold ph-gear"></i></button>
           <!-- Theme Toggle -->
           <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <!-- Language Selector -->
@@ -736,20 +738,38 @@
     </header>
 
     <div class="page-content" style="padding-top: var(--v2-gap);">
-      <div class="page-header" style="margin-bottom: var(--v2-gap);">
+      <div class="page-header" style="margin-bottom: var(--v2-gap); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div class="page-header-text">
-          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora <span style="color:var(--blue)">V2</span></h1>
-          <p data-i18n="calc.page_desc">Design refatorado para máxima produtividade e lucro</p>
+          <h1 data-i18n="calc.page_title" style="margin:0"><i class="ph-bold ph-ruler"></i> Calculadora <span style="color:var(--blue)">V2</span></h1>
+          <p data-i18n="calc.page_desc" style="margin:0">Design refatorado para máxima produtividade e lucro</p>
         </div>
         
-        <div class="mode-toggle" id="calcModeToggle">
-          <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple">
-            <span data-i18n="calc.modes.simple">Simples</span>
+        <div class="elite-controls-bar" style="display:flex; align-items:center; gap:12px; background: var(--bg-card); padding: 6px; border-radius: 12px; border: 1px solid var(--border);">
+          <!-- Limpar -->
+          <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 700;">
+            <i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span>
           </button>
-          <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
-            <span data-i18n="calc.modes.advanced">Avançado</span>
-            <span class="pro-badge">Pro</span>
-          </button>
+          
+          <div style="width: 1px; height: 20px; background: var(--border);"></div>
+
+          <!-- Modos (Simples/Avançado) -->
+          <div class="mode-toggle" id="calcModeToggle" style="margin:0">
+            <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+              <span data-i18n="calc.modes.simple">Simples</span>
+            </button>
+            <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+              <span data-i18n="calc.modes.advanced">Avançado</span>
+              <span class="pro-badge" style="background: var(--blue); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; text-transform: uppercase; font-weight: 900; margin-left: 4px;">PRO</span>
+            </button>
+          </div>
+
+          <div style="width: 1px; height: 20px; background: var(--border);"></div>
+
+          <!-- Tech (FDM/Resina) -->
+          <div class="mode-toggle" id="techModeToggle" style="margin:0">
+            <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
+            <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
+          </div>
         </div>
       </div>
 
@@ -773,11 +793,8 @@
               
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-package"></i> Tecnologia</label>
-                  <div class="mode-toggle" id="techModeToggle" style="width: 100%; margin-bottom: 12px;">
-                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
-                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
-                  </div>
+                  <label class="form-label"><i class="ph-bold ph-package"></i> Tecnologia (Modo Atual)</label>
+                  <p style="font-size: 0.8rem; color: var(--muted); margin: 0 0 8px 0;">Controlado na barra de topo</p>
                 </div>
                 
                 <div class="form-group">
@@ -988,11 +1005,6 @@
             </div>
           </div>
           
-          <div style="display:flex; justify-content:flex-end; padding: 10px 0;">
-             <button class="btn-clear" onclick="clearCalculator()">
-              <span><i class="ph-bold ph-trash"></i></span> <span data-i18n="calc.buttons.clear">Limpar Tudo</span>
-            </button>
-          </div>
 
         </div>
 
@@ -1011,22 +1023,21 @@
               <span>Margem Alvo: <span id="labMargPct">30</span>%</span>
             </div>
 
-            <div class="results-actions" style="margin-top: 24px; display: grid; gap: 10px;">
-               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="width: 100%; height: 50px; border-radius: 14px; font-weight: 800; font-size: 0.95rem;">
-                 <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar Cálculo</span>
+            <div class="results-actions" style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 10px;">
+               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="height: 48px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; padding: 0 12px;">
+                 <i class="ph-bold ph-floppy-disk" style="font-size: 1.1rem;"></i> <span data-i18n="calc.buttons.save">Guardar</span>
                </button>
                
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                 <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 12px; font-size: 0.82rem; padding: 10px;">
-                   <i class="ph-bold ph-copy"></i> Copiar
-                 </button>
-                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 12px; font-size: 0.82rem; padding: 10px;">
-                   <i class="ph-bold ph-file-csv"></i> CSV
-                 </button>
-               </div>
+               <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 12px; font-size: 0.85rem; height: 48px; border: 1.5px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                 <i class="ph-bold ph-copy" style="font-size: 1.1rem;"></i> Copiar
+               </button>
                
-               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; height: 50px; border-radius: 14px; background: #25D366; border: none; color: white; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                 <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
+               <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 12px; font-size: 0.85rem; height: 48px; border: 1.5px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                 <i class="ph-bold ph-file-csv" style="font-size: 1.1rem;"></i> CSV
+               </button>
+
+               <button class="btn btn-success" onclick="sendWhatsApp()" style="height: 48px; border-radius: 12px; background: #25D366; border: none; color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">
+                 <i class="ph-bold ph-whatsapp-logo" style="font-size: 1.1rem;"></i> Whats
                </button>
             </div>
           </div>
