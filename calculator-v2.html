@@ -738,81 +738,96 @@
     </header>
 
     <div class="page-content" style="padding-top: var(--v2-gap);">
+      
+      <!-- GLOBAL PROJECT CONFIG (ALWAYS VISIBLE) -->
+      <div class="step-card" style="margin-bottom: 20px; border-bottom: 3px solid var(--blue);">
+        <div class="step-body" style="padding: 16px 20px;">
+          <div class="form-row" style="margin-bottom:12px; align-items: flex-end;">
+            <div class="form-group" style="flex:2">
+              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
+              <input type="text" id="printName" class="form-input" style="height: 38px; font-size: 0.95rem;" placeholder="Ex: Miniatura Dragão...">
+            </div>
+            <div class="form-group" style="flex:1">
+               <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;"><i class="ph-bold ph-package"></i> Tecnologia</label>
+               <div class="mode-toggle" id="techModeToggle" style="margin:0; height: 38px; background: var(--bg-card-s); border: 1.2px solid var(--border);">
+                <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="padding: 0 12px; font-size: 0.72rem;">
+                  <i class="ph-bold ph-vinyl-record"></i> FDM
+                </button>
+                <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="padding: 0 12px; font-size: 0.72rem;">
+                  <i class="ph-bold ph-flask"></i> Resina
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row" style="margin:0; align-items: flex-end; gap: 15px;">
+            <div class="form-group" style="flex:2">
+              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Material Selecionado</label>
+              <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="height: 38px; background: var(--bg-card-s);">
+                <option value="">Escolher material registado...</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Preço</label>
+              <div class="v2-input-wrap" style="background: var(--bg-card-s);">
+                <input type="number" id="filamentPrice" class="form-input" value="0" step="0.01" style="height: 38px; font-family:var(--mono)">
+                <span class="v2-unit" id="labelFilPrice">/kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="calc-v2-container">
         <!-- ── LEFT: INPUTS ── -->
         <div class="inputs-column">
           
-          <!-- STEP 1: PROJETO & MATERIAL -->
-          <div class="step-card">
-            <div class="step-header">
-              <div class="step-num">1</div>
-              <div class="step-title" style="flex:1">Projeto</div>
+          <!-- STEP 1: PROJETO (SIMPLES) / MESAS (AVANÇADO) -->
+          <div class="step-card" id="cardStep1">
+            <div class="step-header" style="justify-content: space-between;">
+              <div class="step-title" id="step1Title" style="font-weight: 900; letter-spacing: 0.05em; font-size: 0.75rem; text-transform: uppercase; color: var(--muted);">Projeto</div>
               
-              <div class="elite-controls-bar" style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 10px; border: 1px solid var(--border);">
-                <!-- Limpar -->
-                <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 700; font-size: 0.75rem;">
-                  <i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span>
-                </button>
-                
+              <div class="header-right" style="display:flex; align-items:center; gap:12px">
+                <div class="mode-toggle" id="calcModeToggle" style="margin:0; background: var(--bg-card-s); padding:2px; border-radius: 8px; border: 1px solid var(--border);">
+                  <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple" style="font-size: 0.7rem; padding: 3px 10px; border-radius: 6px;">
+                    <span>Simples</span>
+                  </button>
+                  <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced" style="font-size: 0.7rem; padding: 3px 10px; border-radius: 6px;">
+                    <span>Avançado</span>
+                    <span style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.5rem; font-weight: 900; margin-left: 2px;">PRO</span>
+                  </button>
+                </div>
+
                 <div style="width: 1px; height: 16px; background: var(--border);"></div>
 
-                <!-- Modos (Simples/Avançado) -->
-                <div class="mode-toggle" id="calcModeToggle" style="margin:0; background:transparent; padding:0; gap:2px">
-                  <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple" style="font-size: 0.72rem; padding: 4px 8px;">
-                    <span data-i18n="calc.modes.simple">Simples</span>
-                  </button>
-                  <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced" style="font-size: 0.72rem; padding: 4px 8px;">
-                    <span data-i18n="calc.modes.advanced">Avançado</span>
-                    <span class="pro-badge" style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.55rem; text-transform: uppercase; font-weight: 900; margin-left: 2px;">PRO</span>
-                  </button>
-                </div>
+                <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 800; font-size: 0.7rem; border-radius: 6px; padding: 4px 8px;">
+                  <i class="ph-bold ph-trash"></i> <span>Limpar</span>
+                </button>
               </div>
             </div>
-            <div class="step-body">
-              <div class="form-row full">
-                <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
-                  <input type="text" id="printName" class="form-input" placeholder="Ex: Miniatura Dragão...">
-                </div>
-              </div>
-              
-              <div class="form-row full" style="align-items: center; gap: 12px; margin-bottom: 20px;">
-                <label class="form-label" style="margin-bottom:0; font-weight: 800; white-space: nowrap;">Tipo Material:</label>
-                <div class="mode-toggle" id="techModeToggle" style="margin:0; width: auto; background: var(--bg-card-s); border: 1px solid var(--border);">
-                  <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="padding: 4px 12px; font-size: 0.75rem;">FDM</button>
-                  <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="padding: 4px 12px; font-size: 0.75rem;">Resina</button>
-                </div>
-              </div>
 
-              <div class="form-row full">
-                <div class="form-group">
-                  <label class="form-label">Selecionar Material</label>
-                  <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
-                    <option value="">Selecionar material...</option>
-                  </select>
-                </div>
-              </div>
+            <!-- Content for Simple Mode (Project Summary / Hints) -->
+            <div class="step-body" id="contentStep1Simple">
+              <p style="font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.5;">
+                <i class="ph-bold ph-info" style="color:var(--blue)"></i> Configure o nome e o material acima. Estás no modo de cálculo simples para peças rápidas.
+              </p>
+            </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Preço do Material</label>
-                  <div class="v2-input-wrap">
-                    <input type="number" id="filamentPrice" class="form-input" value="0" step="0.01" style="font-family:var(--mono)">
-                    <span class="v2-unit" id="labelFilPrice">/kg</span>
-                  </div>
-                </div>
-                <div class="form-group"></div>
-              </div>
+            <!-- Content for Advanced Mode (Mesas) -->
+            <div class="step-body" id="contentStep1Advanced" style="display:none; padding-top: 10px;">
+               <div id="mesasContainer"></div>
+               <button class="btn btn-primary btn-sm" onclick="addMesa()" style="margin-top:10px; width:100%; height: 34px; border-radius: 8px; font-weight: 800;">
+                 <i class="ph-bold ph-plus"></i> <span data-i18n="calc.buttons.add_mesa">Adicionar Nova Mesa</span>
+               </button>
             </div>
           </div>
 
-          <!-- STEP 2: PRODUÇÃO -->
-          <div class="step-card" id="sectionSimple">
+          <!-- STEP 2: CUSTOS DE PRODUÇÃO -->
+          <div class="step-card" id="cardStep2">
             <div class="step-header">
               <div class="step-num">2</div>
-              <div class="step-title" style="flex:1">Custos de Produção</div>
-              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos detalhados de bico, bFE e mão de obra">
+              <div class="step-title" id="step2Title" style="flex:1">Custos de Produção</div>
+              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos detalhados">
                 <i class="ph-bold ph-shield-check"></i> Modo Pro
               </div>
             </div>
@@ -931,24 +946,6 @@
             </div>
           </div>
 
-          <!-- STEP 2: MESA (Modo Avançado) -->
-          <div class="step-card" id="sectionAdvanced" style="display:none">
-            <div class="step-header">
-              <div class="step-num">2</div>
-              <div class="step-title" style="flex:1">Mesa de Impressão</div>
-              <button class="btn btn-ghost btn-sm" onclick="addMesa()"><i class="ph-bold ph-plus"></i> Mesa</button>
-            </div>
-            <div class="step-body">
-              <div id="mesasContainer"></div>
-              <div class="v2-field" style="margin-top:15px">
-                <label class="v2-label">Tempo Total Projeto</label>
-                <div class="v2-input-wrap">
-                  <input type="number" id="totalProjectTime" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
-                  <span class="v2-unit">horas</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- STEP 3: VENDER EM MARKETPLACE -->
           <div class="step-card">
@@ -1401,9 +1398,20 @@ function setCalcMode(mode) {
   document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
   document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
   
-  document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
-  document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
+  // Toggle Content Step 1
+  document.getElementById('contentStep1Simple').style.display = mode === 'simple' ? 'block' : 'none';
+  document.getElementById('contentStep1Advanced').style.display = mode === 'advanced' ? 'block' : 'none';
+  document.getElementById('step1Title').textContent = mode === 'simple' ? 'Projeto' : 'Mesa de Impressão';
+  
+  // Refined Logic: In Advanced mode, Weight and Time inputs become Read-Only and sync with total
+  const weightInput = document.getElementById('partWeight');
+  const timeInput = document.getElementById('printTime');
+  if (weightInput && timeInput) {
+    weightInput.readOnly = (mode === 'advanced');
+    timeInput.readOnly = (mode === 'advanced');
+    weightInput.style.background = mode === 'advanced' ? 'var(--bg-card-s)' : '';
+    timeInput.style.background = mode === 'advanced' ? 'var(--bg-card-s)' : '';
+  }
 
   // SaaS Elite Integration: If Advanced PRO is selected, ensure Modo Pro is active
   if (mode === 'advanced') {
@@ -1416,6 +1424,9 @@ function setCalcMode(mode) {
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
   }
+  
+  liveCalc();
+}
   liveCalc();
 }
 
@@ -2305,7 +2316,34 @@ function toggleProMode() {
   }
 }
 
+// ── LOGIC SYNC ────────────────────────
+function syncTotals() {
+  if (_calcMode !== 'advanced') return;
+  
+  let totalW = 0;
+  let totalT = 0;
+  
+  _mesas.forEach(m => {
+    // Total time of a mesa is either its custom total or sum of parts (if logic dictates)
+    // Here we use the mesa header logic: max time of parts in that mesa or sum? 
+    // The current computeResults uses something complex. Let's just sum for the summary.
+    let mesaMaxTime = 0;
+    m.parts.forEach(p => {
+      totalW += (p.weight * (p.qty || 1));
+      if (p.time > mesaMaxTime) mesaMaxTime = p.time;
+    });
+    totalT += mesaMaxTime;
+  });
+
+  const weightInput = document.getElementById('partWeight');
+  const timeInput = document.getElementById('printTime');
+  
+  if (weightInput) weightInput.value = totalW.toFixed(1);
+  if (timeInput) timeInput.value = totalT.toFixed(1);
+}
+
 function _render() {
+  syncTotals(); 
   const i = getInputs();
   const r = computeResults(i);
   
@@ -2417,11 +2455,18 @@ function sendWhatsApp() {
 }
 
 function clearCalculator(){
-  document.querySelectorAll('.inp, .part-input').forEach(i=> {
+  document.querySelectorAll('.form-input, .part-input').forEach(i=> {
     if(i.type==='checkbox') i.checked=false;
     else if(i.tagName!=='SELECT') i.value='';
   });
   
+  // Clear specific selects
+  const selects = ['fMaterialSelect', 'fPrinterSelect'];
+  selects.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.selectedIndex = 0;
+  });
+
   _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
   addPartToMesa(_mesas[0].id, false);
   
@@ -2429,6 +2474,7 @@ function clearCalculator(){
   setV('filamentPrice', 0);
   setV('partWeight', 0);
   setV('printTime', 0);
+  setV('printName', '');
   
   renderMesas();
   liveCalc();
