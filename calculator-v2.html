@@ -243,6 +243,42 @@
   font-weight: 800;
 }
 
+/* ── TECH TOGGLE (FDM/RESIN) ────────────── */
+.mode-toggle {
+  display: flex;
+  background: var(--bg-input);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  border: 1.5px solid var(--border);
+  margin-bottom: 15px;
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-btn:hover { color: var(--blue); }
+
+.mode-btn.active {
+  background: var(--bg-card);
+  color: var(--blue);
+  box-shadow: var(--sh-sm);
+  border: 1px solid rgba(59,143,212,0.1);
+}
+
 .hero-margin-badge.low { background: rgba(239,68,68,0.3); }
 .hero-margin-badge.high { background: rgba(34,197,94,0.3); }
 
@@ -581,15 +617,7 @@
       </div>
     </header>
 
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-header-text">
-          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora de Custos</h1>
-          <p data-i18n="calc.page_desc">Define o teu preço com base no material, tempo e custos de máquina</p>
-        </div>
-      </div>
-
-    <div class="page-content">
+    <div class="page-content" style="padding-top: var(--v2-gap);">
       <div class="page-header" style="margin-bottom: var(--v2-gap);">
         <div class="page-header-text">
           <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora <span style="color:var(--blue)">V2</span></h1>
@@ -752,7 +780,7 @@
             <div class="hero-margin-badge" id="rMarginBadge" title="Margem calculada">
               <i class="ph-bold ph-chart-line-up"></i> <span data-i18n="settings.prefs.margin">Margem</span>: <span id="labMargPct">30</span>%
             </div>
-            <div id="mktActiveBadge" style="display:none; position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.2); font-size:0.6rem; font-weight:900; padding:4px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:0.5px">Marketplace Active</div>
+            <div id="mktActiveBadge" style="display:none; position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.2); font-size:0.6rem; font-weight:900; padding:4px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:0.5px" data-i18n="calc.mkt.active">Marketplace Ativo</div>
           </div>
 
           <!-- MARKETPLACE SUMMARY -->
@@ -972,6 +1000,7 @@ function _persistHistory() {
 }
 
 // ── INIT ───────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
   // Initialize i18n and theme first
   initThemeToggle();
   
