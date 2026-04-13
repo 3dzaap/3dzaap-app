@@ -738,40 +738,6 @@
     </header>
 
     <div class="page-content" style="padding-top: var(--v2-gap);">
-      <div class="page-header" style="margin-bottom: var(--v2-gap); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div class="page-header-text">
-          <h1 data-i18n="calc.page_title" style="margin:0"><i class="ph-bold ph-ruler"></i> Calculadora <span style="color:var(--blue)">V2</span></h1>
-          <p data-i18n="calc.page_desc" style="margin:0">Design refatorado para máxima produtividade e lucro</p>
-        </div>
-        
-        <div class="elite-controls-bar" style="display:flex; align-items:center; gap:12px; background: var(--bg-card); padding: 6px; border-radius: 12px; border: 1px solid var(--border);">
-          <!-- Limpar -->
-          <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 700;">
-            <i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span>
-          </button>
-          
-          <div style="width: 1px; height: 20px; background: var(--border);"></div>
-
-          <!-- Modos (Simples/Avançado) -->
-          <div class="mode-toggle" id="calcModeToggle" style="margin:0">
-            <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple">
-              <span data-i18n="calc.modes.simple">Simples</span>
-            </button>
-            <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
-              <span data-i18n="calc.modes.advanced">Avançado</span>
-              <span class="pro-badge" style="background: var(--blue); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; text-transform: uppercase; font-weight: 900; margin-left: 4px;">PRO</span>
-            </button>
-          </div>
-
-          <div style="width: 1px; height: 20px; background: var(--border);"></div>
-
-          <!-- Tech (FDM/Resina) -->
-          <div class="mode-toggle" id="techModeToggle" style="margin:0">
-            <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
-            <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
-          </div>
-        </div>
-      </div>
 
       <div class="calc-v2-container">
         <!-- ── LEFT: INPUTS ── -->
@@ -781,7 +747,27 @@
           <div class="step-card">
             <div class="step-header">
               <div class="step-num">1</div>
-              <div class="step-title">Projeto & Material</div>
+              <div class="step-title" style="flex:1">Projeto</div>
+              
+              <div class="elite-controls-bar" style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 10px; border: 1px solid var(--border);">
+                <!-- Limpar -->
+                <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 700; font-size: 0.75rem;">
+                  <i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span>
+                </button>
+                
+                <div style="width: 1px; height: 16px; background: var(--border);"></div>
+
+                <!-- Modos (Simples/Avançado) -->
+                <div class="mode-toggle" id="calcModeToggle" style="margin:0; background:transparent; padding:0; gap:2px">
+                  <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple" style="font-size: 0.72rem; padding: 4px 8px;">
+                    <span data-i18n="calc.modes.simple">Simples</span>
+                  </button>
+                  <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced" style="font-size: 0.72rem; padding: 4px 8px;">
+                    <span data-i18n="calc.modes.advanced">Avançado</span>
+                    <span class="pro-badge" style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.55rem; text-transform: uppercase; font-weight: 900; margin-left: 2px;">PRO</span>
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="step-body">
               <div class="form-row full">
@@ -791,12 +777,24 @@
                 </div>
               </div>
               
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-package"></i> Tecnologia (Modo Atual)</label>
-                  <p style="font-size: 0.8rem; color: var(--muted); margin: 0 0 8px 0;">Controlado na barra de topo</p>
+              <div class="form-row full" style="align-items: center; gap: 12px; margin-bottom: 20px;">
+                <label class="form-label" style="margin-bottom:0; font-weight: 800; white-space: nowrap;">Tipo Material:</label>
+                <div class="mode-toggle" id="techModeToggle" style="margin:0; width: auto; background: var(--bg-card-s); border: 1px solid var(--border);">
+                  <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="padding: 4px 12px; font-size: 0.75rem;">FDM</button>
+                  <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="padding: 4px 12px; font-size: 0.75rem;">Resina</button>
                 </div>
-                
+              </div>
+
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label">Selecionar Material</label>
+                  <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
+                    <option value="">Selecionar material...</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Preço do Material</label>
                   <div class="v2-input-wrap">
@@ -804,15 +802,7 @@
                     <span class="v2-unit" id="labelFilPrice">/kg</span>
                   </div>
                 </div>
-              </div>
-
-              <div class="form-row full">
-                <div class="form-group">
-                  <label class="form-label">Material Registado</label>
-                  <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
-                    <option value="">Selecionar material...</option>
-                  </select>
-                </div>
+                <div class="form-group"></div>
               </div>
             </div>
           </div>
@@ -821,7 +811,7 @@
           <div class="step-card" id="sectionSimple">
             <div class="step-header">
               <div class="step-num">2</div>
-              <div class="step-title" style="flex:1">Dados de Produção</div>
+              <div class="step-title" style="flex:1">Custos de Produção</div>
               <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos detalhados de bico, bFE e mão de obra">
                 <i class="ph-bold ph-shield-check"></i> Modo Pro
               </div>
@@ -1414,6 +1404,14 @@ function setCalcMode(mode) {
   document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
   document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
+
+  // SaaS Elite Integration: If Advanced PRO is selected, ensure Modo Pro is active
+  if (mode === 'advanced') {
+    const switchEl = document.getElementById('proModeToggle');
+    if (switchEl && !switchEl.classList.contains('active')) {
+      toggleProMode();
+    }
+  }
   
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
