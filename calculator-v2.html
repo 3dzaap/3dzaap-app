@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Calculadora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Supabase SDK -->
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  window.forceLocaleCurrency = true;
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+/* ── NEW V2 LAYOUT ─────────────────────────── */
+:root {
+  --v2-sidebar-w: 360px;
+  --v2-gap: 24px;
+  --v2-card-bg: var(--bg-card);
+  --step-num-size: 28px;
+}
+
+.calc-v2-container {
+  display: flex;
+  gap: var(--v2-gap);
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.inputs-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-gap);
+}
+
+.results-column {
+  width: var(--v2-sidebar-w);
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-gap);
+  animation: fadeRight .6s var(--ease) both;
+}
+
+/* ── STEP CARD ────────────────────────────── */
+.step-card {
+  background: var(--v2-card-bg);
+  backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+  animation: fadeUp .5s var(--ease) both;
+}
+
+.step-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.step-num {
+  width: var(--step-num-size);
+  height: var(--step-num-size);
+  background: var(--blue-g);
+  color: var(--blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.step-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+.step-body {
+  padding: 22px;
+}
+
+/* ── MODERN INPUTS ───────────────────────── */
+.v2-field-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.v2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v2-field.full { grid-column: 1 / -1; }
+
+.v2-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v2-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.v2-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-input);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dark);
+  font-family: var(--mono);
+  transition: all 0.2s var(--ease);
+  outline: none;
+}
+
+.v2-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px var(--blue-g);
+  background: var(--bg-card);
+}
+
+.v2-unit {
+  position: absolute;
+  right: 14px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--subtle);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+/* ── MARKETPLACE STYLES ──────────────────── */
+.mkt-box {
+  background: rgba(59,143,212,0.04);
+  border: 1.5px dashed var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 10px;
+}
+
+.mkt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.btn-mkt-manage {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-mkt-manage:hover {
+  background: var(--blue-g);
+  border-color: var(--blue);
+}
+
+/* ── HERO RESULT CARD ────────────────────── */
+.hero-result-card {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  border-radius: var(--rl);
+  padding: 30px 24px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(59,143,212,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-result-card::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 150px;
+  height: 150px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+
+.hero-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.hero-value {
+  font-size: 2.8rem;
+  font-weight: 900;
+  font-family: var(--mono);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.hero-margin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(4px);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.hero-margin-badge.low { background: rgba(239,68,68,0.3); }
+.hero-margin-badge.high { background: rgba(34,197,94,0.3); }
+
+/* ── MINI BREAKDOWN ─────────────────────── */
+.summary-card {
+  background: var(--v2-card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 16px;
+}
+
+.summary-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.summary-line:last-child { border-bottom: none; }
+
+.summary-label { color: var(--muted); font-weight: 500; }
+.summary-val { font-weight: 700; color: var(--dark); font-family: var(--mono); }
+
+/* ── MODAL V2 ───────────────────────────── */
+.v2-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.v2-modal.open { display: flex; }
+
+.v2-modal-content {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 450px;
+  border-radius: 24px;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--sh-xl);
+  overflow: hidden;
+  animation: modalScale .3s var(--ease);
+}
+
+@keyframes modalScale {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 1024px) {
+  .calc-v2-container { flex-direction: column; }
+  .results-column { width: 100%; position: static; }
+}
+
+/* ═══════════════════════════════════════════════
+   PAINEL AVANÇADO FLUTUANTE
+   ═══════════════════════════════════════════════ */
+.adv-backdrop{position:fixed;inset:0;z-index:160;background:rgba(13,17,23,0.15);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);opacity:0;pointer-events:none;transition:opacity .28s ease}
+
+.adv-backdrop.open{opacity:1;pointer-events:auto}
+
+.adv-panel{
+  position:fixed;top:72px;right:28px;
+  width:370px;max-width:calc(100% - 40px);
+  max-height:calc(100vh - 96px);overflow-y:auto;z-index:161;
+  background:var(--bg-card-s);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);box-shadow:var(--sh-float);
+  opacity:0;transform:translateY(-14px) scale(0.98);pointer-events:none;
+  transition:opacity .32s var(--ease),transform .32s var(--ease);
+}
+@media(max-width:680px){
+  .adv-panel{right:20px; top:80px;}
+}
+
+.adv-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+
+.adv-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:1;background:var(--bg-modal-header);backdrop-filter:var(--blur-sm);border-radius:var(--rl) var(--rl) 0 0}
+
+.adv-title{font-size:.93rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:8px}
+
+.adv-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg-hover);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background .18s,color .18s}
+
+.adv-close:hover{background:rgba(239,68,68,.12);color:var(--danger)}
+
+.adv-body{padding:16px 20px 8px}
+
+.adv-desc{font-size:.79rem;color:var(--muted);margin-bottom:16px;line-height:1.55}
+
+.adv-section{margin-bottom:18px}
+
+.adv-section-title{font-size:.71rem;font-weight:800;color:var(--subtle);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+.adv-section-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.78rem}
+
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.adv-field{display:flex;flex-direction:column;gap:4px}
+
+.adv-field.full{grid-column:1/-1}
+
+.adv-field label{font-size:.74rem;font-weight:600;color:var(--muted)}
+
+.adv-wrap{position:relative}
+
+.adv-unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--subtle);pointer-events:none}
+
+.adv-field input[type=number]{width:100%;padding:8px 38px 8px 10px;background:var(--bg-input);border:1.5px solid var(--border-input);border-radius:var(--r);font-size:.85rem;font-weight:600;color:var(--dark);font-family:var(--mono);outline:none;transition:border-color .18s,box-shadow .18s}
+
+.adv-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12)}
+
+.adv-field input:hover:not(:focus){border-color:rgba(59,143,212,.3)}
+
+.adv-slider-wrap{margin-top:5px;display:flex;align-items:center;gap:8px}
+
+.adv-slider-wrap input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:rgba(59,143,212,.18);border-radius:2px;outline:none;cursor:pointer}
+
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 5px rgba(59,143,212,.3);cursor:pointer;transition:transform .15s}
+
+.adv-slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+
+.adv-slider-val{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--blue);min-width:36px;text-align:right}
+
+.adv-footer{padding:14px 20px 16px;border-top:1.5px solid var(--border);display:flex;gap:9px;background:var(--bg-modal-footer);border-radius:0 0 var(--rl) var(--rl);position:sticky;bottom:0;backdrop-filter:var(--blur-sm)}
+
+.btn-adv-save{flex:1;padding:10px;border-radius:var(--rm);border:none;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;font-size:.85rem;font-weight:800;font-family:var(--f);cursor:pointer;transition:opacity .18s,transform .18s;box-shadow:0 3px 12px rgba(59,143,212,.28)}
+
+.btn-adv-save:hover{opacity:.9;transform:translateY(-1px)}
+
+.btn-adv-cancel{padding:10px 16px;border-radius:var(--rm);background:var(--bg-card);border:1.5px solid var(--border);font-size:.83rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);transition:background .18s}
+
+.btn-adv-cancel:hover{background:var(--bg-input)}
+
+.confirm-cancel{
+  flex:1;padding:10px;border-radius:var(--rm);
+  background:var(--bg-card);border:1.5px solid var(--border);
+  font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--f);
+  transition:background .18s;
+}
+
+.confirm-cancel:hover{background:var(--bg-hover-s)}
+
+.confirm-ok{
+  flex:1;padding:10px;border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--danger),#c53030);
+  color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;font-family:var(--f);
+  transition:opacity .18s,transform .18s;box-shadow:0 3px 10px rgba(239,68,68,.25);
+}
+
+.confirm-ok:hover{opacity:.9;transform:translateY(-1px)}
+
+
+
+
+
+
+
+@media(max-width:900px) {
+  /* Layout: single column */
+  .calc-layout { grid-template-columns: 1fr; gap: 12px; }
+}
+
+@media(max-width:680px) {
+  .sidebar{left:calc(-1 * var(--sidebar-w,260px))}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  .main{margin-left:0}
+  .mob-toggle{display:flex}
+  .page{padding:14px 12px 40px}
+  .topbar{padding:0 12px 0 56px}
+  .page-header{flex-direction:column;gap:6px}
+  .page-header h1{font-size:1.25rem}
+  .page-header p{font-size:.82rem}
+
+  /* Cards */
+  .glass-card { border-radius: var(--rm); }
+  .card-header { padding: 14px 16px; }
+  .card-header-title { font-size: .88rem; }
+
+  /* Fields */
+  .form-section { padding: 14px 16px; }
+  .fields-grid { grid-template-columns: 1fr; gap: 10px; }
+  .field label { font-size: .83rem; }
+  .section-title { font-size: .72rem; margin-bottom: 10px; }
+  .field-wrap input { font-size: .9rem; padding: 9px 36px 9px 12px; }
+
+  /* Mode toggle */
+  .mode-toggle { gap: 4px; }
+  .mode-btn { font-size: .75rem; padding: 8px 10px; flex: 1; }
+
+  /* Results */
+  .results-panel { padding: 14px 16px; }
+  .price-hero { padding: 16px 16px 12px; }
+  .price-hero-value { font-size: 2.2rem; }
+  .price-hero-label { font-size: .78rem; }
+  .price-hero-sub { font-size: .76rem; }
+  .breakdown-label { font-size: .81rem; }
+  .breakdown-value { font-size: .83rem; }
+  .breakdown-item { padding: 6px 0; }
+  .results-actions { padding: 12px 16px; }
+  .results-actions-row { gap: 8px; }
+  .results-actions-row .btn-action { flex: 1; font-size: .8rem; padding: 10px 6px; }
+  .btn-criar-pedido { font-size: .88rem; padding: 13px 16px; }
+
+  /* History */
+  .history-card { margin-top: 12px !important; }
+  .history-card .card-header { padding: 14px 16px; flex-wrap: wrap; gap: 8px; }
+  .history-search-wrap { order: 10; width: 100%; }
+  .history-search { width: 100%; font-size: .84rem; }
+  .history-count { font-size: .72rem; }
+  .history-clear-btn { font-size: .72rem; }
+  .history-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .history-table { min-width: 480px; }
+  .history-table th { padding: 9px 10px; font-size: .65rem; }
+  .history-table td { padding: 9px 10px; font-size: .79rem; }
+
+  /* Adv panel */
+  .adv-panel { right: 8px; left: 8px; width: auto; top: 68px; max-height: 80vh; }
+  .adv-panel-grid { grid-template-columns: 1fr; }
+  .btn-adv-trigger { font-size: .78rem; padding: 7px 12px; gap: 5px; }
+  .adv-trigger-dot { display: none; }
+}
+
+@media(max-width:420px) {
+  .price-hero-value { font-size: 1.85rem; }
+  .results-actions-row .btn-action { padding: 10px 4px; font-size: .74rem; }
+  .mode-btn { font-size: .7rem; padding: 7px 6px; }
+}
+
+</style>
+
+<style>
+/* ── GLOBAL CONTROLS ────────────────── */
+.global-ctrls { display:flex; align-items:center; gap:8px; margin-left:auto; }
+.gc-btn {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--dark);
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.gc-btn:hover { background: var(--bg-hover, rgba(0,0,0,.05)); }
+.gc-help-btn { border-radius: 50%; width: 32px; height: 32px; font-weight: 800; font-size: 1rem; padding: 0; }
+.gc-select {
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border, rgba(0,0,0,.12));
+  color: var(--dark, #1a2332);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.gc-help-wrap { position: relative; }
+.gc-popover {
+  position: absolute; right: 0; top: 42px;
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border, rgba(0,0,0,.12));
+  border-radius: 14px;
+  padding: 10px;
+  width: 220px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.15);
+  z-index: 9999;
+}
+.gc-popover-title {
+  font-size: .72rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted, #4A5568); margin-bottom: 8px;
+}
+.gc-popover-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 6px; border-radius: 8px;
+  text-decoration: none; color: var(--dark, #1a2332);
+  font-size: .85rem; font-weight: 600;
+  transition: background .15s;
+}
+.gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
+[data-theme="dark"] .gc-popover-item { color: var(--dark); }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+<div class="adv-backdrop" id="advBackdrop" onclick="closeAdvPanel()"></div>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ─────────────────────── -->
+  
+  <!-- Content will be injected/wrapped -->
+  
+  <div class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title" id="topbarTitle" data-i18n="calc.page_title">Calculadora</div>
+      <div class="topbar-actions">
+        <div class="global-ctrls" id="globalCtrls">
+          <!-- Theme Toggle -->
+          <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
+          <!-- Language Selector -->
+          <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+            <option value="pt-PT">🇵🇹 PT</option>
+            <option value="pt-BR">🇧🇷 BR</option>
+            <option value="en-US">🇺🇸 US</option>
+            <option value="en-GB">🇬🇧 UK</option>
+            <option value="es">🇪🇸 ES</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora de Custos</h1>
+          <p data-i18n="calc.page_desc">Define o teu preço com base no material, tempo e custos de máquina</p>
+        </div>
+      </div>
+
+    <div class="page-content">
+      <div class="page-header" style="margin-bottom: var(--v2-gap);">
+        <div class="page-header-text">
+          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora <span style="color:var(--blue)">V2</span></h1>
+          <p data-i18n="calc.page_desc">Design refatorado para máxima produtividade e lucro</p>
+        </div>
+        
+        <div class="calc-mode-switcher" style="margin-bottom:0">
+          <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+            <span data-i18n="calc.modes.simple">Simples</span>
+          </button>
+          <button class="mode-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+            <span data-i18n="calc.modes.advanced">Avançado</span>
+            <span class="pro-badge">Pro</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="calc-v2-container">
+        <!-- ── LEFT: INPUTS ── -->
+        <div class="inputs-column">
+          
+          <!-- STEP 1: PROJETO & MATERIAL -->
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-num">1</div>
+              <div class="step-title">Projeto & Material</div>
+            </div>
+            <div class="step-body">
+              <div class="v2-field-group">
+                <div class="v2-field full">
+                  <label class="v2-label"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
+                  <input type="text" id="printName" class="v2-input" placeholder="Ex: Miniatura Dragão...">
+                </div>
+                
+                <div class="v2-field">
+                  <label class="v2-label"><i class="ph-bold ph-package"></i> Modo & Material</label>
+                  <div class="mode-toggle" style="margin-bottom:10px">
+                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
+                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
+                  </div>
+                  <select class="v2-input" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="font-family: inherit;">
+                    <option value="">Selecionar material...</option>
+                  </select>
+                </div>
+                
+                <div class="v2-field">
+                  <label class="v2-label">Preço do Material</label>
+                  <div class="v2-input-wrap">
+                    <input type="number" id="filamentPrice" class="v2-input" value="0" step="0.01">
+                    <span class="v2-unit" id="labelFilPrice">/kg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: PRODUÇÃO -->
+          <div class="step-card" id="sectionSimple">
+            <div class="step-header">
+              <div class="step-num">2</div>
+              <div class="step-title">Dados de Produção</div>
+            </div>
+            <div class="step-body">
+              <div class="v2-field-group">
+                <div class="v2-field">
+                  <label class="v2-label"><i class="ph-bold ph-scales"></i> Peso Esperado</label>
+                  <div class="v2-input-wrap">
+                    <input type="number" id="partWeight" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
+                    <span class="v2-unit unit-weight">g</span>
+                  </div>
+                </div>
+                <div class="v2-field">
+                  <label class="v2-label"><i class="ph-bold ph-timer"></i> Tempo Estimado</label>
+                  <div class="v2-input-wrap">
+                    <input type="number" id="printTime" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
+                    <span class="v2-unit">horas</span>
+                  </div>
+                </div>
+                <div class="v2-field full">
+                  <label class="v2-label"><i class="ph-bold ph-printer"></i> Máquina Utilizada</label>
+                  <select class="v2-input" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)" style="font-family: inherit;">
+                    <option value="">Selecionar impressora...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: MESA (Modo Avançado) -->
+          <div class="step-card" id="sectionAdvanced" style="display:none">
+            <div class="step-header">
+              <div class="step-num">2</div>
+              <div class="step-title" style="flex:1">Mesa de Impressão</div>
+              <button class="btn-mkt-manage" onclick="addMesa()"><i class="ph-bold ph-plus"></i> Add Mesa</button>
+            </div>
+            <div class="step-body">
+              <div id="mesasContainer"></div>
+              <div class="v2-field" style="margin-top:15px">
+                <label class="v2-label">Tempo Total Projeto</label>
+                <div class="v2-input-wrap">
+                  <input type="number" id="totalProjectTime" class="v2-input" value="0" step="0.1" oninput="liveCalc()">
+                  <span class="v2-unit">horas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: VENDER EM MARKETPLACE -->
+          <div class="step-card">
+            <div class="step-header" style="cursor:pointer" onclick="toggleMktBlock()">
+              <div class="step-num">3</div>
+              <div class="step-title" style="flex:1" data-i18n="calc.mkt.title">Vender em Marketplace?</div>
+              <i class="ph-bold ph-caret-down" id="mktCaret"></i>
+            </div>
+            <div class="step-body" id="mktBlockBody" style="display:none">
+              <div class="mkt-header">
+                <label class="v2-label" data-i18n="calc.mkt.label">Escolher Plataforma</label>
+                <button class="btn-mkt-manage" onclick="openMktManager()"><i class="ph-bold ph-gear"></i> <span data-i18n="nav.gestao">Gerir</span></button>
+              </div>
+              <select id="mktPlatform" class="v2-input" onchange="onMktPlatformChange()" style="font-family: inherit; margin-bottom: 12px;">
+                <option value="none" data-i18n="calc.mkt.none">Não vender em marketplace</option>
+              </select>
+              
+              <div id="mktDetails" style="display:none">
+                <div class="v2-field-group">
+                  <div class="v2-field">
+                    <label class="v2-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
+                    <input type="number" id="mktTaxPct" class="v2-input" step="0.01" oninput="liveCalc()">
+                  </div>
+                  <div class="v2-field">
+                    <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
+                    <input type="number" id="mktFixedFee" class="v2-input" step="0.01" oninput="liveCalc()">
+                  </div>
+                </div>
+                <div class="mkt-box">
+                  <label class="v2-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
+                  <div class="v2-input-wrap">
+                    <input type="number" id="mktSalePrice" class="v2-input" step="0.01" oninput="liveCalc()" style="font-size: 1.2rem; padding: 12px 14px;">
+                    <span class="v2-unit currency-sym">€</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:flex; justify-content:flex-end; padding: 10px 0;">
+             <button class="btn-clear" onclick="clearCalculator()">
+              <span><i class="ph-bold ph-trash"></i></span> <span data-i18n="calc.buttons.clear">Limpar Tudo</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT: RESULTS SIDEBAR ── -->
+        <div class="results-column">
+          
+          <div class="hero-result-card">
+            <div class="hero-label" data-i18n="calc.price_hero_label">Preço Sugerido</div>
+            <div class="hero-value" id="rFinal">0,00 €</div>
+            <div class="hero-margin-badge" id="rMarginBadge">
+              <i class="ph-bold ph-chart-line-up"></i> <span data-i18n="settings.prefs.margin">Margem</span>: <span id="labMargPct">30</span>%
+            </div>
+          </div>
+
+          <!-- MARKETPLACE SUMMARY -->
+          <div class="summary-card" id="mktSummaryCard" style="display:none; border-color: var(--blue); background: var(--blue-g);">
+            <div class="summary-title" style="color: var(--blue)">
+              <i class="ph-bold ph-storefront"></i> <span data-i18n="calc.mkt.summary_title">Resultado Marketplace</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.mkt.fee_label">Comissão</span>
+              <span class="summary-val" id="resMktFee">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.mkt.net_label">Líquido Recebido</span>
+              <span class="summary-val" id="resMktNet">0,00 €</span>
+            </div>
+            <div class="summary-line" style="border-top: 1.5px solid var(--border); margin-top: 5px; padding-top: 10px;">
+              <span class="summary-label" style="font-weight: 800; color: var(--dark);" data-i18n="calc.mkt.real_margin">Margem Real</span>
+              <span class="summary-val" id="resMktMarginPct" style="font-size: 1.1rem; color: var(--blue);">0%</span>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results_title">Detalhes de Custo</span></div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.table_material">Material</span>
+              <span class="summary-val" id="resFilCost">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.resin_cost_label">Amortização</span>
+              <span class="summary-val" id="resMchCost">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.electricity_cost_label">Eletricidade</span>
+              <span class="summary-val" id="resElecCost">0,00 €</span>
+            </div>
+            <div class="summary-line" style="background: rgba(34,197,94,0.05); margin: 5px -10px; padding: 8px 10px; border-radius: 8px;">
+              <span class="summary-label" style="color: var(--success); font-weight: 700;" data-i18n="calc.results.base_label">Custo de Base</span>
+              <span class="summary-val" id="resBaseCost" style="color: var(--success)">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Falhas (<span id="labFailPct">5</span>%)</span>
+              <span class="summary-val" id="resFailCost">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Indiretos (<span id="labIndPct">10</span>%)</span>
+              <span class="summary-val" id="resIndCost">0,00 €</span>
+            </div>
+          </div>
+
+          <div class="results-actions">
+            <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
+              <span><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
+            </button>
+            <button class="btn-wa" onclick="sendWhatsApp()">
+              <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
+              <span>WhatsApp</span>
+            </button>
+            <div class="results-actions-row">
+              <button class="btn-action" onclick="copyResults()">
+                <i class="ph-bold ph-copy"></i> Copiar
+              </button>
+              <button class="btn-action" onclick="saveToHistory()">
+                <i class="ph-bold ph-floppy-disk"></i> Guardar
+              </button>
+            </div>
+            <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()" style="width:100%">
+              <i class="ph-bold ph-gear"></i> Parâmetros de Cálculo
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="page-header" style="margin-top:40px">
+        <div class="page-header-text">
+          <h2 data-i18n="calc.history_title"><i class="ph-bold ph-clock"></i> Histórico de Cálculos</h2>
+        </div>
+        <div class="history-count" id="historyCount">0 registos</div>
+      </div>
+      <!-- CARD HISTÓRICO -->
+      <div class="glass-card" style="margin-bottom:40px; min-height: 200px;">
+        <div id="historyEmpty" class="history-empty" style="padding:40px; text-align:center; color:var(--muted)">
+           <div style="font-size:2rem; margin-bottom:10px"><i class="ph-bold ph-clock"></i></div>
+           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</strong> nos resultados para registar aqui.</div>
+        </div>
+        <div class="table-container">
+          <table class="history-table" id="historyTable" style="display:none">
+            <thead>
+              <tr>
+                <th data-i18n="calc.table_name">Nome</th>
+                <th data-i18n="calc.table_weight">Peso</th>
+                <th data-i18n="calc.table_time">Tempo</th>
+                <th data-i18n="calc.table_margin">Margem</th>
+                <th data-i18n="calc.table_base">Custo Base</th>
+                <th data-i18n="calc.table_final">Preço Final</th>
+                <th data-i18n="calc.table_time_hour">Hora</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody">
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- PAINEL AVANÇADO FLUTUANTE -->
+<div class="adv-panel" id="advPanel">
+  <div class="adv-header">
+    <div class="adv-title" data-i18n="calc.adv_title"><i class="ph-bold ph-gear"></i> Parâmetros Avançados</div>
+    <button class="adv-close" onclick="closeAdvPanel()"><i class="ph-bold ph-x"></i></button>
+  </div>
+  <div class="adv-body">
+    <p class="adv-desc" data-i18n="calc.adv_desc">
+      Amortização, energia e margens. Alterações aplicam-se imediatamente.<br>
+      <strong>Guardar como padrão</strong> define os valores para novos cálculos.
+    </p>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-orange"><i class="ph-bold ph-gear"></i></div>
+        <span data-i18n="calc.adv_amort_ener_section">Amortização &amp; Energia</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label data-i18n="calc.adv_printer_price_label">Preço da impressora</label>
+          <div class="adv-wrap"><input type="number" id="printerPrice" value="600" step="1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPrinterPrice"></span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_printer_life_label">Vida útil</label>
+          <div class="adv-wrap"><input type="number" id="printerLife" value="5000" step="100" min="1" oninput="liveCalc()"><span class="adv-unit">h</span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_power_cons_label">Consumo elétrico</label>
+          <div class="adv-wrap"><input type="number" id="powerConsumption" value="200" step="10" min="0" oninput="liveCalc()"><span class="adv-unit">W</span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_elec_price_label">Preço eletricidade</label>
+          <div class="adv-wrap"><input type="number" id="electricityPrice" value="0.22" step="0.01" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelElecPrice">/kWh</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon si-purple"><i class="ph-bold ph-chart-line-up"></i></div>
+        <span data-i18n="calc.adv_perdas_margem_section">Perdas &amp; Margem</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field full">
+          <label data-i18n="calc.adv_failure_rate_label">Taxa de falhas</label>
+          <div class="adv-wrap"><input type="number" id="failureRate" value="5" step="1" min="0" max="100" oninput="syncAdvSlider('failureRate','failureSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="failureSlider" min="0" max="50" step="1" value="5" oninput="syncAdvInput('failureSlider','failureRate');liveCalc()"><span class="adv-slider-val" id="failureVal">5%</span></div>
+        </div>
+        <div class="adv-field full">
+          <label data-i18n="calc.adv_indirect_costs_label">Custos indiretos</label>
+          <div class="adv-wrap"><input type="number" id="indirectCosts" value="10" step="1" min="0" max="100" oninput="syncAdvSlider('indirectCosts','indirectSlider',0,50);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="indirectSlider" min="0" max="50" step="1" value="10" oninput="syncAdvInput('indirectSlider','indirectCosts');liveCalc()"><span class="adv-slider-val" id="indirectVal">10%</span></div>
+        </div>
+        <div class="adv-field full">
+          <label data-i18n="calc.adv_profit_margin_label">Margem de lucro</label>
+          <div class="adv-wrap"><input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()"><span class="adv-unit">%</span></div>
+          <div class="adv-slider-wrap"><input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()"><span class="adv-slider-val" id="marginVal">30%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="adv-footer">
+    <button class="btn-adv-save" onclick="saveAsDefaults()" data-i18n="calc.adv_save_as_defaults"><i class="ph-bold ph-floppy-disk"></i> Guardar como padrão</button>
+    <button class="btn-adv-cancel" onclick="closeAdvPanel()" data-i18n="calc.adv_close_btn">Fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-modal">
+    <div class="confirm-icon"><i class="ph-bold ph-trash"></i></div>
+    <div class="confirm-title" id="confirmTitle" data-i18n="orders.confirm.delete_title">Confirmar</div>
+    <div class="confirm-msg" id="confirmMsg" data-i18n="orders.confirm.delete_msg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()" data-i18n="orders.confirm.btn_cancel">Cancelar</button>
+      <button class="confirm-ok" id="confirmOkBtn" data-i18n="orders.confirm.btn_confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════════
+//  DEFAULTS — homologated
+// ══════════════════════════════════════
+const HARDCODED_DEFAULTS = {
+  filamentPrice:0,partWeight:0,printTime:0,
+  printerPrice:600,printerLife:5000,powerConsumption:200,
+  electricityPrice:0.22,failureRate:5,indirectCosts:10,profitMargin:30,
+};
+let defaults = {...HARDCODED_DEFAULTS};
+let calcHistory = [];
+let advOpen = false;
+let _historyPersistTimer = null;
+let _userPrinters = [];
+let _sessionData = null;
+
+// Debounced Supabase persist — avoids hammering DB on rapid saves
+function _persistHistory() {
+  clearTimeout(_historyPersistTimer);
+  _historyPersistTimer = setTimeout(async () => {
+    try {
+      const cfg = Object.assign({}, defaults, { calc_history: calcHistory });
+      await Auth.updateCompany({ config: cfg });
+    } catch(e) {
+      console.warn('[3DZAAP] calc_history persist:', e.message);
+    }
+  }, 800);
+}
+
+// ── INIT ───────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  initThemeToggle();
+  
+  // Unidade de peso inicial (compatibilidade)
+  const wu = (localStorage.getItem('3dzaap_config_weightUnit')) || 'g';
+  document.querySelectorAll('.field-unit[data-unit="weight"]').forEach(el => el.textContent = wu);
+
+  await loadUserData();
+  await loadInitialData();
+  await loadCompanyDefaults();
+  
+  // Always apply company defaults first
+  applyDefaultsToForm();
+  
+  // ── Load from Product Library / Recalculate ──────────────────
+  const rawData = localStorage.getItem('3dzaap_calc_load');
+  
+  // Garantir que impressoras de utilizador também sejam carregadas para o dropdown legado
+  try {
+    _userPrinters = await DB.getPrinters();
+  } catch(e) { _userPrinters = []; }
+  renderPrintersDropdown();
+  
+  applyFeatureGating();
+  renderHistory();
+  
+  try {
+    const raw = rawData;
+    if (raw) {
+      const data = JSON.parse(raw);
+      localStorage.removeItem('3dzaap_calc_load');
+      
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      // 1. Recover full state from _orig_inputs if available
+      const src = (data.config && data.config._orig_inputs) ? data.config._orig_inputs : data;
+      
+      if (src.printName) setEl('printName', src.printName);
+      if (src.tech) setTechMode(src.tech);
+      
+      // Restore printer-specific financial parameters
+      const common = ['printerPrice','printerLife','powerConsumption'];
+      common.forEach(k => { if (src[k] !== undefined) setEl(k, src[k]); });
+
+      // Detect and set calculation mode
+      const mode = src.mode || (src.parts ? 'advanced' : 'simple');
+      setCalcMode(mode);
+
+      if (mode === 'simple') {
+        if (src.weight !== undefined) setEl('partWeight', src.weight);
+        if (src.time !== undefined)      setEl('printTime', src.time);
+        else if (src.printTime !== undefined) setEl('printTime', src.printTime);
+        if (src.materialId) {
+          const mSel = document.getElementById('fMaterialSelect');
+          if (mSel) {
+            mSel.value = src.materialId;
+            applyMaterialSelect(src.materialId);
+          }
+        }
+      } else {
+        // Advanced mode: Restore mesas
+        if (src.mesas && Array.isArray(src.mesas)) {
+          _mesas = JSON.parse(JSON.stringify(src.mesas));
+          renderMesas();
+        } else if (src.parts && Array.isArray(src.parts)) {
+          // Fallback for legacy parts-only data
+          _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: src.parts }];
+          renderMesas();
+        }
+        if (src.totalTime !== undefined) setEl('totalProjectTime', src.totalTime);
+      }
+    }
+  } catch(e) { console.warn('[3DZAAP] error loading state:', e); }
+
+  liveCalc();
+});
+
+// ── USER DATA ──────────────────────────
+async function loadUserData() {
+  try {
+    const ok = await Auth.requireAuth();
+    if (!ok) return;
+    const _session = await Auth.getSession();
+    if (!_session) return;
+    
+    // A sidebar já foi iniciada no topo do .layout
+    Sidebar.setSession(_session);
+    _sessionData = _session; // Sync with local var used in some functions
+    
+    loadInitialData();
+    loadMarketplaces(); // NEW for V2
+    return _session;
+  } catch(e) {
+    console.error('[3DZAAP] error in loadUserData:', e);
+  }
+}
+
+function initThemeToggle() {
+  const theme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('3dzaap_theme') || 'light';
+  const btn = document.getElementById('topbarThemeToggle');
+  if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
+}
+
+// ── HELPERS ───────────────────────────
+function setV(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function setSl(id, val, min, max) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.value = val;
+    if (min !== undefined) el.min = min;
+    if (max !== undefined) el.max = max;
+  }
+}
+function updateSliderLabels() {
+  const icons = { mat: '<i class="ph-bold ph-vinyl-record"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
+  const pairs = [
+    { s: 'failureSlider', v: 'failureVal' },
+    { s: 'indirectSlider', v: 'indirectVal' },
+    { s: 'marginSlider', v: 'marginVal' }
+  ];
+  pairs.forEach(p => {
+    const s = document.getElementById(p.s);
+    const v = document.getElementById(p.v);
+    if (s && v) v.textContent = s.value + '%';
+  });
+}
+function updatePctLabels() {
+  // Já lidado no _render para os indicadores do card de resultados
+}
+
+// ── NEW CALCULATOR LOGIC ──────────────────
+let _calcMode = 'simple'; // 'simple' or 'advanced'
+let _mesas = []; // Array of { id, name, parts: [...] }
+let _filaments = [];
+let _printers = [];
+let _selectedMaterial = null;
+let _selectedPrinter = null;
+
+function setCalcMode(mode) {
+  if (mode === 'advanced') {
+    const plan = (_sessionData?.plan || 'trial').replace('_ano', '');
+    if (!['pro', 'business'].includes(plan)) {
+      UI.showFeatureGate('calculator_advanced');
+      return;
+    }
+  }
+
+  _calcMode = mode;
+  document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
+  document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
+  
+  document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
+  document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
+  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
+  
+  if (mode === 'advanced' && _mesas.length === 0) {
+    addMesa();
+  }
+  liveCalc();
+}
+
+function setTechMode(tech) {
+  _activeTech = tech;
+  document.getElementById('modeFDM').classList.toggle('active', tech === 'fdm');
+  document.getElementById('modeResin').classList.toggle('active', tech === 'resin');
+  
+  // Update UI units and labels
+  const currency = _sessionData?.currency || '€';
+  const unitLabel = document.getElementById('labelFilPrice');
+  if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
+  document.querySelectorAll('.unit-weight').forEach(el => el.textContent = tech === 'resin' ? 'ml' : 'g');
+  
+  // Update all mesas to match global tech switch, clearing material if changed
+  if (_calcMode === 'advanced') {
+    _mesas.forEach(m => {
+      if (m.tech !== tech) {
+        m.tech = tech;
+        m.parts.forEach(p => { p.materialId = ''; });
+      }
+    });
+  }
+  
+  // Filter materials if they are loaded
+  renderSelectors();
+  if (_calcMode === 'advanced') {
+    renderMesas();
+  }
+  liveCalc();
+}
+
+async function loadInitialData() {
+  try {
+    const [fils, prns] = await Promise.all([
+      DB.getFilaments(),
+      DB.getPrinters()
+    ]);
+    _filaments = fils;
+    _printers = prns;
+    
+    renderSelectors();
+    renderMesas();
+  } catch(e) {
+    console.error('[3DZAAP] error loading calc data:', e);
+  }
+}
+
+function renderSelectors() {
+  const mSel = document.getElementById('fMaterialSelect');
+  const pSel = document.getElementById('fPrinterSelect');
+  
+  const unit = _activeTech === 'resin' ? '/L' : '/kg';
+  const filterClass = _activeTech === 'resin' ? 'resin' : 'fdm';
+
+  if (mSel) {
+    mSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || 'Selecionar material...'}</option>`;
+    // Filtrar materiais por classe/tecnologia
+    const filtered = _filaments.filter(f => {
+      const cls = (f.materialClass || f.material_class || 'fdm').toLowerCase();
+      return cls === filterClass;
+    });
+    
+    if (filtered.length === 0) {
+      const opt = document.createElement('option');
+      opt.disabled = true;
+      opt.textContent = '(' + (i18n.getNestedTranslation('calc.empty_materials') || 'Sem materiais registados') + ')';
+      mSel.appendChild(opt);
+    } else {
+      // Ordenar por Cor + Tipo
+      filtered.sort((a, b) => {
+        const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+        const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+        return la.localeCompare(lb);
+      });
+
+      filtered.forEach(f => {
+        const color = f.colorName || '';
+        const type = f.type || '';
+        const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+        const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
+        
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `${matDisplay} (${fmtCurrency(f.price)}${unit})`;
+        mSel.appendChild(opt);
+      });
+    }
+  }
+  
+  if (pSel) {
+    pSel.innerHTML = `<option value="">${i18n.getNestedTranslation('calc.placeholders.select_printer') || 'Selecionar impressora...'}</option>`;
+    if (_printers.length === 0) {
+      const opt = document.createElement('option');
+      opt.disabled = true;
+      opt.textContent = '(' + (i18n.getNestedTranslation('calc.empty_printers') || 'Sem impressoras registadas') + ')';
+      pSel.appendChild(opt);
+    } else {
+      _printers.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        
+        const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
+        const printStr = ` (${fmtCurrency(calcHr)}/h)`;
+        
+        opt.textContent = `${p.model||p.name}${printStr}`;
+        pSel.appendChild(opt);
+      });
+    }
+  }
+}
+
+function applyMaterialSelect(id) {
+  const mat = _filaments.find(f => String(f.id) === String(id));
+  _selectedMaterial = mat || null;
+  if (mat) {
+    const inp = document.getElementById('filamentPrice');
+    if (inp) inp.value = mat.price;
+  }
+  liveCalc();
+}
+
+function applyPrinterSelect(id) {
+  const prn = _printers.find(p => String(p.id) === String(id));
+  _selectedPrinter = prn || null;
+  liveCalc();
+}
+
+function addMesa() {
+  const mId = Date.now() + Math.random();
+  _mesas.push({ id: mId, name: 'Mesa ' + (_mesas.length + 1), tech: _activeTech || 'fdm', parts: [] });
+  addPartToMesa(mId, false);
+  renderMesas();
+  liveCalc();
+}
+
+function updateMesaTech(mId, tech) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m) {
+    m.tech = tech;
+    m.parts.forEach(p => { p.materialId = ''; }); // Limpar material selecionado
+  }
+  renderMesas();
+  liveCalc();
+}
+
+function deleteMesa(mId) {
+  if (_mesas.length <= 1) {
+    _mesas[0].name = 'Mesa 1';
+    _mesas[0].parts = [];
+    addPartToMesa(_mesas[0].id, false);
+  } else {
+    _mesas = _mesas.filter(m => m.id !== mId);
+  }
+  renderMesas();
+  liveCalc();
+}
+
+function updateMesaName(mId, name) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m) m.name = name;
+  liveCalc();
+}
+
+function addPartToMesa(mId, doRender = true) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  m.parts.push({ id: Date.now() + Math.random(), name: '', materialId: '', weight: 0, qty: 1, time: 0 });
+  if (doRender) { renderMesas(); liveCalc(); }
+}
+
+function removePartFromMesa(mId, pId) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  m.parts = m.parts.filter(p => p.id !== pId);
+  if (m.parts.length === 0) addPartToMesa(mId, false);
+  renderMesas();
+  liveCalc();
+}
+
+function updatePart(mId, pId, field, val) {
+  const m = _mesas.find(x => x.id === mId);
+  if (!m) return;
+  const p = m.parts.find(x => x.id === pId);
+  if (!p) return;
+  if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
+  p[field] = val;
+  
+  if (_calcMode === 'advanced') {
+    let total = 0;
+    _mesas.forEach(mesa => {
+      mesa.parts.forEach(part => {
+        total += (part.time * (part.qty || 1));
+      });
+    });
+    const timeEl = document.getElementById('totalProjectTime');
+    if (timeEl) timeEl.value = total.toFixed(1);
+  }
+  
+  liveCalc();
+}
+
+function renderMesas() {
+  const container = document.getElementById('mesasContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  _mesas.forEach((m, idx) => {
+    const mTech = m.tech || 'fdm';
+    const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === mTech);
+
+    // Ordenar materiais para o modo avançado também
+    filteredMaterials.sort((a, b) => {
+      const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
+      const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
+      return la.localeCompare(lb);
+    });
+
+    const mDiv = document.createElement('div');
+    mDiv.style.marginBottom = '20px';
+    mDiv.style.border = '1px solid var(--border)';
+    mDiv.style.borderRadius = 'var(--rm)';
+    mDiv.style.background = 'var(--bg-card)';
+    mDiv.style.overflow = 'hidden';
+    
+    // Header
+    const hdr = document.createElement('div');
+    hdr.style.padding = '12px 16px';
+    hdr.style.background = 'var(--bg-card-s)';
+    hdr.style.borderBottom = '1px solid var(--border)';
+    hdr.style.display = 'flex';
+    hdr.style.justifyContent = 'space-between';
+    hdr.style.alignItems = 'center';
+    
+    hdr.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
+        <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
+      </div>
+      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+      </div>
+      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
+    `;
+    mDiv.appendChild(hdr);
+    
+    // Table wrap
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'parts-table-wrap';
+    tableWrap.style.margin = '0';
+    tableWrap.style.borderBottom = '1px solid var(--border)';
+    tableWrap.style.borderTop = 'none';
+    tableWrap.style.borderLeft = 'none';
+    tableWrap.style.borderRight = 'none';
+    tableWrap.style.borderRadius = '0';
+    
+    let partsHtml = '';
+    m.parts.forEach((p, pIdx) => {
+      const matOptions = filteredMaterials.map(f => {
+        const color = f.colorName || '';
+        const type = f.type || '';
+        const brand = Array.isArray(f.brand) ? f.brand.join(' ') : (f.brand || '');
+        const matDisplay = `${color} ${type} - ${brand}`.trim().replace(/^ - | - $/g, '');
+        const priceUnit = mTech === 'resin' ? '/L' : '/kg';
+        return `<option value="${f.id}" ${String(f.id)===String(p.materialId)?'selected':''}>${matDisplay} (${fmtCurrency(f.price)}${priceUnit})</option>`;
+      }).join('');
+      
+      partsHtml += `
+        <tr>
+          <td><input type="text" class="part-input" value="${p.name}" oninput="updatePart(${m.id}, ${p.id}, 'name', this.value)" placeholder="..."></td>
+          <td>
+            <select class="part-input" onchange="updatePart(${m.id}, ${p.id}, 'materialId', this.value)">
+              <option value="">${i18n.getNestedTranslation('calc.placeholders.select_material') || '-- Mat --'}</option>
+              ${filteredMaterials.length === 0 ? `<option disabled>(Sem materiais)</option>` : matOptions}
+            </select>
+          </td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
+          <td><input type="number" class="part-input" style="text-align:right" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
+          <td style="text-align:right">
+            <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})"><i class="ph-bold ph-x"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+    
+    tableWrap.innerHTML = `
+      <table class="parts-table" style="border-radius:0;border:none">
+        <thead>
+          <tr>
+            <th data-i18n="calc.table.part">${i18n.getNestedTranslation('calc.table.part')||'Peça'}</th>
+            <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
+            <th style="text-align:right"><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${mTech === 'resin' ? 'ml' : 'g'})</th>
+            <th data-i18n="calc.table.qty" style="text-align:right">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
+            <th data-i18n="calc.table.time_h" style="text-align:right">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${partsHtml}
+        </tbody>
+      </table>
+    `;
+    mDiv.appendChild(tableWrap);
+    
+    const ftr = document.createElement('div');
+    ftr.style.padding = '8px 12px';
+    ftr.style.background = 'var(--bg)';
+    ftr.innerHTML = `
+      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600" onclick="addPartToMesa(${m.id})">
+        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
+      </button>
+    `;
+    mDiv.appendChild(ftr);
+    
+    container.appendChild(mDiv);
+  });
+}
+
+async function loadCompanyDefaults(){
+  try{
+    const session = await Auth.getSession();
+    if(session?.config){
+      const c = session.config;
+    if(c.margin !== undefined && c['profitMargin'] === undefined) defaults.profitMargin = parseFloat(c.margin)||30;
+    ['filamentPrice','printerPrice','printerLife','powerConsumption','electricityPrice','profitMargin','failureRate','indirectCosts'].forEach(k=>{
+        if(c[k] !== undefined) defaults[k] = c[k];
+      });
+      if(c.calc_history) {
+        calcHistory = Array.isArray(c.calc_history) ? c.calc_history : [];
+      }
+    }
+  }catch(e){}
+}
+
+
+function updateCurrencyLabels() {
+  var sym = getCurrencySymbol();
+  var el;
+  if ((el = document.getElementById('labelFilPrice')))   el.textContent = sym + '/kg';
+  if ((el = document.getElementById('labelResinPrice'))) el.textContent = sym + '/L';
+  if ((el = document.getElementById('labelPrinterPrice')))el.textContent = sym;
+  if ((el = document.getElementById('labelElecPrice')))  el.textContent = sym + '/kWh';
+}
+function applyDefaultsToForm(){
+  updateCurrencyLabels();
+  // Update weight unit labels from config
+  var wu = (_cfg && _cfg._weightUnit) || 'g';
+  document.querySelectorAll('[id="partWeightUnit"],[id="weightUnitLabel"],[data-unit="weight"]').forEach(function(el){el.textContent=wu;});
+  setV('filamentPrice',defaults.filamentPrice);
+  setV('partWeight',defaults.partWeight);
+  setV('printTime',defaults.printTime);
+  setV('printerPrice',defaults.printerPrice);
+  setV('printerLife',defaults.printerLife);
+  setV('powerConsumption',defaults.powerConsumption);
+  setV('electricityPrice',defaults.electricityPrice);
+  setV('failureRate',defaults.failureRate);
+  setV('indirectCosts',defaults.indirectCosts);
+  setV('profitMargin',defaults.profitMargin);
+  setSl('printTimeSlider',defaults.printTime,0,48);
+  setSl('failureSlider',defaults.failureRate,0,50);
+  setSl('indirectSlider',defaults.indirectCosts,0,50);
+  setSl('marginSlider',defaults.profitMargin,0,100);
+  updateSliderLabels();
+}
+
+// ── FEATURE GATING ─────────────────────
+async function applyFeatureGating(){
+  try{
+    const session = await Auth.getSession();
+    const plan = (session?.plan || 'trial').replace('_ano', '');
+    const isProPlus = ['trial','pro','business'].includes(plan);
+    const isBusiness = ['trial','business'].includes(plan);
+
+    const btn = document.getElementById('btnCriarPedido');
+  } catch(e) {}
+}
+
+function criarPedido() {
+  const i = getInputs();
+  const r = computeResults(i);
+  
+  if (r.finalPrice <= 0) {
+    showToast(i18n.getNestedTranslation('calc.toasts.calc_first') || 'Calcula primeiro antes de criar o pedido', 'err');
+    return;
+  }
+
+  // Feature gating check for orders
+  const plan = (_sessionData?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
+  if (!['trial', 'pro', 'business'].includes(plan)) {
+    if (typeof UI !== 'undefined' && UI.showFeatureGate) {
+      UI.showFeatureGate('orders');
+    } else {
+      showToast('<i class="ph-bold ph-warning-octagon"></i> Funcionalidade indisponível no teu plano atual.', 'err');
+    }
+    return;
+  }
+
+  let payload = {};
+  var clientNameObj = document.getElementById('clientName');
+  var pClient = (clientNameObj ? clientNameObj.value : '').trim();
+  var name = (document.getElementById('printName').value || '').trim();
+  var t_projeto = window.i18n ? (window.i18n.getNestedTranslation('calc.print_name_label') || 'Projeto') : 'Projeto';
+  var t_impr = 'Impressão';
+  var t_pecas = window.i18n ? (window.i18n.getNestedTranslation('calc.table.part') || 'peças').toLowerCase() : 'peças';
+  
+  var modeLabel = i.tech === 'resin' ? (window.i18n ? window.i18n.getNestedTranslation('calc.modes.resin')||'Resina' : 'Resina') : (window.i18n ? window.i18n.getNestedTranslation('calc.modes.fdm')||'FDM' : 'FDM');
+  modeLabel = modeLabel.replace(/<i class="ph-bold ph-vinyl-record"><\/i> |<i class="ph-bold ph-flask"><\/i> | \(Filamento\)/g, ''); // Clean up emojis/brackets from i18n string for succinctness
+  
+  var desc = name || (i.mode === 'advanced'
+    ? t_projeto + ' ' + modeLabel + ' — ' + (i.parts ? i.parts.length : 1) + ' ' + t_pecas
+    : t_impr + ' ' + modeLabel + ' — ' + (i.weight || 0) + 'g');
+
+  if (i.mode === 'simple') {
+    payload = {
+      client_name: pClient,
+      mode: i.tech,
+      description: desc,
+      quantity: i.qty || 1,
+      total: parseFloat(r.finalPrice.toFixed(2)),
+      filament_weight: i.tech === 'fdm' ? i.weight * (i.qty || 1) : null,
+      resin_volume: i.tech === 'resin' ? i.weight * (i.qty || 1) : null,
+      unit_price: parseFloat(r.unitPrice.toFixed(2)),
+      material_id: _selectedMaterial ? _selectedMaterial.id : null,
+      material_cost: parseFloat((r.materialCost * (i.qty || 1)).toFixed(4)),
+      time: i.time,
+      _from_calc: true
+    };
+  } else {
+    // Advanced mode: distribute overhead proportional to material cost
+    const totalMat = r.materialCost || 1;
+    const overheadFactor = (r.finalPrice - r.materialCost) / totalMat;
+    
+    payload = {
+      client_name: pClient,
+      mode: 'advanced',
+      description: desc,
+      _from_calc: true,
+      parts: i.parts.map(p => {
+        const unitMatCost = (p.price / 1000) * p.weight;
+        const rowUnitPrice = unitMatCost * (1 + overheadFactor);
+        return {
+          name: p.name || 'Peça',
+          qty: p.qty,
+          weight: p.weight,
+          unitPrice: parseFloat(rowUnitPrice.toFixed(2)),
+          materialId: p.materialId
+        };
+      })
+    };
+  }
+
+  sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));
+  showToast(i18n.getNestedTranslation('calc.toasts.prefilling_order') || '<i class="ph-bold ph-package"></i> A abrir pedido pré-preenchido…', 'ok');
+  setTimeout(function() { window.location.href = 'orders.html?from=calc'; }, 600);
+}
+
+function updatePctLabels() {} // Já tratado no _render
+function updateSliderLabels() {} // Não mais necessário com a nova UI de inputs diretos
+
+// ══════════════════════════════════════
+//  CORE CALCULATION — homologated + resina
+// ══════════════════════════════════════
+let _activeTech = 'fdm'; // 'fdm' | 'resin'
+
+function renderPrintersDropdown() {
+  const sel = document.getElementById('calcPrinterSelect');
+  if (!sel) return;
+  const t_gen = typeof window.i18n !== 'undefined' ? (window.i18n.getNestedTranslation('calc.printer_select_default')||'Genérica') : 'Genérica';
+  if (!_userPrinters.length) {
+    sel.innerHTML = '<option value="">'+t_gen+' / Inserção Manual</option>';
+    return;
+  }
+  let html = '<option value="">'+t_gen+' / Inserção Manual</option>';
+  const isResin = _activeTech === 'resin';
+  const filtered = _userPrinters.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
+  
+  filtered.forEach(p => {
+    html += `<option value="${p.id}"><i class="ph-bold ph-printer"></i> ${p.customName || p.model} (${p.brand})</option>`;
+  });
+  sel.innerHTML = html;
+}
+
+function onCalcPrinterChange() {
+  const sel = document.getElementById('calcPrinterSelect');
+  if(!sel || !sel.value) return; 
+  const p = _userPrinters.find(x => x.id === sel.value);
+  if(!p) return;
+
+  if (p.price) setV('printerPrice', p.price);
+  if (p.lifeHours) setV('printerLife', p.lifeHours);
+  
+  if (_activeTech === 'resin') {
+    if (p.powerPrint || p.powerStandby) setV('uvLampPower', p.powerPrint || 60);
+  } else {
+    if (p.powerPrint) setV('powerConsumption', p.powerPrint);
+  }
+  
+  showToast((i18n.getNestedTranslation('calc.toasts.defaults_saved') || 'Parâmetros preenchidos: ') + (p.customName || p.model), 'ok');
+  liveCalc();
+}
+
+// ── MARKETPLACE STATE & SETTINGS ───────
+let _marketplaces = [];
+const _mktDefaults = {
+  'pt-PT': [
+    { id: 'etsy', name: 'Etsy', taxPct: 15, fixedFee: 0.20 },
+    { id: 'wallapop', name: 'Wallapop', taxPct: 10, fixedFee: 0 },
+    { id: 'amazon-eu', name: 'Amazon EU', taxPct: 15, fixedFee: 1.00 }
+  ],
+  'pt-BR': [
+    { id: 'ml', name: 'Mercado Livre', taxPct: 17.49, fixedFee: 0 },
+    { id: 'shopee', name: 'Shopee', taxPct: 20, fixedFee: 4 },
+    { id: 'elo7', name: 'Elo7', taxPct: 12, fixedFee: 3.99 },
+    { id: 'magalu', name: 'Magalu', taxPct: 15, fixedFee: 0 },
+    { id: 'tiktok', name: 'TikTok Shop', taxPct: 6, fixedFee: 2.00 }
+  ],
+  'en-US': [
+    { id: 'etsy', name: 'Etsy', taxPct: 6.5, fixedFee: 0.20 },
+    { id: 'ebay', name: 'eBay', taxPct: 13.25, fixedFee: 0.30 },
+    { id: 'amazon-us', name: 'Amazon US', taxPct: 15, fixedFee: 1.00 }
+  ],
+  'en-GB': [
+    { id: 'etsy', name: 'Etsy', taxPct: 6.5, fixedFee: 0.20 },
+    { id: 'ebay', name: 'eBay', taxPct: 13.25, fixedFee: 0.30 },
+    { id: 'amazon-uk', name: 'Amazon UK', taxPct: 15, fixedFee: 1.00 }
+  ],
+  'es': [
+    { id: 'wallapop', name: 'Wallapop', taxPct: 10, fixedFee: 0 },
+    { id: 'vinted', name: 'Vinted', taxPct: 5, fixedFee: 0.70 },
+    { id: 'amazon-es', name: 'Amazon ES', taxPct: 15, fixedFee: 1.00 }
+  ]
+};
+
+function loadMarketplaces() {
+  const cfg = _sessionData?.config || {};
+  const locale = i18n.currentLocale || 'pt-PT';
+  const defaults = _mktDefaults[locale] || _mktDefaults['pt-PT'];
+  
+  _marketplaces = cfg.custom_marketplaces || defaults;
+  renderMarketplaceSelect();
+}
+
+function renderMarketplaceSelect() {
+  const sel = document.getElementById('mktPlatform');
+  if (!sel) return;
+  
+  let html = `<option value="none" data-i18n="calc.mkt.none">Não vender em marketplace</option>`;
+  _marketplaces.forEach(m => {
+    html += `<option value="${m.id}">${m.name} (${m.taxPct}%${m.fixedFee > 0 ? ' + ' + fmtCurrency(m.fixedFee) : ''})</option>`;
+  });
+  html += `<option value="custom" style="font-weight:bold; color:var(--blue)">+ Adicionar Novo / Personalizado</option>`;
+  sel.innerHTML = html;
+}
+
+function onMktPlatformChange() {
+  const sel = document.getElementById('mktPlatform');
+  const details = document.getElementById('mktDetails');
+  const val = sel.value;
+  
+  if (val === 'none') {
+    details.style.display = 'none';
+  } else if (val === 'custom') {
+    openMktManager();
+    sel.value = 'none';
+    details.style.display = 'none';
+  } else {
+    const m = _marketplaces.find(x => x.id === val);
+    if (m) {
+      document.getElementById('mktTaxPct').value = m.taxPct;
+      document.getElementById('mktFixedFee').value = m.fixedFee;
+      details.style.display = 'block';
+    }
+  }
+  liveCalc();
+}
+
+function toggleMktBlock() {
+  const body = document.getElementById('mktBlockBody');
+  const caret = document.getElementById('mktCaret');
+  const isOpen = body.style.display !== 'none';
+  
+  body.style.display = isOpen ? 'none' : 'block';
+  caret.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function openMktManager() {
+  document.getElementById('mktModal').classList.add('open');
+}
+
+function closeMktManager() {
+  document.getElementById('mktModal').classList.remove('open');
+}
+
+async function saveCustomMkt() {
+  const name = document.getElementById('modalMktName').value.trim();
+  const tax = parseFloat(document.getElementById('modalMktTax').value) || 0;
+  const fixed = parseFloat(document.getElementById('modalMktFixed').value) || 0;
+  
+  if (!name) return showToast('Insira um nome para o marketplace', 'err');
+  
+  const newMkt = { id: 'custom_' + Date.now(), name, taxPct: tax, fixedFee: fixed };
+  _marketplaces.push(newMkt);
+  
+  // Persist if logged in
+  if (_sessionData?.id) {
+    try {
+      await Auth.updateCompany({ config: { ...(_sessionData.config || {}), custom_marketplaces: _marketplaces } });
+    } catch(e) { console.error('Error saving marketplace:', e); }
+  }
+  
+  renderMarketplaceSelect();
+  document.getElementById('mktPlatform').value = newMkt.id;
+  onMktPlatformChange();
+  closeMktManager();
+  showToast('Marketplace adicionado!', 'ok');
+}
+
+function getInputs() {
+  const pf = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+  const config = _sessionData?.config || {};
+  
+  const common = {
+    printerPrice: pf('printerPrice') || 1000,
+    printerLife: pf('printerLife') || 2500,
+    electricityPrice: pf('electricityPrice') || 0.20,
+    powerConsumption: pf('powerConsumption') || 250,
+    failureRate: pf('failureRate') || 5,
+    indirectCosts: pf('indirectCosts') || 10,
+    profitMargin: pf('profitMargin') || 30
+  };
+
+  const mkt = {
+    platform: document.getElementById('mktPlatform')?.value || 'none',
+    taxPct: pf('mktTaxPct'),
+    fixedFee: pf('mktFixedFee'),
+    salePrice: pf('mktSalePrice')
+  };
+
+  if (_calcMode === 'simple') {
+    const matPrice = _selectedMaterial ? _selectedMaterial.price : pf('filamentPrice');
+    return {
+      ...common,
+      mkt,
+      mode: 'simple',
+      tech: _activeTech,
+      qty: 1,
+      materialPrice: matPrice,
+      materialId: _selectedMaterial ? _selectedMaterial.id : '',
+      weight: pf('partWeight'),
+      time: pf('printTime')
+    };
+  } else {
+    let partsTotalWeight = 0;
+    let advancedPartsInfo = [];
+    _mesas.forEach(mesa => {
+      mesa.parts.forEach(p => {
+        partsTotalWeight += (p.weight * (p.qty || 1));
+        const mat = _filaments.find(f => String(f.id) === String(p.materialId));
+        advancedPartsInfo.push({ ...p, price: mat ? mat.price : 25, mesaId: mesa.id });
+      });
+    });
+    
+    const totalTimeValue = pf('totalProjectTime');
+    
+    return {
+      ...common,
+      mkt,
+      mode: 'advanced',
+      tech: _activeTech,
+      weight: partsTotalWeight,
+      time: totalTimeValue,
+      parts: advancedPartsInfo,
+      mesas: _mesas,
+      totalTime: totalTimeValue
+    };
+  }
+}
+
+function computeResults(i) {
+  let materialCost = 0;
+  let machineTime = 0;
+  
+  if (i.mode === 'simple') {
+    materialCost = (i.materialPrice / 1000) * i.weight;
+    machineTime = i.time;
+  } else {
+    i.parts.forEach(p => {
+      materialCost += (p.price / 1000) * p.weight * p.qty;
+    });
+    machineTime = i.totalTime;
+  }
+
+  const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
+  const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
+  
+  const baseCost = materialCost + amortizationCost + electricityCost;
+  const failureCost = baseCost * (i.failureRate / 100);
+  const indirectCost = baseCost * (i.indirectCosts / 100);
+  const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const finalPrice = baseCost + failureCost + indirectCost + marginCost;
+
+  // Marketplace calculations
+  let mktFee = 0;
+  let mktNet = 0;
+  let mktMarginPct = 0;
+  if (i.mkt && i.mkt.platform !== 'none') {
+    const sale = i.mkt.salePrice || finalPrice;
+    mktFee = (sale * i.mkt.taxPct / 100) + i.mkt.fixedFee;
+    mktNet = sale - mktFee;
+    mktMarginPct = sale > 0 ? ((mktNet - (baseCost + failureCost + indirectCost)) / sale * 100) : 0;
+  }
+
+  return {
+    materialCost,
+    amortizationCost,
+    electricityCost,
+    baseCost,
+    failureCost,
+    indirectCost,
+    marginCost,
+    finalPrice,
+    unitPrice: finalPrice / (i.qty || 1),
+    qty: i.qty || 1,
+    // Marketplace fields
+    mktFee,
+    mktNet,
+    mktMarginPct
+  };
+}
+
+let _lt;
+function liveCalc(){
+  clearTimeout(_lt);
+  _lt=setTimeout(_render,40);
+  updateSliderLabels();
+  updatePctLabels();
+}
+
+function _render() {
+  const i = getInputs();
+  const r = computeResults(i);
+  
+  const heroEl = document.getElementById('rFinal');
+  if (heroEl) {
+    const newVal = fmtCurrency(r.finalPrice);
+    if (heroEl.textContent !== newVal) {
+      heroEl.textContent = newVal;
+      heroEl.classList.remove('updated'); void heroEl.offsetWidth; heroEl.classList.add('updated');
+    }
+  }
+
+  // Update margin badge
+  const mBadge = document.getElementById('rMarginBadge');
+  if (mBadge) {
+    document.getElementById('labMargPct').textContent = i.profitMargin;
+    mBadge.classList.remove('low', 'high');
+    if (r.finalPrice > 0) {
+      // If marketplace active, compare real margin, else target margin is always "normal"
+      // But we can highlight if real margin is better or worse than target
+      if (i.mkt.platform !== 'none') {
+        const isLow = r.mktMarginPct < i.profitMargin;
+        mBadge.classList.add(isLow ? 'low' : 'high');
+      }
+    }
+  }
+
+  // Marketplace Summary Visibility
+  const mktCard = document.getElementById('mktSummaryCard');
+  if (mktCard) {
+    mktCard.style.display = i.mkt.platform !== 'none' ? 'block' : 'none';
+    if (i.mkt.platform !== 'none') {
+      document.getElementById('resMktFee').textContent = fmtCurrency(r.mktFee);
+      document.getElementById('resMktNet').textContent = fmtCurrency(r.mktNet);
+      const mPctEl = document.getElementById('resMktMarginPct');
+      mPctEl.textContent = r.mktMarginPct.toFixed(1) + '%';
+      
+      const isLow = r.mktMarginPct < i.profitMargin;
+      mPctEl.style.color = isLow ? 'var(--danger)' : 'var(--success)';
+      
+      // Sync simulated sale price if it was empty
+      if (!document.getElementById('mktSalePrice').value) {
+         document.getElementById('mktSalePrice').value = r.finalPrice.toFixed(2);
+      }
+    }
+  }
+
+  const setV = (id, val) => { 
+    const el = document.getElementById(id); 
+    if (el) el.textContent = fmtCurrency(val);
+  };
+  
+  setV('resFilCost', r.materialCost);
+  setV('resMchCost', r.amortizationCost);
+  setV('resElecCost', r.electricityCost);
+  setV('resBaseCost', r.baseCost);
+  setV('resFailCost', r.failureCost);
+  setV('resIndCost', r.indirectCost);
+  
+  // Status button "Create Order"
+  const cpBtn = document.getElementById('btnCriarPedido');
+  if (cpBtn) cpBtn.style.display = r.finalPrice > 0 ? 'inline-flex' : 'none';
+}
+
+function sendWhatsApp() {
+  const i = getInputs();
+  const r = computeResults(i);
+  if (r.finalPrice <= 0) {
+    showToast('<i class="ph-bold ph-warning-octagon"></i> Calcula um valor primeiro', 'err');
+    return;
+  }
+
+  let msg = `*Orçamento de Impressão 3D*\n\n`;
+  if (i.mode === 'simple') {
+    msg += `*Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
+  } else {
+    msg += `*Projeto Multi-Peças*\n`;
+    i.parts.forEach(p => {
+      msg += `• ${p.qty}x ${p.name || 'Peça'}\n`;
+    });
+  }
+  
+  msg += `\n*Total:* ${fmtCurrency(r.finalPrice)}\n`;
+  msg += `*Obrigado pela preferência!*\n\nGerado via *3DZAAP*`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function clearCalculator(){
+  document.querySelectorAll('.inp, .part-input').forEach(i=> {
+    if(i.type==='checkbox') i.checked=false;
+    else if(i.tagName!=='SELECT') i.value='';
+  });
+  
+  _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
+  addPartToMesa(_mesas[0].id, false);
+  
+  // Reset fields to 0 to avoid confusion
+  setV('filamentPrice', 0);
+  setV('partWeight', 0);
+  setV('printTime', 0);
+  
+  renderMesas();
+  liveCalc();
+  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Campos limpos','');
+}
+
+function applyPrinterSelect(id) {
+  const prn = _printers.find(p => String(p.id) === String(id));
+  _selectedPrinter = prn;
+  if (prn) {
+    // If printer has custom config, set values in ADVANCED panel hidden inputs
+    const pPrice = document.getElementById('printerPrice');
+    if (pPrice) pPrice.value = prn.price || 1000;
+    const pLife = document.getElementById('printerLife');
+    if (pLife) pLife.value = prn.lifeHours || 2500;
+    const pPower = document.getElementById('powerConsumption');
+    if (pPower) pPower.value = prn.powerWatts || 250;
+  }
+  liveCalc();
+}
+
+function setRes(id,val,bold){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=fmtCurrency(val);
+  el.className='breakdown-value'+(val===0?' zero':'');
+  if(bold) el.style.fontWeight='800';
+}
+function setBar(id,pct){
+  const el=document.getElementById(id);
+  if(el) el.style.width=Math.min(100,Math.max(0,pct)).toFixed(1)+'%';
+}
+
+function clearFields(){
+  setV('printName',''); setV('printQty',1);
+  setV('filamentPrice',0); setV('partWeight',0); setV('printTime',0);
+  setSl('printTimeSlider',0,0,48);
+  setV('resinPrice',35); setV('resinVolume',20); setV('resinDensity',1.1);
+  setV('resinPrintTime',2); setV('uvLampPower',60); setV('washCureTime',20);
+  updateSliderLabels(); liveCalc();
+  showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Campos limpos','');
+}
+
+// ── SLIDERS ────────────────────────────
+function syncSlider(inputId,sliderId,min,max){setSl(sliderId,pf(inputId),min,max);updateSliderLabels();}
+function syncInput(sliderId,inputId){setV(inputId,document.getElementById(sliderId).value);updateSliderLabels();}
+function syncAdvSlider(inputId,sliderId,min,max){syncSlider(inputId,sliderId,min,max);}
+function syncAdvInput(sliderId,inputId){syncInput(sliderId,inputId);}
+
+function updateSliderLabels(){
+  setT('printTimeVal',pf('printTime')+'h');
+  setT('failureVal',pf('failureRate')+'%');
+  setT('indirectVal',pf('indirectCosts')+'%');
+  setT('marginVal',pf('profitMargin')+'%');
+}
+function updatePctLabels(){
+  setT('rFailurePct',String(pf('failureRate')));
+  setT('rIndirectPct',String(pf('indirectCosts')));
+  setT('rMarginPct',String(pf('profitMargin')));
+}
+
+// ── ADVANCED PANEL ─────────────────────
+function toggleAdvPanel(){advOpen?closeAdvPanel():openAdvPanel();}
+function openAdvPanel(){
+  advOpen=true;
+  document.getElementById('advPanel').classList.add('open');
+  document.getElementById('advBackdrop').classList.add('open');
+  document.getElementById('advBtn').classList.add('active-param');
+}
+function closeAdvPanel(){
+  advOpen=false;
+  document.getElementById('advPanel').classList.remove('open');
+  document.getElementById('advBackdrop').classList.remove('open');
+  document.getElementById('advBtn').classList.remove('active-param');
+}
+async function saveAsDefaults(){
+  defaults = {...defaults, ...getInputs()};
+  try{
+    await Auth.updateCompany({ config: defaults });
+    closeAdvPanel();
+    showToast(i18n.getNestedTranslation('calc.toasts.defaults_saved') || '<i class="ph-bold ph-check-circle"></i> Parâmetros padrão guardados!','ok');
+  }catch(e){
+    showToast((i18n.getNestedTranslation('calc.toasts.error_saving') || 'Erro ao guardar: ').replace('{message}', e.message),'err');
+  }
+}
+
+// ── HISTORY ────────────────────────────
+function saveToHistory(){
+  const i=getInputs();const r=computeResults(i);
+  if(r.finalPrice===0){showToast(i18n.getNestedTranslation('calc.toasts.no_values') || 'Sem valores para guardar','err');return;}
+  document.getElementById('saveChoiceOverlay').classList.add('open');
+}
+
+function closeSaveChoice() {
+  document.getElementById('saveChoiceOverlay').classList.remove('open');
+}
+
+async function doSaveHistory() {
+  const i=getInputs(); const r=computeResults(i);
+  const name=(document.getElementById('printName').value||'').trim();
+  calcHistory.unshift({
+    id: Date.now(),
+    name,
+    mode: _calcMode,
+    time: new Date().toLocaleTimeString(i18n.currentLocale, { hour: '2-digit', minute: '2-digit' }),
+    inputs: { ...i },
+    results: { ...r }
+  });
+  
+  if(calcHistory.length > 20) calcHistory = calcHistory.slice(0, 20);
+  
+  _persistHistory();
+  renderHistory();
+  closeSaveChoice();
+  showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-floppy-disk"></i> Guardado no histórico!','ok');
+}
+
+async function doSaveProduct() {
+  const i=getInputs(); const r=computeResults(i);
+  const name=(document.getElementById('printName').value||'').trim();
+  
+  if(!name) {
+    showToast('Dá um nome ao projeto antes de criar o produto.', 'err');
+    closeSaveChoice();
+    document.getElementById('printName').focus();
+    return;
+  }
+
+  try {
+    const payload = {
+      name,
+      salePrice: r.finalPrice,
+      description: 'Criado a partir da calculadora.',
+      config: {
+        mode: i.tech || 'fdm', // Products module expects 'fdm' or 'resin' in mode
+        calc_mode: i.mode || 'simple',
+        material_cost: r.materialCost || 0,
+        filament_weight: (i.tech === 'fdm') ? (i.weight || 0) : 0,
+        resin_volume: (i.tech === 'resin') ? (i.weight || 0) : 0,
+        est_print_hours: i.time || 0,
+        material_id: i.materialId || '',
+        _orig_inputs: { ...i, printName: name } // Full snapshot for restoration
+      }
+    };
+    
+    await DB.saveProduct(payload);
+    showToast('<i class="ph-bold ph-package"></i> Produto criado na sua biblioteca!', 'ok');
+    closeSaveChoice();
+  } catch(e) {
+    showToast('Erro ao criar produto: ' + e.message, 'err');
+  }
+}
+
+function renderHistory(){
+  const raw=(document.getElementById('historySearch')?.value||'').trim();
+  const query=raw.toLowerCase();
+  // pesquisa alargada: nome, peso, tempo, filamento, margem, custo base, preço final, hora
+  const filtered=calcHistory.filter(e=>{
+    if(!query) return true;
+    const haystack=[
+      (e.name||'').toLowerCase(),
+      String(e.inputs.partWeight),
+      String(e.inputs.printTime),
+      String(e.inputs.filamentPrice),
+      String(e.inputs.profitMargin),
+      fmtCurrency(e.results.baseCost).replace(/[^0-9,]/g,''),
+      fmtCurrency(e.results.finalPrice).replace(/[^0-9,]/g,''),
+      e.time,
+    ].join(' ');
+    return haystack.includes(query);
+  });
+  const cEl=document.getElementById('historyCount');
+  const regKey = filtered.length === 1 ? 'calc.history_count_registo' : 'calc.history_count_registos';
+  const regLabel = i18n.getNestedTranslation(regKey) || (filtered.length === 1 ? 'registo' : 'registos');
+  if(cEl) cEl.textContent=query
+    ? (i18n.getNestedTranslation('calc.history_not_found') || 'Nenhum resultado para "{query}"').replace('{query}', escH(raw))
+    : regLabel.replace('{count}', filtered.length);
+  const emptyEl=document.getElementById('historyEmpty');
+  const tableEl=document.getElementById('historyTable');
+  const tbody=document.getElementById('historyTbody');
+  if(!filtered.length){
+    if(emptyEl){
+      emptyEl.style.display='flex';
+      emptyEl.innerHTML=calcHistory.length
+        ?`<div class="history-empty-icon"><i class="ph-bold ph-magnifying-glass"></i></div><div>` + (i18n.getNestedTranslation('calc.history_not_found') || 'Nenhum resultado para "{query}"').replace('{query}', `<strong>"${escH(raw)}"</strong>`) + `</div>`
+        :`<div class="history-empty-icon"><i class="ph-bold ph-clock"></i></div><div>` + (i18n.getNestedTranslation('calc.history_empty_session') || 'Sem cálculos guardados nesta sessão.<br>Clica em <strong><i class="ph-bold ph-floppy-disk"></i> Guardar</strong> nos resultados para registar aqui.') + `</div>`;
+    }
+    if(tableEl) tableEl.style.display='none';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  if(tableEl) tableEl.style.display='';
+  // highlight helper
+  function hl(str){
+    if(!query||!str) return escH(str||'');
+    return escH(str).replace(new RegExp('('+escH(raw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark class="hl">$1</mark>');
+  }
+  tbody.innerHTML=filtered.map(function(e){
+    var isAdvanced = e.inputs.mode === 'advanced';
+    var modeBadge=e.mode==='resin'?'<span style="font-size:.65rem;background:rgba(168,85,247,.12);color:#7c3aed;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">Resina</span>':'';
+    if (isAdvanced) modeBadge += '<span style="font-size:.65rem;background:var(--orange-g);color:var(--orange);border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">Projeto</span>';
+    
+    var qtyBadge=(e.inputs.qty||1)>1?'<span style="font-size:.65rem;color:var(--muted)"> ×'+(e.inputs.qty)+'</span>':'';
+    
+    var weightTotal = e.inputs.weight || (isAdvanced ? 0 : e.inputs.partWeight);
+    var weightCol=e.mode==='resin'?(e.inputs.resinVolume||weightTotal||'—')+'mL':(weightTotal||'—')+'g';
+    
+    var timePrint = e.inputs.time || (isAdvanced ? 0 : e.inputs.printTime);
+    var tPrint = (timePrint || '—');
+
+    var restoreBtnLabel = i18n.getNestedTranslation('calc.restore_btn') || 'Restaurar';
+    return '<tr onclick="restoreHistory('+e.id+')">'
+      +'<td class="td-name">'+(e.name?hl(e.name):'<span class="no-name">' + (i18n.getNestedTranslation('calc.no_name') || 'Sem nome') + '</span>')+modeBadge+qtyBadge+'</td>'
+      +'<td class="td-mono">'+weightCol+'</td>'
+      +'<td class="td-mono">'+tPrint+'h</td>'
+      +'<td class="td-mono">'+e.inputs.profitMargin+'%</td>'
+      +'<td class="td-mono">'+fmtCurrency(e.results.baseCost)+'</td>'
+      +'<td class="td-price">'+fmtCurrency(e.results.finalPrice)+'</td>'
+      +'<td class="td-time">'+e.time+'</td>'
+      +'<td class="td-actions">'
+        +'<button class="btn-restore" onclick="event.stopPropagation();restoreHistory('+e.id+')"><i class="ph-bold ph-arrow-counter-clockwise"></i> '+restoreBtnLabel+'</button>'
+        +'<button class="btn-del" onclick="event.stopPropagation();deleteHistory('+e.id+')" title="Remover"><i class="ph-bold ph-x"></i></button>'
+      +'</td></tr>';
+  }).join('');
+}
+
+function restoreHistory(id){
+  var e=calcHistory.find(function(h){return h.id===id;});if(!e)return;
+  var i=e.inputs;
+  
+  var cMode = e.mode === 'advanced' || i.mode === 'advanced' ? 'advanced' : 'simple';
+  setCalcMode(cMode);
+  
+  var tech = i.tech || e.mode || 'fdm';
+  setTechMode(tech);
+  
+  setV('printName', e.name||'');
+  
+  if (cMode === 'simple') {
+    setV('filamentPrice', i.materialPrice || i.filamentPrice || i.resinPrice || 25);
+    setV('partWeight', i.weight || i.partWeight || i.resinVolume || 50);
+    setV('printTime', i.time || i.printTime || i.resinPrintTime || 2);
+  } else {
+    if (i.mesas && Array.isArray(i.mesas) && i.mesas.length > 0) {
+      _mesas = i.mesas;
+    } else if (i.parts && Array.isArray(i.parts)) {
+      _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: i.parts }];
+    } else {
+      _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
+    }
+    setV('totalProjectTime', i.totalTime || i.time || 0);
+    renderMesas();
+  }
+
+  setV('printerPrice',i.printerPrice); setV('printerLife',i.printerLife);
+  setV('powerConsumption',i.powerConsumption||200);
+  setV('electricityPrice',i.electricityPrice);
+  setV('failureRate',i.failureRate); setV('indirectCosts',i.indirectCosts); setV('profitMargin',i.profitMargin);
+  setSl('failureSlider',i.failureRate,0,50);
+  setSl('indirectSlider',i.indirectCosts,0,50);
+  setSl('marginSlider',i.profitMargin,0,100);
+  updateSliderLabels();liveCalc();
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('<i class="ph-bold ph-arrow-counter-clockwise"></i> Cálculo restaurado','ok');
+}
+
+function deleteHistory(id){calcHistory=calcHistory.filter(h=>h.id!==id);_persistHistory();renderHistory();}
+function clearHistory(){
+  if(!calcHistory.length)return;
+  showConfirm(
+    i18n.getNestedTranslation('calc.confirm_title') || 'Limpar histórico?',
+    i18n.getNestedTranslation('calc.confirm_msg') || 'Esta acção remove todos os registos guardados e não pode ser desfeita.',
+    ()=>{calcHistory=[];_persistHistory();renderHistory();showToast(i18n.getNestedTranslation('calc.toasts.fields_cleared') || '<i class="ph-bold ph-trash"></i> Histórico limpo','');}
+  );
+}
+function showConfirm(title,msg,onConfirm){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmModal').classList.add('open');
+  document.getElementById('confirmOkBtn').onclick=()=>{closeConfirm();onConfirm();};
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open');}
+
+// ── EXPORT / COPY ──────────────────────
+function exportCalcCSV(){
+  var i=getInputs();var r=computeResults(i);
+  var name=document.getElementById('printName').value.trim();
+  var sym=getCurrencySymbol();
+  var modeLabel=i.mode==='resin'?'Resina':'FDM';
+  var rows=[['Campo','Valor'],['Nome',name||'—'],['Quantidade',i.qty||1]]
+    .concat(i.mode==='resin'
+      ?[['Modo','Resina'],[('Preço resina ('+sym+'/L)'),i.resinPrice],['Volume (mL)',i.resinVolume],
+        ['Densidade (g/mL)',i.resinDensity],['Tempo (h)',i.printTime],['UV (W)',i.uvLampPower],['Lavagem+cura (min)',i.washCureTime]]
+      :[['Modo','FDM'],[('Preço filamento ('+sym+'/kg)'),i.filamentPrice],['Peso (g)',i.partWeight],
+        ['Tempo (h)',i.printTime],['Consumo (W)',i.powerConsumption]])
+    .concat([[('Impressora ('+sym+')'),i.printerPrice],['Vida útil (h)',i.printerLife],
+      [('Eletricidade ('+sym+'/kWh)'),i.electricityPrice],['Falhas (%)',i.failureRate],
+      ['Indiretos (%)',i.indirectCosts],['Margem (%)',i.profitMargin],['---','---'],
+      ['Custo material',r.materialCost.toFixed(2)],['Custo amortização',r.amortizationCost.toFixed(2)],
+      ['Custo eletricidade',r.electricityCost.toFixed(2)],['Custo base (p/un.)',r.baseCost.toFixed(2)],
+      ['+ Falhas',r.failureCost.toFixed(2)],['+ Indiretos',r.indirectCost.toFixed(2)],
+      ['+ Margem',r.marginCost.toFixed(2)],['PREÇO UNIT.',r.unitPrice.toFixed(2)],
+      ['PREÇO FINAL',r.finalPrice.toFixed(2)]]);
+  var ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','h');
+  dlCSV(rows.map(function(r){return r.join(';');}).join('\n'),'calculo_'+ts+'.csv');
+  showToast(i18n.getNestedTranslation('calc.toasts.csv_exported') || '<i class="ph-bold ph-file-csv"></i> CSV exportado!','ok');
+}
+
+
+
+function copyResults(){
+  const icons = { mat: '<i class="ph-bold ph-vinyl-record"></i>', gear: '<i class="ph-bold ph-gear"></i>', clock: '<i class="ph-bold ph-timer"></i>', power: '<i class="ph-bold ph-lightning"></i>', money: '<i class="ph-bold ph-currency-eur"></i>' };
+  const i=getInputs();const r=computeResults(i);
+  const name=document.getElementById('printName').value.trim();
+  const sym=getCurrencySymbol();
+  const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
+  const W=26; // column width for alignment
+  const row=(lbl,val)=>lbl.padEnd(W)+sym+val;
+  const txt=[
+    name?`${name}`:null,
+    `Cálculo de Impressão 3D — ${new Date().toLocaleString(i18n.currentLocale)}`,
+    `Modo: ${modeLabel}`,
+    '─'.repeat(42),
+    row('Custo material:',       r.materialCost.toFixed(2)),
+    row('Custo amortização:',    r.amortizationCost.toFixed(2)),
+    row('Custo eletricidade:',   r.electricityCost.toFixed(2)),
+    row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
+    row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
+    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCosts.toFixed(2)),
+    row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
+    '─'.repeat(42),
+    row('Preço unitário:',       r.unitPrice.toFixed(2)),
+    row(`PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
+  ].filter(Boolean).join('\n');
+  const flash=()=>{const el=document.getElementById('copyBtnPanel');if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}};
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(()=>{showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
+  }else{fbCopy(txt);}
+}
+function _buildClientMsg(){
+  const i=getInputs(); const r=computeResults(i);
+  const clientName=(document.getElementById('clientName')||{value:''}).value.trim();
+  const name=(document.getElementById('printName').value||'').trim();
+  const sym=getCurrencySymbol();
+  const qty=i.qty||1;
+  const modeLabel=i.mode==='resin'?'Resina (SLA/DLP/MSLA)':'FDM — Filamento';
+  const date=new Date().toLocaleDateString(i18n.currentLocale,{day:'2-digit',month:'long',year:'numeric'});
+  const companyName = (_sessionData && _sessionData.companyName) ? _sessionData.companyName : '3DZAAP';
+
+  // Professional WhatsApp formatting
+  const lines=[
+    '━━━━━━━━━━━━━━━━━━━━',
+    '*' + i18n.getNestedTranslation('calc.wa.budget_title') + '*',
+    '━━━━━━━━━━━━━━━━━━━━',
+    ...(clientName ? ['*' + i18n.getNestedTranslation('calc.wa.greeting', {name: clientName}) + '*', ''] : []),
+    '*'+companyName+'*',
+    '*' + i18n.getNestedTranslation('calc.wa.date') + ':* '+date,
+    '',
+    '*' + i18n.getNestedTranslation('calc.wa.part') + ':* '+(name || i18n.getNestedTranslation('calc.wa.custom_print')),
+    '*' + i18n.getNestedTranslation('calc.wa.tech') + ':* '+modeLabel,
+    '*' + i18n.getNestedTranslation('calc.wa.qty') + ':* '+qty+' ' + i18n.getNestedTranslation('calc.qty_unit'),
+    '',
+    '------------------------------------',
+    '*' + i18n.getNestedTranslation('calc.wa.tech_detail') + ':*',
+    i.mode==='resin' ? '• ' + i18n.getNestedTranslation('calc.wa.est_vol') + ': '+i.resinVolume+'ml' : '• ' + i18n.getNestedTranslation('calc.wa.est_weight') + ': '+i.partWeight+'g',
+    '• ' + i18n.getNestedTranslation('calc.wa.est_time') + ': '+i.printTime+'h',
+    '------------------------------------',
+    '',
+    '*' + i18n.getNestedTranslation('calc.wa.values') + ':*',
+    '• ' + i18n.getNestedTranslation('calc.wa.unit_price') + ': '+sym+' '+r.unitPrice.toFixed(2),
+    '• *' + i18n.getNestedTranslation('calc.wa.total') + ': '+sym+' '+r.finalPrice.toFixed(2)+'*',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━',
+    i18n.getNestedTranslation('calc.wa.validity'),
+    i18n.getNestedTranslation('calc.wa.powered_by'),
+    '━━━━━━━━━━━━━━━━━━━━'
+  ];
+
+  if (_portalUrl) {
+    lines.push('', '🔗 *Acompanhe ou aprove aqui:*', _portalUrl);
+    if (_portalPin) {
+      lines.push('🔑 *Código de acesso:* ' + _portalPin);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+let _portalUrl = '';
+let _portalPin = '';
+
+function copyForClient(){
+  const txt=_buildClientMsg();
+  if(!txt) return;
+  const flash=()=>{
+    const el=document.getElementById('copyClientBtn');
+    if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1800);}
+  };
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(()=>{showToast('<i class="ph-bold ph-copy"></i> ' + i18n.getNestedTranslation('calc.toasts.saved'),'ok');flash();}).catch(()=>fbClientCopy(txt));
+  }else{fbClientCopy(txt);}
+}
+
+// A função sendWhatsApp nova já foi definida anteriormente na área de lógica central.
+// Removendo a duplicata aqui.
+
+function fbClientCopy(t){
+  const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Orçamento copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  document.body.removeChild(ta);
+}
+
+function fbCopy(t){
+  const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');}catch(e){showToast('Não foi possível copiar','err');}
+  document.body.removeChild(ta);
+}
+
+// ── USER MENU ──────────────────────────
+function toggleUserMenu() { Sidebar._toggleUserMenu(); }
+function closeUserMenu()  { Sidebar._closeUserMenu(); }
+
+async function doLogout() { Sidebar._doLogout(); }
+
+// ── SIDEBAR MOBILE ──────────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sideOverlay').classList.toggle('open');
+}
+
+// ── HELPERS ────────────────────────────
+function pf(id){
+  let val = (document.getElementById(id)||{}).value;
+  if(typeof val === 'string') val = val.replace(',', '.');
+  return parseFloat(val) || 0;
+}
+function setT(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function dlCSV(csv,fn){
+  const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(b),download:fn,style:'display:none'});
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+
+
+
+</script>
+
+<script>
+// Close help popover on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#topbarHelpBtn') && !e.target.closest('#topbarHelpPopover')) {
+    var p = document.getElementById('topbarHelpPopover');
+    if (p) p.style.display = 'none';
+  }
+});
+// Sync language selector value after i18n init
+document.addEventListener('DOMContentLoaded', function() {
+  var attempt = 0;
+  var iv = setInterval(function() {
+    var sel = document.getElementById('topbarLangSelect');
+    if (sel && window.i18n) {
+      sel.value = window.i18n.currentLocale || localStorage.getItem('3dzaap_lang') || 'pt-PT';
+      clearInterval(iv);
+    }
+    if (++attempt > 20) clearInterval(iv);
+  }, 100);
+  // Inicialização gerida no topo via DOMContentLoaded.
+});
+</script>
+
+<!-- NOVO: Modal de Escolha ao Guardar -->
+<div class="modal-overlay" id="saveChoiceOverlay" onclick="if(event.target===this)closeSaveChoice()">
+  <div class="modal" style="max-width:400px; text-align:center; padding:30px 20px">
+    <div style="font-size:2.4rem; margin-bottom:12px"><i class="ph-bold ph-floppy-disk"></i></div>
+    <h3 style="margin-bottom:8px">Onde desejas guardar?</h3>
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:24px; line-height:1.4">
+      Podes guardar no histórico rápido para consulta ou criar um novo modelo na tua biblioteca de produtos.
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <button class="btn btn-primary" onclick="doSaveProduct()"><i class="ph-bold ph-package"></i> Criar Novo Produto</button>
+      <button class="btn btn-ghost" style="border:1.5px solid var(--border)" onclick="doSaveHistory()"><i class="ph-bold ph-clock"></i> Apenas no Histórico</button>
+      <button class="btn btn-ghost" onclick="closeSaveChoice()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>Sidebar.init();</script>
+<!-- MODAL: GERIR MARKETPLACE -->
+<div class="v2-modal" id="mktModal">
+  <div class="v2-modal-content">
+    <div class="step-header">
+      <div class="step-title" data-i18n="calc.mkt.title">Novo Marketplace</div>
+      <button class="adv-close" onclick="closeMktManager()" style="margin-left:auto"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="step-body">
+      <div class="v2-field-group">
+        <div class="v2-field full">
+          <label class="v2-label" data-i18n="calc.table_name">Nome da Plataforma</label>
+          <input type="text" id="modalMktName" class="v2-input" placeholder="Ex: OLX, Wallapop...">
+        </div>
+        <div class="v2-field">
+          <label class="v2-label" data-i18n="calc.mkt.tax">Comissão (%)</label>
+          <input type="number" id="modalMktTax" class="v2-input" step="0.01" value="0">
+        </div>
+        <div class="v2-field">
+          <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
+          <input type="number" id="modalMktFixed" class="v2-input" step="0.01" value="0">
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:24px">
+        <button class="btn-adv-cancel" onclick="closeMktManager()" style="flex:1" data-i18n="settings.team.btn_cancel">Cancelar</button>
+        <button class="btn-adv-save" onclick="saveCustomMkt()" style="flex:1" data-i18n="calc.save_btn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
