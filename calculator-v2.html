@@ -749,9 +749,10 @@
           <div class="hero-result-card">
             <div class="hero-label" data-i18n="calc.price_hero_label">Preço Sugerido</div>
             <div class="hero-value" id="rFinal">0,00 €</div>
-            <div class="hero-margin-badge" id="rMarginBadge">
+            <div class="hero-margin-badge" id="rMarginBadge" title="Margem calculada">
               <i class="ph-bold ph-chart-line-up"></i> <span data-i18n="settings.prefs.margin">Margem</span>: <span id="labMargPct">30</span>%
             </div>
+            <div id="mktActiveBadge" style="display:none; position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.2); font-size:0.6rem; font-weight:900; padding:4px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:0.5px">Marketplace Active</div>
           </div>
 
           <!-- MARKETPLACE SUMMARY -->
@@ -971,15 +972,15 @@ function _persistHistory() {
 }
 
 // ── INIT ───────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize i18n and theme first
   initThemeToggle();
   
-  // Unidade de peso inicial (compatibilidade)
+  // Weight unit compatibility
   const wu = (localStorage.getItem('3dzaap_config_weightUnit')) || 'g';
   document.querySelectorAll('.field-unit[data-unit="weight"]').forEach(el => el.textContent = wu);
 
+  // Single call to load user and then initial data
   await loadUserData();
-  await loadInitialData();
   await loadCompanyDefaults();
   
   // Always apply company defaults first
@@ -1063,8 +1064,8 @@ async function loadUserData() {
     Sidebar.setSession(_session);
     _sessionData = _session; // Sync with local var used in some functions
     
-    loadInitialData();
-    loadMarketplaces(); // NEW for V2
+    await loadInitialData(); // Wait for materials/printers
+    loadMarketplaces(); // Load localized defaults
     return _session;
   } catch(e) {
     console.error('[3DZAAP] error in loadUserData:', e);
