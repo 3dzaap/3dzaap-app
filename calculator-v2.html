@@ -65,6 +65,29 @@
   gap: 10px;
 }
 
+/* NOVO: Badge / Switch de Modo Pro */
+.pro-mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: rgba(59,143,212,0.08);
+  border: 1px solid rgba(59,143,212,0.2);
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--blue);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.pro-mode-switch.active {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue-d);
+  box-shadow: 0 2px 8px rgba(59,143,212,0.3);
+}
+
 .step-num {
   width: 24px;
   height: 24px;
@@ -107,7 +130,35 @@
   text-transform: uppercase;
 }
 
-/* ── PREMIUM SEGMENTED CONTROL ───────────── */
+/* ── PRO FEATURES ───────────────────────── */
+.pro-section {
+  border-top: 1.5px dashed var(--border);
+  margin-top: 20px;
+  padding-top: 16px;
+  display: none; /* OCULTO POR PADRÃO */
+}
+.pro-section.visible { display: block; }
+
+.pro-section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pro-section-title i { font-size: 0.85rem; }
+
+.maintenance-box {
+  background: rgba(59,143,212,0.04);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(59,143,212,0.1);
+}
 .segmented-control {
   display: flex;
   background: rgba(0,0,0,0.12);
@@ -753,7 +804,10 @@
           <div class="step-card" id="sectionSimple">
             <div class="step-header">
               <div class="step-num">2</div>
-              <div class="step-title">Dados de Produção</div>
+              <div class="step-title" style="flex:1">Dados de Produção</div>
+              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos detalhados de bico, bFE e mão de obra">
+                <i class="ph-bold ph-shield-check"></i> Modo Pro
+              </div>
             </div>
             <div class="step-body">
               <div class="form-row">
@@ -778,6 +832,58 @@
                   <select class="form-select" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
                     <option value="">Selecionar impressora...</option>
                   </select>
+                </div>
+              </div>
+
+              <!-- PRO MAINTENANCE & LABOR -->
+              <div class="pro-section">
+                <div class="pro-section-title"><i class="ph-bold ph-wrench"></i> Manutenção & Desgaste (Pro)</div>
+                <div class="maintenance-box">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" id="labelMaintPart">Bico / FEP (Custo)</label>
+                      <div class="v2-input-wrap">
+                        <input type="number" id="maintPartCost" class="form-input" value="15" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
+                        <span class="v2-unit">€</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Vida Útil (Horas)</label>
+                      <div class="v2-input-wrap">
+                        <input type="number" id="maintPartLife" class="form-input" value="500" step="1" oninput="liveCalc()" style="font-family:var(--mono)">
+                        <span class="v2-unit">h</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pro-section-title"><i class="ph-bold ph-users"></i> Mão de Obra & Consumíveis (Pro)</div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Valor Hora Trabalho</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="laborRate" class="form-input" value="15" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
+                      <span class="v2-unit">€/h</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Minutos (Setup + Pós)</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="laborMinutes" class="form-input" value="15" step="1" oninput="liveCalc()" style="font-family:var(--mono)">
+                      <span class="v2-unit">min</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="form-row" style="margin-top:10px">
+                  <div class="form-group">
+                    <label class="form-label">Consumíveis p/ Print</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="consumablesCost" class="form-input" value="0.50" step="0.05" oninput="liveCalc()" style="font-family:var(--mono)">
+                      <span class="v2-unit">€</span>
+                    </div>
+                    <span class="form-hint">Luvas, IPA, papel, etc.</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -829,8 +935,11 @@
                   <input type="number" id="mktTaxPct" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
                 </div>
                 <div class="form-group">
-                  <label class="form-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
-                  <input type="number" id="mktFixedFee" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
+                  <label class="form-label">Embalagem & Logística</label>
+                  <div class="v2-input-wrap">
+                    <input type="number" id="packagingCost" class="form-input" value="0" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
+                    <span class="v2-unit">€</span>
+                  </div>
                 </div>
               </div>
               
@@ -855,11 +964,6 @@
         <!-- ── RIGHT: RESULTS SIDEBAR ── -->
         <div class="results-column">
           
-          <!-- HERO: PREÇO SUGERIDO -->
-          <div class="hero-result-card">
-            <div class="hero-label" data-i18n="calc.wa.unit_price">Preço de Venda Sugerido</div>
-            <div class="hero-value" id="rFinal">0,00 €</div>
-            <div class="hero-margin-badge" id="rMarginBadge" title="Margem de lucro alvo definida nos parâmetros.">
           <!-- MAIN HERO -->
           <div class="price-hero" style="background: var(--bg-card); padding: 32px 24px; border: 1.5px solid var(--border); border-radius: 24px;">
             <div class="price-hero-label" data-i18n="calc.results.suggested_price">Preço Sugerido</div>
@@ -874,7 +978,7 @@
                <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="width: 100%; border-radius: 16px; padding: 14px;">
                  <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span>
                </button>
-               <div class="results-actions-row">
+               <div class="results-actions-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
                  <button class="btn btn-ghost" onclick="copyResults()" style="flex:1">
                    <i class="ph-bold ph-copy"></i> Copiar
                  </button>
@@ -882,7 +986,7 @@
                    <i class="ph-bold ph-file-csv"></i> CSV
                  </button>
                </div>
-               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; border-radius: 16px; padding: 14px; background: #25D366; border: none; color: white;">
+               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; border-radius: 16px; padding: 14px; background: #25D366; border: none; color: white; margin-top:10px">
                  <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
                </button>
             </div>
@@ -890,88 +994,99 @@
 
           <!-- COSTS BREAKDOWN -->
           <div class="summary-card">
-            </div>
-            
+            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results.breakdown">Composição de Custos</span></div>
             <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.table_material">Material</span>
+              <span class="summary-label" data-i18n="calc.results.material">Material</span>
               <span class="summary-val" id="resFilCost">0,00 €</span>
             </div>
             <div class="summary-line">
-              <span class="summary-label">Amortização</span>
+              <span class="summary-label">Amortização & Energia</span>
               <span class="summary-val" id="resMchCost">0,00 €</span>
             </div>
             <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.results.energy">Eletricidade</span>
-              <span class="summary-val" id="resElecCost">0,00 €</span>
+              <span class="summary-label">Manutenção (Desgaste)</span>
+              <span class="summary-val" id="resMaintCost">0,00 €</span>
             </div>
-            <div class="summary-line" style="border-top:2px solid var(--border); margin-top:5px; padding-top:10px; background: rgba(34,197,94,0.05); margin-left: -10px; margin-right: -10px; padding-left: 10px; padding-right: 10px;">
-              <span class="summary-label" style="color:var(--success); font-weight:800" data-i18n="calc.results.base">Custo de Base</span>
-              <span class="summary-val" style="color:var(--success); font-weight:800" id="resBaseCost">0,00 €</span>
+            <div class="summary-line">
+              <span class="summary-label">Mão de Obra</span>
+              <span class="summary-val" id="resLaborCost">0,00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Consumíveis & Logística</span>
+              <span class="summary-val" id="resConsumLog">0,00 €</span>
             </div>
             
+            <div class="summary-line" style="background: rgba(34,197,94,0.1); margin: 8px -8px; padding: 10px 8px; border-radius: 8px; border: 1px dashed var(--success);">
+              <span class="summary-label" style="color: var(--success); font-weight: 800;" data-i18n="calc.results.production_cost">Custo Total de Operação</span>
+              <span class="summary-val" id="resBaseCost" style="color: var(--success); font-weight: 900;">0,00 €</span>
+            </div>
             <div class="summary-line">
-              <span class="summary-label">Falhas (<span id="labFailPct">5</span>%)</span>
+              <span class="summary-label">Taxa p/ Falhas</span>
               <span class="summary-val" id="resFailCost">0,00 €</span>
             </div>
             <div class="summary-line">
-              <span class="summary-label">Indiretos (<span id="labIndPct">10</span>%)</span>
+              <span class="summary-label">Custos Indiretos</span>
               <span class="summary-val" id="resIndCost">0,00 €</span>
             </div>
           </div>
 
-          <div class="results-actions">
-            <button class="btn btn-primary full" id="saveCalcBtn" onclick="saveToHistory()">
-              <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.save_btn">Guardar Cálculo</span>
-            </button>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-              <button class="btn btn-ghost" onclick="sendWhatsApp()">
-                <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
-              </button>
-              <button class="btn btn-ghost" onclick="copyResults()">
-                <i class="ph-bold ph-copy"></i> Copiar
-              </button>
+          <!-- ROI & PROFIT ANALYSIS -->
+          <div class="summary-card" style="border-color: var(--blue);">
+            <div class="summary-title" style="color: var(--blue)"><i class="ph-bold ph-trend-up"></i> Análise de Lucratividade</div>
+            <div class="summary-line">
+              <span class="summary-label">Lucro Líquido (p/un)</span>
+              <span class="summary-val" id="resNetProfit" style="color: var(--blue)">0,00 €</span>
             </div>
-            <button class="btn btn-ghost full" id="advBtn" onclick="toggleAdvPanel()" style="margin-top:10px">
-              <i class="ph-bold ph-gear"></i> <span data-i18n="settings.title">Parâmetros</span>
-            </button>
+            <div class="summary-line">
+              <span class="summary-label">Vendas p/ Pagar Impressora</span>
+              <span class="summary-val" id="resROI">0</span>
+            </div>
+            <div style="margin-top: 10px; height: 6px; background: var(--bg-card-s); border-radius: 3px; overflow: hidden;">
+              <div id="roiBar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.6s ease;"></div>
+            </div>
           </div>
-          
-        </div>
-      </div>
+
+          <!-- MARKETPLACE COMPARISON -->
+          <div class="summary-card" id="mktSummaryCard" style="display:none">
+            <div class="summary-title"><i class="ph-bold ph-storefront"></i> <span data-i18n="calc.results.mkt_comp">Comparação Marketplace</span></div>
+            <div id="mktComparisonContainer"></div>
+          </div>
 
         </div>
-      </div>
+      </div><!-- /.calc-v2-container -->
 
-      <div class="page-header" style="margin-top:40px">
-        <div class="page-header-text">
-          <h2 data-i18n="calc.history_title"><i class="ph-bold ph-clock"></i> Histórico de Cálculos</h2>
+      <!-- ── BOTTOM: HISTORY ── -->
+      <div id="calcHistoryCard" class="card history-card" style="margin-top: var(--v2-gap);">
+        <div class="card-header">
+          <div class="card-title"><i class="ph-bold ph-clock-counter-clockwise"></i> Histórico Recente</div>
+          <div class="card-header-actions" style="display:flex; align-items:center; gap:12px">
+            <div class="history-search-wrap">
+              <i class="ph-bold ph-magnifying-glass history-search-icon"></i>
+              <input type="text" id="historySearch" class="history-search" placeholder="Procurar..." oninput="renderHistory()">
+            </div>
+            <span class="history-count" id="historyCount">0 registos</span>
+            <button class="btn btn-ghost btn-danger btn-sm" onclick="clearHistory()"><i class="ph-bold ph-trash"></i></button>
+          </div>
         </div>
-        <div class="history-count" id="historyCount">0 registos</div>
-      </div>
-      <!-- CARD HISTÓRICO -->
-      <div class="glass-card" style="margin-bottom:40px; min-height: 200px;">
-        <div id="historyEmpty" class="history-empty" style="padding:40px; text-align:center; color:var(--muted)">
-           <div style="font-size:2rem; margin-bottom:10px"><i class="ph-bold ph-clock"></i></div>
-           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</strong> nos resultados para registar aqui.</div>
-        </div>
-        <div class="table-container">
-          <table class="history-table" id="historyTable" style="display:none">
-            <thead>
-              <tr>
-                <th data-i18n="calc.table_name">Nome</th>
-                <th data-i18n="calc.table_weight">Peso</th>
-                <th data-i18n="calc.table_time">Tempo</th>
-                <th data-i18n="calc.table_margin">Margem</th>
-                <th data-i18n="calc.table_base">Custo Base</th>
-                <th data-i18n="calc.table_final">Preço Final</th>
-                <th data-i18n="calc.table_time_hour">Hora</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="historyTbody">
-              <!-- JS -->
-            </tbody>
-          </table>
+        <div class="card-body" style="padding:0">
+          <div id="historyEmpty" class="history-empty"></div>
+          <div class="table-wrap">
+            <table class="history-table" id="historyTable" style="display:none">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Peso/Vol</th>
+                  <th>Tempo</th>
+                  <th>Margem</th>
+                  <th>Custo</th>
+                  <th>Preço</th>
+                  <th>Data</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="historyTbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div><!-- /page -->
@@ -1761,31 +1876,31 @@ let _marketplaces = [];
 let _activeMktIds = []; // Now an array for multi-selection
 const _mktDefaults = {
   'pt-PT': [
-    { id: 'etsy', name: 'Etsy', taxPct: 15, fixedFee: 0.20 },
-    { id: 'wallapop', name: 'Wallapop', taxPct: 10, fixedFee: 0 },
-    { id: 'amazon-eu', name: 'Amazon EU', taxPct: 15, fixedFee: 1.00 }
+    { id: 'etsy-pt', name: 'Etsy PT', taxPct: 15, fixedFee: 0.20, currency: 'EUR' },
+    { id: 'wallapop', name: 'Wallapop (ES/PT)', taxPct: 10, fixedFee: 0, currency: 'EUR' },
+    { id: 'amazon-eu', name: 'Amazon EU', taxPct: 15, fixedFee: 1.00, currency: 'EUR' }
   ],
   'pt-BR': [
-    { id: 'ml', name: 'Mercado Livre', taxPct: 17.49, fixedFee: 0 },
-    { id: 'shopee', name: 'Shopee', taxPct: 20, fixedFee: 4 },
-    { id: 'elo7', name: 'Elo7', taxPct: 12, fixedFee: 3.99 },
-    { id: 'magalu', name: 'Magalu', taxPct: 15, fixedFee: 0 },
-    { id: 'tiktok', name: 'TikTok Shop', taxPct: 6, fixedFee: 2.00 }
+    { id: 'ml', name: 'Mercado Livre', taxPct: 17.49, fixedFee: 0, currency: 'BRL' },
+    { id: 'shopee', name: 'Shopee', taxPct: 20, fixedFee: 4, currency: 'BRL' },
+    { id: 'elo7', name: 'Elo7', taxPct: 12, fixedFee: 3.99, currency: 'BRL' },
+    { id: 'magalu', name: 'Magalu', taxPct: 15, fixedFee: 0, currency: 'BRL' },
+    { id: 'tiktok', name: 'TikTok Shop', taxPct: 6, fixedFee: 2.00, currency: 'BRL' }
   ],
   'en-US': [
-    { id: 'etsy', name: 'Etsy', taxPct: 6.5, fixedFee: 0.20 },
-    { id: 'ebay', name: 'eBay', taxPct: 13.25, fixedFee: 0.30 },
-    { id: 'amazon-us', name: 'Amazon US', taxPct: 15, fixedFee: 1.00 }
+    { id: 'etsy-us', name: 'Etsy US', taxPct: 6.5, fixedFee: 0.20, currency: 'USD' },
+    { id: 'ebay', name: 'eBay US', taxPct: 13.25, fixedFee: 0.30, currency: 'USD' },
+    { id: 'amazon-us', name: 'Amazon US', taxPct: 15, fixedFee: 1.00, currency: 'USD' }
   ],
   'en-GB': [
-    { id: 'etsy', name: 'Etsy', taxPct: 6.5, fixedFee: 0.20 },
-    { id: 'ebay', name: 'eBay', taxPct: 13.25, fixedFee: 0.30 },
-    { id: 'amazon-uk', name: 'Amazon UK', taxPct: 15, fixedFee: 1.00 }
+    { id: 'etsy-uk', name: 'Etsy UK', taxPct: 6.5, fixedFee: 0.20, currency: 'GBP' },
+    { id: 'ebay-uk', name: 'eBay UK', taxPct: 13.25, fixedFee: 0.30, currency: 'GBP' },
+    { id: 'amazon-uk', name: 'Amazon UK', taxPct: 15, fixedFee: 1.00, currency: 'GBP' }
   ],
   'es': [
-    { id: 'wallapop', name: 'Wallapop', taxPct: 10, fixedFee: 0 },
-    { id: 'vinted', name: 'Vinted', taxPct: 5, fixedFee: 0.70 },
-    { id: 'amazon-es', name: 'Amazon ES', taxPct: 15, fixedFee: 1.00 }
+    { id: 'wallapop-es', name: 'Wallapop ES', taxPct: 10, fixedFee: 0, currency: 'EUR' },
+    { id: 'vinted', name: 'Vinted', taxPct: 5, fixedFee: 0.70, currency: 'EUR' },
+    { id: 'amazon-es', name: 'Amazon ES', taxPct: 15, fixedFee: 1.00, currency: 'EUR' }
   ]
 };
 
@@ -1919,7 +2034,14 @@ function getInputs() {
       time: totalTimeValue,
       parts: advancedPartsInfo,
       mesas: _mesas,
-      totalTime: totalTimeValue
+      totalTime: totalTimeValue,
+      // PRO FIELDS
+      maintPartCost: pf('maintPartCost'),
+      maintPartLife: pf('maintPartLife') || 1,
+      laborRate: pf('laborRate'),
+      laborMinutes: pf('laborMinutes'),
+      consumablesCost: pf('consumablesCost'),
+      packagingCost: pf('packagingCost')
     };
   }
 }
@@ -1941,11 +2063,21 @@ function computeResults(i) {
   const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
   const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   
-  const baseCost = materialCost + amortizationCost + electricityCost;
+  // PRO CALCS
+  const maintenanceCost = (i.maintPartCost / i.maintPartLife) * machineTime;
+  const laborCost = (i.laborRate / 60) * i.laborMinutes;
+  const consumablesCost = i.consumablesCost;
+  const packagingCost = i.packagingCost;
+  
+  const baseCost = materialCost + amortizationCost + electricityCost + maintenanceCost + laborCost + consumablesCost + packagingCost;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
   const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
   const finalPrice = baseCost + failureCost + indirectCost + marginCost;
+
+  // ROI: How many units to pay the printer?
+  const profitPerUnit = finalPrice - (baseCost + failureCost + indirectCost);
+  const unitsToROI = profitPerUnit > 0 ? Math.ceil(i.printerPrice / profitPerUnit) : '∞';
 
   // Marketplace comparison calculations
   const comparison = i.mkt.platforms.map(m => {
@@ -1968,6 +2100,10 @@ function computeResults(i) {
     materialCost,
     amortizationCost,
     electricityCost,
+    maintenanceCost,
+    laborCost,
+    consumablesCost,
+    packagingCost,
     baseCost,
     failureCost,
     indirectCost,
@@ -1975,7 +2111,8 @@ function computeResults(i) {
     finalPrice,
     unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1,
-    // Multi-Marketplace results
+    unitsToROI,
+    profitPerUnit,
     comparison
   };
 }
@@ -1984,8 +2121,23 @@ let _lt;
 function liveCalc(){
   clearTimeout(_lt);
   _lt=setTimeout(_render,40);
-  updateSliderLabels();
-  updatePctLabels();
+  if (typeof updateSliderLabels === 'function') updateSliderLabels();
+  if (typeof updatePctLabels === 'function') updatePctLabels();
+}
+
+function toggleProMode() {
+  const switchEl = document.getElementById('proModeToggle');
+  const proSections = document.querySelectorAll('.pro-section');
+  const isNowActive = !switchEl.classList.contains('active');
+  
+  switchEl.classList.toggle('active');
+  proSections.forEach(s => s.classList.toggle('visible'));
+  
+  if (isNowActive) {
+    showToast('<i class="ph-bold ph-shield-check"></i> Modo Profissional ativado!', 'ok');
+  } else {
+    showToast('Modo Simples ativado', '');
+  }
 }
 
 function _render() {
@@ -2018,6 +2170,9 @@ function _render() {
       container.innerHTML = r.comparison.map(m => {
         const isLow = m.realMarginPct < i.profitMargin;
         const colorClass = isLow ? 'var(--danger)' : 'var(--success)';
+        const mCurr = m.currency || 'EUR';
+        const mSym = mCurr === 'BRL' ? 'R$' : (mCurr === 'USD' ? '$' : (mCurr === 'GBP' ? '£' : '€'));
+        
         return `
           <div class="summary-line" style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; border-left: 3px solid var(--blue); margin-bottom: 4px;">
             <div style="flex: 1;">
@@ -2025,11 +2180,11 @@ function _render() {
                  <i class="ph-bold ph-storefront"></i> ${m.name}
               </div>
               <div style="font-size: 0.7rem; color: var(--muted); margin-top: 2px;">
-                Taxa: ${fmtCurrency(m.fee)} (${m.taxPct}%)
+                Taxa: ${mSym}${m.fee.toFixed(2)} (${m.taxPct}% + ${mSym}${m.fixedFee})
               </div>
             </div>
             <div style="text-align: right;">
-              <div style="font-weight: 900; color: var(--blue); font-size: 0.95rem;">${fmtCurrency(m.net)}</div>
+              <div style="font-weight: 900; color: var(--blue); font-size: 0.95rem;">${mSym}${m.net.toFixed(2)}</div>
               <div style="font-size: 0.72rem; font-weight: 800; color: ${colorClass};">Margem: ${m.realMarginPct.toFixed(1)}%</div>
             </div>
           </div>
@@ -2044,12 +2199,29 @@ function _render() {
   };
   
   setV('resFilCost', r.materialCost);
-  setV('resMchCost', r.amortizationCost);
-  setV('resElecCost', r.electricityCost);
+  setV('resMchCost', r.amortizationCost + r.electricityCost);
+  setV('resMaintCost', r.maintenanceCost);
+  setV('resLaborCost', r.laborCost);
+  setV('resConsumLog', r.consumablesCost + r.packagingCost);
   setV('resBaseCost', r.baseCost);
   setV('resFailCost', r.failureCost);
   setV('resIndCost', r.indirectCost);
   
+  // ROI & Profit
+  setV('resNetProfit', r.profitPerUnit);
+  const roiEl = document.getElementById('resROI');
+  if (roiEl) roiEl.textContent = r.unitsToROI;
+  
+  const roiBar = document.getElementById('roiBar');
+  if (roiBar) {
+    const pct = r.unitsToROI === '∞' ? 0 : Math.min(100, (1 / (parseInt(r.unitsToROI)||1)) * 100 * 5); // Multiplicador visual
+    roiBar.style.width = pct + '%';
+  }
+  
+  // Update Labels based on tech
+  const lblMaint = document.getElementById('labelMaintPart');
+  if (lblMaint) lblMaint.textContent = _activeTech === 'resin' ? 'Filme FEP (Custo)' : 'Bico / Nozzle (Custo)';
+
   // Status button "Create Order"
   const cpBtn = document.getElementById('saveCalcBtn');
   if (cpBtn) cpBtn.style.opacity = r.finalPrice > 0 ? '1' : '0.5';
