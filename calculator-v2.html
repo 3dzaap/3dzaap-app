@@ -30,135 +30,150 @@
 }
 
 /* ── SAAS PADRONIZAÇÃO ───────────────────── */
-.calc-v2-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: stretch;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.inputs-column, .results-column {
+/* ── ELITE DARK THEME (IMAGE MATCH) ───────────────────── */
+.elite-mode-header {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-.step-card {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rl);
-  box-shadow: var(--sh);
-  overflow: hidden;
+.elite-mode-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 4px;
   display: flex;
-  flex-direction: column;
+  gap: 4px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
 }
 
-.step-header {
-  padding: 16px 20px;
-  border-bottom: 1.5px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* NOVO: Badge / Switch de Modo Pro */
-.pro-mode-switch {
+.elite-mode-btn {
+  padding: 8px 24px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
-  background: rgba(59,143,212,0.08);
-  border: 1px solid rgba(59,143,212,0.2);
-  border-radius: 50px;
-  font-size: 0.7rem;
-  font-weight: 800;
+}
+
+.elite-mode-btn.active {
+  background: #14284b; /* Tom de azul escuro da imagem */
   color: var(--blue);
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
-}
-.pro-mode-switch.active {
-  background: var(--blue);
-  color: white;
-  border-color: var(--blue-d);
-  box-shadow: 0 2px 8px rgba(59,143,212,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-.step-num {
-  width: 24px;
-  height: 24px;
-  background: var(--blue-g);
-  color: var(--blue);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 0.75rem;
-  border: 1px solid rgba(59,143,212,0.2);
+.elite-session {
+  border-radius: 20px !important;
+  margin-bottom: 20px;
+  background: #111a2e !important; /* Cor exata da imagem */
+  border: 1px solid rgba(255,255,255,0.05) !important;
 }
 
-.step-title {
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--dark);
+.elite-icon {
+  font-size: 1.1rem;
+  color: #3b82f6;
+  opacity: 0.9;
 }
 
-.step-body {
-  padding: 16px 20px;
-  flex: 1;
+.elite-title {
+  font-size: 0.75rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a0aec0 !important;
+  font-weight: 900 !important;
 }
 
-.v2-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+.no-border { border-bottom: none !important; }
 
-.v2-unit {
-  position: absolute;
-  right: 12px;
-  font-family: var(--mono);
-  font-size: 0.68rem;
+.elite-label {
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--subtle);
-  pointer-events: none;
-  text-transform: uppercase;
+  color: #edf2f7;
+  margin-bottom: 10px;
 }
 
-/* ── PRO FEATURES ───────────────────────── */
-.pro-section {
-  border-top: 1.5px dashed var(--border);
-  margin-top: 20px;
-  padding-top: 16px;
-  display: none; /* OCULTO POR PADRÃO */
+.elite-label-opt {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #718096;
 }
-.pro-section.visible { display: block; }
 
-.pro-section-title {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
+.elite-input, .elite-select {
+  background: #0d1425 !important;
+  border: 1px solid #2d3748 !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+  transition: all 0.3s var(--ease) !important;
+}
+
+.elite-input:focus, .elite-select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
+}
+
+.elite-row-between {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  margin-bottom: 20px;
 }
-.pro-section-title i { font-size: 0.85rem; }
 
-.maintenance-box {
-  background: rgba(59,143,212,0.04);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(59,143,212,0.1);
+.elite-pill-toggle {
+  background: #0d1425 !important;
+  border: 1px solid #2d3748 !important;
+  padding: 3px !important;
+  width: auto !important;
+  gap: 4px !important;
 }
+
+.elite-pill-toggle .mode-btn {
+  background: transparent !important;
+  border: none !important;
+  font-size: 0.72rem !important;
+  padding: 6px 14px !important;
+  color: #718096 !important;
+}
+
+.elite-pill-toggle .mode-btn.active {
+  background: #14284b !important;
+  color: #3b82f6 !important;
+  box-shadow: none !important;
+}
+
+.elite-unit {
+  right: 15px !important;
+  color: #718096 !important;
+  background: transparent !important;
+}
+
+.elite-content-fade {
+  animation: eliteFadeIn .4s ease;
+}
+
+.elite-readonly {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes eliteFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.elite-clear {
+  color: var(--danger) !important;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.elite-clear:hover { opacity: 1; }
 .segmented-control {
   display: flex;
   background: rgba(0,0,0,0.12);
@@ -317,15 +332,15 @@
 
 /* ── HERO RESULT CARD ────────────────────── */
 .hero-result-card {
-  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  background: linear-gradient(135deg, #0f172a, #1e293b); /* Deep Elite Dark */
   border-radius: 24px;
   padding: 40px 24px;
   color: white;
   text-align: center;
-  box-shadow: 0 16px 40px rgba(59,143,212,0.3);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .hero-result-card::before {
@@ -739,98 +754,196 @@
 
     <div class="page-content" style="padding-top: var(--v2-gap);">
       
-      <!-- GLOBAL PROJECT CONFIG (ALWAYS VISIBLE) -->
-      <div class="step-card" style="margin-bottom: 20px; border-bottom: 3px solid var(--blue);">
-        <div class="step-body" style="padding: 16px 20px;">
-          <div class="form-row" style="margin-bottom:12px; align-items: flex-end;">
-            <div class="form-group" style="flex:2">
-              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;"><i class="ph-bold ph-tag"></i> Nome do Projeto</label>
-              <input type="text" id="printName" class="form-input" style="height: 38px; font-size: 0.95rem;" placeholder="Ex: Miniatura Dragão...">
-            </div>
-            <div class="form-group" style="flex:1">
-               <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;"><i class="ph-bold ph-package"></i> Tecnologia</label>
-               <div class="mode-toggle" id="techModeToggle" style="margin:0; height: 38px; background: var(--bg-card-s); border: 1.2px solid var(--border);">
-                <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="padding: 0 12px; font-size: 0.72rem;">
-                  <i class="ph-bold ph-vinyl-record"></i> FDM
-                </button>
-                <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="padding: 0 12px; font-size: 0.72rem;">
-                  <i class="ph-bold ph-flask"></i> Resina
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-row" style="margin:0; align-items: flex-end; gap: 15px;">
-            <div class="form-group" style="flex:2">
-              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Material Selecionado</label>
-              <select class="form-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="height: 38px; background: var(--bg-card-s);">
-                <option value="">Escolher material registado...</option>
-              </select>
-            </div>
-            <div class="form-group" style="flex:1">
-              <label class="form-label" style="font-size: 0.65rem; color: var(--muted); text-transform: uppercase;">Preço</label>
-              <div class="v2-input-wrap" style="background: var(--bg-card-s);">
-                <input type="number" id="filamentPrice" class="form-input" value="0" step="0.01" style="height: 38px; font-family:var(--mono)">
-                <span class="v2-unit" id="labelFilPrice">/kg</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="calc-v2-container">
         <!-- ── LEFT: INPUTS ── -->
         <div class="inputs-column">
           
-          <!-- STEP 1: PROJETO (SIMPLES) / MESAS (AVANÇADO) -->
-          <div class="step-card" id="cardStep1">
-            <div class="step-header" style="justify-content: space-between;">
-              <div class="step-title" id="step1Title" style="font-weight: 900; letter-spacing: 0.05em; font-size: 0.75rem; text-transform: uppercase; color: var(--muted);">Projeto</div>
-              
-              <div class="header-right" style="display:flex; align-items:center; gap:12px">
-                <div class="mode-toggle" id="calcModeToggle" style="margin:0; background: var(--bg-card-s); padding:2px; border-radius: 8px; border: 1px solid var(--border);">
-                  <button class="mode-btn active" onclick="setCalcMode('simple')" id="modeBtnSimple" style="font-size: 0.7rem; padding: 3px 10px; border-radius: 6px;">
-                    <span>Simples</span>
-                  </button>
-                  <button class="mode-btn" onclick="setCalcMode('advanced')" id="modeBtnAdvanced" style="font-size: 0.7rem; padding: 3px 10px; border-radius: 6px;">
-                    <span>Avançado</span>
-                    <span style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.5rem; font-weight: 900; margin-left: 2px;">PRO</span>
-                  </button>
-                </div>
+          <!-- ELITE MODE SELECTOR -->
+          <div class="elite-mode-header">
+             <div class="elite-mode-pill">
+               <button class="elite-mode-btn active" id="modeBtnSimple" onclick="setCalcMode('simple')">Simples</button>
+               <button class="elite-mode-btn" id="modeBtnAdvanced" onclick="setCalcMode('advanced')">Avançado <span class="pro-badge" style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.5rem; text-transform: uppercase;">PRO</span></button>
+             </div>
+          </div>
 
-                <div style="width: 1px; height: 16px; background: var(--border);"></div>
-
-                <button class="btn btn-ghost btn-sm" onclick="clearCalculator()" style="color: var(--danger); font-weight: 800; font-size: 0.7rem; border-radius: 6px; padding: 4px 8px;">
-                  <i class="ph-bold ph-trash"></i> <span>Limpar</span>
-                </button>
+          <!-- SESSION 1: PROJETO -->
+          <div class="step-card elite-session" id="sessionProjeto">
+            <div class="step-header no-border" style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="ph-bold ph-tag elite-icon"></i>
+                <div class="step-title elite-title">PROJETO</div>
               </div>
+              <button class="btn btn-ghost btn-sm elite-clear" onclick="clearCalculator()" title="Limpar tudo">
+                <i class="ph-bold ph-trash"></i>
+              </button>
             </div>
-
-            <!-- Content for Simple Mode (Project Summary / Hints) -->
-            <div class="step-body" id="contentStep1Simple">
-              <p style="font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.5;">
-                <i class="ph-bold ph-info" style="color:var(--blue)"></i> Configure o nome e o material acima. Estás no modo de cálculo simples para peças rápidas.
-              </p>
-            </div>
-
-            <!-- Content for Advanced Mode (Mesas) -->
-            <div class="step-body" id="contentStep1Advanced" style="display:none; padding-top: 10px;">
-               <div id="mesasContainer"></div>
-               <button class="btn btn-primary btn-sm" onclick="addMesa()" style="margin-top:10px; width:100%; height: 34px; border-radius: 8px; font-weight: 800;">
-                 <i class="ph-bold ph-plus"></i> <span data-i18n="calc.buttons.add_mesa">Adicionar Nova Mesa</span>
-               </button>
+            <div class="step-body" style="padding-top: 0">
+              <div class="form-row full">
+                <input type="text" id="printName" class="form-input elite-input" placeholder="Ex: Miniatura Dragão..." oninput="liveCalc()">
+              </div>
             </div>
           </div>
 
-          <!-- STEP 2: CUSTOS DE PRODUÇÃO -->
-          <div class="step-card" id="cardStep2">
-            <div class="step-header">
-              <div class="step-num">2</div>
-              <div class="step-title" id="step2Title" style="flex:1">Custos de Produção</div>
-              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos detalhados">
+          <!-- SESSION 2: CONFIGURAÇÃO (SIMPLES) / MESA (AVANÇADO) -->
+          <div class="step-card elite-session" id="sessionConfig">
+            <!-- Header for Simple -->
+            <div id="headerSimple" class="step-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="ph-bold ph-package elite-icon"></i>
+                <div class="step-title elite-title">CONFIGURAÇÃO</div>
+              </div>
+              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos extras">
                 <i class="ph-bold ph-shield-check"></i> Modo Pro
               </div>
             </div>
+            <!-- Header for Advanced -->
+            <div id="headerAdvanced" class="step-header" style="display:none; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="ph-bold ph-grid-four elite-icon"></i>
+                <div class="step-title elite-title">MESA DE IMPRESSÃO</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="addMesa()" style="border-radius: 8px; font-size: 0.75rem;">
+                <i class="ph-bold ph-plus"></i> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
+              </button>
+            </div>
+
+            <div class="step-body">
+              <!-- Content SIMPLE -->
+              <div id="contentSimple" class="elite-content-fade">
+                <div class="form-row full elite-row-between" style="margin-bottom: 20px;">
+                  <label class="form-label elite-label" style="margin: 0;">Modo de impressão</label>
+                  <div class="mode-toggle elite-pill-toggle" id="techModeToggle">
+                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">
+                      <i class="ph-bold ph-vinyl-record"></i> FDM (Filamento)
+                    </button>
+                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">
+                      <i class="ph-bold ph-flask"></i> Resina
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-row full">
+                  <div class="form-group">
+                    <label class="form-label elite-label">Material <span class="elite-label-opt">(opcional - preenche o preço auto)</span></label>
+                    <select class="form-select elite-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
+                      <option value="">Selecionar material...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row full">
+                  <div class="form-group">
+                    <label class="form-label elite-label">Preço do material</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="filamentPrice" class="form-input elite-input" value="0" step="0.01" oninput="liveCalc()">
+                      <span class="v2-unit elite-unit" id="labelFilPrice">€/kg</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label elite-label">Peso (g)</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="partWeight" class="form-input elite-input" value="0" step="0.1" oninput="liveCalc()">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label elite-label">Tempo (h)</label>
+                    <div class="v2-input-wrap">
+                      <input type="number" id="printTime" class="form-input elite-input" value="0" step="0.1" oninput="liveCalc()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content ADVANCED -->
+              <div id="contentAdvanced" style="display:none" class="elite-content-fade">
+                 <div id="mesasContainer"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SESSION 3: MÁQUINA -->
+          <div class="step-card elite-session" id="sessionMaquina">
+            <div class="step-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="ph-bold ph-printer elite-icon"></i>
+                <div class="step-title elite-title">MÁQUINA</div>
+              </div>
+              <!-- Advanced Totals Badge -->
+              <div id="advTotalsSummary" style="display: none; align-items: center; gap: 8px;">
+                 <span id="advSummaryWeight" style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">0g</span>
+                 <span id="advSummaryTime" style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">0h</span>
+              </div>
+            </div>
+            <div class="step-body">
+              <div class="form-row full">
+                <div class="form-group">
+                  <label class="form-label elite-label">Impressora</label>
+                  <select class="form-select elite-select" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
+                    <option value="">Selecionar impressora...</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- PRO MAINTENANCE & LABOR (Oculto exceto se Modo Pro ativo) -->
+              <div class="pro-section elite-pro-section">
+                 <div id="extraCostsContent">
+                    <div class="pro-section-title"><i class="ph-bold ph-wrench"></i> Manutenção & Desgaste (Pro)</div>
+                    <div class="maintenance-box" style="background: rgba(59,130,246,0.03); border: 1px solid rgba(59,130,246,0.1);">
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label class="form-label elite-label" id="labelMaintPart" style="font-size: 0.75rem;">Bico / FEP (Custo)</label>
+                          <div class="v2-input-wrap">
+                            <input type="number" id="maintPartCost" class="form-input elite-input" value="15" step="0.01" oninput="liveCalc()">
+                            <span class="v2-unit elite-unit">€</span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label elite-label" style="font-size: 0.75rem;">Vida Útil (Horas)</label>
+                          <div class="v2-input-wrap">
+                            <input type="number" id="maintPartLife" class="form-input elite-input" value="500" step="1" oninput="liveCalc()">
+                            <span class="v2-unit elite-unit">h</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div id="proResinFields" style="display:none; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
+                        <div class="form-row">
+                          <div class="form-group">
+                            <label class="form-label elite-label" style="font-size: 0.75rem;">Ecrã LCD (Custo)</label>
+                            <input type="number" id="lcdCost" class="form-input elite-input" value="80" step="1" oninput="liveCalc()">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label elite-label" style="font-size: 0.75rem;">Vida LCD (Horas)</label>
+                            <input type="number" id="lcdLife" class="form-input elite-input" value="1500" step="1" oninput="liveCalc()">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="pro-section-title"><i class="ph-bold ph-users"></i> Mão de Obra (Pro)</div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label elite-label" style="font-size: 0.75rem;">Valor Hora (€/h)</label>
+                        <input type="number" id="laborRate" class="form-input elite-input" value="15" step="0.1" oninput="liveCalc()">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label elite-label" style="font-size: 0.75rem;">Minutos Trabalho</label>
+                        <input type="number" id="laborMinutes" class="form-input elite-input" value="15" step="1" oninput="liveCalc()">
+                      </div>
+                    </div>
+
+                    <div class="pro-section-title" style="display:flex; justify-content:space-between; align-items:center; margin-top: 15px;">
+                      <span><i class="ph-bold ph-plus-circle"></i> Custos Extras</span>
+                      <button class="btn btn-ghost btn-sm" onclick="addCustomCost()" style="padding: 2px 8px; font-size: 0.65rem;"><i class="ph-bold ph-plus"></i> Novo</button>
+                    </div>
+                    <div id="customCostsContainer" style="display:grid; gap:8px;"></div>
+                 </div>
+              </div>
+            </div>
+          </div>
             <div class="step-body">
               <div class="form-row">
                 <div class="form-group">
@@ -1395,34 +1508,40 @@ function setCalcMode(mode) {
   }
 
   _calcMode = mode;
-  document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
-  document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
+  document.querySelectorAll('.elite-mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(mode === 'simple' ? 'modeBtnSimple' : 'modeBtnAdvanced').classList.add('active');
   
-  // Toggle Content Step 1
-  document.getElementById('contentStep1Simple').style.display = mode === 'simple' ? 'block' : 'none';
-  document.getElementById('contentStep1Advanced').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('step1Title').textContent = mode === 'simple' ? 'Projeto' : 'Mesa de Impressão';
+  // Dynamic 1-2-3 Sessions Visibility
+  const isSimple = mode === 'simple';
   
-  // Refined Logic: In Advanced mode, Weight and Time inputs become Read-Only and sync with total
+  // Headers
+  document.getElementById('headerSimple').style.display = isSimple ? 'flex' : 'none';
+  document.getElementById('headerAdvanced').style.display = isSimple ? 'none' : 'flex';
+  
+  // Contents
+  document.getElementById('contentSimple').style.display = isSimple ? 'block' : 'none';
+  document.getElementById('contentAdvanced').style.display = isSimple ? 'none' : 'block';
+  
+  // Advanced Totals Summary in Session 3
+  document.getElementById('advTotalsSummary').style.display = isSimple ? 'none' : 'flex';
+
+  // Refined Logic for Advanced
   const weightInput = document.getElementById('partWeight');
   const timeInput = document.getElementById('printTime');
   if (weightInput && timeInput) {
-    weightInput.readOnly = (mode === 'advanced');
-    timeInput.readOnly = (mode === 'advanced');
-    weightInput.style.background = mode === 'advanced' ? 'var(--bg-card-s)' : '';
-    timeInput.style.background = mode === 'advanced' ? 'var(--bg-card-s)' : '';
+    weightInput.readOnly = !isSimple;
+    timeInput.readOnly = !isSimple;
+    weightInput.classList.toggle('elite-readonly', !isSimple);
+    timeInput.classList.toggle('elite-readonly', !isSimple);
   }
 
-  // SaaS Elite Integration: If Advanced PRO is selected, ensure Modo Pro is active
-  if (mode === 'advanced') {
+  if (!isSimple) {
+    // SaaS Elite Integration: Auto-trigger Modo Pro if Advanced
     const switchEl = document.getElementById('proModeToggle');
     if (switchEl && !switchEl.classList.contains('active')) {
       toggleProMode();
     }
-  }
-  
-  if (mode === 'advanced' && _mesas.length === 0) {
-    addMesa();
+    if (_mesas.length === 0) addMesa();
   }
   
   liveCalc();
@@ -2318,28 +2437,33 @@ function toggleProMode() {
 
 // ── LOGIC SYNC ────────────────────────
 function syncTotals() {
-  if (_calcMode !== 'advanced') return;
+  const isSimple = _calcMode === 'simple';
   
-  let totalW = 0;
-  let totalT = 0;
-  
-  _mesas.forEach(m => {
-    // Total time of a mesa is either its custom total or sum of parts (if logic dictates)
-    // Here we use the mesa header logic: max time of parts in that mesa or sum? 
-    // The current computeResults uses something complex. Let's just sum for the summary.
-    let mesaMaxTime = 0;
-    m.parts.forEach(p => {
-      totalW += (p.weight * (p.qty || 1));
-      if (p.time > mesaMaxTime) mesaMaxTime = p.time;
+  if (!isSimple) {
+    let totalW = 0;
+    let totalT = 0;
+    
+    _mesas.forEach(m => {
+      let mesaMaxTime = 0;
+      m.parts.forEach(p => {
+        totalW += (p.weight * (p.qty || 1));
+        if (p.time > mesaMaxTime) mesaMaxTime = p.time;
+      });
+      totalT += mesaMaxTime;
     });
-    totalT += mesaMaxTime;
-  });
 
-  const weightInput = document.getElementById('partWeight');
-  const timeInput = document.getElementById('printTime');
-  
-  if (weightInput) weightInput.value = totalW.toFixed(1);
-  if (timeInput) timeInput.value = totalT.toFixed(1);
+    // Update session 2 inputs (read-only)
+    const weightInput = document.getElementById('partWeight');
+    const timeInput = document.getElementById('printTime');
+    if (weightInput) weightInput.value = totalW.toFixed(1);
+    if (timeInput) timeInput.value = totalT.toFixed(1);
+    
+    // Update Session 3 Summary Badges
+    const bW = document.getElementById('advSummaryWeight');
+    const bT = document.getElementById('advSummaryTime');
+    if (bW) bW.textContent = totalW.toFixed(1) + (_activeTech === 'resin' ? ' ml' : ' g');
+    if (bT) bT.textContent = totalT.toFixed(1) + ' h';
+  }
 }
 
 function _render() {
