@@ -34,6 +34,9 @@
   gap: var(--v2-gap);
   align-items: flex-start;
   margin-top: 10px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .inputs-column {
@@ -75,14 +78,15 @@
 .step-num {
   width: var(--step-num-size);
   height: var(--step-num-size);
-  background: var(--blue-g);
-  color: var(--blue);
+  background: var(--blue);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
   font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(59,143,212,0.3);
 }
 
 .step-title {
@@ -127,34 +131,40 @@
 
 .v2-input {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
+  padding-right: 50px; /* Space for units */
   background: var(--bg-input);
   border: 1.5px solid var(--border-input);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--dark);
   font-family: var(--mono);
-  transition: all 0.2s var(--ease);
+  transition: all 0.22s var(--ease);
   outline: none;
 }
 
 .v2-input:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 4px var(--blue-g);
-  background: var(--bg-card);
+  background: var(--bg-card-s);
 }
 
 /* ── PREMIUM SEGMENTED CONTROL ───────────── */
 .segmented-control {
   display: flex;
-  background: var(--bg-input);
+  background: rgba(0,0,0,0.12);
   padding: 4px;
-  border-radius: 12px;
-  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  border: 1px solid var(--border);
   gap: 2px;
   position: relative;
   width: fit-content;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] .segmented-control {
+  background: rgba(255,255,255,0.05);
 }
 
 .segmented-control.full { width: 100%; margin-bottom: 12px; }
@@ -179,10 +189,14 @@
 }
 
 .segmented-opt.active {
-  background: var(--bg-card);
-  color: var(--blue);
-  box-shadow: var(--sh-sm);
-  border: 1px solid rgba(59,143,212,0.1);
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(59,143,212,0.3);
+}
+
+[data-theme="dark"] .segmented-opt.active {
+  background: var(--blue);
+  color: #fff;
 }
 
 .segmented-opt:hover:not(.active) { color: var(--dark); background: rgba(0,0,0,0.03); }
@@ -234,12 +248,20 @@
 
 .v2-unit {
   position: absolute;
-  right: 14px;
+  right: 16px;
   font-size: 0.7rem;
   font-weight: 800;
   color: var(--subtle);
   pointer-events: none;
   text-transform: uppercase;
+  background: var(--bg-input);
+  padding: 2px 6px;
+  border-radius: 6px;
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .v2-unit {
+  background: rgba(255,255,255,0.03);
 }
 
 /* ── MARKETPLACE STYLES ──────────────────── */
@@ -249,6 +271,13 @@
   border-radius: 16px;
   padding: 16px;
   margin-top: 10px;
+}
+
+.mkt-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .mkt-header {
@@ -281,13 +310,14 @@
 /* ── HERO RESULT CARD ────────────────────── */
 .hero-result-card {
   background: linear-gradient(135deg, var(--blue), var(--blue-d));
-  border-radius: 20px;
-  padding: 32px 24px;
+  border-radius: 24px;
+  padding: 40px 24px;
   color: white;
   text-align: center;
-  box-shadow: 0 12px 30px rgba(59,143,212,0.25);
+  box-shadow: 0 16px 40px rgba(59,143,212,0.3);
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .hero-result-card::before {
@@ -346,9 +376,10 @@
 /* ── MINI BREAKDOWN ─────────────────────── */
 .summary-card {
   background: var(--v2-card-bg);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rl);
-  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
 
 .summary-title {
@@ -408,7 +439,16 @@
 
 @media (max-width: 1024px) {
   .calc-v2-container { flex-direction: column; }
-  .results-column { width: 100%; position: static; }
+  .results-column { width: 100%; position: static; max-width: none; }
+}
+
+@media (min-width: 1025px) {
+  .results-column {
+    flex-shrink: 0;
+  }
+  .inputs-column {
+    min-width: 0;
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -603,6 +643,24 @@
   transition: background .15s;
 }
 .gc-btn:hover { background: var(--bg-hover, rgba(0,0,0,.05)); }
+.gc-btn-clear {
+  background: rgba(239,68,68,0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.2);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.gc-btn-clear:hover {
+  background: var(--danger);
+  color: #fff;
+}
 .gc-help-btn { border-radius: 50%; width: 32px; height: 32px; font-weight: 800; font-size: 1rem; padding: 0; }
 .gc-select {
   background: var(--bg-card, #fff);
@@ -664,6 +722,7 @@
       <div class="topbar-title" id="topbarTitle" data-i18n="calc.page_title">Calculadora</div>
       <div class="topbar-actions">
         <div class="global-ctrls" id="globalCtrls">
+          <button onclick="clearCalculator()" class="gc-btn-clear"><i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span></button>
           <!-- Theme Toggle -->
           <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <!-- Language Selector -->
@@ -714,14 +773,11 @@
                 </div>
                 
                 <div class="v2-field">
-                  <label class="v2-label"><i class="ph-bold ph-package"></i> Modo & Material</label>
+                  <label class="v2-label"><i class="ph-bold ph-package"></i> Modo & Tecnologia</label>
                   <div class="segmented-control full" id="techModeToggle">
                     <button class="segmented-opt active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
                     <button class="segmented-opt" id="modeResin" onclick="setTechMode('resin')">Resina</button>
                   </div>
-                  <select class="v2-input" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="font-family: inherit;">
-                    <option value="">Selecionar material...</option>
-                  </select>
                 </div>
                 
                 <div class="v2-field">
@@ -730,6 +786,13 @@
                     <input type="number" id="filamentPrice" class="v2-input" value="0" step="0.01">
                     <span class="v2-unit" id="labelFilPrice">/kg</span>
                   </div>
+                </div>
+
+                <div class="v2-field full">
+                  <label class="v2-label">Material Registado</label>
+                  <select class="v2-input" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="font-family: inherit;">
+                    <option value="">Selecionar material...</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -806,22 +869,23 @@
               <div id="mktComparisonList" style="margin-top: 20px; display: none;">
                 <!-- Details for comparison if needed, or managed in sidebar -->
               </div>
-                <div class="v2-field-group">
-                  <div class="v2-field">
-                    <label class="v2-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
-                    <input type="number" id="mktTaxPct" class="v2-input" step="0.01" oninput="liveCalc()">
-                  </div>
-                  <div class="v2-field">
-                    <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
-                    <input type="number" id="mktFixedFee" class="v2-input" step="0.01" oninput="liveCalc()">
-                  </div>
+              
+              <div class="mkt-field-row">
+                <div class="v2-field">
+                  <label class="v2-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
+                  <input type="number" id="mktTaxPct" class="v2-input" step="0.01" oninput="liveCalc()">
                 </div>
-                <div class="mkt-box">
-                  <label class="v2-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
-                  <div class="v2-input-wrap">
-                    <input type="number" id="mktSalePrice" class="v2-input" step="0.01" oninput="liveCalc()" style="font-size: 1.2rem; padding: 12px 14px;">
-                    <span class="v2-unit currency-sym">€</span>
-                  </div>
+                <div class="v2-field">
+                  <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
+                  <input type="number" id="mktFixedFee" class="v2-input" step="0.01" oninput="liveCalc()">
+                </div>
+              </div>
+              
+              <div class="mkt-box">
+                <label class="v2-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
+                <div class="v2-input-wrap">
+                  <input type="number" id="mktSalePrice" class="v2-input" step="0.01" oninput="liveCalc()" style="font-size: 1.1rem; padding: 10px 14px;">
+                  <span class="v2-unit currency-sym">€</span>
                 </div>
               </div>
             </div>
