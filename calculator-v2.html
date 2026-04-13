@@ -444,6 +444,31 @@
 
 .v2-modal.open { display: flex; }
 
+.calc-v2-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.inputs-column, .middle-column, .results-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .calc-v2-container { grid-template-columns: 1fr 1fr; }
+  .results-column { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+  .calc-v2-container { grid-template-columns: 1fr; }
+}
+
 .v2-modal-content {
   background: var(--bg-card);
   width: 100%;
@@ -458,10 +483,6 @@
 @keyframes modalScale {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
-}
-
-@media (max-width: 1024px) {
-  .calc-v2-container { grid-template-columns: 1fr; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -944,122 +965,64 @@
               </div>
             </div>
           </div>
-            <div class="step-body">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-scales"></i> Peso Esperado</label>
-                  <div class="v2-input-wrap">
-                    <input type="number" id="partWeight" class="form-input" value="0" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
-                    <span class="v2-unit unit-weight">g</span>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-timer"></i> Tempo Estimado</label>
-                  <div class="v2-input-wrap">
-                    <input type="number" id="printTime" class="form-input" value="0" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
-                    <span class="v2-unit">horas</span>
-                  </div>
-                </div>
-              </div>
-              <div class="form-row full">
-                <div class="form-group">
-                  <label class="form-label"><i class="ph-bold ph-printer"></i> Máquina Utilizada</label>
-                  <select class="form-select" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
-                    <option value="">Selecionar impressora...</option>
-                  </select>
-                </div>
-              </div>
+        </div>
 
-              <!-- PRO MAINTENANCE & LABOR -->
-              <div class="pro-section">
-                <div class="pro-section-title"><i class="ph-bold ph-wrench"></i> Manutenção & Desgaste (Pro)</div>
-                <div class="maintenance-box">
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label class="form-label" id="labelMaintPart">Bico / FEP (Custo)</label>
-                      <div class="v2-input-wrap">
-                        <input type="number" id="maintPartCost" class="form-input" value="15" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
-                        <span class="v2-unit">€</span>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">Vida Útil (Horas)</label>
-                      <div class="v2-input-wrap">
-                        <input type="number" id="maintPartLife" class="form-input" value="500" step="1" oninput="liveCalc()" style="font-family:var(--mono)">
-                        <span class="v2-unit">h</span>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- NOVOS CAMPOS RESINA PRO (Ocultos se não for resina) -->
-                  <div id="proResinFields" style="display:none; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label class="form-label">Ecrã LCD (Custo)</label>
-                        <div class="v2-input-wrap">
-                          <input type="number" id="lcdCost" class="form-input" value="80" step="1" oninput="liveCalc()">
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label">Vida LCD (Horas)</label>
-                        <div class="v2-input-wrap">
-                          <input type="number" id="lcdLife" class="form-input" value="1500" step="1" oninput="liveCalc()">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label class="form-label">Consumo IPA/Print</label>
-                        <div class="v2-input-wrap">
-                          <input type="number" id="ipaCost" class="form-input" value="0.50" step="0.05" oninput="liveCalc()">
-                          <span class="v2-unit">€</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="pro-section-title"><i class="ph-bold ph-users"></i> Mão de Obra & Consumíveis (Pro)</div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Valor Hora Trabalho</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="laborRate" class="form-input" value="15" step="0.1" oninput="liveCalc()" style="font-family:var(--mono)">
-                      <span class="v2-unit">€/h</span>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Minutos (Setup + Pós)</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="laborMinutes" class="form-input" value="15" step="1" oninput="liveCalc()" style="font-family:var(--mono)">
-                      <span class="v2-unit">min</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="form-row" style="margin-top:10px">
-                  <div class="form-group">
-                    <label class="form-label">Consumíveis p/ Print</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="consumablesCost" class="form-input" value="0.50" step="0.05" oninput="liveCalc()" style="font-family:var(--mono)">
-                      <span class="v2-unit">€</span>
-                    </div>
-                    <span class="form-hint">Luvas, IPA, papel, etc.</span>
-                  </div>
-                </div>
-
-                <!-- OUTROS CUSTOS (Custom) -->
-                <div class="pro-section-title" style="display:flex; justify-content:space-between; align-items:center;">
-                  <span><i class="ph-bold ph-plus-circle"></i> Custos Adicionais</span>
-                  <button class="btn btn-ghost btn-sm" onclick="addCustomCost()" style="padding: 2px 8px; font-size: 0.65rem;"><i class="ph-bold ph-plus"></i> Novo</button>
-                </div>
-                <div id="customCostsContainer" style="display:grid; gap:8px;">
-                  <!-- Custos dinâmicos aqui -->
-                </div>
-              </div>
+        <!-- ── CENTER: BREAKDOWN & MARKETPLACE ── -->
+        <div class="middle-column">
+          <!-- COSTS BREAKDOWN -->
+          <div class="summary-card">
+            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results.breakdown">Composição de Custos</span></div>
+            <div class="summary-line">
+              <span class="summary-label" data-i18n="calc.results.material">Material</span>
+              <span class="summary-val" id="resFilCost">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Amortização & Energia</span>
+              <span class="summary-val" id="resMchCost">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Manutenção (Desgaste)</span>
+              <span class="summary-val" id="resMaintCost">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Mão de Obra</span>
+              <span class="summary-val" id="resLaborCost">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Consumíveis & Logística</span>
+              <span class="summary-val" id="resConsumLog">0.00 €</span>
+            </div>
+            
+            <div class="summary-line" style="background: rgba(34,197,94,0.1); margin: 8px -8px; padding: 10px 8px; border-radius: 8px; border: 1px dashed var(--success);">
+              <span class="summary-label" style="color: var(--success); font-weight: 800;" data-i18n="calc.results.production_cost">Custo Total de Operação</span>
+              <span class="summary-val" id="resBaseCost" style="color: var(--success); font-weight: 900;">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Taxa p/ Falhas</span>
+              <span class="summary-val" id="resFailCost">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Custos Indiretos</span>
+              <span class="summary-val" id="resIndCost">0.00 €</span>
             </div>
           </div>
 
-
+          <!-- ROI & PROFIT ANALYSIS -->
+          <div class="summary-card" style="border-color: var(--blue);">
+            <div class="summary-title" style="color: var(--blue)"><i class="ph-bold ph-trend-up"></i> Análise de Lucratividade</div>
+            <div class="summary-line">
+              <span class="summary-label">Lucro Líquido (p/un)</span>
+              <span class="summary-val" id="resNetProfit" style="color: var(--blue)">0.00 €</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-label">Vendas p/ Pagar Impressora</span>
+              <span class="summary-val" id="resROI">0</span>
+            </div>
+            <div style="margin-top: 10px; height: 6px; background: var(--bg-card-s); border-radius: 3px; overflow: hidden;">
+              <div id="roiBar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.6s ease;"></div>
+            </div>
+          </div>
+          
           <!-- STEP 3: VENDER EM MARKETPLACE -->
           <div class="step-card">
             <div class="step-header" style="cursor:pointer" onclick="toggleMktBlock()">
@@ -1073,13 +1036,9 @@
                 <button class="btn btn-ghost btn-sm" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> <span data-i18n="calc.mkt.add">Adicionar</span></button>
               </div>
               
-              <div id="mktChipsContainer" class="mkt-chips">
-                <!-- Informative message if empty -->
-              </div>
+              <div id="mktChipsContainer" class="mkt-chips"></div>
               
-              <div id="mktComparisonList" style="margin-top: 20px; display: none;">
-                <!-- Details for comparison if needed, or managed in sidebar -->
-              </div>
+              <div id="mktComparisonList" style="margin-top: 20px; display: none;"></div>
               
               <div class="form-row">
                 <div class="form-group">
@@ -1087,7 +1046,7 @@
                   <input type="number" id="mktTaxPct" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Embalagem & Logística</label>
+                  <label class="form-label">Embalagem & Log</label>
                   <div class="v2-input-wrap">
                     <input type="number" id="packagingCost" class="form-input" value="0" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
                     <span class="v2-unit">€</span>
@@ -1105,95 +1064,51 @@
             </div>
           </div>
           
-
+          <!-- MARKETPLACE COMPARISON -->
+          <div class="summary-card" id="mktSummaryCard" style="display:none">
+            <div class="summary-title"><i class="ph-bold ph-storefront"></i> Margem em Marketplaces</div>
+            <div id="mktComparisonContainer"></div>
+          </div>
         </div>
 
         <!-- ── RIGHT: RESULTS SIDEBAR ── -->
         <div class="results-column">
           
           <!-- MAIN HERO (Elite Pattern) -->
-          <div class="price-hero" style="background: linear-gradient(135deg, var(--blue-g) 0%, rgba(59,143,212,0.02) 100%); border: 1.5px solid var(--blue); border-radius: 24px; padding: 28px 24px; text-align: center; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; font-size: 5rem; color: var(--blue);"><i class="ph-bold ph-tag"></i></div>
+          <div class="hero-result-card">
+            <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; font-size: 5rem; color: #a0aec0;"><i class="ph-bold ph-tag"></i></div>
             
-            <div class="price-hero-label" style="font-size: 0.72rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Preço de Venda Sugerido</div>
-            <div class="price-hero-value" id="rFinal" style="font-size: 2.4rem; font-weight: 900; color: var(--dark); line-height: 1.1; margin-bottom: 8px;">0,00 €</div>
+            <div class="hero-label" style="color: #a0aec0;">Preço de Venda Sugerido</div>
+            <div class="hero-value" id="rFinal">0,00 €</div>
             
-            <div id="rMarginBadge" class="badge bs-aprovado" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--bg-card); border: 1px solid var(--blue); color: var(--blue); border-radius: 40px; font-weight: 800; font-size: 0.75rem;">
+            <div id="rMarginBadge" class="hero-margin-badge high">
               <i class="ph-bold ph-chart-line-up"></i>
               <span>Margem Alvo: <span id="labMargPct">30</span>%</span>
             </div>
-
-            <div class="results-actions" style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 10px;">
-               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="height: 48px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; padding: 0 12px;">
-                 <i class="ph-bold ph-floppy-disk" style="font-size: 1.1rem;"></i> <span data-i18n="calc.buttons.save">Guardar</span>
-               </button>
-               
-               <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 12px; font-size: 0.85rem; height: 48px; border: 1.5px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                 <i class="ph-bold ph-copy" style="font-size: 1.1rem;"></i> Copiar
-               </button>
-               
-               <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 12px; font-size: 0.85rem; height: 48px; border: 1.5px solid var(--border); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                 <i class="ph-bold ph-file-csv" style="font-size: 1.1rem;"></i> CSV
-               </button>
-
-               <button class="btn btn-success" onclick="sendWhatsApp()" style="height: 48px; border-radius: 12px; background: #25D366; border: none; color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">
-                 <i class="ph-bold ph-whatsapp-logo" style="font-size: 1.1rem;"></i> Whats
-               </button>
-            </div>
           </div>
+          
+          <!-- CTA ACTIONS -->
+          <div class="results-actions" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+             <!-- SAVE BUTTON -->
+             <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="height: 54px; border-radius: 16px; font-weight: 800; font-size: 1rem; width: 100%; box-shadow: 0 4px 15px rgba(59,130,246,0.3);">
+               <i class="ph-bold ph-floppy-disk" style="font-size: 1.3rem;"></i> <span data-i18n="calc.buttons.save">Guardar Projeto</span>
+             </button>
+             
+             <!-- WHATSAPP BUTTON -->
+             <button class="btn btn-success" onclick="sendWhatsApp()" style="height: 54px; border-radius: 16px; background: #25D366; border: none; color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-shadow: 0 4px 15px rgba(37,211,102,0.2);">
+               <i class="ph-bold ph-whatsapp-logo" style="font-size: 1.3rem;"></i> Enviar por WhatsApp
+             </button>
 
-          <!-- COSTS BREAKDOWN -->
-          <div class="summary-card">
-            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results.breakdown">Composição de Custos</span></div>
-            <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.results.material">Material</span>
-              <span class="summary-val" id="resFilCost">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Amortização & Energia</span>
-              <span class="summary-val" id="resMchCost">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Manutenção (Desgaste)</span>
-              <span class="summary-val" id="resMaintCost">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Mão de Obra</span>
-              <span class="summary-val" id="resLaborCost">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Consumíveis & Logística</span>
-              <span class="summary-val" id="resConsumLog">0,00 €</span>
-            </div>
-            
-            <div class="summary-line" style="background: rgba(34,197,94,0.1); margin: 8px -8px; padding: 10px 8px; border-radius: 8px; border: 1px dashed var(--success);">
-              <span class="summary-label" style="color: var(--success); font-weight: 800;" data-i18n="calc.results.production_cost">Custo Total de Operação</span>
-              <span class="summary-val" id="resBaseCost" style="color: var(--success); font-weight: 900;">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Taxa p/ Falhas</span>
-              <span class="summary-val" id="resFailCost">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Custos Indiretos</span>
-              <span class="summary-val" id="resIndCost">0,00 €</span>
-            </div>
-          </div>
-
-          <!-- ROI & PROFIT ANALYSIS -->
-          <div class="summary-card" style="border-color: var(--blue);">
-            <div class="summary-title" style="color: var(--blue)"><i class="ph-bold ph-trend-up"></i> Análise de Lucratividade</div>
-            <div class="summary-line">
-              <span class="summary-label">Lucro Líquido (p/un)</span>
-              <span class="summary-val" id="resNetProfit" style="color: var(--blue)">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Vendas p/ Pagar Impressora</span>
-              <span class="summary-val" id="resROI">0</span>
-            </div>
-            <div style="margin-top: 10px; height: 6px; background: var(--bg-card-s); border-radius: 3px; overflow: hidden;">
-              <div id="roiBar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.6s ease;"></div>
-            </div>
+             <!-- OTHERS -->
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                 <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 14px; font-size: 0.9rem; height: 48px; font-weight: 700; background: var(--bg-card); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border);">
+                   <i class="ph-bold ph-copy"></i> Copiar
+                 </button>
+                 
+                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 14px; font-size: 0.9rem; height: 48px; font-weight: 700; background: var(--bg-card); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border);">
+                   <i class="ph-bold ph-file-csv"></i> CSV
+                 </button>
+             </div>
           </div>
 
           <!-- MARKETPLACE COMPARISON -->
@@ -1544,8 +1459,6 @@ function setCalcMode(mode) {
     if (_mesas.length === 0) addMesa();
   }
   
-  liveCalc();
-}
   liveCalc();
 }
 
