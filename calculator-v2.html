@@ -553,59 +553,97 @@
 
 .mp-item-row {
   background: var(--bg-card-s);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--rm);
-  padding: 12px 16px;
-  margin-bottom: 10px;
-}
-
-.mp-item-header {
+  padding: 10px 14px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  transition: all 0.2s;
 }
+.mp-item-row:hover { border-color: var(--blue); }
+
+.mp-item-info { display: flex; flex-direction: column; gap: 2px; }
 
 .mp-item-name {
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--dark);
   display: flex;
-  align-items: center; gap: 8px;
+  align-items: center; gap: 6px;
 }
 
-.mp-item-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+.mp-item-specs {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
 }
 
-.mp-field {
+.mp-row-actions { display: flex; gap: 6px; }
+
+.btn-row-action {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: none; background: var(--bg-hover);
+  color: var(--muted); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.btn-row-action:hover { background: var(--blue-g); color: var(--blue); }
+.btn-row-action.del:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+/* Modal Form Styles */
+.mp-form-group {
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
 }
 
-.mp-field label {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  color: var(--muted);
+.mp-form-group label {
+  font-size: 0.75rem;
   font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.mp-field input {
+.mp-select, .mp-input {
   background: var(--bg-input);
   border: 1.5px solid var(--border-input);
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.82rem;
-  font-family: var(--mono);
+  border-radius: var(--r);
+  padding: 10px 12px;
+  font-size: 0.9rem;
   color: var(--dark);
+  font-family: var(--f);
   outline: none;
   width: 100%;
+  transition: border-color .18s;
 }
-.mp-field input:focus { border-color: var(--blue); background: var(--bg-card); }
+.mp-select:focus, .mp-input:focus { border-color: var(--blue); }
+
+.mp-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mp-input-unit { position: relative; }
+.mp-unit-tag {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%); font-size: 0.7rem;
+  color: var(--subtle); font-weight: 800; font-family: var(--mono);
+}
+
+.mp-btn-save {
+  width: 100%; padding: 12px; border: none;
+  background: var(--blue); color: #fff;
+  border-radius: var(--rm); font-weight: 800;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(59,143,212,0.25);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.mp-btn-save:hover { background: var(--blue-d); transform: translateY(-1px); }
 
 /* Watermark icon implementation */
 .card-watermark {
@@ -1988,18 +2026,68 @@ const MARKETPLACE_DATA = {
     { name: "El Corte Inglés", commission: 15, fixedFee: 0 },
     { name: "PcComponentes", commission: 10, fixedFee: 0.5 },
     { name: "AliExpress", commission: 8, fixedFee: 0 }
-  ],
-  "Outros": [
-    { name: "Novo Marketplace", commission: 0, fixedFee: 0, isCustom: true }
   ]
 };
 
 let selectedMarketplaces = [];
 
-function openMPModal() {
+function getRegionByLocale() {
+  const locale = (window.i18n && window.i18n.currentLocale) || localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  if (locale.startsWith('pt-BR')) return "Brasil";
+  if (locale.startsWith('pt')) return "Portugal";
+  if (locale.startsWith('en-US')) return "US";
+  if (locale.startsWith('en-GB') || locale.startsWith('en')) return "UK";
+  if (locale.startsWith('es')) return "España";
+  return "Portugal";
+}
+
+function openMPModal(editId = null) {
   const modal = document.getElementById('mpModalOverlay');
-  if (modal) modal.classList.add('open');
-  renderMPModal();
+  if (!modal) return;
+  modal.classList.add('open');
+
+  const region = getRegionByLocale();
+  const options = MARKETPLACE_DATA[region] || [];
+  
+  const selector = document.getElementById('mpSelector');
+  selector.innerHTML = '<option value="">-- Selecionar Canal --</option>';
+  options.forEach(opt => {
+    const el = document.createElement('option');
+    el.value = opt.name;
+    el.textContent = opt.name;
+    selector.appendChild(el);
+  });
+  selector.innerHTML += '<option value="CUSTOM">Outro (Personalizado)</option>';
+
+  const sym = getCurrencySymbol();
+  document.getElementById('mpUnitFixed').textContent = sym;
+  document.getElementById('mpUnitExtra').textContent = sym;
+
+  if (editId) {
+    const mp = selectedMarketplaces.find(x => x.id === editId);
+    if (mp) {
+      document.getElementById('editMPId').value = mp.id;
+      document.getElementById('mpSaveBtnText').textContent = "Guardar Alterações";
+      
+      const isKnown = options.find(o => o.name === mp.name);
+      selector.value = isKnown ? mp.name : "CUSTOM";
+      onMPSelectChange();
+      
+      if (!isKnown) document.getElementById('mpCustomName').value = mp.name;
+      document.getElementById('mpCommission').value = mp.commission;
+      document.getElementById('mpFixedFee').value = mp.fixedFee;
+      document.getElementById('mpExtraCosts').value = mp.extraCosts;
+    }
+  } else {
+    document.getElementById('editMPId').value = "";
+    document.getElementById('mpSaveBtnText').textContent = "Adicionar Canal";
+    selector.value = "";
+    onMPSelectChange();
+    document.getElementById('mpCustomName').value = "";
+    document.getElementById('mpCommission').value = 0;
+    document.getElementById('mpFixedFee').value = 0;
+    document.getElementById('mpExtraCosts').value = 0;
+  }
 }
 
 function closeMPModal() {
@@ -2007,49 +2095,62 @@ function closeMPModal() {
   if (modal) modal.classList.remove('open');
 }
 
-function renderMPModal() {
-  const container = document.getElementById('mpModalList');
-  if (!container) return;
+function onMPSelectChange() {
+  const selector = document.getElementById('mpSelector');
+  const customGroup = document.getElementById('customNameGroup');
+  const val = selector.value;
   
-  let html = '';
-  for (const [region, apps] of Object.entries(MARKETPLACE_DATA)) {
-    html += `<div class="mp-region-title">${region}</div><div class="mp-modal-grid">`;
-    apps.forEach(app => {
-      html += `
-        <div class="mp-opt-card" onclick="selectMP('${app.name}', ${app.commission}, ${app.fixedFee}, ${app.isCustom || false})">
-          <div class="mp-opt-icon"><i class="ph-bold ph-storefront"></i></div>
-          <div class="mp-opt-name">${app.name}</div>
-        </div>
-      `;
-    });
-    html += `</div>`;
+  if (val === "CUSTOM") {
+    customGroup.style.display = "block";
+  } else {
+    customGroup.style.display = "none";
+    const region = getRegionByLocale();
+    const data = (MARKETPLACE_DATA[region] || []).find(o => o.name === val);
+    if (data) {
+      document.getElementById('mpCommission').value = data.commission;
+      document.getElementById('mpFixedFee').value = data.fixedFee;
+    }
   }
-  container.innerHTML = html;
 }
 
-function selectMP(name, comm, fixed, isCustom) {
-  const id = Date.now() + Math.random();
-  selectedMarketplaces.push({
-    id,
-    name: isCustom ? "Canal Personalizado" : name,
-    commission: comm,
-    fixedFee: fixed,
-    extraCosts: 0
-  });
+function saveMP() {
+  const editId = document.getElementById('editMPId').value;
+  const selector = document.getElementById('mpSelector');
+  const val = selector.value;
+  
+  if (!val) { showToast("Seleciona um canal de venda", "err"); return; }
+  
+  let name = val === "CUSTOM" ? document.getElementById('mpCustomName').value.trim() : val;
+  if (!name) { showToast("Informa o nome do canal", "err"); return; }
+
+  const commission = parseFloat(document.getElementById('mpCommission').value) || 0;
+  const fixedFee = parseFloat(document.getElementById('mpFixedFee').value) || 0;
+  const extraCosts = parseFloat(document.getElementById('mpExtraCosts').value) || 0;
+
+  if (editId) {
+    const mp = selectedMarketplaces.find(x => String(x.id) === String(editId));
+    if (mp) {
+      mp.name = name;
+      mp.commission = commission;
+      mp.fixedFee = fixedFee;
+      mp.extraCosts = extraCosts;
+    }
+  } else {
+    selectedMarketplaces.push({
+      id: Date.now() + Math.random(),
+      name, commission, fixedFee, extraCosts
+    });
+  }
+
   closeMPModal();
   renderSelectedMarketplaces();
   liveCalc();
+  showToast(editId ? "Canal atualizado" : "Canal adicionado", "ok");
 }
 
 function removeMP(id) {
   selectedMarketplaces = selectedMarketplaces.filter(x => x.id !== id);
   renderSelectedMarketplaces();
-  liveCalc();
-}
-
-function updateMP(id, field, val) {
-  const mp = selectedMarketplaces.find(x => x.id === id);
-  if (mp) mp[field] = parseFloat(val) || 0;
   liveCalc();
 }
 
@@ -2066,26 +2167,18 @@ function renderSelectedMarketplaces() {
   selectedMarketplaces.forEach(mp => {
     html += `
       <div class="mp-item-row">
-        <div class="mp-item-header">
+        <div class="mp-item-info">
           <div class="mp-item-name">
             <i class="ph-bold ph-storefront" style="color:var(--blue); opacity:0.6"></i>
-            <input type="text" value="${mp.name}" oninput="const m=selectedMarketplaces.find(x=>x.id===${mp.id}); if(m) m.name=this.value; liveCalc()" style="background:transparent; border:none; color:var(--dark); font-weight:800; font-size:0.9rem; outline:none; width:auto; border-bottom:1px solid transparent;" onfocus="this.style.borderBottomColor='var(--blue)'" onblur="this.style.borderBottomColor='transparent'">
+            <span>${mp.name}</span>
           </div>
-          <button class="btn-del" style="background:rgba(239,68,68,0.05)" onclick="removeMP(${mp.id})" title="Remover"><i class="ph-bold ph-trash"></i></button>
+          <div class="mp-item-specs">
+            ${mp.commission}% comissão • ${fmtCurrency(mp.fixedFee)} fixo • ${fmtCurrency(mp.extraCosts)} extras
+          </div>
         </div>
-        <div class="mp-item-fields">
-          <div class="mp-field">
-            <label>Comissão %</label>
-            <input type="number" value="${mp.commission}" step="0.1" oninput="updateMP(${mp.id}, 'commission', this.value)">
-          </div>
-          <div class="mp-field">
-            <label>Taxa Fixa</label>
-            <input type="number" value="${mp.fixedFee}" step="0.01" oninput="updateMP(${mp.id}, 'fixedFee', this.value)">
-          </div>
-          <div class="mp-field">
-            <label>Custos Extras</label>
-            <input type="number" value="${mp.extraCosts}" step="0.01" oninput="updateMP(${mp.id}, 'extraCosts', this.value)">
-          </div>
+        <div class="mp-row-actions">
+          <button class="btn-row-action" onclick="openMPModal(${mp.id})" title="Editar"><i class="ph-bold ph-pencil"></i></button>
+          <button class="btn-row-action del" onclick="removeMP(${mp.id})" title="Remover"><i class="ph-bold ph-trash"></i></button>
         </div>
       </div>
     `;
@@ -2110,9 +2203,7 @@ function renderMarketplaceCards(baseResult) {
         mpFinalPrice = (baseResult.finalPrice + mp.fixedFee + mp.extraCosts) / commFactor;
     }
     
-    // Safety check for unrealistic commissions
     if (mpFinalPrice > 50000) mpFinalPrice = 0;
-
     const netReceived = (mpFinalPrice * (1 - (mp.commission / 100))) - mp.fixedFee - mp.extraCosts;
     
     html += `
@@ -2667,13 +2758,52 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <button class="modal-close" onclick="closeMPModal()" style="width:30px; height:30px; border-radius:50%; border:none; background:var(--bg-hover); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted);"><i class="ph-bold ph-x"></i></button>
     </div>
-    <div class="modal-body mp-modal-body" style="padding:20px; max-height:480px; overflow-y:auto;">
-      <div id="mpModalList">
-        <!-- JS em renderMPModal() -->
+    <div class="modal-body mp-modal-body" style="padding:22px; max-height:520px; overflow-y:auto;">
+      <input type="hidden" id="editMPId" value="">
+      
+      <div class="mp-form-group">
+        <label>Canal de Venda</label>
+        <select id="mpSelector" class="mp-select" onchange="onMPSelectChange()">
+           <!-- JS will fill options here based on locale -->
+        </select>
       </div>
+
+      <div class="mp-form-group" id="customNameGroup" style="display:none">
+        <label>Nome do Canal</label>
+        <input type="text" id="mpCustomName" class="mp-input" placeholder="Ex: Etsy, Loja Própria...">
+      </div>
+
+      <div class="mp-form-grid">
+        <div class="mp-form-group">
+          <label>Comissão (%)</label>
+          <div class="mp-input-unit">
+            <input type="number" id="mpCommission" class="mp-input" value="0" step="0.1" min="0">
+            <span class="mp-unit-tag">%</span>
+          </div>
+        </div>
+        <div class="mp-form-group">
+          <label>Taxa Fixa</label>
+          <div class="mp-input-unit">
+            <input type="number" id="mpFixedFee" class="mp-input" value="0" step="0.01" min="0">
+            <span class="mp-unit-tag" id="mpUnitFixed">€</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mp-form-group">
+        <label>Custos Adicionais (Embalagem, Envios, etc)</label>
+        <div class="mp-input-unit">
+          <input type="number" id="mpExtraCosts" class="mp-input" value="0" step="0.01" min="0">
+          <span class="mp-unit-tag" id="mpUnitExtra">€</span>
+        </div>
+      </div>
+
     </div>
-    <div class="modal-footer" style="padding:15px 22px; border-top:1.5px solid var(--border); display:flex; justify-content:flex-end; background:var(--bg-modal-footer);">
-        <button class="btn-clear" onclick="closeMPModal()">Cancelar</button>
+    <div class="modal-footer" style="padding:15px 22px; border-top:1.5px solid var(--border); display:flex; gap:10px; background:var(--bg-modal-footer);">
+        <button class="btn-clear" style="flex:1" onclick="closeMPModal()">Cancelar</button>
+        <button class="mp-btn-save" style="flex:2" onclick="saveMP()">
+          <i class="ph-bold ph-check"></i> <span id="mpSaveBtnText">Adicionar Canal</span>
+        </button>
     </div>
   </div>
 </div>
