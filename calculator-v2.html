@@ -57,9 +57,9 @@
 .step-card {
   background: var(--v2-card-bg);
   backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rl);
-  box-shadow: var(--sh-sm);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
   overflow: hidden;
   animation: fadeUp .5s var(--ease) both;
 }
@@ -145,6 +145,93 @@
   background: var(--bg-card);
 }
 
+/* ── PREMIUM SEGMENTED CONTROL ───────────── */
+.segmented-control {
+  display: flex;
+  background: var(--bg-input);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  gap: 2px;
+  position: relative;
+  width: fit-content;
+}
+
+.segmented-control.full { width: 100%; margin-bottom: 12px; }
+
+.segmented-opt {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.segmented-opt.active {
+  background: var(--bg-card);
+  color: var(--blue);
+  box-shadow: var(--sh-sm);
+  border: 1px solid rgba(59,143,212,0.1);
+}
+
+.segmented-opt:hover:not(.active) { color: var(--dark); background: rgba(0,0,0,0.03); }
+
+.pro-badge {
+  background: var(--blue-g);
+  color: var(--blue);
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ── MARKETPLACE CHIPS ───────────────────── */
+.mkt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mkt-chip {
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mkt-chip i { font-size: 1rem; opacity: 0.6; }
+
+.mkt-chip:hover { border-color: var(--blue); color: var(--blue); }
+
+.mkt-chip.active {
+  background: var(--blue-g);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.mkt-chip.active i { opacity: 1; }
+
 .v2-unit {
   position: absolute;
   right: 14px;
@@ -194,11 +281,11 @@
 /* ── HERO RESULT CARD ────────────────────── */
 .hero-result-card {
   background: linear-gradient(135deg, var(--blue), var(--blue-d));
-  border-radius: var(--rl);
-  padding: 30px 24px;
+  border-radius: 20px;
+  padding: 32px 24px;
   color: white;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(59,143,212,0.3);
+  box-shadow: 0 12px 30px rgba(59,143,212,0.25);
   position: relative;
   overflow: hidden;
 }
@@ -224,11 +311,12 @@
 }
 
 .hero-value {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 900;
   font-family: var(--mono);
   line-height: 1;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
 }
 
 .hero-margin-badge {
@@ -241,33 +329,6 @@
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 800;
-}
-
-/* ── TECH TOGGLE (FDM/RESIN) ────────────── */
-.mode-toggle {
-  display: flex;
-  background: var(--bg-input);
-  padding: 4px;
-  border-radius: 12px;
-  gap: 4px;
-  border: 1.5px solid var(--border);
-  margin-bottom: 15px;
-}
-
-.mode-btn {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .mode-btn:hover { color: var(--blue); }
@@ -624,11 +685,11 @@
           <p data-i18n="calc.page_desc">Design refatorado para máxima produtividade e lucro</p>
         </div>
         
-        <div class="calc-mode-switcher" style="margin-bottom:0">
-          <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+        <div class="segmented-control" id="calcModeToggle">
+          <button class="segmented-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
             <span data-i18n="calc.modes.simple">Simples</span>
           </button>
-          <button class="mode-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+          <button class="segmented-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
             <span data-i18n="calc.modes.advanced">Avançado</span>
             <span class="pro-badge">Pro</span>
           </button>
@@ -654,9 +715,9 @@
                 
                 <div class="v2-field">
                   <label class="v2-label"><i class="ph-bold ph-package"></i> Modo & Material</label>
-                  <div class="mode-toggle" style="margin-bottom:10px">
-                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
-                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">Resina</button>
+                  <div class="segmented-control full" id="techModeToggle">
+                    <button class="segmented-opt active" id="modeFDM" onclick="setTechMode('fdm')">FDM</button>
+                    <button class="segmented-opt" id="modeResin" onclick="setTechMode('resin')">Resina</button>
                   </div>
                   <select class="v2-input" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)" style="font-family: inherit;">
                     <option value="">Selecionar material...</option>
@@ -734,14 +795,17 @@
             </div>
             <div class="step-body" id="mktBlockBody" style="display:none">
               <div class="mkt-header">
-                <label class="v2-label" data-i18n="calc.mkt.label">Escolher Plataforma</label>
-                <button class="btn-mkt-manage" onclick="openMktManager()"><i class="ph-bold ph-gear"></i> <span data-i18n="nav.gestao">Gerir</span></button>
+                <label class="v2-label" data-i18n="calc.mkt.label">Comparar em Marketplaces</label>
+                <button class="btn-mkt-manage" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> <span data-i18n="calc.mkt.add">Adicionar</span></button>
               </div>
-              <select id="mktPlatform" class="v2-input" onchange="onMktPlatformChange()" style="font-family: inherit; margin-bottom: 12px;">
-                <option value="none" data-i18n="calc.mkt.none">Não vender em marketplace</option>
-              </select>
               
-              <div id="mktDetails" style="display:none">
+              <div id="mktChipsContainer" class="mkt-chips">
+                <!-- Chips added dynamically -->
+              </div>
+              
+              <div id="mktComparisonList" style="margin-top: 20px; display: none;">
+                <!-- Details for comparison if needed, or managed in sidebar -->
+              </div>
                 <div class="v2-field-group">
                   <div class="v2-field">
                     <label class="v2-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
@@ -774,52 +838,50 @@
         <!-- ── RIGHT: RESULTS SIDEBAR ── -->
         <div class="results-column">
           
+          <!-- HERO: PREÇO SUGERIDO -->
           <div class="hero-result-card">
-            <div class="hero-label" data-i18n="calc.price_hero_label">Preço Sugerido</div>
+            <div class="hero-label" data-i18n="calc.wa.unit_price">Preço de Venda Sugerido</div>
             <div class="hero-value" id="rFinal">0,00 €</div>
-            <div class="hero-margin-badge" id="rMarginBadge" title="Margem calculada">
+            <div class="hero-margin-badge" id="rMarginBadge" title="Margem de lucro alvo definida nos parâmetros.">
               <i class="ph-bold ph-chart-line-up"></i> <span data-i18n="settings.prefs.margin">Margem</span>: <span id="labMargPct">30</span>%
             </div>
-            <div id="mktActiveBadge" style="display:none; position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.2); font-size:0.6rem; font-weight:900; padding:4px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:0.5px" data-i18n="calc.mkt.active">Marketplace Ativo</div>
           </div>
 
-          <!-- MARKETPLACE SUMMARY -->
-          <div class="summary-card" id="mktSummaryCard" style="display:none; border-color: var(--blue); background: var(--blue-g);">
-            <div class="summary-title" style="color: var(--blue)">
-              <i class="ph-bold ph-storefront"></i> <span data-i18n="calc.mkt.summary_title">Resultado Marketplace</span>
+          <!-- COMPARATIVO MARKETPLACES -->
+          <div class="summary-card" id="mktSummaryCard" style="display:none; border: 1.5px solid var(--blue); background: var(--blue-g);">
+            <div class="summary-title" style="color:var(--blue)">
+              <i class="ph-bold ph-scales"></i> 
+              <span data-i18n="mkt.comparison">Comparação de Canais</span>
             </div>
-            <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.mkt.fee_label">Comissão</span>
-              <span class="summary-val" id="resMktFee">0,00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.mkt.net_label">Líquido Recebido</span>
-              <span class="summary-val" id="resMktNet">0,00 €</span>
-            </div>
-            <div class="summary-line" style="border-top: 1.5px solid var(--border); margin-top: 5px; padding-top: 10px;">
-              <span class="summary-label" style="font-weight: 800; color: var(--dark);" data-i18n="calc.mkt.real_margin">Margem Real</span>
-              <span class="summary-val" id="resMktMarginPct" style="font-size: 1.1rem; color: var(--blue);">0%</span>
+            <div id="mktComparisonContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+              <!-- Comparison rows injected here -->
             </div>
           </div>
 
+          <!-- DETALHES DE PRODUÇÃO -->
           <div class="summary-card">
-            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results_title">Detalhes de Custo</span></div>
+            <div class="summary-title">
+              <i class="ph-bold ph-info"></i> 
+              <span data-i18n="calc.results_title">Detalhes de Custo</span>
+            </div>
+            
             <div class="summary-line">
               <span class="summary-label" data-i18n="calc.table_material">Material</span>
               <span class="summary-val" id="resFilCost">0,00 €</span>
             </div>
             <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.resin_cost_label">Amortização</span>
+              <span class="summary-label">Amortização</span>
               <span class="summary-val" id="resMchCost">0,00 €</span>
             </div>
             <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.electricity_cost_label">Eletricidade</span>
+              <span class="summary-label" data-i18n="calc.results.energy">Eletricidade</span>
               <span class="summary-val" id="resElecCost">0,00 €</span>
             </div>
-            <div class="summary-line" style="background: rgba(34,197,94,0.05); margin: 5px -10px; padding: 8px 10px; border-radius: 8px;">
-              <span class="summary-label" style="color: var(--success); font-weight: 700;" data-i18n="calc.results.base_label">Custo de Base</span>
-              <span class="summary-val" id="resBaseCost" style="color: var(--success)">0,00 €</span>
+            <div class="summary-line" style="border-top:2px solid var(--border); margin-top:5px; padding-top:10px; background: rgba(34,197,94,0.05); margin-left: -10px; margin-right: -10px; padding-left: 10px; padding-right: 10px;">
+              <span class="summary-label" style="color:var(--success); font-weight:800" data-i18n="calc.results.base">Custo de Base</span>
+              <span class="summary-val" style="color:var(--success); font-weight:800" id="resBaseCost">0,00 €</span>
             </div>
+            
             <div class="summary-line">
               <span class="summary-label">Falhas (<span id="labFailPct">5</span>%)</span>
               <span class="summary-val" id="resFailCost">0,00 €</span>
@@ -831,25 +893,24 @@
           </div>
 
           <div class="results-actions">
-            <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
-              <span><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
+            <button class="btn btn-primary full" id="saveCalcBtn" onclick="saveToHistory()">
+              <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.save_btn">Guardar Cálculo</span>
             </button>
-            <button class="btn-wa" onclick="sendWhatsApp()">
-              <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
-              <span>WhatsApp</span>
-            </button>
-            <div class="results-actions-row">
-              <button class="btn-action" onclick="copyResults()">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
+              <button class="btn btn-ghost" onclick="sendWhatsApp()">
+                <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
+              </button>
+              <button class="btn btn-ghost" onclick="copyResults()">
                 <i class="ph-bold ph-copy"></i> Copiar
               </button>
-              <button class="btn-action" onclick="saveToHistory()">
-                <i class="ph-bold ph-floppy-disk"></i> Guardar
-              </button>
             </div>
-            <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()" style="width:100%">
-              <i class="ph-bold ph-gear"></i> Parâmetros de Cálculo
+            <button class="btn btn-ghost full" id="advBtn" onclick="toggleAdvPanel()" style="margin-top:10px">
+              <i class="ph-bold ph-gear"></i> <span data-i18n="settings.title">Parâmetros</span>
             </button>
           </div>
+          
+        </div>
+      </div>
 
         </div>
       </div>
@@ -1670,6 +1731,7 @@ function onCalcPrinterChange() {
 
 // ── MARKETPLACE STATE & SETTINGS ───────
 let _marketplaces = [];
+let _activeMktIds = []; // Now an array for multi-selection
 const _mktDefaults = {
   'pt-PT': [
     { id: 'etsy', name: 'Etsy', taxPct: 15, fixedFee: 0.20 },
@@ -1700,47 +1762,38 @@ const _mktDefaults = {
   ]
 };
 
+function renderMarketplaceChips() {
+  const container = document.getElementById('mktChipsContainer');
+  if (!container) return;
+  
+  container.innerHTML = _marketplaces.map(m => {
+    const active = _activeMktIds.includes(m.id) ? 'active' : '';
+    return `
+      <div class="mkt-chip ${active}" onclick="toggleMarketplace('${m.id}')">
+        <i class="ph-bold ph-storefront"></i>
+        <span>${m.name}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleMarketplace(id) {
+  const idx = _activeMktIds.indexOf(id);
+  if (idx === -1) {
+    _activeMktIds.push(id);
+  } else {
+    _activeMktIds.splice(idx, 1);
+  }
+  renderMarketplaceChips();
+  liveCalc();
+}
+
 function loadMarketplaces() {
   const cfg = _sessionData?.config || {};
   const locale = i18n.currentLocale || 'pt-PT';
   const defaults = _mktDefaults[locale] || _mktDefaults['pt-PT'];
-  
   _marketplaces = cfg.custom_marketplaces || defaults;
-  renderMarketplaceSelect();
-}
-
-function renderMarketplaceSelect() {
-  const sel = document.getElementById('mktPlatform');
-  if (!sel) return;
-  
-  let html = `<option value="none" data-i18n="calc.mkt.none">Não vender em marketplace</option>`;
-  _marketplaces.forEach(m => {
-    html += `<option value="${m.id}">${m.name} (${m.taxPct}%${m.fixedFee > 0 ? ' + ' + fmtCurrency(m.fixedFee) : ''})</option>`;
-  });
-  html += `<option value="custom" style="font-weight:bold; color:var(--blue)">+ Adicionar Novo / Personalizado</option>`;
-  sel.innerHTML = html;
-}
-
-function onMktPlatformChange() {
-  const sel = document.getElementById('mktPlatform');
-  const details = document.getElementById('mktDetails');
-  const val = sel.value;
-  
-  if (val === 'none') {
-    details.style.display = 'none';
-  } else if (val === 'custom') {
-    openMktManager();
-    sel.value = 'none';
-    details.style.display = 'none';
-  } else {
-    const m = _marketplaces.find(x => x.id === val);
-    if (m) {
-      document.getElementById('mktTaxPct').value = m.taxPct;
-      document.getElementById('mktFixedFee').value = m.fixedFee;
-      details.style.display = 'block';
-    }
-  }
-  liveCalc();
+  renderMarketplaceChips();
 }
 
 function toggleMktBlock() {
@@ -1777,11 +1830,12 @@ async function saveCustomMkt() {
     } catch(e) { console.error('Error saving marketplace:', e); }
   }
   
-  renderMarketplaceSelect();
-  document.getElementById('mktPlatform').value = newMkt.id;
-  onMktPlatformChange();
+  renderMarketplaceChips();
+  _activeMktIds.push(newMkt.id);
+  renderMarketplaceChips();
   closeMktManager();
   showToast('Marketplace adicionado!', 'ok');
+  liveCalc();
 }
 
 function getInputs() {
@@ -1799,10 +1853,8 @@ function getInputs() {
   };
 
   const mkt = {
-    platform: document.getElementById('mktPlatform')?.value || 'none',
-    taxPct: pf('mktTaxPct'),
-    fixedFee: pf('mktFixedFee'),
-    salePrice: pf('mktSalePrice')
+    activeIds: [..._activeMktIds],
+    platforms: _activeMktIds.map(id => _marketplaces.find(m => m.id === id)).filter(Boolean)
   };
 
   if (_calcMode === 'simple') {
@@ -1868,16 +1920,22 @@ function computeResults(i) {
   const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
   const finalPrice = baseCost + failureCost + indirectCost + marginCost;
 
-  // Marketplace calculations
-  let mktFee = 0;
-  let mktNet = 0;
-  let mktMarginPct = 0;
-  if (i.mkt && i.mkt.platform !== 'none') {
-    const sale = i.mkt.salePrice || finalPrice;
-    mktFee = (sale * i.mkt.taxPct / 100) + i.mkt.fixedFee;
-    mktNet = sale - mktFee;
-    mktMarginPct = sale > 0 ? ((mktNet - (baseCost + failureCost + indirectCost)) / sale * 100) : 0;
-  }
+  // Marketplace comparison calculations
+  const comparison = i.mkt.platforms.map(m => {
+    const sale = finalPrice; // Suggested price sync mode
+    const fee = (sale * m.taxPct / 100) + m.fixedFee;
+    const net = sale - fee;
+    const realMarginPct = sale > 0 ? ((net - (baseCost + failureCost + indirectCost)) / sale * 100) : 0;
+    return {
+      id: m.id,
+      name: m.name,
+      taxPct: m.taxPct,
+      fixedFee: m.fixedFee,
+      fee,
+      net,
+      realMarginPct
+    };
+  });
 
   return {
     materialCost,
@@ -1890,10 +1948,8 @@ function computeResults(i) {
     finalPrice,
     unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1,
-    // Marketplace fields
-    mktFee,
-    mktNet,
-    mktMarginPct
+    // Multi-Marketplace results
+    comparison
   };
 }
 
@@ -1922,34 +1978,36 @@ function _render() {
   const mBadge = document.getElementById('rMarginBadge');
   if (mBadge) {
     document.getElementById('labMargPct').textContent = i.profitMargin;
-    mBadge.classList.remove('low', 'high');
-    if (r.finalPrice > 0) {
-      // If marketplace active, compare real margin, else target margin is always "normal"
-      // But we can highlight if real margin is better or worse than target
-      if (i.mkt.platform !== 'none') {
-        const isLow = r.mktMarginPct < i.profitMargin;
-        mBadge.classList.add(isLow ? 'low' : 'high');
-      }
-    }
   }
 
-  // Marketplace Summary Visibility
+  // Marketplace Comparison Rendering
   const mktCard = document.getElementById('mktSummaryCard');
   if (mktCard) {
-    mktCard.style.display = i.mkt.platform !== 'none' ? 'block' : 'none';
-    if (i.mkt.platform !== 'none') {
-      document.getElementById('resMktFee').textContent = fmtCurrency(r.mktFee);
-      document.getElementById('resMktNet').textContent = fmtCurrency(r.mktNet);
-      const mPctEl = document.getElementById('resMktMarginPct');
-      mPctEl.textContent = r.mktMarginPct.toFixed(1) + '%';
-      
-      const isLow = r.mktMarginPct < i.profitMargin;
-      mPctEl.style.color = isLow ? 'var(--danger)' : 'var(--success)';
-      
-      // Sync simulated sale price if it was empty
-      if (!document.getElementById('mktSalePrice').value) {
-         document.getElementById('mktSalePrice').value = r.finalPrice.toFixed(2);
-      }
+    const hasMkt = r.comparison && r.comparison.length > 0;
+    mktCard.style.display = hasMkt ? 'block' : 'none';
+    
+    if (hasMkt) {
+      const container = document.getElementById('mktComparisonContainer');
+      container.innerHTML = r.comparison.map(m => {
+        const isLow = m.realMarginPct < i.profitMargin;
+        const colorClass = isLow ? 'var(--danger)' : 'var(--success)';
+        return `
+          <div class="summary-line" style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; border-left: 3px solid var(--blue); margin-bottom: 4px;">
+            <div style="flex: 1;">
+              <div style="font-weight: 800; font-size: 0.85rem; color: var(--dark); display: flex; align-items: center; gap: 6px;">
+                 <i class="ph-bold ph-storefront"></i> ${m.name}
+              </div>
+              <div style="font-size: 0.7rem; color: var(--muted); margin-top: 2px;">
+                Taxa: ${fmtCurrency(m.fee)} (${m.taxPct}%)
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 900; color: var(--blue); font-size: 0.95rem;">${fmtCurrency(m.net)}</div>
+              <div style="font-size: 0.72rem; font-weight: 800; color: ${colorClass};">Margem: ${m.realMarginPct.toFixed(1)}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   }
 
@@ -1966,8 +2024,8 @@ function _render() {
   setV('resIndCost', r.indirectCost);
   
   // Status button "Create Order"
-  const cpBtn = document.getElementById('btnCriarPedido');
-  if (cpBtn) cpBtn.style.display = r.finalPrice > 0 ? 'inline-flex' : 'none';
+  const cpBtn = document.getElementById('saveCalcBtn');
+  if (cpBtn) cpBtn.style.opacity = r.finalPrice > 0 ? '1' : '0.5';
 }
 
 function sendWhatsApp() {
