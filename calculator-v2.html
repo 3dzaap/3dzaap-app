@@ -21,475 +21,289 @@
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
-/* ── NEW V2 LAYOUT ─────────────────────────── */
-:root {
-  --v2-sidebar-w: 360px;
-  --v2-gap: 24px;
-  --v2-card-bg: var(--bg-card);
-  --step-num-size: 28px;
+/* ── Estilos específicos desta página ─────────────────────── */
+/* ── BOTÃO PARÂMETROS AVANÇADOS (inline no header) */
+/* ── MODE TOGGLE (Simples vs Avançado) ── */
+.calc-mode-switcher {
+  display: flex; gap: 4px; background: rgba(59,143,212,.08);
+  border: 1.5px solid var(--border); border-radius: 50px; padding: 4px;
+  width: fit-content; margin-bottom: 20px; animation: fadeUp .4s var(--ease) both;
+}
+.mode-opt {
+  padding: 8px 20px; border-radius: 40px; border: none; font-size: .84rem; font-weight: 700;
+  cursor: pointer; transition: all .2s var(--ease); color: var(--muted); background: transparent; display: flex; align-items: center; gap: 8px;
+}
+.mode-opt.active { background: var(--glass-s); color: var(--blue); box-shadow: var(--sh); }
+.mode-opt .pro-badge { font-size: .62rem; background: var(--orange); color: #fff; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
+
+/* ── MULTI-PART TABLE (Modo Avançado) ── */
+.parts-table-wrap { overflow-x: auto; margin-top: 10px; margin-bottom: 20px; border-radius: var(--rm); border: 1.5px solid var(--border); background: rgba(255,255,255,.05); }
+.parts-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+.parts-table th { text-align: left; padding: 12px 14px; font-size: .72rem; color: var(--muted); border-bottom: 1.5px solid var(--border); text-transform: uppercase; letter-spacing: .5px; }
+.parts-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.parts-table tr:last-child td { border-bottom: none; }
+.part-input { background: var(--bg-input); border: 1.5px solid var(--border-input); border-radius: 8px; padding: 6px 10px; font-size: .85rem; width: 100%; color: var(--dark); outline: none; }
+.part-input:focus { border-color: var(--blue); }
+.btn-remove-part { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: rgba(239,68,68,.08); color: var(--danger); border: 1.5px solid rgba(239,68,68,0.2); border-radius: 50%; cursor: pointer; transition: all .2s; }
+.btn-remove-part:hover { background: var(--danger); color: #fff; }
+
+.btn-add-part { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(59,143,212,.08); color: var(--blue); border: 1.5px dashed var(--blue); border-radius: var(--rm); cursor: pointer; font-size: .85rem; font-weight: 700; width: 100%; justify-content: center; transition: all .2s; }
+.btn-add-part:hover { background: rgba(59,143,212,.15); }
+
+/* ── RESULTS BREAKDOWN (New Visuals) ── */
+.res-line { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+.res-line:last-child { border-bottom: none; }
+.res-label { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--muted); font-weight: 500; }
+.res-dot { width: 10px; height: 10px; border-radius: 50%; }
+.res-value { font-family: var(--mono); font-weight: 800; color: var(--dark); font-size: .9rem; }
+.res-hero { background: linear-gradient(135deg, rgba(59,143,212,.1), rgba(59,143,212,.04)); border: 1.5px solid rgba(59,143,212,0.25); border-radius: var(--rm); padding: 20px; text-align: center; margin-bottom: 20px; }
+.res-hero-val { font-size: 2.2rem; font-weight: 900; line-height: 1; margin: 8px 0; }
+
+/* ── CALC LAYOUT — 1fr 1fr simétrico ── */
+.calc-layout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  align-items:stretch;
 }
 
-/* ── SAAS PADRONIZAÇÃO ───────────────────── */
-/* ── ELITE DARK THEME (IMAGE MATCH) ───────────────────── */
-.elite-mode-header {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
+/* ── GLASS CARD ─────────────────────── */
+.glass-card{
+  background:var(--bg-card);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1.5px solid var(--border);border-radius:var(--rl);
+  box-shadow:var(--sh);overflow:hidden;
+  animation:fadeUp .5s var(--ease) .15s both;
+  display:flex;flex-direction:column;
 }
 
-.elite-mode-pill {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border);
-  border-radius: 50px;
-  padding: 4px;
-  display: flex;
-  gap: 4px;
-  box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+.glass-card .form-sections{flex:1}
+
+.glass-card .results-panel{flex:1}
+
+.glass-card.results-col{animation-delay:.22s}
+
+.card-header-title{font-size:.92rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
+
+.card-header-badge{font-size:.67rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(59,143,212,.1);color:var(--blue);border:1px solid rgba(59,143,212,.22)}
+
+/* ── CARD FOOTER — limpar campos ──── */
+.card-footer{
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:12px 22px;border-top:1.5px solid var(--border);
+  background:rgba(59,143,212,.15);
 }
 
-.elite-mode-btn {
-  padding: 8px 24px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 700;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s var(--ease);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.btn-clear{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:var(--r);
+  background:transparent;border:1.5px solid rgba(239,68,68,.2);
+  font-size:.75rem;font-weight:600;color:var(--subtle);
+  cursor:pointer;transition:all .18s var(--ease);font-family:var(--f);
 }
 
-.elite-mode-btn.active {
-  background: #14284b; /* Tom de azul escuro da imagem */
-  color: var(--blue);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+.btn-clear:hover{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.35);color:var(--danger)}
+
+/* ── FORM SECTIONS ──────────────────── */
+.form-sections{padding:4px 0}
+
+.form-section{padding:16px 22px;border-bottom:1.5px solid rgba(59,143,212,.18)}
+
+.form-section:last-child{border-bottom:none}
+
+.section-title{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+.section-title-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.82rem}
+
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+.field{display:flex;flex-direction:column;gap:4px}
+
+.field.full{grid-column:1/-1}
+
+.field label{font-size:.74rem;font-weight:600;color:var(--muted)}
+
+.field-hint{font-size:.69rem;color:var(--subtle);font-weight:400}
+
+.field-wrap{position:relative}
+
+.field-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--subtle);pointer-events:none}
+
+.field input[type=number],.field input[type=text]{
+  width:100%;padding:8px 42px 8px 11px;
+  background:var(--bg-input);border:1.5px solid var(--border-input);
+  border-radius:var(--r);font-size:.86rem;font-weight:600;color:var(--dark);
+  font-family:var(--mono);transition:border-color .18s,box-shadow .18s,background .18s;outline:none;
 }
 
-.elite-session {
-  border-radius: 20px !important;
-  margin-bottom: 20px;
-  background: #111a2e !important; /* Cor exata da imagem */
-  border: 1px solid rgba(255,255,255,0.05) !important;
+.field input[type=text]{padding-right:11px;font-family:var(--f);font-weight:500}
+
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12);background:var(--bg-input)}
+
+.field input:hover:not(:focus){border-color:rgba(59,143,212,.35)}
+
+.field-with-slider{display:flex;flex-direction:column;gap:5px}
+
+.slider-row{display:flex;align-items:center;gap:9px}
+
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:rgba(59,143,212,.2);border-radius:2px;outline:none;cursor:pointer}
+
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue);border:2px solid white;box-shadow:0 2px 6px rgba(59,143,212,.35);cursor:pointer;transition:transform .15s}
+
+.slider-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+
+.slider-val{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--blue);min-width:38px;text-align:right}
+
+/* ── RESULTS ────────────────────────── */
+.results-panel{padding:18px 22px}
+
+.price-hero{
+  text-align:center;padding:20px 16px 16px;
+  background:linear-gradient(135deg,rgba(59,143,212,.10),rgba(59,143,212,.04));
+  border:1.5px solid rgba(59,143,212,.22);border-radius:var(--rm);
+  margin-bottom:18px;position:relative;overflow:hidden;
 }
 
-.elite-icon {
-  font-size: 1.1rem;
-  color: #3b82f6;
-  opacity: 0.9;
+.price-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(59,143,212,.15) 0%,transparent 70%)}
+
+.price-hero-label{font-size:.70rem;font-weight:800;color:var(--blue);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+
+.price-hero-value{font-family:var(--mono);font-size:2.2rem;font-weight:800;color:var(--dark);line-height:1;margin-bottom:4px;transition:all .3s var(--ease)}
+
+.price-hero-value.updated{animation:priceFlash .4s var(--ease)}
+
+.price-hero-sub{font-size:.73rem;color:var(--muted)}
+
+.breakdown-list{display:flex;flex-direction:column;margin-bottom:16px}
+
+.breakdown-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--r);transition:background .15s}
+
+.breakdown-item:hover{background:rgba(59,143,212,.05)}
+
+.breakdown-item.divider{border-top:1.5px solid rgba(59,143,212,.18);margin-top:4px;padding-top:10px}
+
+.breakdown-item.total-row{background:linear-gradient(135deg,rgba(59,143,212,.1),rgba(59,143,212,.04));border:1.5px solid rgba(59,143,212,.2);border-radius:var(--rm);margin-top:6px;padding:10px 14px}
+
+.breakdown-left{display:flex;align-items:center;gap:8px}
+
+.breakdown-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.breakdown-dot.blue{background:var(--blue)}
+
+.breakdown-dot.green{background:var(--success)}
+
+.breakdown-dot.orange{background:var(--orange)}
+
+.breakdown-dot.purple{background:#a855f7}
+
+.breakdown-label{font-size:.80rem;color:var(--muted);font-weight:500}
+
+.breakdown-value{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--dark);transition:color .2s}
+
+.breakdown-value.zero{color:var(--subtle)}
+
+.total-row .breakdown-label{font-weight:800;color:var(--dark);font-size:.86rem}
+
+.total-row .breakdown-value{font-size:.98rem;color:var(--blue)}
+
+.cost-bar{height:3px;background:rgba(59,143,212,.12);border-radius:2px;margin-top:2px;overflow:hidden}
+
+.cost-bar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .5s var(--ease)}
+
+.results-actions{display:flex;flex-direction:column;gap:8px}
+
+.results-actions-row{display:flex;gap:8px}
+
+.btn-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 10px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--bg-card);font-size:.76rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f)}
+
+.btn-action:hover{background:var(--bg-hover-s);color:var(--dark);border-color:rgba(59,143,212,.3)}
+
+.btn-action.copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:var(--success)}
+
+/* ── BOTÃO WHATSAPP ─────────────────── */
+.btn-wa{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:11px 16px;border-radius:var(--rm);border:none;
+  background:#25d366;color:#fff;
+  font-size:.88rem;font-weight:800;font-family:var(--f);letter-spacing:-.1px;
+  cursor:pointer;transition:all .22s var(--ease);
+  box-shadow:0 4px 14px rgba(37,211,102,.32);
 }
+.btn-wa:hover{background:#1ebe5d;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,211,102,.42)}
+.btn-wa.copied{background:#128c4a;box-shadow:none}
+.btn-wa-icon{display:flex;align-items:center;justify-content:center;width:18px;height:18px;flex-shrink:0}
+.btn-wa-icon svg{width:18px;height:18px}
 
-.elite-title {
-  font-size: 0.75rem !important;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #a0aec0 !important;
-  font-weight: 900 !important;
-}
+.btn-criar-pedido{display:none;width:100%;padding:13px 20px;border-radius:var(--rm);border:none;background:var(--blue);color:#fff;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .22s var(--ease);font-family:var(--f);letter-spacing:-.2px;box-shadow:0 4px 16px rgba(59,143,212,.35);align-items:center;justify-content:center;gap:8px}
 
-.no-border { border-bottom: none !important; }
+.btn-criar-pedido:hover{background:var(--blue-d);transform:translateY(-1px);box-shadow:0 6px 22px rgba(59,143,212,.45)}
 
-.elite-label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #edf2f7;
-  margin-bottom: 10px;
-}
+.btn-criar-pedido span{font-size:.72rem;font-weight:500;opacity:.8}
 
-.elite-label-opt {
-  font-size: 0.65rem;
-  font-weight: 500;
-  color: #718096;
-}
+.btn-criar-pedido.visible{display:flex}
 
-.elite-input, .elite-select {
-  background: #0d1425 !important;
-  border: 1px solid #2d3748 !important;
-  border-radius: 12px !important;
-  color: white !important;
-  padding: 12px 16px !important;
-  font-size: 0.9rem !important;
-  transition: all 0.3s var(--ease) !important;
-}
+.mode-toggle{display:flex;gap:6px;background:var(--bg-card);border-radius:10px;padding:4px;border:1.5px solid var(--border)}
 
-.elite-input:focus, .elite-select:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important;
-}
+.mode-btn{flex:1;padding:8px 12px;border-radius:7px;border:none;background:transparent;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;font-family:var(--f);white-space:nowrap}
 
-.elite-row-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
+.mode-btn.active{background:var(--bg-card-s);color:var(--blue);box-shadow:0 2px 8px rgba(30,60,120,.1)}
 
-.elite-pill-toggle {
-  background: #0d1425 !important;
-  border: 1px solid #2d3748 !important;
-  padding: 3px !important;
-  width: auto !important;
-  gap: 4px !important;
-}
+/* ── HISTÓRICO ──────────────────────── */
+.history-card{animation:fadeUp .5s var(--ease) .3s both}
 
-.elite-pill-toggle .mode-btn {
-  background: transparent !important;
-  border: none !important;
-  font-size: 0.72rem !important;
-  padding: 6px 14px !important;
-  color: #718096 !important;
-}
+.history-search-wrap{position:relative;display:flex;align-items:center}
 
-.elite-pill-toggle .mode-btn.active {
-  background: #14284b !important;
-  color: #3b82f6 !important;
-  box-shadow: none !important;
-}
+.history-search-icon{position:absolute;left:10px;font-size:.80rem;pointer-events:none;color:var(--subtle)}
 
-.elite-unit {
-  right: 15px !important;
-  color: #718096 !important;
-  background: transparent !important;
-}
+.history-search{padding:6px 12px 6px 30px;border-radius:var(--r);background:var(--bg-input);border:1.5px solid var(--border);font-size:.78rem;font-family:var(--f);color:var(--dark);outline:none;width:220px;transition:border-color .18s,width .25s var(--ease)}
 
-.elite-content-fade {
-  animation: eliteFadeIn .4s ease;
-}
+.history-search:focus{border-color:rgba(59,143,212,.4);width:260px}
 
-.elite-readonly {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.history-count{font-size:.74rem;color:var(--subtle);font-weight:600;white-space:nowrap}
 
-@keyframes eliteFadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.history-clear-btn{font-size:.75rem;font-weight:600;color:var(--subtle);cursor:pointer;padding:4px 10px;border-radius:var(--r);transition:color .18s,background .18s}
 
-.elite-clear {
-  color: var(--danger) !important;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-.elite-clear:hover { opacity: 1; }
-.segmented-control {
-  display: flex;
-  background: rgba(0,0,0,0.12);
-  padding: 4px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  gap: 2px;
-  position: relative;
-  width: fit-content;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-}
+.history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
 
-[data-theme="dark"] .segmented-control {
-  background: rgba(255,255,255,0.05);
-}
+.history-table-wrap{overflow-x:auto;overflow-y:auto;max-height:340px}
 
-.segmented-control.full { width: 100%; margin-bottom: 12px; }
+.history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.6}
 
-.segmented-opt {
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  z-index: 1;
-  white-space: nowrap;
-}
+.history-empty-icon{font-size:2rem;opacity:.35}
 
-.segmented-opt.active {
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(59,143,212,0.3);
-}
+.history-table{width:100%;border-collapse:separate;border-spacing:0;min-width:580px}
 
-[data-theme="dark"] .segmented-opt.active {
-  background: var(--blue);
-  color: #fff;
-}
+.history-table thead tr{background:var(--bg-card-s)}
+.history-table thead th{position:sticky;top:0;background:var(--bg-card-s);z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 
-.segmented-opt:hover:not(.active) { color: var(--dark); background: rgba(0,0,0,0.03); }
+.history-table th{padding:10px 16px;font-size:.71rem;font-weight:800;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;text-align:left;white-space:nowrap}
 
-.pro-badge {
-  background: var(--blue-g);
-  color: var(--blue);
-  font-size: 0.6rem;
-  padding: 2px 5px;
-  border-radius: 4px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
+.history-table tbody tr{border-bottom:1px solid rgba(59,143,212,.15);transition:background .15s;cursor:pointer}
 
-/* ── MARKETPLACE CHIPS ───────────────────── */
-.mkt-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
+.history-table tbody tr:last-child{border-bottom:none}
 
-.mkt-chip {
-  padding: 8px 12px;
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.history-table tbody tr:hover{background:rgba(59,143,212,.05)}
 
-.mkt-chip i { font-size: 1rem; opacity: 0.6; }
+.history-table td{padding:10px 16px;font-size:.82rem;color:var(--dark);vertical-align:middle}
 
-.mkt-chip:hover { border-color: var(--blue); color: var(--blue); }
+.td-name{font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.mkt-chip.active {
-  background: var(--blue-g);
-  border-color: var(--blue);
-  color: var(--blue);
-}
+.td-name .no-name{color:var(--subtle);font-weight:400;font-style:italic}
 
-.mkt-chip.active i { opacity: 1; }
+.td-mono{font-family:var(--mono);font-weight:600}
 
-.v2-unit {
-  position: absolute;
-  right: 16px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--subtle);
-  pointer-events: none;
-  text-transform: uppercase;
-  background: var(--bg-input);
-  padding: 2px 6px;
-  border-radius: 6px;
-  opacity: 0.8;
-}
+.td-price{font-family:var(--mono);font-weight:800;color:var(--blue)}
 
-[data-theme="dark"] .v2-unit {
-  background: rgba(255,255,255,0.03);
-}
+.td-time{font-size:.73rem;color:var(--subtle);font-family:var(--mono)}
 
-/* ── MARKETPLACE STYLES ──────────────────── */
-.mkt-box {
-  background: rgba(59,143,212,0.04);
-  border: 1.5px dashed var(--border);
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 10px;
-}
+.td-actions{text-align:right;white-space:nowrap}
 
-.mkt-field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
+.btn-restore{font-size:.71rem;font-weight:700;padding:4px 10px;border-radius:var(--r);border:1.5px solid rgba(59,143,212,.3);background:var(--bg-hover);color:var(--blue);cursor:pointer;transition:all .18s;font-family:var(--f)}
 
-.mkt-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
+.btn-restore:hover{background:rgba(59,143,212,.15);border-color:var(--blue)}
 
-.btn-mkt-manage {
-  background: var(--bg-card);
-  border: 1.5px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--blue);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
+.btn-del{font-size:.76rem;padding:4px 8px;border-radius:var(--r);border:none;background:transparent;color:var(--subtle);cursor:pointer;transition:color .18s,background .18s;margin-left:4px}
 
-.btn-mkt-manage:hover {
-  background: var(--blue-g);
-  border-color: var(--blue);
-}
-
-/* ── HERO RESULT CARD ────────────────────── */
-.hero-result-card {
-  background: linear-gradient(135deg, #0f172a, #1e293b); /* Deep Elite Dark */
-  border-radius: 24px;
-  padding: 40px 24px;
-  color: white;
-  text-align: center;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.hero-result-card::before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  right: -10%;
-  width: 150px;
-  height: 150px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 50%;
-}
-
-.hero-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.9;
-  margin-bottom: 8px;
-}
-
-.hero-value {
-  font-size: 3rem;
-  font-weight: 900;
-  font-family: var(--mono);
-  line-height: 1;
-  margin-bottom: 12px;
-  letter-spacing: -1px;
-}
-
-.hero-margin-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(4px);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 800;
-}
-
-.mode-btn:hover { color: var(--blue); }
-
-.mode-btn.active {
-  background: var(--bg-card);
-  color: var(--blue);
-  box-shadow: var(--sh-sm);
-  border: 1px solid rgba(59,143,212,0.1);
-}
-
-.hero-margin-badge.low { background: rgba(239,68,68,0.3); }
-.hero-margin-badge.high { background: rgba(34,197,94,0.3); }
-
-/* ── MINI BREAKDOWN ─────────────────────── */
-.summary-card {
-  background: var(--v2-card-bg);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-
-.summary-title {
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.summary-line {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
-}
-
-.summary-line:last-child { border-bottom: none; }
-
-.summary-label { color: var(--muted); font-weight: 500; }
-.summary-val { font-weight: 700; color: var(--dark); font-family: var(--mono); }
-
-/* ── MODAL V2 ───────────────────────────── */
-.v2-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(4px);
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.v2-modal.open { display: flex; }
-
-.calc-v2-container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  align-items: start;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.v2-columns-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.inputs-column, .middle-column, .results-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-}
-
-@media (max-width: 1200px) {
-  .calc-v2-container { grid-template-columns: 1fr; }
-  .v2-columns-wrapper { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 900px) {
-  .v2-columns-wrapper { grid-template-columns: 1fr; }
-}
-
-.v2-modal-content {
-  background: var(--bg-card);
-  width: 100%;
-  max-width: 450px;
-  border-radius: 24px;
-  border: 1.5px solid var(--border);
-  box-shadow: var(--sh-xl);
-  overflow: hidden;
-  animation: modalScale .3s var(--ease);
-}
-
-@keyframes modalScale {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+.btn-del:hover{color:var(--danger);background:rgba(239,68,68,.08)}
 
 /* ═══════════════════════════════════════════════
    PAINEL AVANÇADO FLUTUANTE
@@ -683,24 +497,6 @@
   transition: background .15s;
 }
 .gc-btn:hover { background: var(--bg-hover, rgba(0,0,0,.05)); }
-.gc-btn-clear {
-  background: rgba(239,68,68,0.1);
-  color: var(--danger);
-  border: 1px solid rgba(239,68,68,0.2);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-.gc-btn-clear:hover {
-  background: var(--danger);
-  color: #fff;
-}
 .gc-help-btn { border-radius: 50%; width: 32px; height: 32px; font-weight: 800; font-size: 1rem; padding: 0; }
 .gc-select {
   background: var(--bg-card, #fff);
@@ -737,6 +533,221 @@
 }
 .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
 [data-theme="dark"] .gc-popover-item { color: var(--dark); }
+
+/* ── MARKETPLACES & WATERMARK ──────────────── */
+.marketplace-section-card {
+  margin-top: 15px;
+  animation: fadeUp .5s var(--ease) .2s both;
+}
+
+.mp-add-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px; background: rgba(59,143,212,.08);
+  color: var(--blue); border: 1.5px dashed var(--blue);
+  border-radius: var(--rm); cursor: pointer;
+  font-size: .85rem; font-weight: 700; width: 100%;
+  justify-content: center; transition: all .2s;
+  margin-top: 10px;
+}
+.mp-add-btn:hover { background: rgba(59,143,212,.15); }
+
+.mp-item-row {
+  background: var(--bg-card-s);
+  border: 1px solid var(--border);
+  border-radius: var(--rm);
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+
+.mp-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mp-item-name {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center; gap: 8px;
+}
+
+.mp-item-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.mp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mp-field label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.mp-field input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-input);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-family: var(--mono);
+  color: var(--dark);
+  outline: none;
+  width: 100%;
+}
+.mp-field input:focus { border-color: var(--blue); background: var(--bg-card); }
+
+/* Watermark icon implementation */
+.card-watermark {
+  position: absolute;
+  right: 15px;
+  bottom: 0px;
+  font-size: 7rem;
+  color: var(--blue);
+  opacity: 0.06;
+  pointer-events: none;
+  transform: rotate(-15deg);
+  z-index: 0;
+}
+
+/* Marketplace Result Cards */
+.mp-results-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+@media (max-width: 600px) { .mp-results-container { grid-template-columns: 1fr; } }
+
+.mp-res-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp .5s var(--ease) both;
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-res-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  background: var(--blue-g);
+  color: var(--blue);
+  border-radius: 20px;
+  border: 1px solid rgba(59,143,212,0.2);
+  z-index: 2;
+}
+
+.mp-res-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  z-index: 2;
+}
+
+.mp-res-val {
+  font-family: var(--mono);
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--dark);
+  margin-bottom: 12px;
+  z-index: 2;
+}
+
+.mp-res-net-box {
+  background: rgba(34,197,94,0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: auto;
+  z-index: 2;
+}
+
+.mp-res-net-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.mp-res-net-val {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--success);
+}
+
+/* Modal Marketplaces */
+.mp-modal-body {
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.mp-modal-body::-webkit-scrollbar { width: 5px; }
+.mp-modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+.mp-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.mp-opt-card {
+  padding: 15px;
+  background: var(--bg-card-s);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.mp-opt-card:hover { 
+  border-color: var(--blue); 
+  background: var(--blue-g); 
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(59,143,212,0.1);
+}
+.mp-opt-icon { font-size: 1.6rem; color: var(--blue); }
+.mp-opt-name { font-size: 0.85rem; font-weight: 700; color: var(--dark); }
+
+.mp-region-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 25px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid rgba(59,143,212,0.1);
+  letter-spacing: 0.1em;
+}
+.mp-region-title:first-child { margin-top: 0; }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
@@ -761,10 +772,7 @@
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle" data-i18n="calc.page_title">Calculadora</div>
       <div class="topbar-actions">
-        <!-- Marketplace Mode Toggle or other stats can go here if needed -->
         <div class="global-ctrls" id="globalCtrls">
-          <!-- Advanced Params (Gear) -->
-          <button id="advBtn" onclick="toggleAdvPanel()" class="gc-btn" title="Parâmetros Avançados"><i class="ph-bold ph-gear"></i></button>
           <!-- Theme Toggle -->
           <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <!-- Language Selector -->
@@ -779,387 +787,243 @@
       </div>
     </header>
 
-    <div class="page-content" style="padding-top: var(--v2-gap);">
-      
-      <div class="calc-v2-container">
-        <div class="v2-columns-wrapper">
-        <!-- ── LEFT: INPUTS ── -->
-        <div class="inputs-column">
-          
-          <!-- ELITE MODE SELECTOR -->
-          <div class="elite-mode-header">
-             <div class="elite-mode-pill">
-               <button class="elite-mode-btn active" id="modeBtnSimple" onclick="setCalcMode('simple')">Simples</button>
-               <button class="elite-mode-btn" id="modeBtnAdvanced" onclick="setCalcMode('advanced')">Avançado <span class="pro-badge" style="background: var(--blue); color: white; padding: 1px 4px; border-radius: 3px; font-size: 0.5rem; text-transform: uppercase;">PRO</span></button>
-             </div>
-          </div>
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 data-i18n="calc.page_title"><i class="ph-bold ph-ruler"></i> Calculadora de Custos</h1>
+          <p data-i18n="calc.page_desc">Define o teu preço com base no material, tempo e custos de máquina</p>
+        </div>
+      </div>
 
-          <!-- SESSION 1: PROJETO -->
-          <div class="step-card elite-session" id="sessionProjeto">
-            <div class="step-header no-border" style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="ph-bold ph-tag elite-icon"></i>
-                <div class="step-title elite-title">PROJETO</div>
-              </div>
-              <button class="btn btn-ghost btn-sm elite-clear" onclick="clearCalculator()" title="Limpar tudo">
-                <i class="ph-bold ph-trash"></i>
-              </button>
-            </div>
-            <div class="step-body" style="padding-top: 0">
-              <div class="form-row full">
-                <input type="text" id="printName" class="form-input elite-input" placeholder="Ex: Miniatura Dragão..." oninput="liveCalc()">
-              </div>
-            </div>
-          </div>
+      <!-- ── MODE SWITCHER ── -->
+      <div class="calc-mode-switcher">
+        <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
+          <span data-i18n="calc.modes.simple">Simples</span>
+        </button>
+        <button class="mode-opt" onclick="setCalcMode('advanced')" id="modeBtnAdvanced">
+          <span data-i18n="calc.modes.advanced">Avançado</span>
+          <span class="pro-badge">Pro</span>
+        </button>
+      </div>
 
-          <!-- SESSION 2: CONFIGURAÇÃO (SIMPLES) / MESA (AVANÇADO) -->
-          <div class="step-card elite-session" id="sessionConfig">
-            <!-- Header for Simple -->
-            <div id="headerSimple" class="step-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="ph-bold ph-package elite-icon"></i>
-                <div class="step-title elite-title">CONFIGURAÇÃO</div>
+      <div class="calc-layout">
+        <!-- ── LEFT: FORM ── -->
+        <div class="glass-card">
+          <div class="form-sections">
+            
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-tag"></i></div>
+                <span data-i18n="calc.print_name_label">Projeto</span>
               </div>
-              <div class="pro-mode-switch" id="proModeToggle" onclick="toggleProMode()" title="Ativar custos extras">
-                <i class="ph-bold ph-shield-check"></i> Modo Pro
-              </div>
-            </div>
-            <!-- Header for Advanced -->
-            <div id="headerAdvanced" class="step-header" style="display:none; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="ph-bold ph-grid-four elite-icon"></i>
-                <div class="step-title elite-title">MESA DE IMPRESSÃO</div>
-              </div>
-              <button class="btn btn-primary btn-sm" onclick="addMesa()" style="border-radius: 8px; font-size: 0.75rem;">
-                <i class="ph-bold ph-plus"></i> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
-              </button>
-            </div>
-
-            <div class="step-body">
-              <!-- Content SIMPLE -->
-              <div id="contentSimple" class="elite-content-fade">
-                <div class="form-row full elite-row-between" style="margin-bottom: 20px;">
-                  <label class="form-label elite-label" style="margin: 0;">Modo de impressão</label>
-                  <div class="mode-toggle elite-pill-toggle" id="techModeToggle">
-                    <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')">
-                      <i class="ph-bold ph-vinyl-record"></i> FDM (Filamento)
-                    </button>
-                    <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')">
-                      <i class="ph-bold ph-flask"></i> Resina
-                    </button>
-                  </div>
+              <div class="fields-grid">
+                <div class="field full">
+                  <input type="text" id="printName" class="inp" data-i18n="[placeholder]calc.print_name_placeholder" placeholder="Ex: Suporte GoPro...">
                 </div>
+              </div>
+            </div>
 
-                <div class="form-row full">
-                  <div class="form-group">
-                    <label class="form-label elite-label">Material <span class="elite-label-opt">(opcional - preenche o preço auto)</span></label>
-                    <select class="form-select elite-select" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
-                      <option value="">Selecionar material...</option>
+            <!-- Modo Simples -->
+            <div id="sectionSimple">
+              <div class="form-section">
+                <div class="section-title">
+                  <div class="section-title-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-package"></i></div>
+                  <span data-i18n="calc.sections.config">Configuração</span>
+                </div>
+                <div class="fields-grid">
+                  <div class="field full" style="flex-direction:row; justify-content:space-between; align-items:center;">
+                    <label data-i18n="calc.fields.print_mode" style="margin-bottom:0">Modo de impressão</label>
+                    <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+                      <button class="mode-btn active" id="modeFDM" onclick="setTechMode('fdm')" style="font-size:0.7rem; padding:5px 8px"><i class="ph-bold ph-vinyl-record"></i> <span data-i18n="calc.modes.fdm">FDM</span></button>
+                      <button class="mode-btn" id="modeResin" onclick="setTechMode('resin')" style="font-size:0.7rem; padding:5px 8px"><i class="ph-bold ph-flask"></i> <span data-i18n="calc.modes.resin">Resina</span></button>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <label><span data-i18n="calc.fields.material">Material</span> <span class="field-hint" data-i18n="calc.material_hint">(opcional - preenche o preço auto)</span></label>
+                    <select class="inp" id="fMaterialSelect" onchange="applyMaterialSelect(this.value)">
+                      <option value="" data-i18n="calc.placeholders.select_material">Selecionar material...</option>
                     </select>
                   </div>
-                </div>
-
-                <div class="form-row full">
-                  <div class="form-group">
-                    <label class="form-label elite-label">Preço do material</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="filamentPrice" class="form-input elite-input" value="0" step="0.01" oninput="liveCalc()">
-                      <span class="v2-unit elite-unit" id="labelFilPrice">€/kg</span>
+                  <div class="field full">
+                    <label data-i18n="calc.filament_price_label">Preço do material</label>
+                    <div class="field-wrap">
+                      <input type="number" id="filamentPrice" value="0" step="0.01" min="0" oninput="liveCalc()">
+                      <span class="field-unit" id="labelFilPrice">/kg</span>
                     </div>
                   </div>
-                </div>
-
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label elite-label">Peso (g)</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="partWeight" class="form-input elite-input" value="0" step="0.1" oninput="liveCalc()">
-                    </div>
+                  <div class="field">
+                    <label><span data-i18n="calc.fields.weight">Peso</span> (<span class="unit-weight">g</span>)</label>
+                    <input type="number" id="partWeight" value="0" step="0.1" min="0" oninput="liveCalc()">
                   </div>
-                  <div class="form-group">
-                    <label class="form-label elite-label">Tempo (h)</label>
-                    <div class="v2-input-wrap">
-                      <input type="number" id="printTime" class="form-input elite-input" value="0" step="0.1" oninput="liveCalc()">
-                    </div>
+                  <div class="field">
+                    <label data-i18n="calc.fields.time">Tempo (h)</label>
+                    <input type="number" id="printTime" value="0" step="0.1" min="0" oninput="liveCalc()">
                   </div>
                 </div>
-              </div>
-
-              <!-- Content ADVANCED -->
-              <div id="contentAdvanced" style="display:none" class="elite-content-fade">
-                 <div id="mesasContainer"></div>
               </div>
             </div>
-          </div>
 
-          <!-- SESSION 3: MÁQUINA -->
-          <div class="step-card elite-session" id="sessionMaquina">
-            <div class="step-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="ph-bold ph-printer elite-icon"></i>
-                <div class="step-title elite-title">MÁQUINA</div>
-              </div>
-              <!-- Advanced Totals Badge -->
-              <div id="advTotalsSummary" style="display: none; align-items: center; gap: 8px;">
-                 <span id="advSummaryWeight" style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">0g</span>
-                 <span id="advSummaryTime" style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">0h</span>
+            <!-- Modo Avançado (Pro) -->
+            <div id="sectionAdvanced" style="display:none">
+              <div class="form-section">
+                <div class="section-title" style="justify-content: space-between; display: flex;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)"><i class="ph-bold ph-sketch-logo"></i></div>
+                    <span data-i18n="calc.sections.project">Mesa</span>
+                  </div>
+                  <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
+                    <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
+                  </button>
+                </div>
+                <div id="mesasContainer" style="margin-top:10px;">
+                  <!-- Dinâmico via JS -->
+                </div>
               </div>
             </div>
-            <div class="step-body">
-              <div class="form-row full">
-                <div class="form-group">
-                  <label class="form-label elite-label">Impressora</label>
-                  <select class="form-select elite-select" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
-                    <option value="">Selecionar impressora...</option>
+
+            <!-- Configurações partilhadas (Máquina) -->
+            <div class="form-section">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
+                <span data-i18n="calc.sections.machine">Máquina</span>
+              </div>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label data-i18n="calc.fields.printer">Impressora</label>
+                  <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
+                    <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
                   </select>
                 </div>
-              </div>
-
-              <!-- PRO MAINTENANCE & LABOR (Oculto exceto se Modo Pro ativo) -->
-              <div class="pro-section elite-pro-section">
-                 <div id="extraCostsContent">
-                    <div class="pro-section-title"><i class="ph-bold ph-wrench"></i> Manutenção & Desgaste (Pro)</div>
-                    <div class="maintenance-box" style="background: rgba(59,130,246,0.03); border: 1px solid rgba(59,130,246,0.1);">
-                      <div class="form-row">
-                        <div class="form-group">
-                          <label class="form-label elite-label" id="labelMaintPart" style="font-size: 0.75rem;">Bico / FEP (Custo)</label>
-                          <div class="v2-input-wrap">
-                            <input type="number" id="maintPartCost" class="form-input elite-input" value="15" step="0.01" oninput="liveCalc()">
-                            <span class="v2-unit elite-unit">€</span>
-                          </div>
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label elite-label" style="font-size: 0.75rem;">Vida Útil (Horas)</label>
-                          <div class="v2-input-wrap">
-                            <input type="number" id="maintPartLife" class="form-input elite-input" value="500" step="1" oninput="liveCalc()">
-                            <span class="v2-unit elite-unit">h</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div id="proResinFields" style="display:none; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
-                        <div class="form-row">
-                          <div class="form-group">
-                            <label class="form-label elite-label" style="font-size: 0.75rem;">Ecrã LCD (Custo)</label>
-                            <input type="number" id="lcdCost" class="form-input elite-input" value="80" step="1" oninput="liveCalc()">
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label elite-label" style="font-size: 0.75rem;">Vida LCD (Horas)</label>
-                            <input type="number" id="lcdLife" class="form-input elite-input" value="1500" step="1" oninput="liveCalc()">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="pro-section-title"><i class="ph-bold ph-users"></i> Mão de Obra (Pro)</div>
-                    <div class="form-row">
-                      <div class="form-group">
-                        <label class="form-label elite-label" style="font-size: 0.75rem;">Valor Hora (€/h)</label>
-                        <input type="number" id="laborRate" class="form-input elite-input" value="15" step="0.1" oninput="liveCalc()">
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label elite-label" style="font-size: 0.75rem;">Minutos Trabalho</label>
-                        <input type="number" id="laborMinutes" class="form-input elite-input" value="15" step="1" oninput="liveCalc()">
-                      </div>
-                    </div>
-
-                    <div class="pro-section-title" style="display:flex; justify-content:space-between; align-items:center; margin-top: 15px;">
-                      <span><i class="ph-bold ph-plus-circle"></i> Custos Extras</span>
-                      <button class="btn btn-ghost btn-sm" onclick="addCustomCost()" style="padding: 2px 8px; font-size: 0.65rem;"><i class="ph-bold ph-plus"></i> Novo</button>
-                    </div>
-                    <div id="customCostsContainer" style="display:grid; gap:8px;"></div>
-                 </div>
+                <div class="field" id="fieldTotalTime" style="display:none">
+                  <label data-i18n="calc.fields.total_time">Tempo Total Projecto (h)</label>
+                  <input type="number" id="totalProjectTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                </div>
               </div>
             </div>
+
+            <!-- ── SEÇÃO: VENDER EM MARKETPLACE ── -->
+            <div class="form-section marketplace-section-card">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:rgba(59,143,212,.1);color:var(--blue)"><i class="ph-bold ph-storefront"></i></div>
+                <span>Vender em Marketplace</span>
+              </div>
+              
+              <div id="selectedMarketplacesContainer">
+                <!-- JS will render selected marketplaces here -->
+              </div>
+
+              <button class="mp-add-btn" onclick="openMPModal()">
+                <i class="ph-bold ph-plus-circle"></i>
+                <span>Adicionar Canal de Venda</span>
+              </button>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn-clear" onclick="clearCalculator()">
+              <span><i class="ph-bold ph-trash"></i></span> <span data-i18n="calc.buttons.clear">Limpar</span>
+            </button>
           </div>
         </div>
 
-        <!-- ── CENTER: BREAKDOWN & MARKETPLACE ── -->
-        <div class="middle-column">
-          <!-- COSTS BREAKDOWN -->
-          <div class="summary-card">
-            <div class="summary-title"><i class="ph-bold ph-chart-pie"></i> <span data-i18n="calc.results.breakdown">Composição de Custos</span></div>
-            <div class="summary-line">
-              <span class="summary-label" data-i18n="calc.results.material">Material</span>
-              <span class="summary-val" id="resFilCost">0.00 €</span>
+        <!-- ── RIGHT: RESULTS ── -->
+        <div class="glass-card results-col">
+          <div class="results-panel">
+              <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
+              <div class="res-hero-val" id="rFinal">0,00 €</div>
+              <div class="price-hero-sub" id="rSubtext">A aguardar parâmetros...</div>
+              <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
             </div>
-            <div class="summary-line">
-              <span class="summary-label">Amortização & Energia</span>
-              <span class="summary-val" id="resMchCost">0.00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Manutenção (Desgaste)</span>
-              <span class="summary-val" id="resMaintCost">0.00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Mão de Obra</span>
-              <span class="summary-val" id="resLaborCost">0.00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Consumíveis & Logística</span>
-              <span class="summary-val" id="resConsumLog">0.00 €</span>
-            </div>
-            
-            <div class="summary-line" style="background: rgba(34,197,94,0.1); margin: 8px -8px; padding: 10px 8px; border-radius: 8px; border: 1px dashed var(--success);">
-              <span class="summary-label" style="color: var(--success); font-weight: 800;" data-i18n="calc.results.production_cost">Custo Total de Operação</span>
-              <span class="summary-val" id="resBaseCost" style="color: var(--success); font-weight: 900;">0.00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Taxa p/ Falhas</span>
-              <span class="summary-val" id="resFailCost">0.00 €</span>
-            </div>
-            <div class="summary-line">
-              <span class="summary-label">Custos Indiretos</span>
-              <span class="summary-val" id="resIndCost">0.00 €</span>
-            </div>
-          </div>
 
-          <!-- ROI & PROFIT ANALYSIS -->
-          <div class="summary-card" style="border-color: var(--blue);">
-            <div class="summary-title" style="color: var(--blue)"><i class="ph-bold ph-trend-up"></i> Análise de Lucratividade</div>
-            <div class="summary-line">
-              <span class="summary-label">Lucro Líquido (p/un)</span>
-              <span class="summary-val" id="resNetProfit" style="color: var(--blue)">0.00 €</span>
+            <!-- Container para cards de Marketplaces -->
+            <div id="mpResultsContainer" class="mp-results-container">
+              <!-- JS will render mp cards here -->
             </div>
-            <div class="summary-line">
-              <span class="summary-label">Vendas p/ Pagar Impressora</span>
-              <span class="summary-val" id="resROI">0</span>
-            </div>
-            <div style="margin-top: 10px; height: 6px; background: var(--bg-card-s); border-radius: 3px; overflow: hidden;">
-              <div id="roiBar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.6s ease;"></div>
-            </div>
-          </div>
-          
-          <!-- STEP 3: VENDER EM MARKETPLACE -->
-          <div class="step-card">
-            <div class="step-header" style="cursor:pointer" onclick="toggleMktBlock()">
-              <div class="step-num">3</div>
-              <div class="step-title" style="flex:1" data-i18n="calc.mkt.title">Vender em Marketplace?</div>
-              <i class="ph-bold ph-caret-down" id="mktCaret"></i>
-            </div>
-            <div class="step-body" id="mktBlockBody" style="display:none">
-              <div class="mkt-header">
-                <label class="form-label" data-i18n="calc.mkt.label">Comparar em Marketplaces</label>
-                <button class="btn btn-ghost btn-sm" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> <span data-i18n="calc.mkt.add">Adicionar</span></button>
+
+            <div class="breakdown-list">
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> <span data-i18n="calc.results.material">Material</span></div>
+                <div class="res-value" id="resFilCost">0,00 €</div>
               </div>
-              
-              <div id="mktChipsContainer" class="mkt-chips"></div>
-              
-              <div id="mktComparisonList" style="margin-top: 20px; display: none;"></div>
-              
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" data-i18n="calc.mkt.tax">Taxa (%)</label>
-                  <input type="number" id="mktTaxPct" class="form-input" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Embalagem & Log</label>
-                  <div class="v2-input-wrap">
-                    <input type="number" id="packagingCost" class="form-input" value="0" step="0.01" oninput="liveCalc()" style="font-family:var(--mono)">
-                    <span class="v2-unit">€</span>
-                  </div>
-                </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue-lt)"></span> <span data-i18n="calc.results.machine">Máquina</span></div>
+                <div class="res-value" id="resMchCost">0,00 €</div>
               </div>
-              
-              <div class="mkt-box">
-                <label class="form-label" style="margin-bottom:8px" data-i18n="calc.mkt.sale_price">Simular Preço de Venda</label>
-                <div class="v2-input-wrap">
-                  <input type="number" id="mktSalePrice" class="form-input" step="0.01" oninput="liveCalc()" style="font-size: 1.1rem; font-family:var(--mono)">
-                  <span class="v2-unit currency-sym">€</span>
-                </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--subtle)"></span> <span data-i18n="calc.results.energy">Eletricidade</span></div>
+                <div class="res-value" id="resElecCost">0,00 €</div>
+              </div>
+              <div class="res-line" style="border-top:1.5px solid var(--border);margin-top:5px;padding-top:10px">
+                <div class="res-label" style="color:var(--success);font-weight:700"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.base">Custo Base</span></div>
+                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange)"></span> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                <div class="res-value" id="resFailCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                <div class="res-value" id="resIndCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
+                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 €</div>
               </div>
             </div>
-          </div>
-          
-          <!-- MARKETPLACE COMPARISON -->
-          <div class="summary-card" id="mktSummaryCard" style="display:none">
-            <div class="summary-title"><i class="ph-bold ph-storefront"></i> Margem em Marketplaces</div>
-            <div id="mktComparisonContainer"></div>
+
+            <div class="results-actions">
+              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
+                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
+              </button>
+              <button class="btn-criar-pedido visible" style="background:var(--success-g);color:var(--success);border-color:var(--success-border)" onclick="saveToHistory()">
+                <span data-i18n="calc.buttons.save_history"><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</span>
+              </button>
+              <button class="btn-wa" onclick="sendWhatsApp()">
+                <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
+                <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
+              </button>
+              <div class="results-actions-row">
+                <button class="btn-action" onclick="copyResults()">
+                  <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
+                </button>
+                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
+                  <span><span data-i18n="calc.buttons.parameters">Parâmetros</span> <i class="ph-bold ph-gear"></i></span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-        <!-- ── RIGHT: RESULTS SIDEBAR ── -->
-        <div class="results-column">
-          
-          <!-- MAIN HERO (Elite Pattern) -->
-          <div class="hero-result-card">
-            <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; font-size: 5rem; color: #a0aec0;"><i class="ph-bold ph-tag"></i></div>
-            
-            <div class="hero-label" style="color: #a0aec0;">Preço de Venda Sugerido</div>
-            <div class="hero-value" id="rFinal">0,00 €</div>
-            
-            <div id="rMarginBadge" class="hero-margin-badge high">
-              <i class="ph-bold ph-chart-line-up"></i>
-              <span>Margem Alvo: <span id="labMargPct">30</span>%</span>
-            </div>
-          </div>
-          
-          <!-- CTA ACTIONS -->
-          <div class="results-actions" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-             <!-- SAVE BUTTON -->
-             <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="height: 54px; border-radius: 16px; font-weight: 800; font-size: 1rem; width: 100%; box-shadow: 0 4px 15px rgba(59,130,246,0.3);">
-               <i class="ph-bold ph-floppy-disk" style="font-size: 1.3rem;"></i> <span data-i18n="calc.buttons.save">Guardar Projeto</span>
-             </button>
-             
-             <!-- WHATSAPP BUTTON -->
-             <button class="btn btn-success" onclick="sendWhatsApp()" style="height: 54px; border-radius: 16px; background: #25D366; border: none; color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-shadow: 0 4px 15px rgba(37,211,102,0.2);">
-               <i class="ph-bold ph-whatsapp-logo" style="font-size: 1.3rem;"></i> Enviar por WhatsApp
-             </button>
-
-             <!-- OTHERS -->
-             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                 <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 14px; font-size: 0.9rem; height: 48px; font-weight: 700; background: var(--bg-card); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border);">
-                   <i class="ph-bold ph-copy"></i> Copiar
-                 </button>
-                 
-                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 14px; font-size: 0.9rem; height: 48px; font-weight: 700; background: var(--bg-card); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border);">
-                   <i class="ph-bold ph-file-csv"></i> CSV
-                 </button>
-             </div>
-          </div>
-
-          <!-- MARKETPLACE COMPARISON -->
-          <div class="summary-card" id="mktSummaryCard" style="display:none">
-            <div class="summary-title"><i class="ph-bold ph-storefront"></i> <span data-i18n="calc.results.mkt_comp">Comparação Marketplace</span></div>
-            <div id="mktComparisonContainer"></div>
-          </div>
-
+      <div class="page-header" style="margin-top:40px">
+        <div class="page-header-text">
+          <h2 data-i18n="calc.history_title"><i class="ph-bold ph-clock"></i> Histórico de Cálculos</h2>
         </div>
-      </div><!-- /.calc-v2-container -->
-
-      <!-- ── BOTTOM: HISTORY ── -->
-      <div id="calcHistoryCard" class="card history-card" style="margin-top: var(--v2-gap);">
-        <div class="card-header">
-          <div class="card-title"><i class="ph-bold ph-clock-counter-clockwise"></i> Histórico Recente</div>
-          <div class="card-header-actions" style="display:flex; align-items:center; gap:12px">
-            <div class="history-search-wrap">
-              <i class="ph-bold ph-magnifying-glass history-search-icon"></i>
-              <input type="text" id="historySearch" class="history-search" placeholder="Procurar..." oninput="renderHistory()">
-            </div>
-            <span class="history-count" id="historyCount">0 registos</span>
-            <button class="btn btn-ghost btn-danger btn-sm" onclick="clearHistory()"><i class="ph-bold ph-trash"></i></button>
-          </div>
+        <div class="history-count" id="historyCount">0 registos</div>
+      </div>
+      <!-- CARD HISTÓRICO -->
+      <div class="glass-card" style="margin-bottom:40px; min-height: 200px;">
+        <div id="historyEmpty" class="history-empty" style="padding:40px; text-align:center; color:var(--muted)">
+           <div style="font-size:2rem; margin-bottom:10px"><i class="ph-bold ph-clock"></i></div>
+           <div data-i18n="calc.history_empty_session">Sem cálculos guardados nesta sessão. Prima o botão <strong><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</strong> nos resultados para registar aqui.</div>
         </div>
-        <div class="card-body" style="padding:0">
-          <div id="historyEmpty" class="history-empty"></div>
-          <div class="table-wrap">
-            <table class="history-table" id="historyTable" style="display:none">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Peso/Vol</th>
-                  <th>Tempo</th>
-                  <th>Margem</th>
-                  <th>Custo</th>
-                  <th>Preço</th>
-                  <th>Data</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="historyTbody"></tbody>
-            </table>
-          </div>
+        <div class="table-container">
+          <table class="history-table" id="historyTable" style="display:none">
+            <thead>
+              <tr>
+                <th data-i18n="calc.table_name">Nome</th>
+                <th data-i18n="calc.table_weight">Peso</th>
+                <th data-i18n="calc.table_time">Tempo</th>
+                <th data-i18n="calc.table_margin">Margem</th>
+                <th data-i18n="calc.table_base">Custo Base</th>
+                <th data-i18n="calc.table_final">Preço Final</th>
+                <th data-i18n="calc.table_time_hour">Hora</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="historyTbody">
+              <!-- JS -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div><!-- /page -->
@@ -1277,15 +1141,14 @@ function _persistHistory() {
 
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize i18n and theme first
   initThemeToggle();
   
-  // Weight unit compatibility
+  // Unidade de peso inicial (compatibilidade)
   const wu = (localStorage.getItem('3dzaap_config_weightUnit')) || 'g';
   document.querySelectorAll('.field-unit[data-unit="weight"]').forEach(el => el.textContent = wu);
 
-  // Single call to load user and then initial data
   await loadUserData();
+  await loadInitialData();
   await loadCompanyDefaults();
   
   // Always apply company defaults first
@@ -1362,16 +1225,11 @@ async function loadUserData() {
   try {
     const ok = await Auth.requireAuth();
     if (!ok) return;
-    const _session = await Auth.getSession();
-    if (!_session) return;
-    
-    // A sidebar já foi iniciada no topo do .layout
-    Sidebar.setSession(_session);
-    _sessionData = _session; // Sync with local var used in some functions
-    
-    await loadInitialData(); // Wait for materials/printers
-    loadMarketplaces(); // Load localized defaults
-    return _session;
+    const session = await Auth.getSession();
+    if (!session) return;
+    _sessionData = session;
+    if (typeof Sidebar !== 'undefined') Sidebar.setSession(session);
+    return session;
   } catch(e) {
     console.error('[3DZAAP] error in loadUserData:', e);
   }
@@ -1431,42 +1289,16 @@ function setCalcMode(mode) {
   }
 
   _calcMode = mode;
-  document.querySelectorAll('.elite-mode-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(mode === 'simple' ? 'modeBtnSimple' : 'modeBtnAdvanced').classList.add('active');
+  document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
+  document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
   
-  // Dynamic 1-2-3 Sessions Visibility
-  const isSimple = mode === 'simple';
+  document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
+  document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
+  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
   
-  // Headers
-  document.getElementById('headerSimple').style.display = isSimple ? 'flex' : 'none';
-  document.getElementById('headerAdvanced').style.display = isSimple ? 'none' : 'flex';
-  
-  // Contents
-  document.getElementById('contentSimple').style.display = isSimple ? 'block' : 'none';
-  document.getElementById('contentAdvanced').style.display = isSimple ? 'none' : 'block';
-  
-  // Advanced Totals Summary in Session 3
-  document.getElementById('advTotalsSummary').style.display = isSimple ? 'none' : 'flex';
-
-  // Refined Logic for Advanced
-  const weightInput = document.getElementById('partWeight');
-  const timeInput = document.getElementById('printTime');
-  if (weightInput && timeInput) {
-    weightInput.readOnly = !isSimple;
-    timeInput.readOnly = !isSimple;
-    weightInput.classList.toggle('elite-readonly', !isSimple);
-    timeInput.classList.toggle('elite-readonly', !isSimple);
+  if (mode === 'advanced' && _mesas.length === 0) {
+    addMesa();
   }
-
-  if (!isSimple) {
-    // SaaS Elite Integration: Auto-trigger Modo Pro if Advanced
-    const switchEl = document.getElementById('proModeToggle');
-    if (switchEl && !switchEl.classList.contains('active')) {
-      toggleProMode();
-    }
-    if (_mesas.length === 0) addMesa();
-  }
-  
   liveCalc();
 }
 
@@ -1496,15 +1328,7 @@ function setTechMode(tech) {
   if (_calcMode === 'advanced') {
     renderMesas();
   }
-  updateProResinVisibility();
   liveCalc();
-}
-
-function updateProResinVisibility() {
-  const proResin = document.getElementById('proResinFields');
-  if (proResin) {
-    proResin.style.display = _activeTech === 'resin' ? 'block' : 'none';
-  }
 }
 
 async function loadInitialData() {
@@ -1683,7 +1507,6 @@ function renderMesas() {
   container.innerHTML = '';
 
   _mesas.forEach((m, idx) => {
-    const mesaTotalTime = m.parts.reduce((acc, p) => acc + ((p.time || 0) * (p.qty || 1)), 0);
     const mTech = m.tech || 'fdm';
     const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === mTech);
 
@@ -1715,16 +1538,11 @@ function renderMesas() {
         <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
         <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
       </div>
-      <div style="display:flex; align-items:center; gap:12px">
-        <div style="font-size: 0.72rem; font-weight: 800; color: var(--blue); background: rgba(59,143,212,0.1); padding: 4px 10px; border-radius: 6px;">
-          <i class="ph-bold ph-timer"></i> ${mesaTotalTime.toFixed(1)}h
-        </div>
-        <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
-          <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
-          <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
-        </div>
-        <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
+      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
       </div>
+      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
     
@@ -1945,8 +1763,7 @@ function updateSliderLabels() {} // Não mais necessário com a nova UI de input
 // ══════════════════════════════════════
 //  CORE CALCULATION — homologated + resina
 // ══════════════════════════════════════
-let _activeTech = 'fdm'; 
-let _customCosts = [];
+let _activeTech = 'fdm'; // 'fdm' | 'resin'
 
 function renderPrintersDropdown() {
   const sel = document.getElementById('calcPrinterSelect');
@@ -1985,196 +1802,6 @@ function onCalcPrinterChange() {
   liveCalc();
 }
 
-// ── MARKETPLACE STATE & SETTINGS ───────
-let _marketplaces = [];
-let _activeMktIds = []; // Now an array for multi-selection
-const _mktDefaults = {
-  'pt-PT': [
-    { id: 'etsy-pt', name: 'Etsy PT', taxPct: 15, fixedFee: 0.20, currency: 'EUR' },
-    { id: 'wallapop', name: 'Wallapop (ES/PT)', taxPct: 10, fixedFee: 0, currency: 'EUR' },
-    { id: 'amazon-eu', name: 'Amazon EU', taxPct: 15, fixedFee: 1.00, currency: 'EUR' }
-  ],
-  'pt-BR': [
-    { id: 'ml', name: 'Mercado Livre', taxPct: 17.49, fixedFee: 0, currency: 'BRL' },
-    { id: 'shopee', name: 'Shopee', taxPct: 20, fixedFee: 4, currency: 'BRL' },
-    { id: 'elo7', name: 'Elo7', taxPct: 12, fixedFee: 3.99, currency: 'BRL' },
-    { id: 'magalu', name: 'Magalu', taxPct: 15, fixedFee: 0, currency: 'BRL' },
-    { id: 'tiktok', name: 'TikTok Shop', taxPct: 6, fixedFee: 2.00, currency: 'BRL' }
-  ],
-  'en-US': [
-    { id: 'etsy-us', name: 'Etsy US', taxPct: 6.5, fixedFee: 0.20, currency: 'USD' },
-    { id: 'ebay', name: 'eBay US', taxPct: 13.25, fixedFee: 0.30, currency: 'USD' },
-    { id: 'amazon-us', name: 'Amazon US', taxPct: 15, fixedFee: 1.00, currency: 'USD' }
-  ],
-  'en-GB': [
-    { id: 'etsy-uk', name: 'Etsy UK', taxPct: 6.5, fixedFee: 0.20, currency: 'GBP' },
-    { id: 'ebay-uk', name: 'eBay UK', taxPct: 13.25, fixedFee: 0.30, currency: 'GBP' },
-    { id: 'amazon-uk', name: 'Amazon UK', taxPct: 15, fixedFee: 1.00, currency: 'GBP' }
-  ],
-  'es': [
-    { id: 'wallapop-es', name: 'Wallapop ES', taxPct: 10, fixedFee: 0, currency: 'EUR' },
-    { id: 'vinted', name: 'Vinted', taxPct: 5, fixedFee: 0.70, currency: 'EUR' },
-    { id: 'amazon-es', name: 'Amazon ES', taxPct: 15, fixedFee: 1.00, currency: 'EUR' }
-  ]
-};
-
-function renderMarketplaceChips() {
-  const container = document.getElementById('mktChipsContainer');
-  if (!container) return;
-  
-  if (_activeMktIds.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 16px; text-align: center; border: 1.5px dashed var(--border); border-radius: 12px; background: rgba(59,143,212,0.02); width:100%">
-        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 10px;">Ainda não adicionou canais de venda.</p>
-        <button class="btn btn-ghost btn-sm" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> Adicionar Marketplace</button>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = _activeMktIds.map(id => {
-    const m = _marketplaces.find(x => x.id === id);
-    if (!m) return '';
-    return `
-      <div class="mkt-chip active" onclick="toggleMarketplace('${m.id}')">
-        <i class="ph-bold ph-storefront"></i>
-        <span>${m.name}</span>
-      </div>
-    `;
-  }).join('') + `
-    <button class="mkt-chip add-btn" onclick="openMktManager()"><i class="ph-bold ph-plus"></i></button>
-  `;
-}
-
-function toggleMarketplace(id) {
-  const idx = _activeMktIds.indexOf(id);
-  if (idx === -1) {
-    _activeMktIds.push(id);
-  } else {
-    _activeMktIds.splice(idx, 1);
-  }
-  renderMarketplaceChips();
-  liveCalc();
-}
-
-function loadMarketplaces() {
-  const cfg = _sessionData?.config || {};
-  const locale = i18n.currentLocale || 'pt-PT';
-  const defaults = _mktDefaults[locale] || _mktDefaults['pt-PT'];
-  _marketplaces = cfg.custom_marketplaces || defaults;
-  renderMarketplaceChips();
-}
-
-function toggleMktBlock() {
-  const body = document.getElementById('mktBlockBody');
-  const caret = document.getElementById('mktCaret');
-  const isOpen = body.style.display !== 'none';
-  
-  body.style.display = isOpen ? 'none' : 'block';
-  caret.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-
-function openMktManager() {
-  const modal = document.getElementById('mktModal');
-  const presetsContainer = document.getElementById('mktPresetsContainer');
-  if (presetsContainer) {
-    const locale = i18n.currentLocale || 'pt-PT';
-    const presets = _mktPresets[locale] || _mktPresets['pt-PT'] || [];
-    
-    presetsContainer.innerHTML = presets.map(p => {
-      const isAlready = _marketplaces.some(x => x.id === p.id);
-      return `
-        <div class="preset-card ${isAlready ? 'disabled' : ''}" onclick="${isAlready ? '' : `addMktPreset('${p.id}')`}">
-          <div style="font-weight: 800; font-size: 0.85rem;">${p.name}</div>
-          <div style="font-size: 0.7rem; color: var(--muted);">${p.taxPct}% taxa</div>
-        </div>
-      `;
-    }).join('');
-  }
-  modal.classList.add('open');
-}
-
-function addMktPreset(id) {
-  const locale = i18n.currentLocale || 'pt-PT';
-  const presets = _mktPresets[locale] || _mktPresets['pt-PT'] || [];
-  const p = presets.find(x => x.id === id);
-  if (!p) return;
-  
-  _marketplaces.push({ ...p });
-  _activeMktIds.push(p.id);
-  
-  renderMarketplaceChips();
-  closeMktManager();
-  liveCalc();
-  showToast(`${p.name} adicionado!`, 'ok');
-}
-
-// ── CUSTOM COSTS ───────────────────────
-function addCustomCost() {
-  const id = Date.now();
-  _customCosts.push({ id, name: 'Custo Extra', value: 0 });
-  renderCustomCosts();
-  liveCalc();
-}
-
-function removeCustomCost(id) {
-  _customCosts = _customCosts.filter(c => c.id !== id);
-  renderCustomCosts();
-  liveCalc();
-}
-
-function updateCustomCost(id, field, val) {
-  const c = _customCosts.find(x => x.id === id);
-  if (!c) return;
-  c[field] = val;
-  liveCalc();
-}
-
-function renderCustomCosts() {
-  const container = document.getElementById('customCostsContainer');
-  if (!container) return;
-  
-  container.innerHTML = _customCosts.map(c => `
-    <div style="display:flex; gap:8px; align-items:center;">
-      <input type="text" class="form-input" value="${c.name}" oninput="updateCustomCost(${c.id}, 'name', this.value)" style="flex:1; padding:4px 8px; font-size:0.75rem" placeholder="Nome">
-      <div class="v2-input-wrap" style="width: 80px;">
-        <input type="number" class="form-input" value="${c.value}" oninput="updateCustomCost(${c.id}, 'value', this.value)" style="padding:4px 8px; font-size:0.75rem">
-        <span class="v2-unit" style="right:4px">€</span>
-      </div>
-      <button class="btn btn-ghost" onclick="removeCustomCost(${c.id})" style="padding:2px; color:var(--danger)"><i class="ph-bold ph-trash"></i></button>
-    </div>
-  `).join('');
-}
-
-function closeMktManager() {
-  document.getElementById('mktModal').classList.remove('open');
-}
-
-async function saveCustomMkt() {
-  const name = document.getElementById('modalMktName').value.trim();
-  const tax = parseFloat(document.getElementById('modalMktTax').value) || 0;
-  const fixed = parseFloat(document.getElementById('modalMktFixed').value) || 0;
-  
-  if (!name) return showToast('Insira um nome para o marketplace', 'err');
-  
-  const newMkt = { id: 'custom_' + Date.now(), name, taxPct: tax, fixedFee: fixed };
-  _marketplaces.push(newMkt);
-  
-  // Persist if logged in
-  if (_sessionData?.id) {
-    try {
-      await Auth.updateCompany({ config: { ...(_sessionData.config || {}), custom_marketplaces: _marketplaces } });
-    } catch(e) { console.error('Error saving marketplace:', e); }
-  }
-  
-  renderMarketplaceChips();
-  _activeMktIds.push(newMkt.id);
-  renderMarketplaceChips();
-  closeMktManager();
-  showToast('Marketplace adicionado!', 'ok');
-  liveCalc();
-}
-
 function getInputs() {
   const pf = (id) => parseFloat(document.getElementById(id)?.value) || 0;
   const config = _sessionData?.config || {};
@@ -2189,16 +1816,10 @@ function getInputs() {
     profitMargin: pf('profitMargin') || 30
   };
 
-  const mkt = {
-    activeIds: [..._activeMktIds],
-    platforms: _activeMktIds.map(id => _marketplaces.find(m => m.id === id)).filter(Boolean)
-  };
-
   if (_calcMode === 'simple') {
     const matPrice = _selectedMaterial ? _selectedMaterial.price : pf('filamentPrice');
     return {
       ...common,
-      mkt,
       mode: 'simple',
       tech: _activeTech,
       qty: 1,
@@ -2208,6 +1829,8 @@ function getInputs() {
       time: pf('printTime')
     };
   } else {
+    // Advanced mode: parts array
+    // Advanced mode: array of mesas > array of parts
     let partsTotalWeight = 0;
     let advancedPartsInfo = [];
     _mesas.forEach(mesa => {
@@ -2222,21 +1845,13 @@ function getInputs() {
     
     return {
       ...common,
-      mkt,
       mode: 'advanced',
       tech: _activeTech,
       weight: partsTotalWeight,
       time: totalTimeValue,
       parts: advancedPartsInfo,
       mesas: _mesas,
-      totalTime: totalTimeValue,
-      // PRO FIELDS
-      maintPartCost: pf('maintPartCost'),
-      maintPartLife: pf('maintPartLife') || 1,
-      laborRate: pf('laborRate'),
-      laborMinutes: pf('laborMinutes'),
-      consumablesCost: pf('consumablesCost'),
-      packagingCost: pf('packagingCost')
+      totalTime: totalTimeValue
     };
   }
 }
@@ -2249,6 +1864,7 @@ function computeResults(i) {
     materialCost = (i.materialPrice / 1000) * i.weight;
     machineTime = i.time;
   } else {
+    // Sum all parts
     i.parts.forEach(p => {
       materialCost += (p.price / 1000) * p.weight * p.qty;
     });
@@ -2258,78 +1874,23 @@ function computeResults(i) {
   const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
   const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   
-  // PRO CALCS
-  const maintenanceCost = (i.maintPartCost / i.maintPartLife) * machineTime;
-  const laborCost = (i.laborRate / 60) * (i.laborMinutes || 0);
-  const consumablesCost = i.consumablesCost || 0;
-  const packagingCost = i.packagingCost || 0;
-  
-  // NOVOS CUSTOS RESINA PRO
-  let resinProCost = 0;
-  if (i.tech === 'resin') {
-    const lcdWear = (pf('lcdCost') / (pf('lcdLife')||1)) * machineTime;
-    const ipa = pf('ipaCost');
-    resinProCost = lcdWear + ipa;
-  }
-  
-  // CUSTOS ADICIONAIS (CUSTOM)
-  const customCostsTotal = _customCosts.reduce((acc, c) => acc + (parseFloat(c.value)||0), 0);
-  
-  const baseCost = materialCost + amortizationCost + electricityCost + maintenanceCost + laborCost + consumablesCost + packagingCost + resinProCost + customCostsTotal;
+  const baseCost = materialCost + amortizationCost + electricityCost;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
   const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
   const finalPrice = baseCost + failureCost + indirectCost + marginCost;
 
-  // ROI: How many units to pay the printer?
-  // User asked to fix profitability analysis -> use Net Profit after hypothetical marketplace tax if applicable
-  const profitPerUnit = finalPrice - (baseCost + failureCost + indirectCost);
-  
-  // Marketplace comparison calculations
-  const comparison = i.mkt.platforms.map(m => {
-    const sale = finalPrice; // Suggested price sync mode
-    const fee = (sale * m.taxPct / 100) + m.fixedFee;
-    const net = sale - fee;
-    const realProfit = net - (baseCost + failureCost + indirectCost);
-    const realMarginPct = sale > 0 ? (realProfit / sale * 100) : 0;
-    return {
-      id: m.id,
-      name: m.name,
-      taxPct: m.taxPct,
-      fixedFee: (m.fixedFee + (pSym === '$' || pSym === '£' ? 0 : 0)), // placeholder for localized fees
-      fee,
-      net,
-      realProfit,
-      realMarginPct,
-      currency: m.currency
-    };
-  });
-
-  // If we have marketplaces, use the average profit for ROI? Or the first one?
-  // Let's use the first marketplace profit if active, otherwise use the internal margin
-  const usedProfit = (comparison.length > 0) ? comparison[0].realProfit : profitPerUnit;
-  const unitsToROI = usedProfit > 0 ? Math.ceil(i.printerPrice / usedProfit) : '∞';
-
   return {
     materialCost,
     amortizationCost,
     electricityCost,
-    maintenanceCost,
-    laborCost,
-    consumablesCost,
-    packagingCost,
-    resinProCost,
-    customCostsTotal,
     baseCost,
     failureCost,
     indirectCost,
     marginCost,
     finalPrice,
     unitPrice: finalPrice / (i.qty || 1),
-    qty: i.qty || 1,
-    unitsToROI,
-    profitPerUnit: usedProfit,
-    comparison
+    qty: i.qty || 1
   };
 }
 
@@ -2337,58 +1898,11 @@ let _lt;
 function liveCalc(){
   clearTimeout(_lt);
   _lt=setTimeout(_render,40);
-  if (typeof updateSliderLabels === 'function') updateSliderLabels();
-  if (typeof updatePctLabels === 'function') updatePctLabels();
-}
-
-function toggleProMode() {
-  const switchEl = document.getElementById('proModeToggle');
-  const proSections = document.querySelectorAll('.pro-section');
-  const isNowActive = !switchEl.classList.contains('active');
-  
-  switchEl.classList.toggle('active');
-  proSections.forEach(s => s.classList.toggle('visible'));
-  
-  if (isNowActive) {
-    showToast('<i class="ph-bold ph-shield-check"></i> Modo Profissional ativado!', 'ok');
-  } else {
-    showToast('Modo Simples ativado', '');
-  }
-}
-
-// ── LOGIC SYNC ────────────────────────
-function syncTotals() {
-  const isSimple = _calcMode === 'simple';
-  
-  if (!isSimple) {
-    let totalW = 0;
-    let totalT = 0;
-    
-    _mesas.forEach(m => {
-      let mesaMaxTime = 0;
-      m.parts.forEach(p => {
-        totalW += (p.weight * (p.qty || 1));
-        if (p.time > mesaMaxTime) mesaMaxTime = p.time;
-      });
-      totalT += mesaMaxTime;
-    });
-
-    // Update session 2 inputs (read-only)
-    const weightInput = document.getElementById('partWeight');
-    const timeInput = document.getElementById('printTime');
-    if (weightInput) weightInput.value = totalW.toFixed(1);
-    if (timeInput) timeInput.value = totalT.toFixed(1);
-    
-    // Update Session 3 Summary Badges
-    const bW = document.getElementById('advSummaryWeight');
-    const bT = document.getElementById('advSummaryTime');
-    if (bW) bW.textContent = totalW.toFixed(1) + (_activeTech === 'resin' ? ' ml' : ' g');
-    if (bT) bT.textContent = totalT.toFixed(1) + ' h';
-  }
+  updateSliderLabels();
+  updatePctLabels();
 }
 
 function _render() {
-  syncTotals(); 
   const i = getInputs();
   const r = computeResults(i);
   
@@ -2401,78 +1915,220 @@ function _render() {
     }
   }
 
-  // Update margin badge
-  const mBadge = document.getElementById('rMarginBadge');
-  if (mBadge) {
-    document.getElementById('labMargPct').textContent = i.profitMargin;
-  }
-
-  // Marketplace Comparison Rendering
-  const mktCard = document.getElementById('mktSummaryCard');
-  if (mktCard) {
-    const hasMkt = r.comparison && r.comparison.length > 0;
-    mktCard.style.display = hasMkt ? 'block' : 'none';
-    
-    if (hasMkt) {
-      const container = document.getElementById('mktComparisonContainer');
-      container.innerHTML = r.comparison.map(m => {
-        const isLow = m.realMarginPct < i.profitMargin;
-        const colorClass = isLow ? 'var(--danger)' : 'var(--success)';
-        const mCurr = m.currency || 'EUR';
-        const mSym = mCurr === 'BRL' ? 'R$' : (mCurr === 'USD' ? '$' : (mCurr === 'GBP' ? '£' : '€'));
-        
-        return `
-          <div class="summary-line" style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; border-left: 3px solid var(--blue); margin-bottom: 4px;">
-            <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 0.85rem; color: var(--dark); display: flex; align-items: center; gap: 6px;">
-                 <i class="ph-bold ph-storefront"></i> ${m.name}
-              </div>
-              <div style="font-size: 0.7rem; color: var(--muted); margin-top: 2px;">
-                Taxa: ${mSym}${m.fee.toFixed(2)} (${m.taxPct}% + ${mSym}${m.fixedFee})
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 900; color: var(--blue); font-size: 0.95rem;">${mSym}${m.net.toFixed(2)}</div>
-              <div style="font-size: 0.72rem; font-weight: 800; color: ${colorClass};">Margem: ${m.realMarginPct.toFixed(1)}%</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
+  // Update detailed breakdown with IDs from new HTML
   const setV = (id, val) => { 
     const el = document.getElementById(id); 
-    if (el) el.textContent = fmtCurrency(val);
+    if (el) {
+      el.textContent = fmtCurrency(val);
+      el.classList.toggle('zero', val === 0);
+    }
   };
   
   setV('resFilCost', r.materialCost);
-  setV('resMchCost', r.amortizationCost + r.electricityCost);
-  setV('resMaintCost', r.maintenanceCost + (r.resinProCost || 0));
-  setV('resLaborCost', r.laborCost);
-  setV('resConsumLog', r.consumablesCost + r.packagingCost + (r.customCostsTotal || 0));
+  setV('resMchCost', r.amortizationCost);
+  setV('resElecCost', r.electricityCost);
   setV('resBaseCost', r.baseCost);
   setV('resFailCost', r.failureCost);
   setV('resIndCost', r.indirectCost);
+  setV('resMargCost', r.marginCost);
   
-  // ROI & Profit
-  setV('resNetProfit', r.profitPerUnit);
-  const roiEl = document.getElementById('resROI');
-  if (roiEl) roiEl.textContent = r.unitsToROI;
-  
-  const roiBar = document.getElementById('roiBar');
-  if (roiBar) {
-    const pct = r.unitsToROI === '∞' ? 0 : Math.min(100, (1 / (parseInt(r.unitsToROI)||1)) * 100 * 5); // Multiplicador visual
-    roiBar.style.width = pct + '%';
+  // Update percentage labels
+  const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  setT('labFailPct', i.failureRate);
+  setT('labIndPct', i.indirectCosts);
+  setT('labMargPct', i.profitMargin);
+
+  // Subtext logic
+  const subEl = document.getElementById('rSubtext');
+  if (subEl) {
+    if (r.finalPrice > 0) {
+      const baseLabel = i18n.getNestedTranslation('calc.results.base_label') || 'Custo Base:';
+      subEl.textContent = `${baseLabel} ${fmtCurrency(r.baseCost)}`;
+    } else {
+      subEl.textContent = i18n.getNestedTranslation('calc.results.awaiting') || 'A aguardar parâmetros...';
+    }
   }
-  
-  // Update Labels based on tech
-  const lblMaint = document.getElementById('labelMaintPart');
-  if (lblMaint) lblMaint.textContent = _activeTech === 'resin' ? 'Filme FEP (Custo)' : 'Bico / Nozzle (Custo)';
 
   // Status button "Create Order"
-  const cpBtn = document.getElementById('saveCalcBtn');
-  if (cpBtn) cpBtn.style.opacity = r.finalPrice > 0 ? '1' : '0.5';
+  const cpBtn = document.querySelector('.btn-criar-pedido');
+  if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
+
+  // MARKETPLACE INTEGRATION
+  renderMarketplaceCards(r);
+}
+
+/* ── MARKETPLACE LOGIC ──────────────── */
+const MARKETPLACE_DATA = {
+  "Portugal": [
+    { name: "Amazon.es", commission: 15, fixedFee: 0 },
+    { name: "Worten", commission: 12, fixedFee: 0.5 },
+    { name: "Fnac", commission: 12, fixedFee: 0 },
+    { name: "Mercadão", commission: 10, fixedFee: 0 }
+  ],
+  "Brasil": [
+    { name: "Mercado Livre", commission: 16, fixedFee: 5 },
+    { name: "Shopee", commission: 18, fixedFee: 0 },
+    { name: "Amazon.com.br", commission: 10, fixedFee: 0 },
+    { name: "Magalu", commission: 16, fixedFee: 0 }
+  ],
+  "US": [
+    { name: "Amazon", commission: 15, fixedFee: 0 },
+    { name: "eBay", commission: 12.9, fixedFee: 0.3 },
+    { name: "Etsy", commission: 6.5, fixedFee: 0.2 },
+    { name: "Walmart", commission: 15, fixedFee: 0 }
+  ],
+  "UK": [
+    { name: "Amazon.co.uk", commission: 15, fixedFee: 0 },
+    { name: "eBay.co.uk", commission: 12.8, fixedFee: 0.3 },
+    { name: "Etsy UK", commission: 6.5, fixedFee: 0.2 },
+    { name: "OnBuy", commission: 9, fixedFee: 0 }
+  ],
+  "España": [
+    { name: "Amazon.es", commission: 15, fixedFee: 0 },
+    { name: "El Corte Inglés", commission: 15, fixedFee: 0 },
+    { name: "PcComponentes", commission: 10, fixedFee: 0.5 },
+    { name: "AliExpress", commission: 8, fixedFee: 0 }
+  ],
+  "Outros": [
+    { name: "Novo Marketplace", commission: 0, fixedFee: 0, isCustom: true }
+  ]
+};
+
+let selectedMarketplaces = [];
+
+function openMPModal() {
+  const modal = document.getElementById('mpModalOverlay');
+  if (modal) modal.classList.add('open');
+  renderMPModal();
+}
+
+function closeMPModal() {
+  const modal = document.getElementById('mpModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function renderMPModal() {
+  const container = document.getElementById('mpModalList');
+  if (!container) return;
+  
+  let html = '';
+  for (const [region, apps] of Object.entries(MARKETPLACE_DATA)) {
+    html += `<div class="mp-region-title">${region}</div><div class="mp-modal-grid">`;
+    apps.forEach(app => {
+      html += `
+        <div class="mp-opt-card" onclick="selectMP('${app.name}', ${app.commission}, ${app.fixedFee}, ${app.isCustom || false})">
+          <div class="mp-opt-icon"><i class="ph-bold ph-storefront"></i></div>
+          <div class="mp-opt-name">${app.name}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function selectMP(name, comm, fixed, isCustom) {
+  const id = Date.now() + Math.random();
+  selectedMarketplaces.push({
+    id,
+    name: isCustom ? "Canal Personalizado" : name,
+    commission: comm,
+    fixedFee: fixed,
+    extraCosts: 0
+  });
+  closeMPModal();
+  renderSelectedMarketplaces();
+  liveCalc();
+}
+
+function removeMP(id) {
+  selectedMarketplaces = selectedMarketplaces.filter(x => x.id !== id);
+  renderSelectedMarketplaces();
+  liveCalc();
+}
+
+function updateMP(id, field, val) {
+  const mp = selectedMarketplaces.find(x => x.id === id);
+  if (mp) mp[field] = parseFloat(val) || 0;
+  liveCalc();
+}
+
+function renderSelectedMarketplaces() {
+  const container = document.getElementById('selectedMarketplacesContainer');
+  if (!container) return;
+  
+  if (selectedMarketplaces.length === 0) {
+    container.innerHTML = '<div style="font-size:0.82rem; color:var(--subtle); text-align:center; padding:20px; border:1.5px dashed var(--border); border-radius:var(--rm); opacity:0.6;"><i class="ph-bold ph-storefront" style="display:block; font-size:1.4rem; margin-bottom:5px;"></i> Nenhum canal de venda adicionado.</div>';
+    return;
+  }
+  
+  let html = '';
+  selectedMarketplaces.forEach(mp => {
+    html += `
+      <div class="mp-item-row">
+        <div class="mp-item-header">
+          <div class="mp-item-name">
+            <i class="ph-bold ph-storefront" style="color:var(--blue); opacity:0.6"></i>
+            <input type="text" value="${mp.name}" oninput="const m=selectedMarketplaces.find(x=>x.id===${mp.id}); if(m) m.name=this.value; liveCalc()" style="background:transparent; border:none; color:var(--dark); font-weight:800; font-size:0.9rem; outline:none; width:auto; border-bottom:1px solid transparent;" onfocus="this.style.borderBottomColor='var(--blue)'" onblur="this.style.borderBottomColor='transparent'">
+          </div>
+          <button class="btn-del" style="background:rgba(239,68,68,0.05)" onclick="removeMP(${mp.id})" title="Remover"><i class="ph-bold ph-trash"></i></button>
+        </div>
+        <div class="mp-item-fields">
+          <div class="mp-field">
+            <label>Comissão %</label>
+            <input type="number" value="${mp.commission}" step="0.1" oninput="updateMP(${mp.id}, 'commission', this.value)">
+          </div>
+          <div class="mp-field">
+            <label>Taxa Fixa</label>
+            <input type="number" value="${mp.fixedFee}" step="0.01" oninput="updateMP(${mp.id}, 'fixedFee', this.value)">
+          </div>
+          <div class="mp-field">
+            <label>Custos Extras</label>
+            <input type="number" value="${mp.extraCosts}" step="0.01" oninput="updateMP(${mp.id}, 'extraCosts', this.value)">
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+function renderMarketplaceCards(baseResult) {
+  const container = document.getElementById('mpResultsContainer');
+  if (!container) return;
+  
+  if (selectedMarketplaces.length === 0 || baseResult.finalPrice <= 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  selectedMarketplaces.forEach(mp => {
+    const commFactor = (1 - (mp.commission / 100));
+    let mpFinalPrice = 0;
+    if (commFactor > 0) {
+        mpFinalPrice = (baseResult.finalPrice + mp.fixedFee + mp.extraCosts) / commFactor;
+    }
+    
+    // Safety check for unrealistic commissions
+    if (mpFinalPrice > 50000) mpFinalPrice = 0;
+
+    const netReceived = (mpFinalPrice * (1 - (mp.commission / 100))) - mp.fixedFee - mp.extraCosts;
+    
+    html += `
+      <div class="mp-res-card">
+        <span class="mp-res-badge">MARKETPLACE</span>
+        <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
+        <div class="mp-res-title">Preço em ${mp.name}</div>
+        <div class="mp-res-val">${fmtCurrency(mpFinalPrice)}</div>
+        <div class="mp-res-net-box">
+          <div class="mp-res-net-label">Receberás (Líquido)</div>
+          <div class="mp-res-net-val">${fmtCurrency(netReceived)}</div>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
 }
 
 function sendWhatsApp() {
@@ -2500,18 +2156,11 @@ function sendWhatsApp() {
 }
 
 function clearCalculator(){
-  document.querySelectorAll('.form-input, .part-input').forEach(i=> {
+  document.querySelectorAll('.inp, .part-input').forEach(i=> {
     if(i.type==='checkbox') i.checked=false;
     else if(i.tagName!=='SELECT') i.value='';
   });
   
-  // Clear specific selects
-  const selects = ['fMaterialSelect', 'fPrinterSelect'];
-  selects.forEach(s => {
-    const el = document.getElementById(s);
-    if (el) el.selectedIndex = 0;
-  });
-
   _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
   addPartToMesa(_mesas[0].id, false);
   
@@ -2519,7 +2168,6 @@ function clearCalculator(){
   setV('filamentPrice', 0);
   setV('partWeight', 0);
   setV('printTime', 0);
-  setV('printName', '');
   
   renderMesas();
   liveCalc();
@@ -3009,44 +2657,26 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script src="sidebar.js"></script>
-<script>Sidebar.init();</script>
-<!-- MODAL: GERIR MARKETPLACE -->
-<div class="v2-modal" id="mktModal">
-  <div class="v2-modal-content">
-    <div class="step-header">
-      <div class="step-title"><i class="ph-bold ph-storefront"></i> Gerir Canais de Venda</div>
-      <button class="adv-close" onclick="closeMktManager()" style="margin-left:auto"><i class="ph-bold ph-x"></i></button>
-    </div>
-    <div class="step-body">
-      
-      <div class="v2-field full" style="margin-bottom: 20px;">
-        <label class="v2-label">Canais Sugeridos</label>
-        <div id="mktPresetsContainer" class="mkt-presets-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <!-- Presets injected here -->
-        </div>
-      </div>
 
-      <div class="pro-section-title" style="margin-top:20px"><i class="ph-bold ph-plus-circle"></i> Criar Canal Personalizado</div>
-      <div class="v2-field-group">
-        <div class="v2-field full">
-          <label class="v2-label" data-i18n="calc.table_name">Nome da Plataforma</label>
-          <input type="text" id="modalMktName" class="v2-input" placeholder="Ex: OLX, Loja Própria...">
-        </div>
-        <div class="v2-field">
-          <label class="v2-label" data-i18n="calc.mkt.tax">Comissão (%)</label>
-          <input type="number" id="modalMktTax" class="v2-input" step="0.01" value="0">
-        </div>
-        <div class="v2-field">
-          <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa (€)</label>
-          <input type="number" id="modalMktFixed" class="v2-input" step="0.01" value="0">
-        </div>
+<!-- MODAL SELEÇÃO DE MARKETPLACE -->
+<div class="modal-overlay" id="mpModalOverlay" onclick="if(event.target===this)closeMPModal()">
+  <div class="modal" style="max-width:650px; background:var(--bg-card); backdrop-filter:var(--blur); border:1.5px solid var(--border); border-radius:var(--rl);">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div class="modal-title" style="font-size:1.05rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:10px;">
+        <i class="ph-bold ph-storefront" style="color:var(--blue)"></i> Selecionar Canal de Venda
       </div>
-      <div style="display:flex; gap:12px; margin-top:24px">
-        <button class="btn btn-ghost" onclick="closeMktManager()" style="flex:1">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveCustomMkt()" style="flex:1">Guardar Canal</button>
+      <button class="modal-close" onclick="closeMPModal()" style="width:30px; height:30px; border-radius:50%; border:none; background:var(--bg-hover); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted);"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body mp-modal-body" style="padding:20px; max-height:480px; overflow-y:auto;">
+      <div id="mpModalList">
+        <!-- JS em renderMPModal() -->
       </div>
+    </div>
+    <div class="modal-footer" style="padding:15px 22px; border-top:1.5px solid var(--border); display:flex; justify-content:flex-end; background:var(--bg-modal-footer);">
+        <button class="btn-clear" onclick="closeMPModal()">Cancelar</button>
     </div>
   </div>
 </div>
+<script>Sidebar.init();</script>
 </body>
 </html>
