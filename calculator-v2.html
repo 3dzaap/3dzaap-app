@@ -719,8 +719,8 @@
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle" data-i18n="calc.page_title">Calculadora</div>
       <div class="topbar-actions">
+        <!-- Marketplace Mode Toggle or other stats can go here if needed -->
         <div class="global-ctrls" id="globalCtrls">
-          <button onclick="clearCalculator()" class="gc-btn-clear"><i class="ph-bold ph-trash"></i> <span data-i18n="calc.buttons.clear">Limpar</span></button>
           <!-- Theme Toggle -->
           <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <!-- Language Selector -->
@@ -855,6 +855,32 @@
                       </div>
                     </div>
                   </div>
+                  <!-- NOVOS CAMPOS RESINA PRO (Ocultos se não for resina) -->
+                  <div id="proResinFields" style="display:none; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Ecrã LCD (Custo)</label>
+                        <div class="v2-input-wrap">
+                          <input type="number" id="lcdCost" class="form-input" value="80" step="1" oninput="liveCalc()">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Vida LCD (Horas)</label>
+                        <div class="v2-input-wrap">
+                          <input type="number" id="lcdLife" class="form-input" value="1500" step="1" oninput="liveCalc()">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Consumo IPA/Print</label>
+                        <div class="v2-input-wrap">
+                          <input type="number" id="ipaCost" class="form-input" value="0.50" step="0.05" oninput="liveCalc()">
+                          <span class="v2-unit">€</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="pro-section-title"><i class="ph-bold ph-users"></i> Mão de Obra & Consumíveis (Pro)</div>
@@ -884,6 +910,15 @@
                     </div>
                     <span class="form-hint">Luvas, IPA, papel, etc.</span>
                   </div>
+                </div>
+
+                <!-- OUTROS CUSTOS (Custom) -->
+                <div class="pro-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="ph-bold ph-plus-circle"></i> Custos Adicionais</span>
+                  <button class="btn btn-ghost btn-sm" onclick="addCustomCost()" style="padding: 2px 8px; font-size: 0.65rem;"><i class="ph-bold ph-plus"></i> Novo</button>
+                </div>
+                <div id="customCostsContainer" style="display:grid; gap:8px;">
+                  <!-- Custos dinâmicos aqui -->
                 </div>
               </div>
             </div>
@@ -922,7 +957,7 @@
               </div>
               
               <div id="mktChipsContainer" class="mkt-chips">
-                <!-- Chips added dynamically -->
+                <!-- Informative message if empty -->
               </div>
               
               <div id="mktComparisonList" style="margin-top: 20px; display: none;">
@@ -964,29 +999,33 @@
         <!-- ── RIGHT: RESULTS SIDEBAR ── -->
         <div class="results-column">
           
-          <!-- MAIN HERO -->
-          <div class="price-hero" style="background: var(--bg-card); padding: 32px 24px; border: 1.5px solid var(--border); border-radius: 24px;">
-            <div class="price-hero-label" data-i18n="calc.results.suggested_price">Preço Sugerido</div>
-            <div class="price-hero-value" id="rFinal">0,00 €</div>
+          <!-- MAIN HERO (Elite Pattern) -->
+          <div class="price-hero" style="background: linear-gradient(135deg, var(--blue-g) 0%, rgba(59,143,212,0.02) 100%); border: 1.5px solid var(--blue); border-radius: 24px; padding: 28px 24px; text-align: center; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; opacity: 0.1; font-size: 5rem; color: var(--blue);"><i class="ph-bold ph-tag"></i></div>
             
-            <div id="rMarginBadge" class="badge bs-aprovado" style="margin-top: 12px; padding: 6px 16px;">
+            <div class="price-hero-label" style="font-size: 0.72rem; font-weight: 800; color: var(--blue); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Preço de Venda Sugerido</div>
+            <div class="price-hero-value" id="rFinal" style="font-size: 2.4rem; font-weight: 900; color: var(--dark); line-height: 1.1; margin-bottom: 8px;">0,00 €</div>
+            
+            <div id="rMarginBadge" class="badge bs-aprovado" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--bg-card); border: 1px solid var(--blue); color: var(--blue); border-radius: 40px; font-weight: 800; font-size: 0.75rem;">
               <i class="ph-bold ph-chart-line-up"></i>
-              <span data-i18n="calc.results.margin">Margem</span>: <span id="labMargPct">30</span>%
+              <span>Margem Alvo: <span id="labMargPct">30</span>%</span>
             </div>
 
-            <div class="results-actions" style="margin-top: 24px;">
-               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="width: 100%; border-radius: 16px; padding: 14px;">
-                 <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span>
+            <div class="results-actions" style="margin-top: 24px; display: grid; gap: 10px;">
+               <button class="btn btn-primary" id="saveCalcBtn" onclick="saveToHistory()" style="width: 100%; height: 50px; border-radius: 14px; font-weight: 800; font-size: 0.95rem;">
+                 <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar Cálculo</span>
                </button>
-               <div class="results-actions-row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-                 <button class="btn btn-ghost" onclick="copyResults()" style="flex:1">
+               
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                 <button class="btn btn-ghost" onclick="copyResults()" style="border-radius: 12px; font-size: 0.82rem; padding: 10px;">
                    <i class="ph-bold ph-copy"></i> Copiar
                  </button>
-                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="flex:1">
+                 <button class="btn btn-ghost" onclick="exportCalcCSV()" style="border-radius: 12px; font-size: 0.82rem; padding: 10px;">
                    <i class="ph-bold ph-file-csv"></i> CSV
                  </button>
                </div>
-               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; border-radius: 16px; padding: 14px; background: #25D366; border: none; color: white; margin-top:10px">
+               
+               <button class="btn btn-success" onclick="sendWhatsApp()" style="width: 100%; height: 50px; border-radius: 14px; background: #25D366; border: none; color: white; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px;">
                  <i class="ph-bold ph-whatsapp-logo"></i> WhatsApp
                </button>
             </div>
@@ -1397,7 +1436,15 @@ function setTechMode(tech) {
   if (_calcMode === 'advanced') {
     renderMesas();
   }
+  updateProResinVisibility();
   liveCalc();
+}
+
+function updateProResinVisibility() {
+  const proResin = document.getElementById('proResinFields');
+  if (proResin) {
+    proResin.style.display = _activeTech === 'resin' ? 'block' : 'none';
+  }
 }
 
 async function loadInitialData() {
@@ -1576,6 +1623,7 @@ function renderMesas() {
   container.innerHTML = '';
 
   _mesas.forEach((m, idx) => {
+    const mesaTotalTime = m.parts.reduce((acc, p) => acc + ((p.time || 0) * (p.qty || 1)), 0);
     const mTech = m.tech || 'fdm';
     const filteredMaterials = _filaments.filter(f => (f.materialClass || f.material_class || 'fdm').toLowerCase() === mTech);
 
@@ -1607,11 +1655,16 @@ function renderMesas() {
         <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
         <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
       </div>
-      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
-        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
-        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+      <div style="display:flex; align-items:center; gap:12px">
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--blue); background: rgba(59,143,212,0.1); padding: 4px 10px; border-radius: 6px;">
+          <i class="ph-bold ph-timer"></i> ${mesaTotalTime.toFixed(1)}h
+        </div>
+        <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+          <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+          <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+        </div>
+        <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
       </div>
-      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
     
@@ -1832,7 +1885,8 @@ function updateSliderLabels() {} // Não mais necessário com a nova UI de input
 // ══════════════════════════════════════
 //  CORE CALCULATION — homologated + resina
 // ══════════════════════════════════════
-let _activeTech = 'fdm'; // 'fdm' | 'resin'
+let _activeTech = 'fdm'; 
+let _customCosts = [];
 
 function renderPrintersDropdown() {
   const sel = document.getElementById('calcPrinterSelect');
@@ -1908,15 +1962,28 @@ function renderMarketplaceChips() {
   const container = document.getElementById('mktChipsContainer');
   if (!container) return;
   
-  container.innerHTML = _marketplaces.map(m => {
-    const active = _activeMktIds.includes(m.id) ? 'active' : '';
+  if (_activeMktIds.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 16px; text-align: center; border: 1.5px dashed var(--border); border-radius: 12px; background: rgba(59,143,212,0.02); width:100%">
+        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 10px;">Ainda não adicionou canais de venda.</p>
+        <button class="btn btn-ghost btn-sm" onclick="openMktManager()"><i class="ph-bold ph-plus"></i> Adicionar Marketplace</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = _activeMktIds.map(id => {
+    const m = _marketplaces.find(x => x.id === id);
+    if (!m) return '';
     return `
-      <div class="mkt-chip ${active}" onclick="toggleMarketplace('${m.id}')">
+      <div class="mkt-chip active" onclick="toggleMarketplace('${m.id}')">
         <i class="ph-bold ph-storefront"></i>
         <span>${m.name}</span>
       </div>
     `;
-  }).join('');
+  }).join('') + `
+    <button class="mkt-chip add-btn" onclick="openMktManager()"><i class="ph-bold ph-plus"></i></button>
+  `;
 }
 
 function toggleMarketplace(id) {
@@ -1948,7 +2015,75 @@ function toggleMktBlock() {
 }
 
 function openMktManager() {
-  document.getElementById('mktModal').classList.add('open');
+  const modal = document.getElementById('mktModal');
+  const presetsContainer = document.getElementById('mktPresetsContainer');
+  if (presetsContainer) {
+    const locale = i18n.currentLocale || 'pt-PT';
+    const presets = _mktPresets[locale] || _mktPresets['pt-PT'] || [];
+    
+    presetsContainer.innerHTML = presets.map(p => {
+      const isAlready = _marketplaces.some(x => x.id === p.id);
+      return `
+        <div class="preset-card ${isAlready ? 'disabled' : ''}" onclick="${isAlready ? '' : `addMktPreset('${p.id}')`}">
+          <div style="font-weight: 800; font-size: 0.85rem;">${p.name}</div>
+          <div style="font-size: 0.7rem; color: var(--muted);">${p.taxPct}% taxa</div>
+        </div>
+      `;
+    }).join('');
+  }
+  modal.classList.add('open');
+}
+
+function addMktPreset(id) {
+  const locale = i18n.currentLocale || 'pt-PT';
+  const presets = _mktPresets[locale] || _mktPresets['pt-PT'] || [];
+  const p = presets.find(x => x.id === id);
+  if (!p) return;
+  
+  _marketplaces.push({ ...p });
+  _activeMktIds.push(p.id);
+  
+  renderMarketplaceChips();
+  closeMktManager();
+  liveCalc();
+  showToast(`${p.name} adicionado!`, 'ok');
+}
+
+// ── CUSTOM COSTS ───────────────────────
+function addCustomCost() {
+  const id = Date.now();
+  _customCosts.push({ id, name: 'Custo Extra', value: 0 });
+  renderCustomCosts();
+  liveCalc();
+}
+
+function removeCustomCost(id) {
+  _customCosts = _customCosts.filter(c => c.id !== id);
+  renderCustomCosts();
+  liveCalc();
+}
+
+function updateCustomCost(id, field, val) {
+  const c = _customCosts.find(x => x.id === id);
+  if (!c) return;
+  c[field] = val;
+  liveCalc();
+}
+
+function renderCustomCosts() {
+  const container = document.getElementById('customCostsContainer');
+  if (!container) return;
+  
+  container.innerHTML = _customCosts.map(c => `
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input type="text" class="form-input" value="${c.name}" oninput="updateCustomCost(${c.id}, 'name', this.value)" style="flex:1; padding:4px 8px; font-size:0.75rem" placeholder="Nome">
+      <div class="v2-input-wrap" style="width: 80px;">
+        <input type="number" class="form-input" value="${c.value}" oninput="updateCustomCost(${c.id}, 'value', this.value)" style="padding:4px 8px; font-size:0.75rem">
+        <span class="v2-unit" style="right:4px">€</span>
+      </div>
+      <button class="btn btn-ghost" onclick="removeCustomCost(${c.id})" style="padding:2px; color:var(--danger)"><i class="ph-bold ph-trash"></i></button>
+    </div>
+  `).join('');
 }
 
 function closeMktManager() {
@@ -2065,36 +2200,55 @@ function computeResults(i) {
   
   // PRO CALCS
   const maintenanceCost = (i.maintPartCost / i.maintPartLife) * machineTime;
-  const laborCost = (i.laborRate / 60) * i.laborMinutes;
-  const consumablesCost = i.consumablesCost;
-  const packagingCost = i.packagingCost;
+  const laborCost = (i.laborRate / 60) * (i.laborMinutes || 0);
+  const consumablesCost = i.consumablesCost || 0;
+  const packagingCost = i.packagingCost || 0;
   
-  const baseCost = materialCost + amortizationCost + electricityCost + maintenanceCost + laborCost + consumablesCost + packagingCost;
+  // NOVOS CUSTOS RESINA PRO
+  let resinProCost = 0;
+  if (i.tech === 'resin') {
+    const lcdWear = (pf('lcdCost') / (pf('lcdLife')||1)) * machineTime;
+    const ipa = pf('ipaCost');
+    resinProCost = lcdWear + ipa;
+  }
+  
+  // CUSTOS ADICIONAIS (CUSTOM)
+  const customCostsTotal = _customCosts.reduce((acc, c) => acc + (parseFloat(c.value)||0), 0);
+  
+  const baseCost = materialCost + amortizationCost + electricityCost + maintenanceCost + laborCost + consumablesCost + packagingCost + resinProCost + customCostsTotal;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
   const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
   const finalPrice = baseCost + failureCost + indirectCost + marginCost;
 
   // ROI: How many units to pay the printer?
+  // User asked to fix profitability analysis -> use Net Profit after hypothetical marketplace tax if applicable
   const profitPerUnit = finalPrice - (baseCost + failureCost + indirectCost);
-  const unitsToROI = profitPerUnit > 0 ? Math.ceil(i.printerPrice / profitPerUnit) : '∞';
-
+  
   // Marketplace comparison calculations
   const comparison = i.mkt.platforms.map(m => {
     const sale = finalPrice; // Suggested price sync mode
     const fee = (sale * m.taxPct / 100) + m.fixedFee;
     const net = sale - fee;
-    const realMarginPct = sale > 0 ? ((net - (baseCost + failureCost + indirectCost)) / sale * 100) : 0;
+    const realProfit = net - (baseCost + failureCost + indirectCost);
+    const realMarginPct = sale > 0 ? (realProfit / sale * 100) : 0;
     return {
       id: m.id,
       name: m.name,
       taxPct: m.taxPct,
-      fixedFee: m.fixedFee,
+      fixedFee: (m.fixedFee + (pSym === '$' || pSym === '£' ? 0 : 0)), // placeholder for localized fees
       fee,
       net,
-      realMarginPct
+      realProfit,
+      realMarginPct,
+      currency: m.currency
     };
   });
+
+  // If we have marketplaces, use the average profit for ROI? Or the first one?
+  // Let's use the first marketplace profit if active, otherwise use the internal margin
+  const usedProfit = (comparison.length > 0) ? comparison[0].realProfit : profitPerUnit;
+  const unitsToROI = usedProfit > 0 ? Math.ceil(i.printerPrice / usedProfit) : '∞';
 
   return {
     materialCost,
@@ -2104,6 +2258,8 @@ function computeResults(i) {
     laborCost,
     consumablesCost,
     packagingCost,
+    resinProCost,
+    customCostsTotal,
     baseCost,
     failureCost,
     indirectCost,
@@ -2112,7 +2268,7 @@ function computeResults(i) {
     unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1,
     unitsToROI,
-    profitPerUnit,
+    profitPerUnit: usedProfit,
     comparison
   };
 }
@@ -2200,9 +2356,9 @@ function _render() {
   
   setV('resFilCost', r.materialCost);
   setV('resMchCost', r.amortizationCost + r.electricityCost);
-  setV('resMaintCost', r.maintenanceCost);
+  setV('resMaintCost', r.maintenanceCost + (r.resinProCost || 0));
   setV('resLaborCost', r.laborCost);
-  setV('resConsumLog', r.consumablesCost + r.packagingCost);
+  setV('resConsumLog', r.consumablesCost + r.packagingCost + (r.customCostsTotal || 0));
   setV('resBaseCost', r.baseCost);
   setV('resFailCost', r.failureCost);
   setV('resIndCost', r.indirectCost);
@@ -2758,27 +2914,36 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="v2-modal" id="mktModal">
   <div class="v2-modal-content">
     <div class="step-header">
-      <div class="step-title" data-i18n="calc.mkt.title">Novo Marketplace</div>
+      <div class="step-title"><i class="ph-bold ph-storefront"></i> Gerir Canais de Venda</div>
       <button class="adv-close" onclick="closeMktManager()" style="margin-left:auto"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="step-body">
+      
+      <div class="v2-field full" style="margin-bottom: 20px;">
+        <label class="v2-label">Canais Sugeridos</label>
+        <div id="mktPresetsContainer" class="mkt-presets-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <!-- Presets injected here -->
+        </div>
+      </div>
+
+      <div class="pro-section-title" style="margin-top:20px"><i class="ph-bold ph-plus-circle"></i> Criar Canal Personalizado</div>
       <div class="v2-field-group">
         <div class="v2-field full">
           <label class="v2-label" data-i18n="calc.table_name">Nome da Plataforma</label>
-          <input type="text" id="modalMktName" class="v2-input" placeholder="Ex: OLX, Wallapop...">
+          <input type="text" id="modalMktName" class="v2-input" placeholder="Ex: OLX, Loja Própria...">
         </div>
         <div class="v2-field">
           <label class="v2-label" data-i18n="calc.mkt.tax">Comissão (%)</label>
           <input type="number" id="modalMktTax" class="v2-input" step="0.01" value="0">
         </div>
         <div class="v2-field">
-          <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa</label>
+          <label class="v2-label" data-i18n="calc.mkt.fixed">Taxa Fixa (€)</label>
           <input type="number" id="modalMktFixed" class="v2-input" step="0.01" value="0">
         </div>
       </div>
       <div style="display:flex; gap:12px; margin-top:24px">
-        <button class="btn-adv-cancel" onclick="closeMktManager()" style="flex:1" data-i18n="settings.team.btn_cancel">Cancelar</button>
-        <button class="btn-adv-save" onclick="saveCustomMkt()" style="flex:1" data-i18n="calc.save_btn">Guardar</button>
+        <button class="btn btn-ghost" onclick="closeMktManager()" style="flex:1">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveCustomMkt()" style="flex:1">Guardar Canal</button>
       </div>
     </div>
   </div>
