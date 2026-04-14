@@ -1160,6 +1160,23 @@
                   </div>
                 </div>
               </div>
+
+                <!-- Configurações partilhadas (Máquina) - Apenas em Modo Simples -->
+                <div class="form-section">
+                  <div class="section-title">
+                    <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
+                    <span data-i18n="calc.sections.machine">Máquina</span>
+                  </div>
+                  <div class="fields-grid">
+                    <div class="field full" id="fieldGlobalPrinter">
+                      <label data-i18n="calc.fields.printer">Impressora</label>
+                      <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
+                        <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Modo Avançado (Pro) -->
@@ -1202,21 +1219,6 @@
               </div>
             </div>
 
-            <!-- Configurações partilhadas (Máquina) - Apenas em Modo Simples -->
-            <div class="form-section" id="sectionMachine">
-              <div class="section-title">
-                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
-                <span data-i18n="calc.sections.machine">Máquina</span>
-              </div>
-              <div class="fields-grid">
-                <div class="field full" id="fieldGlobalPrinter">
-                  <label data-i18n="calc.fields.printer">Impressora</label>
-                  <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
-                    <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
-                  </select>
-                </div>
-              </div>
-            </div>
 
             <!-- ── SEÇÃO: VENDER EM MARKETPLACE ── -->
             <div class="form-section marketplace-section-card">
@@ -1633,9 +1635,6 @@ function setCalcMode(mode) {
   
   const fGlobal = document.getElementById('fieldGlobalPrinter');
   if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
-  
-  const secMachine = document.getElementById('sectionMachine');
-  if (secMachine) secMachine.style.display = mode === 'simple' ? 'block' : 'none';
   
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
