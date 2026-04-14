@@ -190,6 +190,28 @@
   #sidebar-toggle { display: flex; }
 }
 
+/* ── TRIAL EXPIRED BANNER ──────── */
+.trial-expired-banner {
+  background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(239,68,68,0.05));
+  border: 1.5px solid rgba(239,68,68,0.30);
+  border-radius: var(--rm, 16px);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  animation: fadeUp .4s ease both;
+}
+.trial-expired-icon { font-size: 1.6rem; color: #ef4444; flex-shrink: 0; }
+.trial-expired-body { flex: 1; }
+.trial-expired-title { font-weight: 800; font-size: 1rem; color: #991b1b; margin-bottom: 2px; }
+.trial-expired-desc { font-size: 0.83rem; color: #6b7280; }
+.trial-expired-btn {
+  padding: 9px 18px; border-radius: 10px; border: none;
+  background: #ef4444; color: #fff; font-size: 0.85rem; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.trial-expired-btn:hover { background: #dc2626; transform: translateY(-1px); }
 </style>
 
 <style>
@@ -323,6 +345,20 @@
         <div class="page-header-text">
           <h1 data-i18n="settings.title"><i class="ph-bold ph-gear"></i> Configurações</h1>
           <p data-i18n="settings.subtitle">Gerencie o perfil, marca, preferências e equipe</p>
+        </div>
+      </div>
+
+      <!-- ── TRIAL EXPIRED BANNER (mostrado via JS se reason=trial_expired) ── -->
+      <div id="trialExpiredBanner" style="display:none">
+        <div class="trial-expired-banner">
+          <div class="trial-expired-icon"><i class="ph-bold ph-warning-octagon"></i></div>
+          <div class="trial-expired-body">
+            <div class="trial-expired-title">⏰ O teu período de trial expirou</div>
+            <div class="trial-expired-desc">Para continuar a usar o 3DZAAP escolhe um plano abaixo. Os teus dados estão seguros e disponíveis assim que fizeres upgrade.</div>
+          </div>
+          <button class="trial-expired-btn" onclick="document.querySelector('[data-tab=assinatura]').click()">
+            <i class="ph-bold ph-rocket-launch"></i> Ver Planos
+          </button>
         </div>
       </div>
 
@@ -786,10 +822,18 @@ function loadData() {
     updateWhatsAppLinks();
   });
 
-  // Deep-linking: ?tab=name
+  // Deep-linking: ?tab=name&reason=trial_expired
   setTimeout(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
+    const reason = urlParams.get('reason');
+    
+    // Mostrar banner de trial expirado
+    if (reason === 'trial_expired') {
+      const b = document.getElementById('trialExpiredBanner');
+      if (b) b.style.display = 'block';
+    }
+
     if (tab) {
       const btn = document.querySelector(`.settings-nav-btn[data-tab="${tab}"]`);
       if (btn) btn.click();

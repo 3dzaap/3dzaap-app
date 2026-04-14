@@ -13,12 +13,8 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 let _companyId    = null;   // UUID da empresa
 let _companyCache = null;   // objecto completo — evita queries repetidas
 
-// ── PLAN GROUPS — Centralizando a lógica de permissões ─────
-const PLANS_FREE        = ['trial'];
-const PLANS_STARTER     = ['trial', 'starter', 'starter_ano', 'pro', 'pro_ano', 'business', 'business_ano'];
-const PLANS_PRO_PLUS    = ['trial', 'pro', 'pro_ano', 'business', 'business_ano'];
-const PLANS_BUSINESS    = ['trial', 'business', 'business_ano'];
 const PLANS_ANNUAL      = ['starter_ano', 'pro_ano', 'business_ano'];
+const TRIAL_DAYS        = 7;
 
 // ============================================================
 // AUTH
@@ -59,16 +55,20 @@ const Auth = {
       company = rpcData[0];
     } else {
       if (rpcErr) console.warn('[3DZAAP] rpc create_company_for_user:', rpcErr.message);
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+
       const { data: ins, error: insErr } = await _sb
         .from('companies')
         .insert({
-          owner_id:  userId,
-          name:      companyName,
-          slug:      cleanSlug,
-          plan:      plan || 'trial',
-          config:    config || {},
-          signature: signature || null,
-          logo_url:  logo || null
+          owner_id:       userId,
+          name:           companyName,
+          slug:           cleanSlug,
+          plan:           plan || 'trial',
+          config:         config || {},
+          signature:      signature || null,
+          logo_url:       logo || null,
+          trial_ends_at:  trialEndsAt.toISOString()
         })
         .select()
         .single();
@@ -225,6 +225,23 @@ const Auth = {
       return false;
     }
     if (!_companyId) await Auth._loadCompany();
+
+    // ── TRIAL EXPIRY CHECK ────────────────────────────────────
+    // Se trial expirou, só permite acesso às páginas de upgrade e settings.
+    const company = _companyCache;
+    if (company && company.plan === 'trial' && company.trial_ends_at) {
+      const expired = new Date(company.trial_ends_at) < new Date();
+      if (expired) {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const allowedPages = ['settings.html', 'auth-onboarding.html', 'terms.html', 'privacy.html', 'index.html'];
+        if (!allowedPages.includes(currentPage)) {
+          // Redirecionar para settings com tab de assinatura aberta
+          window.location.href = 'settings.html?tab=assinatura&reason=trial_expired';
+          return false;
+        }
+      }
+    }
+
     return true;
   },
 

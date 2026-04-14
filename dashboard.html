@@ -748,7 +748,7 @@ const PLAN_PRICES = { starter:'€9,90/mês', pro:'€19,90/mês', business:'€
 
 let state = {
   user: { name:'—', email:'—', initials:'?' },
-  company: { name:'A minha empresa', initials:'??', plan:'trial', trialDaysLeft:14 },
+  company: { name:'A minha empresa', initials:'??', plan:'trial', trialDaysLeft:7 },
   filaments: [],
   orders: [],
   printers: [],
@@ -903,7 +903,7 @@ function renderBanner() {
 
   if (plan === 'trial') {
     banner.style.display = 'block';
-    const days = state.company.trialDaysLeft ?? 14;
+    const days = state.company.trialDaysLeft ?? 7;
     const s = days !== 1 ? 's' : '';
     inner.className = 'sub-banner-inner' + (days <= 3 ? ' warning-banner' : '');
     icon.innerHTML = days <= 3 ? '<i class="ph-bold ph-warning-octagon"></i>' : '<i class="ph-bold ph-timer"></i>';
