@@ -56,8 +56,65 @@
 .res-label { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--muted); font-weight: 500; }
 .res-dot { width: 10px; height: 10px; border-radius: 50%; }
 .res-value { font-family: var(--mono); font-weight: 800; color: var(--dark); font-size: .9rem; }
-.res-hero { background: linear-gradient(135deg, rgba(59,143,212,.1), rgba(59,143,212,.04)); border: 1.5px solid rgba(59,143,212,0.25); border-radius: var(--rm); padding: 20px; text-align: center; margin-bottom: 20px; }
-.res-hero-val { font-size: 2.2rem; font-weight: 900; line-height: 1; margin: 8px 0; }
+.res-hero {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border: 2.5px solid var(--blue);
+  border-radius: var(--rm);
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: heroGlow 3s infinite alternate;
+  box-shadow: 0 10px 30px rgba(59,143,212,0.15);
+  margin-bottom: 25px;
+}
+@keyframes heroGlow {
+  from { box-shadow: 0 10px 30px rgba(59,143,212,0.15); border-color: var(--blue); }
+  to { box-shadow: 0 10px 40px rgba(59,143,212,0.25); border-color: #60a5fa; }
+}
+
+.price-hero-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  letter-spacing: 0.1em;
+  margin-bottom: 5px;
+  position: relative; z-index: 2;
+}
+
+.res-hero-val {
+  font-family: var(--mono);
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--dark);
+  margin-bottom: 12px;
+  position: relative; z-index: 2;
+}
+
+.hero-sub-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative; z-index: 2;
+  border-top: 1.5px solid var(--border);
+  padding-top: 14px;
+  margin-top: 12px;
+}
+
+.hero-stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hero-stat-label { font-weight: 700; color: var(--muted); }
+.hero-stat-val { font-family: var(--mono); font-weight: 800; color: var(--dark); }
+.hero-stat-val.margin { color: #a855f7; }
+.hero-stat-val.cost { color: var(--success); }
 
 /* ── CALC LAYOUT — 1fr 1fr simétrico ── */
 .calc-layout{
@@ -645,6 +702,61 @@
 }
 .mp-btn-save:hover { background: var(--blue-d); transform: translateY(-1px); }
 
+/* Multiple Costs List in Modal */
+.mp-costs-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-card-s);
+  border-radius: 10px;
+  padding: 5px;
+  border: 1px solid var(--border);
+}
+
+.mp-cost-tag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+.mp-cost-tag:hover { border-color: var(--blue); }
+
+.mp-cost-tag-label { font-weight: 700; color: var(--dark); }
+.mp-cost-tag-val { font-family: var(--mono); font-weight: 800; color: var(--blue); margin-left: 8px; }
+
+.btn-cost-del {
+  background: transparent; border: none; color: var(--muted);
+  cursor: pointer; padding: 4px; display: flex;
+  border-radius: 4px;
+}
+.btn-cost-del:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+.mp-add-cost-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr auto;
+  gap: 8px;
+  align-items: flex-end;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1.5px dashed var(--border);
+}
+
+.btn-cost-add {
+  height: 38px; width: 38px;
+  background: var(--blue-g); color: var(--blue);
+  border: 1.5px solid rgba(59,143,212,0.2);
+  border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.btn-cost-add:hover { background: var(--blue); color: #fff; transform: scale(1.05); }
+
 /* Watermark icon implementation */
 .card-watermark {
   position: absolute;
@@ -939,74 +1051,55 @@
               </div>
             </div>
 
-            <!-- ── SEÇÃO: VENDER EM MARKETPLACE ── -->
-            <div class="form-section marketplace-section-card">
-              <div class="section-title">
-                <div class="section-title-icon" style="background:rgba(59,143,212,.1);color:var(--blue)"><i class="ph-bold ph-storefront"></i></div>
-                <span>Vender em Marketplace</span>
-              </div>
-              
-              <div id="selectedMarketplacesContainer">
-                <!-- JS will render selected marketplaces here -->
-              </div>
+            <!-- ── RIGHT: RESULTS ── -->
+            <div class="glass-card results-col">
+              <div class="results-panel">
+                <div class="res-hero">
+                  <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
+                  <div class="res-hero-val" id="rFinal">0,00 €</div>
+                  
+                  <div class="hero-sub-stats">
+                    <div class="hero-stat-line">
+                      <span class="hero-stat-label" data-i18n="calc.results.margin">Margem de Lucro</span>
+                      <span class="hero-stat-val margin" id="hMargin">0,00 €</span>
+                    </div>
+                    <div class="hero-stat-line">
+                      <span class="hero-stat-label">Custo de Produção</span>
+                      <span class="hero-stat-val cost" id="hProdCost">0,00 €</span>
+                    </div>
+                  </div>
 
-              <button class="mp-add-btn" onclick="openMPModal()">
-                <i class="ph-bold ph-plus-circle"></i>
-                <span>Adicionar Canal de Venda</span>
-              </button>
-            </div>
-          </div>
-          <div class="card-footer">
-            <button class="btn-clear" onclick="clearCalculator()">
-              <span><i class="ph-bold ph-trash"></i></span> <span data-i18n="calc.buttons.clear">Limpar</span>
-            </button>
-          </div>
-        </div>
+                  <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
+                </div>
 
-        <!-- ── RIGHT: RESULTS ── -->
-        <div class="glass-card results-col">
-          <div class="results-panel">
-              <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-              <div class="res-hero-val" id="rFinal">0,00 €</div>
-              <div class="price-hero-sub" id="rSubtext">A aguardar parâmetros...</div>
-              <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
-            </div>
+                <!-- Container para cards de Marketplaces (Ordem 2) -->
+                <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;">
+                  <!-- JS will render mp cards here -->
+                </div>
 
-            <!-- Container para cards de Marketplaces -->
-            <div id="mpResultsContainer" class="mp-results-container">
-              <!-- JS will render mp cards here -->
-            </div>
-
-            <div class="breakdown-list">
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> <span data-i18n="calc.results.material">Material</span></div>
-                <div class="res-value" id="resFilCost">0,00 €</div>
+                <div class="breakdown-list" style="margin-top:0">
+                  <div class="res-line">
+                    <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
+                    <div class="res-value" id="resFilCost">0,00 €</div>
+                  </div>
+                  <div class="res-line">
+                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
+                    <div class="res-value" id="resMchCost">0,00 €</div>
+                  </div>
+                  <div class="res-line">
+                    <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Eletricidade</span></div>
+                    <div class="res-value" id="resElecCost">0,00 €</div>
+                  </div>
+                  <div class="res-line">
+                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                    <div class="res-value" id="resFailCost">0,00 €</div>
+                  </div>
+                  <div class="res-line" style="margin-bottom:15px">
+                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                    <div class="res-value" id="resIndCost">0,00 €</div>
+                  </div>
+                </div>
               </div>
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:var(--blue-lt)"></span> <span data-i18n="calc.results.machine">Máquina</span></div>
-                <div class="res-value" id="resMchCost">0,00 €</div>
-              </div>
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:var(--subtle)"></span> <span data-i18n="calc.results.energy">Eletricidade</span></div>
-                <div class="res-value" id="resElecCost">0,00 €</div>
-              </div>
-              <div class="res-line" style="border-top:1.5px solid var(--border);margin-top:5px;padding-top:10px">
-                <div class="res-label" style="color:var(--success);font-weight:700"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.base">Custo Base</span></div>
-                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 €</div>
-              </div>
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:var(--orange)"></span> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
-                <div class="res-value" id="resFailCost">0,00 €</div>
-              </div>
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
-                <div class="res-value" id="resIndCost">0,00 €</div>
-              </div>
-              <div class="res-line">
-                <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
-                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 €</div>
-              </div>
-            </div>
 
             <div class="results-actions">
               <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
@@ -1902,7 +1995,6 @@ function computeResults(i) {
     materialCost = (i.materialPrice / 1000) * i.weight;
     machineTime = i.time;
   } else {
-    // Sum all parts
     i.parts.forEach(p => {
       materialCost += (p.price / 1000) * p.weight * p.qty;
     });
@@ -1915,8 +2007,10 @@ function computeResults(i) {
   const baseCost = materialCost + amortizationCost + electricityCost;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
-  const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
-  const finalPrice = baseCost + failureCost + indirectCost + marginCost;
+  
+  const productionCost = baseCost + failureCost + indirectCost;
+  const marginCost = productionCost * (i.profitMargin / 100);
+  const finalPrice = productionCost + marginCost;
 
   return {
     materialCost,
@@ -1925,6 +2019,7 @@ function computeResults(i) {
     baseCost,
     failureCost,
     indirectCost,
+    productionCost,
     marginCost,
     finalPrice,
     unitPrice: finalPrice / (i.qty || 1),
@@ -1944,55 +2039,40 @@ function _render() {
   const i = getInputs();
   const r = computeResults(i);
   
-  const heroEl = document.getElementById('rFinal');
-  if (heroEl) {
-    const newVal = fmtCurrency(r.finalPrice);
-    if (heroEl.textContent !== newVal) {
-      heroEl.textContent = newVal;
-      heroEl.classList.remove('updated'); void heroEl.offsetWidth; heroEl.classList.add('updated');
-    }
-  }
+  // 1. Hero Card (3 values)
+  const setHeroText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmtCurrency(val);
+  };
+  setHeroText('rFinal', r.finalPrice);
+  setHeroText('hMargin', r.marginCost);
+  setHeroText('hProdCost', r.productionCost);
 
-  // Update detailed breakdown with IDs from new HTML
-  const setV = (id, val) => { 
-    const el = document.getElementById(id); 
+  // 2. Technical Breakdown
+  const setLineVal = (id, val) => {
+    const el = document.getElementById(id);
     if (el) {
-      el.textContent = fmtCurrency(val);
-      el.classList.toggle('zero', val === 0);
+       el.textContent = fmtCurrency(val);
+       el.classList.toggle('zero', val <= 0);
     }
   };
-  
-  setV('resFilCost', r.materialCost);
-  setV('resMchCost', r.amortizationCost);
-  setV('resElecCost', r.electricityCost);
-  setV('resBaseCost', r.baseCost);
-  setV('resFailCost', r.failureCost);
-  setV('resIndCost', r.indirectCost);
-  setV('resMargCost', r.marginCost);
-  
-  // Update percentage labels
+  setLineVal('resFilCost', r.materialCost);
+  setLineVal('resMchCost', r.amortizationCost);
+  setLineVal('resElecCost', r.electricityCost);
+  setLineVal('resFailCost', r.failureCost);
+  setLineVal('resIndCost', r.indirectCost);
+
+  // Labels
   const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   setT('labFailPct', i.failureRate);
   setT('labIndPct', i.indirectCosts);
-  setT('labMargPct', i.profitMargin);
-
-  // Subtext logic
-  const subEl = document.getElementById('rSubtext');
-  if (subEl) {
-    if (r.finalPrice > 0) {
-      const baseLabel = i18n.getNestedTranslation('calc.results.base_label') || 'Custo Base:';
-      subEl.textContent = `${baseLabel} ${fmtCurrency(r.baseCost)}`;
-    } else {
-      subEl.textContent = i18n.getNestedTranslation('calc.results.awaiting') || 'A aguardar parâmetros...';
-    }
-  }
-
-  // Status button "Create Order"
-  const cpBtn = document.querySelector('.btn-criar-pedido');
-  if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
 
   // MARKETPLACE INTEGRATION
   renderMarketplaceCards(r);
+
+  // Visibility logic for Create Order
+  const cpBtn = document.querySelector('.btn-criar-pedido');
+  if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
 }
 
 /* ── MARKETPLACE LOGIC ──────────────── */
@@ -2001,35 +2081,51 @@ const MARKETPLACE_DATA = {
     { name: "Amazon.es", commission: 15, fixedFee: 0 },
     { name: "Worten", commission: 12, fixedFee: 0.5 },
     { name: "Fnac", commission: 12, fixedFee: 0 },
-    { name: "Mercadão", commission: 10, fixedFee: 0 }
+    { name: "Mercadão", commission: 10, fixedFee: 0 },
+    { name: "AliExpress PT", commission: 8, fixedFee: 0 },
+    { name: "eBay.es", commission: 13, fixedFee: 0.35 },
+    { name: "Etsy PT", commission: 6.5, fixedFee: 0.20 }
   ],
   "Brasil": [
     { name: "Mercado Livre", commission: 16, fixedFee: 5 },
     { name: "Shopee", commission: 18, fixedFee: 0 },
     { name: "Amazon.com.br", commission: 10, fixedFee: 0 },
-    { name: "Magalu", commission: 16, fixedFee: 0 }
+    { name: "Magalu", commission: 16, fixedFee: 0 },
+    { name: "Americanas", commission: 16, fixedFee: 0 },
+    { name: "Casas Bahia", commission: 16, fixedFee: 0 },
+    { name: "Elo7", commission: 12, fixedFee: 0 }
   ],
   "US": [
     { name: "Amazon", commission: 15, fixedFee: 0 },
     { name: "eBay", commission: 12.9, fixedFee: 0.3 },
     { name: "Etsy", commission: 6.5, fixedFee: 0.2 },
-    { name: "Walmart", commission: 15, fixedFee: 0 }
+    { name: "Walmart", commission: 15, fixedFee: 0 },
+    { name: "Facebook Marketplace", commission: 5, fixedFee: 0 },
+    { name: "Newegg", commission: 12, fixedFee: 0 },
+    { name: "Poshmark", commission: 20, fixedFee: 0 }
   ],
   "UK": [
     { name: "Amazon.co.uk", commission: 15, fixedFee: 0 },
     { name: "eBay.co.uk", commission: 12.8, fixedFee: 0.3 },
     { name: "Etsy UK", commission: 6.5, fixedFee: 0.2 },
-    { name: "OnBuy", commission: 9, fixedFee: 0 }
+    { name: "OnBuy", commission: 9, fixedFee: 0 },
+    { name: "Wayfair", commission: 4, fixedFee: 0 },
+    { name: "Fruugo", commission: 15, fixedFee: 0 },
+    { name: "Not On The High Street", commission: 25, fixedFee: 0 }
   ],
   "España": [
     { name: "Amazon.es", commission: 15, fixedFee: 0 },
     { name: "El Corte Inglés", commission: 15, fixedFee: 0 },
     { name: "PcComponentes", commission: 10, fixedFee: 0.5 },
-    { name: "AliExpress", commission: 8, fixedFee: 0 }
+    { name: "AliExpress ES", commission: 8, fixedFee: 0 },
+    { name: "Milanuncios", commission: 0, fixedFee: 0 },
+    { name: "Wallapop", commission: 0, fixedFee: 0 },
+    { name: "eBay.es", commission: 13, fixedFee: 0.35 }
   ]
 };
 
 let selectedMarketplaces = [];
+let mpModalCosts = []; // Temporary list for modal editing
 
 function getRegionByLocale() {
   const locale = (window.i18n && window.i18n.currentLocale) || localStorage.getItem('3dzaap_lang') || 'pt-PT';
@@ -2061,7 +2157,9 @@ function openMPModal(editId = null) {
 
   const sym = getCurrencySymbol();
   document.getElementById('mpUnitFixed').textContent = sym;
-  document.getElementById('mpUnitExtra').textContent = sym;
+  document.querySelectorAll('.mp-unit-tag').forEach(el => {
+    if (el.id !== 'mpCommissionTag') el.textContent = sym;
+  });
 
   if (editId) {
     const mp = selectedMarketplaces.find(x => x.id === editId);
@@ -2076,7 +2174,7 @@ function openMPModal(editId = null) {
       if (!isKnown) document.getElementById('mpCustomName').value = mp.name;
       document.getElementById('mpCommission').value = mp.commission;
       document.getElementById('mpFixedFee').value = mp.fixedFee;
-      document.getElementById('mpExtraCosts').value = mp.extraCosts;
+      mpModalCosts = [...(mp.additionalCosts || [])];
     }
   } else {
     document.getElementById('editMPId').value = "";
@@ -2086,8 +2184,9 @@ function openMPModal(editId = null) {
     document.getElementById('mpCustomName').value = "";
     document.getElementById('mpCommission').value = 0;
     document.getElementById('mpFixedFee').value = 0;
-    document.getElementById('mpExtraCosts').value = 0;
+    mpModalCosts = [];
   }
+  renderMPCostsListModal();
 }
 
 function closeMPModal() {
@@ -2113,6 +2212,48 @@ function onMPSelectChange() {
   }
 }
 
+function addCostToModal() {
+  const name = document.getElementById('addCostName').value.trim();
+  const type = document.getElementById('addCostType').value;
+  const val = parseFloat(document.getElementById('addCostVal').value) || 0;
+  
+  if (!name) { showToast("Dá um nome ao custo", "err"); return; }
+  if (val <= 0) { showToast("Informa um valor válido", "err"); return; }
+  
+  mpModalCosts.push({ id: Date.now(), name, type, value: val });
+  document.getElementById('addCostName').value = "";
+  document.getElementById('addCostVal').value = 0;
+  renderMPCostsListModal();
+}
+
+function removeCostFromModal(id) {
+  mpModalCosts = mpModalCosts.filter(c => c.id !== id);
+  renderMPCostsListModal();
+}
+
+function renderMPCostsListModal() {
+  const container = document.getElementById('mpCostsList');
+  if (!container) return;
+  
+  const sym = getCurrencySymbol();
+  if (mpModalCosts.length === 0) {
+    container.innerHTML = '<div style="font-size:0.75rem; color:var(--muted); text-align:center; padding:10px;">Nenhum custo adicional adicionado.</div>';
+    return;
+  }
+  
+  let html = '';
+  mpModalCosts.forEach(c => {
+    const valStr = c.type === 'pct' ? c.value + '%' : fmtCurrency(c.value);
+    html += `
+      <div class="mp-cost-tag">
+        <div class="mp-cost-tag-label">${c.name} <span class="mp-cost-tag-val">${valStr}</span></div>
+        <button class="btn-cost-del" onclick="removeCostFromModal(${c.id})"><i class="ph-bold ph-trash"></i></button>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
 function saveMP() {
   const editId = document.getElementById('editMPId').value;
   const selector = document.getElementById('mpSelector');
@@ -2125,7 +2266,6 @@ function saveMP() {
 
   const commission = parseFloat(document.getElementById('mpCommission').value) || 0;
   const fixedFee = parseFloat(document.getElementById('mpFixedFee').value) || 0;
-  const extraCosts = parseFloat(document.getElementById('mpExtraCosts').value) || 0;
 
   if (editId) {
     const mp = selectedMarketplaces.find(x => String(x.id) === String(editId));
@@ -2133,12 +2273,13 @@ function saveMP() {
       mp.name = name;
       mp.commission = commission;
       mp.fixedFee = fixedFee;
-      mp.extraCosts = extraCosts;
+      mp.additionalCosts = [...mpModalCosts];
     }
   } else {
     selectedMarketplaces.push({
       id: Date.now() + Math.random(),
-      name, commission, fixedFee, extraCosts
+      name, commission, fixedFee,
+      additionalCosts: [...mpModalCosts]
     });
   }
 
@@ -2165,6 +2306,7 @@ function renderSelectedMarketplaces() {
   
   let html = '';
   selectedMarketplaces.forEach(mp => {
+    const extrasCount = (mp.additionalCosts || []).length;
     html += `
       <div class="mp-item-row">
         <div class="mp-item-info">
@@ -2173,7 +2315,7 @@ function renderSelectedMarketplaces() {
             <span>${mp.name}</span>
           </div>
           <div class="mp-item-specs">
-            ${mp.commission}% comissão • ${fmtCurrency(mp.fixedFee)} fixo • ${fmtCurrency(mp.extraCosts)} extras
+            ${mp.commission}% comissão • ${fmtCurrency(mp.fixedFee)} fixo ${extrasCount > 0 ? '• '+extrasCount+' extras' : ''}
           </div>
         </div>
         <div class="mp-row-actions">
@@ -2197,14 +2339,22 @@ function renderMarketplaceCards(baseResult) {
   
   let html = '';
   selectedMarketplaces.forEach(mp => {
-    const commFactor = (1 - (mp.commission / 100));
+    let totalFixed = mp.fixedFee || 0;
+    let totalPct = mp.commission || 0;
+    
+    (mp.additionalCosts || []).forEach(c => {
+      if (c.type === 'fixed') totalFixed += c.value;
+      else totalPct += c.value;
+    });
+
+    const commFactor = (1 - (totalPct / 100));
     let mpFinalPrice = 0;
     if (commFactor > 0) {
-        mpFinalPrice = (baseResult.finalPrice + mp.fixedFee + mp.extraCosts) / commFactor;
+        mpFinalPrice = (baseResult.finalPrice + totalFixed) / commFactor;
     }
     
-    if (mpFinalPrice > 50000) mpFinalPrice = 0;
-    const netReceived = (mpFinalPrice * (1 - (mp.commission / 100))) - mp.fixedFee - mp.extraCosts;
+    if (mpFinalPrice > 100000) mpFinalPrice = 0;
+    const netReceived = (mpFinalPrice * (1 - (totalPct / 100))) - totalFixed;
     
     html += `
       <div class="mp-res-card">
@@ -2782,7 +2932,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
         <div class="mp-form-group">
-          <label>Taxa Fixa</label>
+          <label id="labelLabelFixed">Taxa Fixa</label>
           <div class="mp-input-unit">
             <input type="number" id="mpFixedFee" class="mp-input" value="0" step="0.01" min="0">
             <span class="mp-unit-tag" id="mpUnitFixed">€</span>
@@ -2790,11 +2940,32 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
 
-      <div class="mp-form-group">
-        <label>Custos Adicionais (Embalagem, Envios, etc)</label>
-        <div class="mp-input-unit">
-          <input type="number" id="mpExtraCosts" class="mp-input" value="0" step="0.01" min="0">
-          <span class="mp-unit-tag" id="mpUnitExtra">€</span>
+      <!-- Gestão de Múltiplos Custos Adicionais -->
+      <div style="margin-top:20px; border-top:1.5px solid var(--border); padding-top:20px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:10px;">Custos Adicionais</label>
+        <div id="mpCostsList" class="mp-costs-list">
+          <!-- Lista de custos adicionais adicionados -->
+        </div>
+
+        <div class="mp-add-cost-row">
+          <div class="mp-form-group" style="margin:0">
+            <label style="font-size:0.6rem">Nome</label>
+            <input type="text" id="addCostName" class="mp-input" placeholder="Ex: Embalagem" style="padding:8px">
+          </div>
+          <div class="mp-form-group" style="margin:0">
+            <label style="font-size:0.6rem">Tipo</label>
+            <select id="addCostType" class="mp-select" style="padding:8px">
+              <option value="fixed">Fixo</option>
+              <option value="pct">%</option>
+            </select>
+          </div>
+          <div class="mp-form-group" style="margin:0">
+            <label style="font-size:0.6rem">Valor</label>
+            <input type="number" id="addCostVal" class="mp-input" value="0" step="0.01" style="padding:8px">
+          </div>
+          <button class="btn-cost-add" onclick="addCostToModal()" title="Adicionar Custo">
+            <i class="ph-bold ph-plus"></i>
+          </button>
         </div>
       </div>
 
