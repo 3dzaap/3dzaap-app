@@ -616,6 +616,57 @@
 }
 .btn-onboarding:hover { background: var(--orange-d); transform: translateY(-1px); }
 
+/* ── PROJECT SUMMARY CARD ── */
+.project-summary-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--blur);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 16px 24px;
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+  animation: fadeUp 0.5s var(--ease);
+}
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.summary-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--dark);
+  font-family: var(--mono);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.summary-lbl {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.summary-input {
+  background: rgba(59,143,212,0.1);
+  border: 1px dashed var(--blue);
+  border-radius: 6px;
+  color: var(--blue);
+  width: 80px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  padding: 2px;
+  outline: none;
+}
+.summary-input:focus { background: rgba(59,143,212,0.15); border-style: solid; }
+
 /* ── TOOLTIPS ── */
 .tip { cursor: help; color: var(--subtle); font-size: 0.85rem; margin-left: 4px; transition: color 0.2s; }
 .tip:hover { color: var(--blue); }
@@ -1112,17 +1163,25 @@
                 <div id="mesasContainer" style="margin-top:10px;">
                   <!-- Dinâmico via JS -->
                 </div>
-                <!-- Totais de Projeto no Fim das Mesas -->
-                <div class="fields-grid" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
-                  <div class="field" id="fieldTotalTime" style="display:none">
-                    <label data-i18n="calc.fields.total_time">Tempo Total Projecto (h)</label>
-                    <input type="number" id="totalProjectTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                <!-- Resumo do Projeto (Novo UX) -->
+                <div class="project-summary-card" id="projectSummary">
+                  <div class="summary-item">
+                    <span class="summary-lbl" data-i18n="calc.fields.total_weight">Peso Total do Projeto</span>
+                    <div class="summary-val">
+                      <i class="ph-bold ph-scales" style="font-size: 1.2rem; color: var(--blue);"></i>
+                      <span id="displayTotalWeight">0.0</span><span class="unit-weight" style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">g</span>
+                      <input type="hidden" id="totalProjectWeight" value="0">
+                    </div>
                   </div>
-                  <div class="field" id="fieldTotalWeight" style="display:none">
-                    <label data-i18n="calc.fields.total_weight">Peso Total Projecto</label>
-                    <div class="field-wrap" style="background:var(--bg-card-s)">
-                      <input type="text" id="totalProjectWeight" value="0" readonly style="pointer-events:none;background:transparent;border:none;width:100%">
-                      <span class="field-unit unit-weight">g</span>
+                  
+                  <div style="width: 1.5px; height: 40px; background: var(--border);"></div>
+
+                  <div class="summary-item">
+                    <span class="summary-lbl" data-i18n="calc.fields.total_time">Tempo Total do Projeto</span>
+                    <div class="summary-val">
+                      <i class="ph-bold ph-clock" style="font-size: 1.2rem; color: var(--orange);"></i>
+                      <input type="number" id="totalProjectTime" class="summary-input" value="0" step="0.1" oninput="liveCalc()">
+                      <span style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">h</span>
                     </div>
                   </div>
                 </div>
@@ -1807,20 +1866,42 @@ function updatePart(mId, pId, field, val) {
   if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
   p[field] = val;
   
+  // Atualizar sumário na interface (Tempo e Peso totais)
   if (_calcMode === 'advanced') {
     let totalTime = 0;
     let totalWeight = 0;
     _mesas.forEach(mesa => {
+      let mesaW = 0;
+      let mesaT = 0;
       mesa.parts.forEach(part => {
-        totalTime += (part.time * (part.qty || 1));
-        totalWeight += (part.weight * (part.qty || 1));
+        const qty = part.qty || 1;
+        mesaW += (part.weight * qty);
+        mesaT += (part.time * qty);
       });
+      totalTime += mesaT;
+      totalWeight += mesaW;
+      
+      // Update mesa footer labels in real-time
+      const wLabel = document.getElementById(`mesaWeightSum-${mesa.id}`);
+      const tLabel = document.getElementById(`mesaTimeSum-${mesa.id}`);
+      if (wLabel) wLabel.textContent = mesaW.toFixed(1) + (mesa.tech === 'resin' ? 'ml' : 'g');
+      if (tLabel) tLabel.textContent = mesaT.toFixed(1) + 'h';
     });
+    
+    // Update main summary card
     const timeEl = document.getElementById('totalProjectTime');
-    if (timeEl) timeEl.value = totalTime.toFixed(1);
+    if (timeEl && (field !== 'totalTimeOverride')) {
+       // Apenas atualiza se não for o próprio input de tempo (ou se quisermos forçar o cálculo)
+       // Aqui vamos permitir override, então só atualizamos o valor se o campo de tempo não tiver mudado manualmente? 
+       // Simplificação: sempre atualiza o peso, tempo só se não for edição direta?
+       // O utilizador quer que seja automático.
+       timeEl.value = totalTime.toFixed(1);
+    }
     
     const weightEl = document.getElementById('totalProjectWeight');
+    const weightDisplay = document.getElementById('displayTotalWeight');
     if (weightEl) weightEl.value = totalWeight.toFixed(1);
+    if (weightDisplay) weightDisplay.textContent = totalWeight.toFixed(1);
   }
   
   liveCalc();
@@ -1968,8 +2049,8 @@ function renderMesas() {
         <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça'}</span>
       </button>
       <div style="display:flex; gap: 15px; font-size: 0.8rem; font-weight: 700; color: var(--muted); font-family: var(--mono);">
-        <span><i class="ph-bold ph-scales"></i> ${mesaWeight.toFixed(1)}${mTech === 'resin' ? 'ml' : 'g'}</span>
-        <span><i class="ph-bold ph-clock"></i> ${mesaTime.toFixed(1)}h</span>
+        <span><i class="ph-bold ph-scales"></i> <span id="mesaWeightSum-${m.id}">${mesaWeight.toFixed(1)}</span>${mTech === 'resin' ? 'ml' : 'g'}</span>
+        <span><i class="ph-bold ph-clock"></i> <span id="mesaTimeSum-${m.id}">${mesaTime.toFixed(1)}</span>h</span>
       </div>
     `;
     mDiv.appendChild(ftr);
@@ -2243,7 +2324,13 @@ function computeResults(i) {
       let mesaTime = 0;
       m.parts.forEach(p => {
         let pQty = p.qty || 1;
-        materialCost += (p.price / 1000) * p.weight * pQty;
+        // Fix do Material Price: buscar no array global de filamentos se não estiver na peça
+        let pPriceMat = p.price;
+        if (!pPriceMat) {
+          const mat = _filaments.find(f => String(f.id) === String(p.materialId));
+          pPriceMat = mat ? (mat.price || 0) : 25; // fallback
+        }
+        materialCost += (pPriceMat / 1000) * p.weight * pQty;
         mesaTime += (p.time * pQty);
       });
       
