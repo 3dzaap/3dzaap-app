@@ -888,6 +888,8 @@ async function saveAll() {
   btn.innerHTML = '⌛ ...';
   
   const cfg = {
+    ...(_session.config || {}),
+    setup_done: true,
     nif: document.getElementById('cNif').value,
     email: document.getElementById('cEmail').value,
     phone: document.getElementById('cPhone').value,

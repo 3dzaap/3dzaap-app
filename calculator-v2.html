@@ -2508,7 +2508,7 @@ function closeAdvPanel(){
   document.getElementById('advBtn').classList.remove('active-param');
 }
 async function saveAsDefaults(){
-  defaults = {...defaults, ...getInputs()};
+  defaults = {...defaults, ...getInputs(), setup_done: true};
   try{
     await Auth.updateCompany({ config: defaults });
     closeAdvPanel();
