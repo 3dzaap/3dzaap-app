@@ -15,6 +15,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="supabase.js"></script>
 <script src="utils.js"></script>
 <script src="i18n.js"></script>
@@ -137,6 +138,58 @@
 
 .glass-card .results-panel{flex:1}
 
+/* ── FINANCE PANEL (CHART & METRICS) ── */
+.finance-panel {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  background: var(--bg-card-s);
+  border: 1px solid var(--border);
+  border-radius: var(--rm);
+  padding: 15px;
+  align-items: center;
+}
+.profit-hour-card {
+  flex: 1;
+  text-align: center;
+  border-right: 1.5px dashed var(--border);
+  padding-right: 15px;
+}
+.profit-hour-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.profit-hour-val {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.profit-hour-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 20px;
+  background: rgba(168,85,247,0.1);
+  color: #a855f7;
+  text-transform: uppercase;
+}
+.profit-hour-badge.red { background: rgba(239,68,68,0.15); color: var(--danger); }
+.profit-hour-badge.yellow { background: rgba(245,158,11,0.15); color: var(--orange); }
+.profit-hour-badge.green { background: rgba(34,197,94,0.15); color: var(--success); }
+
+.chart-container {
+  flex: 1.2;
+  position: relative;
+  height: 110px;
+  width: 100%;
+}
 .glass-card.results-col{animation-delay:.22s}
 
 .card-header-title{font-size:.92rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
@@ -1096,6 +1149,18 @@
                   <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
                 </div>
 
+                <!-- Painel Inteligência Financeira -->
+                <div class="finance-panel">
+                  <div class="profit-hour-card">
+                    <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
+                    <div class="profit-hour-val" id="profitPerHour">0,00 €</div>
+                    <div class="profit-hour-badge" id="profitHourBadge">--</div>
+                  </div>
+                  <div class="chart-container">
+                    <canvas id="costChart"></canvas>
+                  </div>
+                </div>
+
                 <!-- Container para cards de Marketplaces (Ordem 2) -->
                 <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;">
                   <!-- JS will render mp cards here -->
@@ -2036,6 +2101,9 @@ function computeResults(i) {
   const marginCost = productionCost * (i.profitMargin / 100);
   const finalPrice = productionCost + marginCost;
 
+  const validTime = machineTime > 0 ? machineTime : 1;
+  const profitPerHour = marginCost / validTime;
+
   return {
     materialCost,
     amortizationCost,
@@ -2046,6 +2114,7 @@ function computeResults(i) {
     productionCost,
     marginCost,
     finalPrice,
+    profitPerHour,
     unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1
   };
@@ -2091,12 +2160,90 @@ function _render() {
   setT('labFailPct', i.failureRate);
   setT('labIndPct', i.indirectCosts);
 
+  // 3. Finance Panel Updates
+  const phVal = document.getElementById('profitPerHour');
+  const phBadge = document.getElementById('profitHourBadge');
+  if (phVal && phBadge) {
+    phVal.textContent = fmtCurrency(r.profitPerHour) + '/h';
+    
+    phBadge.classList.remove('red', 'yellow', 'green');
+    if (r.finalPrice === 0) {
+      phBadge.textContent = "--";
+    } else if (r.profitPerHour < 1.00) {
+      phBadge.classList.add('red');
+      phBadge.innerHTML = '<i class="ph-bold ph-warning"></i> BAIXO';
+    } else if (r.profitPerHour < 2.50) {
+      phBadge.classList.add('yellow');
+      phBadge.innerHTML = '<i class="ph-bold ph-minus"></i> MÉDIO';
+    } else {
+      phBadge.classList.add('green');
+      phBadge.innerHTML = '<i class="ph-bold ph-trend-up"></i> ÓTIMO';
+    }
+  }
+
+  updateFinanceChart(r);
+
   // MARKETPLACE INTEGRATION
   renderMarketplaceCards(r);
 
   // Visibility logic for Create Order
   const cpBtn = document.querySelector('.btn-criar-pedido');
   if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
+}
+
+let _financeChart = null;
+function updateFinanceChart(r) {
+  const ctx = document.getElementById('costChart');
+  if (!ctx || typeof Chart === 'undefined') return;
+
+  const dataValues = [
+    r.marginCost,
+    r.materialCost + r.amortizationCost,    
+    r.electricityCost + r.failureCost + r.indirectCost 
+  ];
+
+  if (_financeChart) {
+    _financeChart.data.datasets[0].data = dataValues;
+    _financeChart.update();
+  } else {
+    // Definir as cores globais baseado no CSS principal (aproximado)
+    const colorMargin = '#a855f7';  // Roxo para margem
+    const colorDirect = '#3b8fd4';  // Azul para diretos (Mat+Máq)
+    const colorIndirect = '#f59e0b';// Laranja para indiretos
+
+    _financeChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Lucro', 'Mat & Máq', 'Indiretos'],
+        datasets: [{
+          data: dataValues,
+          backgroundColor: [colorMargin, colorDirect, colorIndirect],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: {
+            display: false, // Desabilitado para um design mais limpo, usando tooltips em vez disso
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                if (label) label += ': ';
+                if (context.parsed !== null) label += fmtCurrency(context.parsed);
+                return label;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
 }
 
 /* ── MARKETPLACE LOGIC ──────────────── */
