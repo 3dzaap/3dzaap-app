@@ -950,35 +950,49 @@
 
 .mp-res-val {
   font-family: var(--mono);
-  font-size: 1.7rem;
-  font-weight: 900;
-  color: var(--dark);
-  margin-bottom: 12px;
-  z-index: 2;
-}
-
-.mp-res-net-box {
-  background: rgba(34,197,94,0.08);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: auto;
-  z-index: 2;
-}
-
-.mp-res-net-label {
-  font-size: 0.65rem;
-  color: var(--muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.mp-res-net-val {
-  font-family: var(--mono);
-  font-size: 1.05rem;
+  font-size: 1.6rem;
   font-weight: 800;
-  color: var(--success);
+  color: var(--dark);
+  margin-bottom: 15px;
+  z-index: 2;
 }
+
+.mp-res-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 15px;
+  z-index: 2;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.mp-det-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mp-det-lbl {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mp-det-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.mp-det-val.success { color: #16a34a; }
+.mp-det-val.warning { color: #d97706; }
+.mp-det-val.info { color: var(--blue); }
+
+.mp-res-net-box { display: none; }
 
 /* Modal Marketplaces */
 .mp-modal-body {
@@ -2787,17 +2801,37 @@ function renderMarketplaceCards(baseResult) {
     }
     
     if (mpFinalPrice > 100000) mpFinalPrice = 0;
+    
+    // Cálculos detalhados
     const netReceived = (mpFinalPrice * (1 - (totalPct / 100))) - totalFixed;
+    const platformFee = mpFinalPrice - netReceived;
+    const profitAmount = netReceived - baseResult.productionCost;
+    const realMarginPct = mpFinalPrice > 0 ? (profitAmount / mpFinalPrice) * 100 : 0;
     
     html += `
       <div class="mp-res-card">
-        <span class="mp-res-badge">MARKETPLACE</span>
-        <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
-        <div class="mp-res-title">Preço em ${mp.name}</div>
+        <span class="mp-res-badge">${totalPct}% + ${fmtCurrency(totalFixed)}</span>
+        <div class="card-watermark"><i class="ph-bold ph-storefront"></i></div>
+        <div class="mp-res-title">Preço sugerido em ${mp.name}</div>
         <div class="mp-res-val">${fmtCurrency(mpFinalPrice)}</div>
-        <div class="mp-res-net-box">
-          <div class="mp-res-net-label">Receberás (Líquido)</div>
-          <div class="mp-res-net-val">${fmtCurrency(netReceived)}</div>
+        
+        <div class="mp-res-details">
+          <div class="mp-det-item">
+            <span class="mp-det-lbl">Taxa Plataforma</span>
+            <span class="mp-det-val warning">-${fmtCurrency(platformFee)}</span>
+          </div>
+          <div class="mp-det-item">
+            <span class="mp-det-lbl">Líquido Recebido</span>
+            <span class="mp-det-val info">${fmtCurrency(netReceived)}</span>
+          </div>
+          <div class="mp-det-item">
+            <span class="mp-det-lbl">Margem Real</span>
+            <span class="mp-det-val success">${realMarginPct.toFixed(1)}%</span>
+          </div>
+          <div class="mp-det-item">
+            <span class="mp-det-lbl">Lucro Líquido</span>
+            <span class="mp-det-val success">${fmtCurrency(profitAmount)}</span>
+          </div>
         </div>
       </div>
     `;
