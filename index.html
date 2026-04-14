@@ -137,20 +137,50 @@ body{font-family:var(--f);color:var(--black);background:#f4f7fa;overflow-x:hidde
 }
 .nav-overlay.open { opacity: 1; pointer-events: auto; }
 
-/* ── HERO ───────────────────────────── */
-.hero{padding:160px 0 100px;text-align:center;position:relative;background: radial-gradient(circle at 50% -20%, rgba(59,143,212,0.08) 0%, transparent 60%)}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#fff;border:1px solid var(--border);border-radius:100px;font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:32px;box-shadow:var(--sh);text-transform:uppercase;letter-spacing:1px}
-.eyebrow .dot{width:6px;height:6px;background:var(--blue);border-radius:50%;display:inline-block;animation:pulse 2s infinite}
+.fu{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1)}
+.fu.vis{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.1s}
+.d2{transition-delay:0.25s}
+.d3{transition-delay:0.4s}
+.d4{transition-delay:0.6s}
 
-.headline{font-size:clamp(3rem, 7vw, 5.2rem);font-weight:900;line-height:0.95;letter-spacing:-4px;margin-bottom:28px;color:var(--black)}
-.hl-grad{background:linear-gradient(to right, var(--blue), #6366f1);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:inline-block}
-.hero-sub{font-size:1.4rem;color:var(--muted);max-width:800px;margin:0 auto 56px;line-height:1.5;font-weight:400}
-.hero-ctas{display:flex;gap:16px;justify-content:center;margin-bottom:80px}
+/* ── HERO 2.0 ───────────────────────────── */
+.hero{padding:180px 0 120px;text-align:center;position:relative;overflow:hidden;background:#fff}
+.hero-bg-mesh{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;overflow:hidden;filter:blur(80px);pointer-events:none}
+.h-orb{position:absolute;border-radius:50%;opacity:0.45;animation:orbMove 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)}
+.h-orb-1{width:600px;height:600px;background:rgba(59,143,212,0.25);top:-10%;left:10%;animation-delay:-2s}
+.h-orb-2{width:500px;height:500px;background:rgba(99,102,241,0.2);bottom:10%;right:10%;animation-delay:-5s}
+.h-orb-3{width:400px;height:400px;background:rgba(245,148,58,0.15);top:20%;right:20%;animation-delay:-8s}
+@keyframes orbMove{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(10%,15%) scale(1.1)}
+  100%{transform:translate(-5%,-10%) scale(0.9)}
+}
 
-.hero-visual{position:relative;max-width:1100px;margin:0 auto;perspective:1000px}
-.hero-mockup{border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh-xl);border:6px solid white;position:relative;z-index:2;background:white;transition:transform 0.5s var(--ease)}
-.hero-visual:hover .hero-mockup{transform:rotateX(2deg) translateY(-5px)}
-.hero-mockup img{width:100%;display:block}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;padding:12px 28px;background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);border:1px solid rgba(59,143,212,0.15);border-radius:100px;font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:36px;box-shadow:0 4px 20px rgba(0,0,0,0.03);text-transform:uppercase;letter-spacing:1.5px;position:relative;z-index:2}
+.eyebrow .dot{width:8px;height:8px;background:var(--blue);border-radius:50%;display:inline-block;box-shadow:0 0 10px var(--blue);animation:pulse 2s infinite}
+
+.headline{font-size:clamp(3.5rem, 8vw, 5.8rem);font-weight:900;line-height:0.9;letter-spacing:-0.04em;margin-bottom:32px;color:var(--black);position:relative;z-index:2;text-wrap:balance}
+.hl-grad{background:linear-gradient(135deg, var(--blue) 0%, #6366f1 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;padding-bottom:10px}
+.hero-sub{font-size:1.45rem;color:var(--muted);max-width:850px;margin:0 auto 64px;line-height:1.4;font-weight:450;position:relative;z-index:2;opacity:0.9}
+
+.hero-ctas{display:flex;gap:20px;justify-content:center;margin-bottom:90px;position:relative;z-index:2}
+
+.hero-visual{position:relative;max-width:1150px;margin:0 auto;perspective:2000px;z-index:2}
+.hero-mockup{border-radius:var(--rl);overflow:hidden;box-shadow:0 50px 100px -20px rgba(50,50,93,0.15), 0 30px 60px -30px rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.5);position:relative;z-index:2;background:rgba(255,255,255,0.8);backdrop-filter:blur(20px);transition:transform 0.8s var(--ease);transform:rotateX(5deg) rotateY(-2deg) scale(1.02)}
+.hero-visual:hover .hero-mockup{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.hero-mockup img{width:100%;display:block;opacity:0.95}
+
+/* GLASSMORPHIC FLOATING CARDS */
+.fcard-ui{position:absolute;background:rgba(255,255,255,0.45);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.5);border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 10px 30px -10px rgba(31,38,135,0.12);z-index:10;transition:all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);cursor:default}
+.fcard-ui:hover{transform:translateY(-10px) scale(1.1) !important;background:rgba(255,255,255,0.6);box-shadow:0 20px 40px -10px rgba(31,38,135,0.25);border-color:var(--blue-lt)}
+.fc-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:1.4rem;transition:transform 0.3s ease}
+.fcard-ui:hover .fc-icon{transform:rotate(10deg)}
+.fc-label{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.fc-val{font-size:1.25rem;font-weight:900;color:var(--black);letter-spacing:-0.5px}
+
+.fc-1{animation:floatUI 6s infinite ease-in-out}.fc-2{animation:floatUI 8s infinite ease-in-out -1s}.fc-3{animation:floatUI 7s infinite ease-in-out -2s}.fc-4{animation:floatUI 9s infinite ease-in-out -3s}.fc-5{animation:floatUI 10s infinite ease-in-out -4s}
+@keyframes floatUI{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
 
 /* CSS Dashboard Mockup */
 .mockup-css {
@@ -393,6 +423,11 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
 </div>
 
 <section class="hero">
+  <div class="hero-bg-mesh">
+    <div class="h-orb h-orb-1"></div>
+    <div class="h-orb h-orb-2"></div>
+    <div class="h-orb h-orb-3"></div>
+  </div>
   <div class="wrap">
     <div class="eyebrow fu">
       <span class="dot"></span>
