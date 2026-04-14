@@ -592,6 +592,34 @@
 </style>
 
 <style>
+/* ── ONBOARDING BANNER ── */
+.onboarding-card {
+  background: linear-gradient(135deg, rgba(245,148,58,.15), rgba(245,148,58,.05));
+  border: 1.5px solid rgba(245,148,58,.3);
+  border-radius: var(--rm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  animation: fadeUp .5s var(--ease);
+}
+.onboarding-icon { font-size: 1.5rem; color: var(--orange); flex-shrink: 0; }
+.onboarding-text { flex: 1; }
+.onboarding-title { font-weight: 800; font-size: 0.95rem; color: var(--dark); margin-bottom: 2px; }
+.onboarding-desc { font-size: 0.82rem; color: var(--muted); }
+.onboarding-actions { display: flex; gap: 8px; }
+.btn-onboarding {
+  padding: 6px 12px; border-radius: 8px; border: none;
+  background: var(--orange); color: #fff; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-onboarding:hover { background: var(--orange-d); transform: translateY(-1px); }
+
+/* ── TOOLTIPS ── */
+.tip { cursor: help; color: var(--subtle); font-size: 0.85rem; margin-left: 4px; transition: color 0.2s; }
+.tip:hover { color: var(--blue); }
+
 /* ── GLOBAL CONTROLS ────────────────── */
 .global-ctrls { display:flex; align-items:center; gap:8px; margin-left:auto; }
 .gc-btn {
@@ -998,6 +1026,9 @@
         </div>
       </div>
 
+      <!-- ── ONBOARDING BANNER ── -->
+      <div id="onboardingBanner"></div>
+
       <!-- ── MODE SWITCHER ── -->
       <div class="calc-mode-switcher">
         <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
@@ -1179,7 +1210,7 @@
                     <div class="res-value" id="resFilCost">0,00 €</div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
+                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span> <i class="ph-bold ph-question tip" title="Amortização da impressora baseada no custo de aquisição e vida útil (horas)."></i></div>
                     <div class="res-value" id="resMchCost">0,00 €</div>
                   </div>
                   <div class="res-line">
@@ -1187,33 +1218,33 @@
                     <div class="res-value" id="resElecCost">0,00 €</div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%) <i class="ph-bold ph-question tip" title="Margem de segurança para cobrir impressões falhadas, suportes e desperdício de material."></i></div>
                     <div class="res-value" id="resFailCost">0,00 €</div>
                   </div>
                   <div class="res-line" style="margin-bottom:15px">
-                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%) <i class="ph-bold ph-question tip" title="Custos que não são material ou máquina diretamente, como embalagem, marketing, manutenção e software."></i></div>
                     <div class="res-value" id="resIndCost">0,00 €</div>
                   </div>
                 </div>
               </div>
 
             <div class="results-actions">
-              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
-                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
-              </button>
-              <button class="btn-criar-pedido visible" style="background:var(--success-g);color:var(--success);border-color:var(--success-border)" onclick="saveToHistory()">
-                <span data-i18n="calc.buttons.save_history"><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</span>
-              </button>
-              <button class="btn-wa" onclick="sendWhatsApp()">
+              <button class="btn-wa" onclick="sendWhatsApp()" style="margin-bottom: 4px;">
                 <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
                 <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
               </button>
+              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()" style="margin-bottom: 4px;">
+                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
+              </button>
               <div class="results-actions-row">
+                <button class="btn-action" style="background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
+                  <span><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save_history">Guardar</span></span>
+                </button>
                 <button class="btn-action" onclick="copyResults()">
                   <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
                 </button>
                 <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
-                  <span><span data-i18n="calc.buttons.parameters">Parâmetros</span> <i class="ph-bold ph-gear"></i></span>
+                   <i class="ph-bold ph-gear"></i>
                 </button>
               </div>
             </div>
@@ -1573,9 +1604,53 @@ async function loadInitialData() {
     
     renderSelectors();
     renderMesas();
+    checkOnboarding();
   } catch(e) {
     console.error('[3DZAAP] error loading calc data:', e);
   }
+}
+
+function checkOnboarding() {
+  const banner = document.getElementById('onboardingBanner');
+  if (!banner) return;
+  
+  const hasMaterials = _filaments.length > 0;
+  const hasPrinters = _printers.length > 0;
+  
+  if (hasMaterials && hasPrinters) {
+    banner.style.display = 'none';
+    return;
+  }
+  
+  let title = "Configuração Necessária";
+  let desc = "Para resultados precisos, precisas de registar os teus recursos.";
+  let actions = "";
+  
+  if (!hasMaterials && !hasPrinters) {
+    desc = "Ainda não tens materiais nem impressoras registadas. Configura-os para começar a calcular.";
+    actions = `
+      <a href="materials.html" class="btn-onboarding"><i class="ph-bold ph-package"></i> Materiais</a>
+      <a href="printers.html" class="btn-onboarding"><i class="ph-bold ph-printer"></i> Impressoras</a>
+    `;
+  } else if (!hasMaterials) {
+    desc = "Precisas de pelo menos um material (filamento/resina) registado para calcular o custo de material.";
+    actions = `<a href="materials.html" class="btn-onboarding"><i class="ph-bold ph-package"></i> Registo de Materiais</a>`;
+  } else if (!hasPrinters) {
+    desc = "Não tens impressoras registadas. O cálculo de amortização e energia usará valores genéricos.";
+    actions = `<a href="printers.html" class="btn-onboarding"><i class="ph-bold ph-printer"></i> Registo de Impressoras</a>`;
+  }
+  
+  banner.innerHTML = `
+    <div class="onboarding-card">
+      <div class="onboarding-icon"><i class="ph-bold ph-warning-circle"></i></div>
+      <div class="onboarding-text">
+        <div class="onboarding-title">${title}</div>
+        <div class="onboarding-desc">${desc}</div>
+      </div>
+      <div class="onboarding-actions">${actions}</div>
+    </div>
+  `;
+  banner.style.display = 'block';
 }
 
 function renderSelectors() {
@@ -1866,13 +1941,30 @@ function renderMesas() {
     `;
     mDiv.appendChild(tableWrap);
     
+    // Calcular totais parciais da mesa
+    let mesaWeight = 0;
+    let mesaTime = 0;
+    m.parts.forEach(p => {
+      mesaWeight += (p.weight * (p.qty || 1));
+      mesaTime += (p.time * (p.qty || 1));
+    });
+
     const ftr = document.createElement('div');
-    ftr.style.padding = '8px 12px';
+    ftr.style.padding = '12px 16px';
     ftr.style.background = 'var(--bg)';
+    ftr.style.display = 'flex';
+    ftr.style.justifyContent = 'space-between';
+    ftr.style.alignItems = 'center';
+    ftr.style.borderTop = '1px solid var(--border)';
+
     ftr.innerHTML = `
-      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600" onclick="addPartToMesa(${m.id})">
-        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
+      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600; width: auto;" onclick="addPartToMesa(${m.id})">
+        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça'}</span>
       </button>
+      <div style="display:flex; gap: 15px; font-size: 0.8rem; font-weight: 700; color: var(--muted); font-family: var(--mono);">
+        <span><i class="ph-bold ph-scales"></i> ${mesaWeight.toFixed(1)}${mTech === 'resin' ? 'ml' : 'g'}</span>
+        <span><i class="ph-bold ph-clock"></i> ${mesaTime.toFixed(1)}h</span>
+      </div>
     `;
     mDiv.appendChild(ftr);
     
