@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Política de Privacidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+  :root {
+    --blue: #3B8FD4; --blue-g: rgba(59,143,212,0.08);
+    --dark: #1a2332; --muted: #4A5568; --subtle: #94A3B8;
+    --border: rgba(0,0,0,0.10);
+    --bg: #f4f7fb;
+    --f: 'Outfit', sans-serif;
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { font-family: var(--f); background: var(--bg); color: var(--dark); line-height: 1.8; }
+
+  .page-wrap { max-width: 820px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .legal-header {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 40px;
+    margin-bottom: 32px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .legal-logo { font-size: 1.5rem; font-weight: 900; }
+  .legal-logo .b3d { color: var(--blue); }
+  .legal-logo-sub { font-size: 0.7rem; color: var(--subtle); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+  .legal-title { flex: 1; }
+  .legal-title h1 { font-size: 1.6rem; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+  .legal-title p { font-size: 0.85rem; color: var(--subtle); }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: var(--blue); text-decoration: none; font-weight: 700;
+    margin-bottom: 24px; padding: 8px 14px; background: var(--blue-g); border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .back-link:hover { background: rgba(59,143,212,0.15); }
+
+  .legal-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 20px;
+  }
+
+  .legal-card h2 {
+    font-size: 1.1rem; font-weight: 800; color: var(--dark);
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .legal-card h2 i { color: var(--blue); font-size: 1rem; }
+  .legal-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--dark); margin: 20px 0 8px; }
+  .legal-card p { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; }
+  .legal-card ul, .legal-card ol { padding-left: 20px; margin-bottom: 12px; }
+  .legal-card ul li, .legal-card ol li { font-size: 0.9rem; color: var(--muted); margin-bottom: 6px; }
+  .legal-card a { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .legal-card a:hover { text-decoration: underline; }
+
+  .highlight-box {
+    background: var(--blue-g); border-left: 4px solid var(--blue);
+    border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 0.88rem; color: var(--dark);
+  }
+
+  .rights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .rights-item {
+    background: var(--blue-g);
+    border: 1px solid rgba(59,143,212,0.15);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .rights-item strong { font-size: 0.85rem; color: var(--dark); display: block; margin-bottom: 4px; }
+  .rights-item span { font-size: 0.78rem; color: var(--muted); }
+
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85rem; }
+  .data-table th { background: var(--blue-g); color: var(--dark); font-weight: 700; padding: 10px 14px; text-align: left; border-bottom: 2px solid rgba(59,143,212,0.2); }
+  .data-table td { padding: 10px 14px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .footer-nav {
+    text-align: center; margin-top: 40px; font-size: 0.82rem; color: var(--subtle);
+  }
+  .footer-nav a { color: var(--blue); text-decoration: none; font-weight: 600; margin: 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <a href="auth-onboarding.html" class="back-link">
+    <i class="ph-bold ph-arrow-left"></i> Voltar
+  </a>
+
+  <div class="legal-header">
+    <div>
+      <div class="legal-logo"><span class="b3d">3D</span>ZAAP</div>
+      <div class="legal-logo-sub">Plataforma de Gestão</div>
+    </div>
+    <div class="legal-title">
+      <h1><i class="ph-bold ph-shield-check"></i> Política de Privacidade</h1>
+      <p>Última atualização: Abril de 2025 &nbsp;·&nbsp; Versão 1.0 &nbsp;·&nbsp; Conforme RGPD</p>
+    </div>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-info"></i> 1. Responsável pelo Tratamento</h2>
+    <p><strong>3DZAAP, Lda.</strong> (doravante "3DZAAP", "nós" ou "nossa Empresa") é a entidade responsável pelo tratamento dos seus dados pessoais, nos termos do Regulamento (UE) 2016/679 (RGPD) e da Lei n.º 58/2019, de 8 de agosto.</p>
+    <div class="highlight-box">
+      <strong>Contacto do Responsável pelo Tratamento:</strong><br>
+      Email: <a href="mailto:privacidade@3dzaap.com">privacidade@3dzaap.com</a><br>
+      Morada: Portugal (informação detalhada disponível mediante pedido)
+    </div>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-database"></i> 2. Dados Pessoais Recolhidos</h2>
+    <p>Recolhemos os dados estritamente necessários para a prestação do serviço:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Dados</th>
+          <th>Finalidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Identificação</strong></td>
+          <td>Nome próprio, apelido, email</td>
+          <td>Criação e gestão de conta</td>
+        </tr>
+        <tr>
+          <td><strong>Empresa</strong></td>
+          <td>Nome da empresa, NIF, morada, website</td>
+          <td>Faturação e documentos</td>
+        </tr>
+        <tr>
+          <td><strong>Operacionais</strong></td>
+          <td>Pedidos, materiais, clientes, impressoras</td>
+          <td>Funcionamento da plataforma</td>
+        </tr>
+        <tr>
+          <td><strong>Técnicos</strong></td>
+          <td>Endereço IP, browser, sistema operativo</td>
+          <td>Segurança e diagnóstico</td>
+        </tr>
+        <tr>
+          <td><strong>Pagamento</strong></td>
+          <td>Dados de faturação (não cartões)</td>
+          <td>Processamento de subscrições</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight-box">
+      <strong>Importante:</strong> Não armazenamos dados de cartões de crédito. O processamento de pagamentos é realizado por processadores certificados PCI-DSS.
+    </div>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-chart-bar"></i> 3. Bases Legais do Tratamento</h2>
+    <p>O tratamento dos seus dados pessoais assenta nas seguintes bases legais (artigo 6.º do RGPD):</p>
+    <ul>
+      <li><strong>Execução de contrato</strong> (art. 6.º, n.º 1, al. b) — prestação do serviço 3DZAAP contratado</li>
+      <li><strong>Obrigação legal</strong> (art. 6.º, n.º 1, al. c) — cumprimento de obrigações fiscais e contabilísticas</li>
+      <li><strong>Interesse legítimo</strong> (art. 6.º, n.º 1, al. f) — segurança da plataforma, prevenção de fraude e melhoria do serviço</li>
+      <li><strong>Consentimento</strong> (art. 6.º, n.º 1, al. a) — comunicações de marketing (se aplicável, revogável a qualquer momento)</li>
+    </ul>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-clock"></i> 4. Conservação dos Dados</h2>
+    <p>Os seus dados são conservados pelo tempo necessário para as finalidades que motivaram a sua recolha, respeitando os seguintes prazos:</p>
+    <ul>
+      <li><strong>Dados de conta ativa:</strong> durante toda a vigência do contrato</li>
+      <li><strong>Dados após cancelamento:</strong> até 30 dias para exportação, depois anonimizados</li>
+      <li><strong>Dados fiscais (faturas):</strong> 10 anos, conforme o Código Comercial Português</li>
+      <li><strong>Logs de segurança:</strong> máximo de 12 meses</li>
+    </ul>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-share-network"></i> 5. Partilha de Dados com Terceiros</h2>
+    <p>Não vendemos, alugamos nem partilhamos os seus dados pessoais com terceiros para fins comerciais. Partilhamos dados apenas com:</p>
+    <ul>
+      <li><strong>Supabase, Inc.</strong> — infraestrutura de base de dados e autenticação (contrato de subprocessamento RGPD celebrado)</li>
+      <li><strong>Processadores de pagamento</strong> — para processamento seguro de transações</li>
+      <li><strong>Prestadores de serviços de email</strong> — para envio de notificações transacionais</li>
+      <li><strong>Autoridades competentes</strong> — quando obrigados por lei</li>
+    </ul>
+    <p>Todos os subprocessadores estão localizados no Espaço Económico Europeu ou oferecem garantias adequadas ao abrigo do RGPD (cláusulas contratuais-tipo ou decisões de adequação).</p>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-lock"></i> 6. Segurança dos Dados</h2>
+    <p>Implementamos medidas técnicas e organizativas adequadas para proteger os seus dados pessoais, incluindo:</p>
+    <ul>
+      <li>Encriptação de dados em trânsito (TLS 1.3) e em repouso</li>
+      <li>Autenticação segura com suporte a OAuth 2.0</li>
+      <li>Controlo de acesso baseado em funções (RBAC)</li>
+      <li>Isolamento de dados por empresa (multi-tenant seguro)</li>
+      <li>Monitorização e registo de acessos (activity log)</li>
+      <li>Backups automáticos com retenção mínima de 7 dias</li>
+    </ul>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-user-gear"></i> 7. Os Seus Direitos (RGPD)</h2>
+    <p>Ao abrigo do RGPD, tem os seguintes direitos, que pode exercer a qualquer momento:</p>
+
+    <div class="rights-grid">
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-eye"></i> Direito de Acesso</strong>
+        <span>Obter confirmação e cópia dos seus dados (art. 15.º)</span>
+      </div>
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-pencil-simple"></i> Direito de Retificação</strong>
+        <span>Corrigir dados inexatos ou incompletos (art. 16.º)</span>
+      </div>
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-trash"></i> Direito ao Apagamento</strong>
+        <span>"Direito a ser esquecido" quando aplicável (art. 17.º)</span>
+      </div>
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-pause"></i> Direito de Limitação</strong>
+        <span>Restringir o tratamento em determinadas circunstâncias (art. 18.º)</span>
+      </div>
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-export"></i> Portabilidade</strong>
+        <span>Receber os dados em formato legível por máquina (art. 20.º)</span>
+      </div>
+      <div class="rights-item">
+        <strong><i class="ph-bold ph-prohibit"></i> Direito de Oposição</strong>
+        <span>Opor-se ao tratamento baseado em interesse legítimo (art. 21.º)</span>
+      </div>
+    </div>
+
+    <p style="margin-top: 20px;">Para exercer qualquer um destes direitos, contacte-nos em <a href="mailto:privacidade@3dzaap.com">privacidade@3dzaap.com</a>. Responderemos no prazo máximo de <strong>30 dias</strong>.</p>
+
+    <p>Tem ainda o direito de apresentar reclamação à autoridade de controlo competente em Portugal: <strong>Comissão Nacional de Proteção de Dados (CNPD)</strong> — <a href="https://www.cnpd.pt" target="_blank">cnpd.pt</a>.</p>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-cookie"></i> 8. Cookies e Tecnologias Semelhantes</h2>
+    <p>Utilizamos cookies estritamente necessários ao funcionamento da plataforma, nomeadamente para gestão de sessão e segurança. Não utilizamos cookies de rastreamento publicitário ou analítico de terceiros sem o seu consentimento.</p>
+    <ul>
+      <li><strong>Cookies de sessão</strong> — autenticação segura (essenciais, não requerem consentimento)</li>
+      <li><strong>localStorage</strong> — preferências de interface (tema, idioma) — apenas dados locais</li>
+    </ul>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-globe"></i> 9. Transferências Internacionais</h2>
+    <p>Os seus dados são processados principalmente no Espaço Económico Europeu (EEE). Quando utilizamos subprocessadores fora do EEE (como alguns serviços de infraestrutura norte-americanos), asseguramos que existem garantias adequadas nos termos do artigo 46.º do RGPD, através de:</p>
+    <ul>
+      <li>Cláusulas contratuais-tipo aprovadas pela Comissão Europeia</li>
+      <li>Certificações de adequação reconhecidas pela Comissão Europeia</li>
+    </ul>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-pencil-simple-line"></i> 10. Alterações a Esta Política</h2>
+    <p>Podemos atualizar esta Política de Privacidade periodicamente. Qualquer alteração material será comunicada por email ou através de aviso na plataforma com antecedência mínima de 15 dias.</p>
+    <p>A versão mais recente está sempre disponível em <a href="https://3dzaap.com/privacy.html">3dzaap.com/privacy.html</a>.</p>
+  </div>
+
+  <div class="legal-card">
+    <h2><i class="ph-bold ph-envelope"></i> 11. Contacto e Encarregado de Proteção de Dados</h2>
+    <p>Para qualquer questão relativa à privacidade e proteção de dados:</p>
+    <ul>
+      <li><strong>Email de Privacidade:</strong> <a href="mailto:privacidade@3dzaap.com">privacidade@3dzaap.com</a></li>
+      <li><strong>Suporte Geral:</strong> <a href="mailto:suporte@3dzaap.com">suporte@3dzaap.com</a></li>
+      <li><strong>WhatsApp:</strong> <a href="https://wa.me/351938925645" target="_blank">+351 938 925 645</a></li>
+    </ul>
+    <p style="margin-top:12px;">Prazo de resposta: até <strong>30 dias úteis</strong> a contar da receção do pedido, nos termos do artigo 12.º, n.º 3 do RGPD.</p>
+  </div>
+
+  <div class="footer-nav">
+    <a href="auth-onboarding.html">← Voltar ao login</a>
+    <a href="terms.html">Termos de Serviço</a>
+    <a href="mailto:privacidade@3dzaap.com">Privacidade</a>
+  </div>
+</div>
+</body>
+</html>
