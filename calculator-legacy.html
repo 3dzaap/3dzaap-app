@@ -15,7 +15,6 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script src="supabase.js"></script>
 <script src="utils.js"></script>
 <script src="i18n.js"></script>
@@ -57,65 +56,8 @@
 .res-label { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--muted); font-weight: 500; }
 .res-dot { width: 10px; height: 10px; border-radius: 50%; }
 .res-value { font-family: var(--mono); font-weight: 800; color: var(--dark); font-size: .9rem; }
-.res-hero {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  border: 2.5px solid var(--blue);
-  border-radius: var(--rm);
-  padding: 24px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  animation: heroGlow 3s infinite alternate;
-  box-shadow: 0 10px 30px rgba(59,143,212,0.15);
-  margin-bottom: 25px;
-}
-@keyframes heroGlow {
-  from { box-shadow: 0 10px 30px rgba(59,143,212,0.15); border-color: var(--blue); }
-  to { box-shadow: 0 10px 40px rgba(59,143,212,0.25); border-color: #60a5fa; }
-}
-
-.price-hero-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--blue);
-  letter-spacing: 0.1em;
-  margin-bottom: 5px;
-  position: relative; z-index: 2;
-}
-
-.res-hero-val {
-  font-family: var(--mono);
-  font-size: 2.6rem;
-  font-weight: 900;
-  color: var(--dark);
-  margin-bottom: 12px;
-  position: relative; z-index: 2;
-}
-
-.hero-sub-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative; z-index: 2;
-  border-top: 1.5px solid var(--border);
-  padding-top: 14px;
-  margin-top: 12px;
-}
-
-.hero-stat-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.82rem;
-  color: var(--muted);
-}
-
-.hero-stat-label { font-weight: 700; color: var(--muted); }
-.hero-stat-val { font-family: var(--mono); font-weight: 800; color: var(--dark); }
-.hero-stat-val.margin { color: #a855f7; }
-.hero-stat-val.cost { color: var(--success); }
+.res-hero { background: linear-gradient(135deg, rgba(59,143,212,.1), rgba(59,143,212,.04)); border: 1.5px solid rgba(59,143,212,0.25); border-radius: var(--rm); padding: 20px; text-align: center; margin-bottom: 20px; }
+.res-hero-val { font-size: 2.2rem; font-weight: 900; line-height: 1; margin: 8px 0; }
 
 /* ── CALC LAYOUT — 1fr 1fr simétrico ── */
 .calc-layout{
@@ -138,58 +80,6 @@
 
 .glass-card .results-panel{flex:1}
 
-/* ── FINANCE PANEL (CHART & METRICS) ── */
-.finance-panel {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  background: var(--bg-card-s);
-  border: 1px solid var(--border);
-  border-radius: var(--rm);
-  padding: 15px;
-  align-items: center;
-}
-.profit-hour-card {
-  flex: 1;
-  text-align: center;
-  border-right: 1.5px dashed var(--border);
-  padding-right: 15px;
-}
-.profit-hour-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-  margin-bottom: 5px;
-}
-.profit-hour-val {
-  font-family: var(--mono);
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: var(--dark);
-  margin-bottom: 8px;
-}
-.profit-hour-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  border-radius: 20px;
-  background: rgba(168,85,247,0.1);
-  color: #a855f7;
-  text-transform: uppercase;
-}
-.profit-hour-badge.red { background: rgba(239,68,68,0.15); color: var(--danger); }
-.profit-hour-badge.yellow { background: rgba(245,158,11,0.15); color: var(--orange); }
-.profit-hour-badge.green { background: rgba(34,197,94,0.15); color: var(--success); }
-
-.chart-container {
-  flex: 1.2;
-  position: relative;
-  height: 110px;
-  width: 100%;
-}
 .glass-card.results-col{animation-delay:.22s}
 
 .card-header-title{font-size:.92rem;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:9px}
@@ -592,85 +482,6 @@
 </style>
 
 <style>
-/* ── ONBOARDING BANNER ── */
-.onboarding-card {
-  background: linear-gradient(135deg, rgba(245,148,58,.15), rgba(245,148,58,.05));
-  border: 1.5px solid rgba(245,148,58,.3);
-  border-radius: var(--rm);
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  animation: fadeUp .5s var(--ease);
-}
-.onboarding-icon { font-size: 1.5rem; color: var(--orange); flex-shrink: 0; }
-.onboarding-text { flex: 1; }
-.onboarding-title { font-weight: 800; font-size: 0.95rem; color: var(--dark); margin-bottom: 2px; }
-.onboarding-desc { font-size: 0.82rem; color: var(--muted); }
-.onboarding-actions { display: flex; gap: 8px; }
-.btn-onboarding {
-  padding: 6px 12px; border-radius: 8px; border: none;
-  background: var(--orange); color: #fff; font-size: 0.78rem; font-weight: 700;
-  cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
-}
-.btn-onboarding:hover { background: var(--orange-d); transform: translateY(-1px); }
-
-/* ── PROJECT SUMMARY CARD ── */
-.project-summary-card {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rm);
-  padding: 16px 24px;
-  margin-top: 25px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 20px;
-  animation: fadeUp 0.5s var(--ease);
-}
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.summary-val {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--dark);
-  font-family: var(--mono);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.summary-lbl {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.summary-input {
-  background: rgba(59,143,212,0.1);
-  border: 1px dashed var(--blue);
-  border-radius: 6px;
-  color: var(--blue);
-  width: 80px;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 1.4rem;
-  font-weight: 800;
-  padding: 2px;
-  outline: none;
-}
-.summary-input:focus { background: rgba(59,143,212,0.15); border-style: solid; }
-
-/* ── TOOLTIPS ── */
-.tip { cursor: help; color: var(--subtle); font-size: 0.85rem; margin-left: 4px; transition: color 0.2s; }
-.tip:hover { color: var(--blue); }
-
 /* ── GLOBAL CONTROLS ────────────────── */
 .global-ctrls { display:flex; align-items:center; gap:8px; margin-left:auto; }
 .gc-btn {
@@ -722,328 +533,6 @@
 }
 .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
 [data-theme="dark"] .gc-popover-item { color: var(--dark); }
-
-/* ── MARKETPLACES & WATERMARK ──────────────── */
-.marketplace-section-card {
-  margin-top: 15px;
-  animation: fadeUp .5s var(--ease) .2s both;
-}
-
-.mp-add-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 18px; background: rgba(59,143,212,.08);
-  color: var(--blue); border: 1.5px dashed var(--blue);
-  border-radius: var(--rm); cursor: pointer;
-  font-size: .85rem; font-weight: 700; width: 100%;
-  justify-content: center; transition: all .2s;
-  margin-top: 10px;
-}
-.mp-add-btn:hover { background: rgba(59,143,212,.15); }
-
-.mp-item-row {
-  background: var(--bg-card-s);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rm);
-  padding: 10px 14px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s;
-}
-.mp-item-row:hover { border-color: var(--blue); }
-
-.mp-item-info { display: flex; flex-direction: column; gap: 2px; }
-
-.mp-item-name {
-  font-weight: 800;
-  font-size: 0.85rem;
-  color: var(--dark);
-  display: flex;
-  align-items: center; gap: 6px;
-}
-
-.mp-item-specs {
-  font-size: 0.72rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.mp-row-actions { display: flex; gap: 6px; }
-
-.btn-row-action {
-  width: 28px; height: 28px; border-radius: 6px;
-  border: none; background: var(--bg-hover);
-  color: var(--muted); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.btn-row-action:hover { background: var(--blue-g); color: var(--blue); }
-.btn-row-action.del:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
-
-/* Modal Form Styles */
-.mp-form-group {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.mp-form-group label {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.mp-select, .mp-input {
-  background: var(--bg-input);
-  border: 1.5px solid var(--border-input);
-  border-radius: var(--r);
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  color: var(--dark);
-  font-family: var(--f);
-  outline: none;
-  width: 100%;
-  transition: border-color .18s;
-}
-.mp-select:focus, .mp-input:focus { border-color: var(--blue); }
-
-.mp-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.mp-input-unit { position: relative; }
-.mp-unit-tag {
-  position: absolute; right: 12px; top: 50%;
-  transform: translateY(-50%); font-size: 0.7rem;
-  color: var(--subtle); font-weight: 800; font-family: var(--mono);
-}
-
-.mp-btn-save {
-  width: 100%; padding: 12px; border: none;
-  background: var(--blue); color: #fff;
-  border-radius: var(--rm); font-weight: 800;
-  cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(59,143,212,0.25);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.mp-btn-save:hover { background: var(--blue-d); transform: translateY(-1px); }
-
-/* Multiple Costs List in Modal */
-.mp-costs-list {
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: var(--bg-card-s);
-  border-radius: 10px;
-  padding: 5px;
-  border: 1px solid var(--border);
-}
-
-.mp-cost-tag {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-card);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  font-size: 0.75rem;
-  transition: all 0.2s;
-}
-.mp-cost-tag:hover { border-color: var(--blue); }
-
-.mp-cost-tag-label { font-weight: 700; color: var(--dark); }
-.mp-cost-tag-val { font-family: var(--mono); font-weight: 800; color: var(--blue); margin-left: 8px; }
-
-.btn-cost-del {
-  background: transparent; border: none; color: var(--muted);
-  cursor: pointer; padding: 4px; display: flex;
-  border-radius: 4px;
-}
-.btn-cost-del:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
-
-.mp-add-cost-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.5fr auto;
-  gap: 8px;
-  align-items: flex-end;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1.5px dashed var(--border);
-}
-
-.btn-cost-add {
-  height: 38px; width: 38px;
-  background: var(--blue-g); color: var(--blue);
-  border: 1.5px solid rgba(59,143,212,0.2);
-  border-radius: 8px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.btn-cost-add:hover { background: var(--blue); color: #fff; transform: scale(1.05); }
-
-/* Watermark icon implementation */
-.card-watermark {
-  position: absolute;
-  right: 15px;
-  bottom: 0px;
-  font-size: 7rem;
-  color: var(--blue);
-  opacity: 0.06;
-  pointer-events: none;
-  transform: rotate(-15deg);
-  z-index: 0;
-}
-
-/* Marketplace Result Cards */
-.mp-results-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-top: 15px;
-}
-@media (max-width: 600px) { .mp-results-container { grid-template-columns: 1fr; } }
-
-.mp-res-card {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
-  border-radius: var(--rm);
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-  animation: fadeUp .5s var(--ease) both;
-  display: flex;
-  flex-direction: column;
-}
-
-.mp-res-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  font-size: 0.6rem;
-  font-weight: 800;
-  padding: 3px 10px;
-  background: var(--blue-g);
-  color: var(--blue);
-  border-radius: 20px;
-  border: 1px solid rgba(59,143,212,0.2);
-  z-index: 2;
-}
-
-.mp-res-title {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--blue);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-  z-index: 2;
-}
-
-.mp-res-val {
-  font-family: var(--mono);
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--dark);
-  margin-bottom: 15px;
-  z-index: 2;
-}
-
-.mp-res-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 15px;
-  z-index: 2;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-}
-
-.mp-det-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.mp-det-lbl {
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: var(--subtle);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.mp-det-val {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--muted);
-  font-family: var(--mono);
-}
-
-.mp-det-val.success { color: #16a34a; }
-.mp-det-val.warning { color: #d97706; }
-.mp-det-val.info { color: var(--blue); }
-
-.mp-res-net-box { display: none; }
-
-/* Modal Marketplaces */
-.mp-modal-body {
-  max-height: 480px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-.mp-modal-body::-webkit-scrollbar { width: 5px; }
-.mp-modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-.mp-modal-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.mp-opt-card {
-  padding: 15px;
-  background: var(--bg-card-s);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-.mp-opt-card:hover { 
-  border-color: var(--blue); 
-  background: var(--blue-g); 
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(59,143,212,0.1);
-}
-.mp-opt-icon { font-size: 1.6rem; color: var(--blue); }
-.mp-opt-name { font-size: 0.85rem; font-weight: 700; color: var(--dark); }
-
-.mp-region-title {
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 25px;
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1.5px solid rgba(59,143,212,0.1);
-  letter-spacing: 0.1em;
-}
-.mp-region-title:first-child { margin-top: 0; }
 </style>
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 </head>
@@ -1091,9 +580,6 @@
         </div>
       </div>
 
-      <!-- ── ONBOARDING BANNER ── -->
-      <div id="onboardingBanner"></div>
-
       <!-- ── MODE SWITCHER ── -->
       <div class="calc-mode-switcher">
         <button class="mode-opt active" onclick="setCalcMode('simple')" id="modeBtnSimple">
@@ -1122,6 +608,7 @@
               </div>
             </div>
 
+            <!-- Modo Simples -->
             <div id="sectionSimple">
               <div class="form-section">
                 <div class="section-title">
@@ -1176,62 +663,27 @@
                 <div id="mesasContainer" style="margin-top:10px;">
                   <!-- Dinâmico via JS -->
                 </div>
-                <!-- Resumo do Projeto (Novo UX) -->
-                <div class="project-summary-card" id="projectSummary">
-                  <div class="summary-item">
-                    <span class="summary-lbl" data-i18n="calc.fields.total_weight">Peso Total do Projeto</span>
-                    <div class="summary-val">
-                      <i class="ph-bold ph-scales" style="font-size: 1.2rem; color: var(--blue);"></i>
-                      <span id="displayTotalWeight">0.0</span><span class="unit-weight" style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">g</span>
-                      <input type="hidden" id="totalProjectWeight" value="0">
-                    </div>
-                  </div>
-                  
-                  <div style="width: 1.5px; height: 40px; background: var(--border);"></div>
-
-                  <div class="summary-item">
-                    <span class="summary-lbl" data-i18n="calc.fields.total_time">Tempo Total do Projeto</span>
-                    <div class="summary-val">
-                      <i class="ph-bold ph-clock" style="font-size: 1.2rem; color: var(--orange);"></i>
-                      <input type="number" id="totalProjectTime" class="summary-input" value="0" step="0.1" oninput="liveCalc()">
-                      <span style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">h</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
-            <!-- Configurações partilhadas (Máquina) - Oculto em Modo Avançado via JS -->
-            <div class="form-section" id="sectionMachine">
+            <!-- Configurações partilhadas (Máquina) -->
+            <div class="form-section">
               <div class="section-title">
                 <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
                 <span data-i18n="calc.sections.machine">Máquina</span>
               </div>
               <div class="fields-grid">
-                <div class="field full" id="fieldGlobalPrinter">
+                <div class="field full">
                   <label data-i18n="calc.fields.printer">Impressora</label>
                   <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
                     <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
                   </select>
                 </div>
+                <div class="field" id="fieldTotalTime" style="display:none">
+                  <label data-i18n="calc.fields.total_time">Tempo Total Projecto (h)</label>
+                  <input type="number" id="totalProjectTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                </div>
               </div>
-            </div>
-
-            <!-- ── SEÇÃO: VENDER EM MARKETPLACE ── -->
-            <div class="form-section marketplace-section-card">
-              <div class="section-title">
-                <div class="section-title-icon" style="background:rgba(59,143,212,.1);color:var(--blue)"><i class="ph-bold ph-storefront"></i></div>
-                <span>Vender em Marketplace</span>
-              </div>
-              
-              <div id="selectedMarketplacesContainer">
-                <!-- JS will render selected marketplaces here -->
-              </div>
-
-              <button class="mp-add-btn" onclick="openMPModal()">
-                <i class="ph-bold ph-plus-circle"></i>
-                <span>Adicionar Canal de Venda</span>
-              </button>
             </div>
           </div>
           <div class="card-footer">
@@ -1244,82 +696,60 @@
         <!-- ── RIGHT: RESULTS ── -->
         <div class="glass-card results-col">
           <div class="results-panel">
-                <div class="res-hero">
-                  <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                  <div class="res-hero-val" id="rFinal">0,00 €</div>
-                  
-                  <div class="hero-sub-stats">
-                    <div class="hero-stat-line">
-                      <span class="hero-stat-label" data-i18n="calc.results.margin">Margem de Lucro</span>
-                      <span class="hero-stat-val margin" id="hMargin">0,00 €</span>
-                    </div>
-                    <div class="hero-stat-line">
-                      <span class="hero-stat-label">Custo de Produção</span>
-                      <span class="hero-stat-val cost" id="hProdCost">0,00 €</span>
-                    </div>
-                  </div>
+            <div class="res-hero">
+              <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
+              <div class="res-hero-val" id="rFinal">0,00 €</div>
+              <div class="price-hero-sub" id="rSubtext">A aguardar parâmetros...</div>
+            </div>
 
-                  <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
-                </div>
-
-                <!-- Painel Inteligência Financeira -->
-                <div class="finance-panel">
-                  <div class="profit-hour-card">
-                    <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
-                    <div class="profit-hour-val" id="profitPerHour">0,00 €</div>
-                    <div class="profit-hour-badge" id="profitHourBadge">--</div>
-                  </div>
-                  <div class="chart-container">
-                    <canvas id="costChart"></canvas>
-                  </div>
-                </div>
-
-                <!-- Container para cards de Marketplaces (Ordem 2) -->
-                <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;">
-                  <!-- JS will render mp cards here -->
-                </div>
-
-                <div class="breakdown-list" style="margin-top:0">
-                  <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
-                    <div class="res-value" id="resFilCost">0,00 €</div>
-                  </div>
-                  <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span> <i class="ph-bold ph-question tip" title="Amortização da impressora baseada no custo de aquisição e vida útil (horas)."></i></div>
-                    <div class="res-value" id="resMchCost">0,00 €</div>
-                  </div>
-                  <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Eletricidade</span></div>
-                    <div class="res-value" id="resElecCost">0,00 €</div>
-                  </div>
-                  <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%) <i class="ph-bold ph-question tip" title="Margem de segurança para cobrir impressões falhadas, suportes e desperdício de material."></i></div>
-                    <div class="res-value" id="resFailCost">0,00 €</div>
-                  </div>
-                  <div class="res-line" style="margin-bottom:15px">
-                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%) <i class="ph-bold ph-question tip" title="Custos que não são material ou máquina diretamente, como embalagem, marketing, manutenção e software."></i></div>
-                    <div class="res-value" id="resIndCost">0,00 €</div>
-                  </div>
-                </div>
+            <div class="breakdown-list">
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> <span data-i18n="calc.results.material">Material</span></div>
+                <div class="res-value" id="resFilCost">0,00 €</div>
               </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue-lt)"></span> <span data-i18n="calc.results.machine">Máquina</span></div>
+                <div class="res-value" id="resMchCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--subtle)"></span> <span data-i18n="calc.results.energy">Eletricidade</span></div>
+                <div class="res-value" id="resElecCost">0,00 €</div>
+              </div>
+              <div class="res-line" style="border-top:1.5px solid var(--border);margin-top:5px;padding-top:10px">
+                <div class="res-label" style="color:var(--success);font-weight:700"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.base">Custo Base</span></div>
+                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange)"></span> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                <div class="res-value" id="resFailCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                <div class="res-value" id="resIndCost">0,00 €</div>
+              </div>
+              <div class="res-line">
+                <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
+                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 €</div>
+              </div>
+            </div>
 
             <div class="results-actions">
-              <button class="btn-wa" onclick="sendWhatsApp()" style="margin-bottom: 4px;">
+              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
+                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
+              </button>
+              <button class="btn-criar-pedido visible" style="background:var(--success-g);color:var(--success);border-color:var(--success-border)" onclick="saveToHistory()">
+                <span data-i18n="calc.buttons.save_history"><i class="ph-bold ph-floppy-disk"></i> Guardar Cálculo</span>
+              </button>
+              <button class="btn-wa" onclick="sendWhatsApp()">
                 <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
                 <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
               </button>
-              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()" style="margin-bottom: 4px;">
-                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
-              </button>
               <div class="results-actions-row">
-                <button class="btn-action" style="background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
-                  <span><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save_history">Guardar</span></span>
-                </button>
                 <button class="btn-action" onclick="copyResults()">
                   <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
                 </button>
                 <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
-                   <i class="ph-bold ph-gear"></i>
+                  <span><span data-i18n="calc.buttons.parameters">Parâmetros</span> <i class="ph-bold ph-gear"></i></span>
                 </button>
               </div>
             </div>
@@ -1628,13 +1058,6 @@ function setCalcMode(mode) {
   document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
   document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalWeight').style.display = mode === 'advanced' ? 'block' : 'none';
-  
-  const fGlobal = document.getElementById('fieldGlobalPrinter');
-  if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
-  
-  const secMachine = document.getElementById('sectionMachine');
-  if (secMachine) secMachine.style.display = mode === 'simple' ? 'block' : 'none';
   
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
@@ -1682,53 +1105,9 @@ async function loadInitialData() {
     
     renderSelectors();
     renderMesas();
-    checkOnboarding();
   } catch(e) {
     console.error('[3DZAAP] error loading calc data:', e);
   }
-}
-
-function checkOnboarding() {
-  const banner = document.getElementById('onboardingBanner');
-  if (!banner) return;
-  
-  const hasMaterials = _filaments.length > 0;
-  const hasPrinters = _printers.length > 0;
-  
-  if (hasMaterials && hasPrinters) {
-    banner.style.display = 'none';
-    return;
-  }
-  
-  let title = "Configuração Necessária";
-  let desc = "Para resultados precisos, precisas de registar os teus recursos.";
-  let actions = "";
-  
-  if (!hasMaterials && !hasPrinters) {
-    desc = "Ainda não tens materiais nem impressoras registadas. Configura-os para começar a calcular.";
-    actions = `
-      <a href="materials.html" class="btn-onboarding"><i class="ph-bold ph-package"></i> Materiais</a>
-      <a href="printers.html" class="btn-onboarding"><i class="ph-bold ph-printer"></i> Impressoras</a>
-    `;
-  } else if (!hasMaterials) {
-    desc = "Precisas de pelo menos um material (filamento/resina) registado para calcular o custo de material.";
-    actions = `<a href="materials.html" class="btn-onboarding"><i class="ph-bold ph-package"></i> Registo de Materiais</a>`;
-  } else if (!hasPrinters) {
-    desc = "Não tens impressoras registadas. O cálculo de amortização e energia usará valores genéricos.";
-    actions = `<a href="printers.html" class="btn-onboarding"><i class="ph-bold ph-printer"></i> Registo de Impressoras</a>`;
-  }
-  
-  banner.innerHTML = `
-    <div class="onboarding-card">
-      <div class="onboarding-icon"><i class="ph-bold ph-warning-circle"></i></div>
-      <div class="onboarding-text">
-        <div class="onboarding-title">${title}</div>
-        <div class="onboarding-desc">${desc}</div>
-      </div>
-      <div class="onboarding-actions">${actions}</div>
-    </div>
-  `;
-  banner.style.display = 'block';
 }
 
 function renderSelectors() {
@@ -1829,14 +1208,6 @@ function updateMesaTech(mId, tech) {
   liveCalc();
 }
 
-function updateMesaPrinter(mId, pId) {
-  const m = _mesas.find(x => x.id === mId);
-  if (m) {
-    m.printerId = pId;
-  }
-  liveCalc();
-}
-
 function deleteMesa(mId) {
   if (_mesas.length <= 1) {
     _mesas[0].name = 'Mesa 1';
@@ -1879,42 +1250,15 @@ function updatePart(mId, pId, field, val) {
   if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
   p[field] = val;
   
-  // Atualizar sumário na interface (Tempo e Peso totais)
   if (_calcMode === 'advanced') {
-    let totalTime = 0;
-    let totalWeight = 0;
+    let total = 0;
     _mesas.forEach(mesa => {
-      let mesaW = 0;
-      let mesaT = 0;
       mesa.parts.forEach(part => {
-        const qty = part.qty || 1;
-        mesaW += (part.weight * qty);
-        mesaT += (part.time * qty);
+        total += (part.time * (part.qty || 1));
       });
-      totalTime += mesaT;
-      totalWeight += mesaW;
-      
-      // Update mesa footer labels in real-time
-      const wLabel = document.getElementById(`mesaWeightSum-${mesa.id}`);
-      const tLabel = document.getElementById(`mesaTimeSum-${mesa.id}`);
-      if (wLabel) wLabel.textContent = mesaW.toFixed(1) + (mesa.tech === 'resin' ? 'ml' : 'g');
-      if (tLabel) tLabel.textContent = mesaT.toFixed(1) + 'h';
     });
-    
-    // Update main summary card
     const timeEl = document.getElementById('totalProjectTime');
-    if (timeEl && (field !== 'totalTimeOverride')) {
-       // Apenas atualiza se não for o próprio input de tempo (ou se quisermos forçar o cálculo)
-       // Aqui vamos permitir override, então só atualizamos o valor se o campo de tempo não tiver mudado manualmente? 
-       // Simplificação: sempre atualiza o peso, tempo só se não for edição direta?
-       // O utilizador quer que seja automático.
-       timeEl.value = totalTime.toFixed(1);
-    }
-    
-    const weightEl = document.getElementById('totalProjectWeight');
-    const weightDisplay = document.getElementById('displayTotalWeight');
-    if (weightEl) weightEl.value = totalWeight.toFixed(1);
-    if (weightDisplay) weightDisplay.textContent = totalWeight.toFixed(1);
+    if (timeEl) timeEl.value = total.toFixed(1);
   }
   
   liveCalc();
@@ -1949,36 +1293,19 @@ function renderMesas() {
     hdr.style.background = 'var(--bg-card-s)';
     hdr.style.borderBottom = '1px solid var(--border)';
     hdr.style.display = 'flex';
-    hdr.style.flexDirection = 'column';
-    hdr.style.gap = '8px';
+    hdr.style.justifyContent = 'space-between';
+    hdr.style.alignItems = 'center';
     
-    // Preparar lista de impressoras para a mesa atual
-    const isResin = mTech === 'resin';
-    const validPrinters = _printers.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
-    const printerOptionsHtml = validPrinters.map(p => {
-      const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
-      return `<option value="${p.id}" ${String(p.id)===String(m.printerId)?'selected':''}>${p.customName || p.model || p.name} (${fmtCurrency(calcHr)}/h)</option>`;
-    }).join('');
-
     hdr.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex;align-items:center;gap:10px;flex:1">
-          <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
-          <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
-        </div>
-        <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
-          <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
-          <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
-        </div>
-        <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
+        <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
       </div>
-      <div style="display:flex; align-items:center; gap: 8px; font-size: 0.85rem;">
-        <label style="color:var(--subtle); margin-bottom:0;"><i class="ph-bold ph-printer"></i> <span data-i18n="calc.fields.printer">Impressora</span>:</label>
-        <select class="inp" style="padding: 4px 8px; font-size:0.85rem; height: auto;" onchange="updateMesaPrinter(${m.id}, this.value)">
-          <option value="">${i18n.getNestedTranslation('calc.printer_select_default')||'Genérica'} / Global</option>
-          ${printerOptionsHtml}
-        </select>
+      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
       </div>
+      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
     
@@ -2041,30 +1368,13 @@ function renderMesas() {
     `;
     mDiv.appendChild(tableWrap);
     
-    // Calcular totais parciais da mesa
-    let mesaWeight = 0;
-    let mesaTime = 0;
-    m.parts.forEach(p => {
-      mesaWeight += (p.weight * (p.qty || 1));
-      mesaTime += (p.time * (p.qty || 1));
-    });
-
     const ftr = document.createElement('div');
-    ftr.style.padding = '12px 16px';
+    ftr.style.padding = '8px 12px';
     ftr.style.background = 'var(--bg)';
-    ftr.style.display = 'flex';
-    ftr.style.justifyContent = 'space-between';
-    ftr.style.alignItems = 'center';
-    ftr.style.borderTop = '1px solid var(--border)';
-
     ftr.innerHTML = `
-      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600; width: auto;" onclick="addPartToMesa(${m.id})">
-        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça'}</span>
+      <button class="btn-add-part" style="margin:0;padding:6px 12px;font-size:0.8rem;background:transparent;border:none;color:var(--blue);font-weight:600" onclick="addPartToMesa(${m.id})">
+        <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_part">${i18n.getNestedTranslation('calc.buttons.add_part')||'Adicionar Peça a esta Mesa'}</span>
       </button>
-      <div style="display:flex; gap: 15px; font-size: 0.8rem; font-weight: 700; color: var(--muted); font-family: var(--mono);">
-        <span><i class="ph-bold ph-scales"></i> <span id="mesaWeightSum-${m.id}">${mesaWeight.toFixed(1)}</span>${mTech === 'resin' ? 'ml' : 'g'}</span>
-        <span><i class="ph-bold ph-clock"></i> <span id="mesaTimeSum-${m.id}">${mesaTime.toFixed(1)}</span>h</span>
-      </div>
     `;
     mDiv.appendChild(ftr);
     
@@ -2313,64 +1623,25 @@ function computeResults(i) {
   let materialCost = 0;
   let machineTime = 0;
   
-  let amortizationCost = 0;
-  let electricityCost = 0;
-  
   if (i.mode === 'simple') {
     materialCost = (i.materialPrice / 1000) * i.weight;
     machineTime = i.time;
-    amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
-    electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   } else {
-    // Modo Avançado: custo da impressora por mesa
-    i.mesas.forEach(m => {
-      let prn = _printers.find(p => String(p.id) === String(m.printerId));
-      let pPrice = prn ? (prn.price || i.printerPrice) : i.printerPrice;
-      let pLife = prn ? (prn.lifeHours || i.printerLife) : i.printerLife;
-      // Tratar o consumo de forma coerente
-      let pPower = i.powerConsumption;
-      if (prn) {
-        if (m.tech === 'resin') pPower = prn.powerPrint || prn.powerStandby || 60;
-        else pPower = prn.powerPrint || i.powerConsumption;
-      }
-      
-      let mesaTime = 0;
-      m.parts.forEach(p => {
-        let pQty = p.qty || 1;
-        // Fix do Material Price: buscar no array global de filamentos se não estiver na peça
-        let pPriceMat = p.price;
-        if (!pPriceMat) {
-          const mat = _filaments.find(f => String(f.id) === String(p.materialId));
-          pPriceMat = mat ? (mat.price || 0) : 25; // fallback
-        }
-        materialCost += (pPriceMat / 1000) * p.weight * pQty;
-        mesaTime += (p.time * pQty);
-      });
-      
-      amortizationCost += (pPrice / pLife) * mesaTime;
-      electricityCost += (pPower / 1000) * mesaTime * i.electricityPrice;
-      machineTime += mesaTime; // Acumular o tempo real de máquina aqui
+    // Sum all parts
+    i.parts.forEach(p => {
+      materialCost += (p.price / 1000) * p.weight * p.qty;
     });
-    
-    // Se o user sobrepor o tempo no form, aplicar esse rácio aos custos calculados por mesa
-    if (machineTime > 0 && i.totalTime > 0 && i.totalTime !== machineTime) {
-      const ratio = i.totalTime / machineTime;
-      amortizationCost *= ratio;
-      electricityCost *= ratio;
-    }
     machineTime = i.totalTime;
   }
+
+  const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
+  const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   
   const baseCost = materialCost + amortizationCost + electricityCost;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
-  
-  const productionCost = baseCost + failureCost + indirectCost;
-  const marginCost = productionCost * (i.profitMargin / 100);
-  const finalPrice = productionCost + marginCost;
-
-  const validTime = machineTime > 0 ? machineTime : 1;
-  const profitPerHour = marginCost / validTime;
+  const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
+  const finalPrice = baseCost + failureCost + indirectCost + marginCost;
 
   return {
     materialCost,
@@ -2379,10 +1650,8 @@ function computeResults(i) {
     baseCost,
     failureCost,
     indirectCost,
-    productionCost,
     marginCost,
     finalPrice,
-    profitPerHour,
     unitPrice: finalPrice / (i.qty || 1),
     qty: i.qty || 1
   };
@@ -2400,442 +1669,52 @@ function _render() {
   const i = getInputs();
   const r = computeResults(i);
   
-  // 1. Hero Card (3 values)
-  const setHeroText = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = fmtCurrency(val);
-  };
-  setHeroText('rFinal', r.finalPrice);
-  setHeroText('hMargin', r.marginCost);
-  setHeroText('hProdCost', r.productionCost);
-  
-  // Atualizar label da margem de lucro com a percentagem
-  const hMarginLabel = document.querySelector('span.hero-stat-label[data-i18n="calc.results.margin"]');
-  if (hMarginLabel) {
-    const marginStr = window.i18n ? (window.i18n.getNestedTranslation('calc.results.margin') || 'Margem de Lucro') : 'Margem de Lucro';
-    hMarginLabel.textContent = `${marginStr} (${i.profitMargin}%)`;
+  const heroEl = document.getElementById('rFinal');
+  if (heroEl) {
+    const newVal = fmtCurrency(r.finalPrice);
+    if (heroEl.textContent !== newVal) {
+      heroEl.textContent = newVal;
+      heroEl.classList.remove('updated'); void heroEl.offsetWidth; heroEl.classList.add('updated');
+    }
   }
 
-  // 2. Technical Breakdown
-  const setLineVal = (id, val) => {
-    const el = document.getElementById(id);
+  // Update detailed breakdown with IDs from new HTML
+  const setV = (id, val) => { 
+    const el = document.getElementById(id); 
     if (el) {
-       el.textContent = fmtCurrency(val);
-       el.classList.toggle('zero', val <= 0);
+      el.textContent = fmtCurrency(val);
+      el.classList.toggle('zero', val === 0);
     }
   };
-  setLineVal('resFilCost', r.materialCost);
-  setLineVal('resMchCost', r.amortizationCost);
-  setLineVal('resElecCost', r.electricityCost);
-  setLineVal('resFailCost', r.failureCost);
-  setLineVal('resIndCost', r.indirectCost);
-
-  // Labels
+  
+  setV('resFilCost', r.materialCost);
+  setV('resMchCost', r.amortizationCost);
+  setV('resElecCost', r.electricityCost);
+  setV('resBaseCost', r.baseCost);
+  setV('resFailCost', r.failureCost);
+  setV('resIndCost', r.indirectCost);
+  setV('resMargCost', r.marginCost);
+  
+  // Update percentage labels
   const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   setT('labFailPct', i.failureRate);
   setT('labIndPct', i.indirectCosts);
+  setT('labMargPct', i.profitMargin);
 
-  // 3. Finance Panel Updates
-  const phVal = document.getElementById('profitPerHour');
-  const phBadge = document.getElementById('profitHourBadge');
-  if (phVal && phBadge) {
-    phVal.textContent = fmtCurrency(r.profitPerHour) + '/h';
-    
-    phBadge.classList.remove('red', 'yellow', 'green');
-    if (r.finalPrice === 0) {
-      phBadge.textContent = "--";
-    } else if (r.profitPerHour < 1.00) {
-      phBadge.classList.add('red');
-      phBadge.innerHTML = '<i class="ph-bold ph-warning"></i> BAIXO';
-    } else if (r.profitPerHour < 2.50) {
-      phBadge.classList.add('yellow');
-      phBadge.innerHTML = '<i class="ph-bold ph-minus"></i> MÉDIO';
+  // Subtext logic
+  const subEl = document.getElementById('rSubtext');
+  if (subEl) {
+    if (r.finalPrice > 0) {
+      const baseLabel = i18n.getNestedTranslation('calc.results.base_label') || 'Custo Base:';
+      subEl.textContent = `${baseLabel} ${fmtCurrency(r.baseCost)}`;
     } else {
-      phBadge.classList.add('green');
-      phBadge.innerHTML = '<i class="ph-bold ph-trend-up"></i> ÓTIMO';
+      subEl.textContent = i18n.getNestedTranslation('calc.results.awaiting') || 'A aguardar parâmetros...';
     }
   }
 
-  updateFinanceChart(r);
-
-  // MARKETPLACE INTEGRATION
-  renderMarketplaceCards(r);
-
-  // Visibility logic for Create Order
+  // Status button "Create Order"
   const cpBtn = document.querySelector('.btn-criar-pedido');
   if (cpBtn) cpBtn.classList.toggle('visible', r.finalPrice > 0);
-}
-
-let _financeChart = null;
-function updateFinanceChart(r) {
-  const ctx = document.getElementById('costChart');
-  if (!ctx || typeof Chart === 'undefined') return;
-
-  const dataValues = [
-    r.marginCost,
-    r.materialCost + r.amortizationCost,    
-    r.electricityCost + r.failureCost + r.indirectCost 
-  ];
-
-  if (_financeChart) {
-    _financeChart.data.datasets[0].data = dataValues;
-    _financeChart.update();
-  } else {
-    // Definir as cores globais baseado no CSS principal (aproximado)
-    const colorMargin = '#a855f7';  // Roxo para margem
-    const colorDirect = '#3b8fd4';  // Azul para diretos (Mat+Máq)
-    const colorIndirect = '#f59e0b';// Laranja para indiretos
-
-    _financeChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Lucro', 'Mat & Máq', 'Indiretos'],
-        datasets: [{
-          data: dataValues,
-          backgroundColor: [colorMargin, colorDirect, colorIndirect],
-          borderWidth: 0,
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: {
-          legend: {
-            display: false, // Desabilitado para um design mais limpo, usando tooltips em vez disso
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                if (label) label += ': ';
-                if (context.parsed !== null) label += fmtCurrency(context.parsed);
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-}
-
-/* ── MARKETPLACE LOGIC ──────────────── */
-const MARKETPLACE_DATA = {
-  "Portugal": [
-    { name: "Amazon.es", commission: 15, fixedFee: 0 },
-    { name: "Worten", commission: 12, fixedFee: 0.5 },
-    { name: "Fnac", commission: 12, fixedFee: 0 },
-    { name: "Mercadão", commission: 10, fixedFee: 0 },
-    { name: "AliExpress PT", commission: 8, fixedFee: 0 },
-    { name: "eBay.es", commission: 13, fixedFee: 0.35 },
-    { name: "Etsy PT", commission: 6.5, fixedFee: 0.20 }
-  ],
-  "Brasil": [
-    { name: "Mercado Livre", commission: 16, fixedFee: 5 },
-    { name: "Shopee", commission: 18, fixedFee: 0 },
-    { name: "Amazon.com.br", commission: 10, fixedFee: 0 },
-    { name: "Magalu", commission: 16, fixedFee: 0 },
-    { name: "Americanas", commission: 16, fixedFee: 0 },
-    { name: "Casas Bahia", commission: 16, fixedFee: 0 },
-    { name: "Elo7", commission: 12, fixedFee: 0 }
-  ],
-  "US": [
-    { name: "Amazon", commission: 15, fixedFee: 0 },
-    { name: "eBay", commission: 12.9, fixedFee: 0.3 },
-    { name: "Etsy", commission: 6.5, fixedFee: 0.2 },
-    { name: "Walmart", commission: 15, fixedFee: 0 },
-    { name: "Facebook Marketplace", commission: 5, fixedFee: 0 },
-    { name: "Newegg", commission: 12, fixedFee: 0 },
-    { name: "Poshmark", commission: 20, fixedFee: 0 }
-  ],
-  "UK": [
-    { name: "Amazon.co.uk", commission: 15, fixedFee: 0 },
-    { name: "eBay.co.uk", commission: 12.8, fixedFee: 0.3 },
-    { name: "Etsy UK", commission: 6.5, fixedFee: 0.2 },
-    { name: "OnBuy", commission: 9, fixedFee: 0 },
-    { name: "Wayfair", commission: 4, fixedFee: 0 },
-    { name: "Fruugo", commission: 15, fixedFee: 0 },
-    { name: "Not On The High Street", commission: 25, fixedFee: 0 }
-  ],
-  "España": [
-    { name: "Amazon.es", commission: 15, fixedFee: 0 },
-    { name: "El Corte Inglés", commission: 15, fixedFee: 0 },
-    { name: "PcComponentes", commission: 10, fixedFee: 0.5 },
-    { name: "AliExpress ES", commission: 8, fixedFee: 0 },
-    { name: "Milanuncios", commission: 0, fixedFee: 0 },
-    { name: "Wallapop", commission: 0, fixedFee: 0 },
-    { name: "eBay.es", commission: 13, fixedFee: 0.35 }
-  ]
-};
-
-let selectedMarketplaces = [];
-let mpModalCosts = []; // Temporary list for modal editing
-
-function getRegionByLocale() {
-  const locale = (window.i18n && window.i18n.currentLocale) || localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  if (locale.startsWith('pt-BR')) return "Brasil";
-  if (locale.startsWith('pt')) return "Portugal";
-  if (locale.startsWith('en-US')) return "US";
-  if (locale.startsWith('en-GB') || locale.startsWith('en')) return "UK";
-  if (locale.startsWith('es')) return "España";
-  return "Portugal";
-}
-
-function openMPModal(editId = null) {
-  const modal = document.getElementById('mpModalOverlay');
-  if (!modal) return;
-  modal.classList.add('open');
-
-  const region = getRegionByLocale();
-  const options = MARKETPLACE_DATA[region] || [];
-  
-  const selector = document.getElementById('mpSelector');
-  selector.innerHTML = '<option value="">-- Selecionar Canal --</option>';
-  options.forEach(opt => {
-    const el = document.createElement('option');
-    el.value = opt.name;
-    el.textContent = opt.name;
-    selector.appendChild(el);
-  });
-  selector.innerHTML += '<option value="CUSTOM">Outro (Personalizado)</option>';
-
-  const sym = getCurrencySymbol();
-  document.getElementById('mpUnitFixed').textContent = sym;
-  document.querySelectorAll('.mp-unit-tag').forEach(el => {
-    if (el.id !== 'mpCommissionTag') el.textContent = sym;
-  });
-
-  if (editId) {
-    const mp = selectedMarketplaces.find(x => x.id === editId);
-    if (mp) {
-      document.getElementById('editMPId').value = mp.id;
-      document.getElementById('mpSaveBtnText').textContent = "Guardar Alterações";
-      
-      const isKnown = options.find(o => o.name === mp.name);
-      selector.value = isKnown ? mp.name : "CUSTOM";
-      onMPSelectChange();
-      
-      if (!isKnown) document.getElementById('mpCustomName').value = mp.name;
-      document.getElementById('mpCommission').value = mp.commission;
-      document.getElementById('mpFixedFee').value = mp.fixedFee;
-      mpModalCosts = [...(mp.additionalCosts || [])];
-    }
-  } else {
-    document.getElementById('editMPId').value = "";
-    document.getElementById('mpSaveBtnText').textContent = "Adicionar Canal";
-    selector.value = "";
-    onMPSelectChange();
-    document.getElementById('mpCustomName').value = "";
-    document.getElementById('mpCommission').value = 0;
-    document.getElementById('mpFixedFee').value = 0;
-    mpModalCosts = [];
-  }
-  renderMPCostsListModal();
-}
-
-function closeMPModal() {
-  const modal = document.getElementById('mpModalOverlay');
-  if (modal) modal.classList.remove('open');
-}
-
-function onMPSelectChange() {
-  const selector = document.getElementById('mpSelector');
-  const customGroup = document.getElementById('customNameGroup');
-  const val = selector.value;
-  
-  if (val === "CUSTOM") {
-    customGroup.style.display = "block";
-  } else {
-    customGroup.style.display = "none";
-    const region = getRegionByLocale();
-    const data = (MARKETPLACE_DATA[region] || []).find(o => o.name === val);
-    if (data) {
-      document.getElementById('mpCommission').value = data.commission;
-      document.getElementById('mpFixedFee').value = data.fixedFee;
-    }
-  }
-}
-
-function addCostToModal() {
-  const name = document.getElementById('addCostName').value.trim();
-  const type = document.getElementById('addCostType').value;
-  const val = parseFloat(document.getElementById('addCostVal').value) || 0;
-  
-  if (!name) { showToast("Dá um nome ao custo", "err"); return; }
-  if (val <= 0) { showToast("Informa um valor válido", "err"); return; }
-  
-  mpModalCosts.push({ id: Date.now(), name, type, value: val });
-  document.getElementById('addCostName').value = "";
-  document.getElementById('addCostVal').value = 0;
-  renderMPCostsListModal();
-}
-
-function removeCostFromModal(id) {
-  mpModalCosts = mpModalCosts.filter(c => c.id !== id);
-  renderMPCostsListModal();
-}
-
-function renderMPCostsListModal() {
-  const container = document.getElementById('mpCostsList');
-  if (!container) return;
-  
-  const sym = getCurrencySymbol();
-  if (mpModalCosts.length === 0) {
-    container.innerHTML = '<div style="font-size:0.75rem; color:var(--muted); text-align:center; padding:10px;">Nenhum custo adicional adicionado.</div>';
-    return;
-  }
-  
-  let html = '';
-  mpModalCosts.forEach(c => {
-    const valStr = c.type === 'pct' ? c.value + '%' : fmtCurrency(c.value);
-    html += `
-      <div class="mp-cost-tag">
-        <div class="mp-cost-tag-label">${c.name} <span class="mp-cost-tag-val">${valStr}</span></div>
-        <button class="btn-cost-del" onclick="removeCostFromModal(${c.id})"><i class="ph-bold ph-trash"></i></button>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function saveMP() {
-  const editId = document.getElementById('editMPId').value;
-  const selector = document.getElementById('mpSelector');
-  const val = selector.value;
-  
-  if (!val) { showToast("Seleciona um canal de venda", "err"); return; }
-  
-  let name = val === "CUSTOM" ? document.getElementById('mpCustomName').value.trim() : val;
-  if (!name) { showToast("Informa o nome do canal", "err"); return; }
-
-  const commission = parseFloat(document.getElementById('mpCommission').value) || 0;
-  const fixedFee = parseFloat(document.getElementById('mpFixedFee').value) || 0;
-
-  if (editId) {
-    const mp = selectedMarketplaces.find(x => String(x.id) === String(editId));
-    if (mp) {
-      mp.name = name;
-      mp.commission = commission;
-      mp.fixedFee = fixedFee;
-      mp.additionalCosts = [...mpModalCosts];
-    }
-  } else {
-    selectedMarketplaces.push({
-      id: Date.now() + Math.random(),
-      name, commission, fixedFee,
-      additionalCosts: [...mpModalCosts]
-    });
-  }
-
-  closeMPModal();
-  renderSelectedMarketplaces();
-  liveCalc();
-  showToast(editId ? "Canal atualizado" : "Canal adicionado", "ok");
-}
-
-function removeMP(id) {
-  selectedMarketplaces = selectedMarketplaces.filter(x => x.id !== id);
-  renderSelectedMarketplaces();
-  liveCalc();
-}
-
-function renderSelectedMarketplaces() {
-  const container = document.getElementById('selectedMarketplacesContainer');
-  if (!container) return;
-  
-  if (selectedMarketplaces.length === 0) {
-    container.innerHTML = '<div style="font-size:0.82rem; color:var(--subtle); text-align:center; padding:20px; border:1.5px dashed var(--border); border-radius:var(--rm); opacity:0.6;"><i class="ph-bold ph-storefront" style="display:block; font-size:1.4rem; margin-bottom:5px;"></i> Nenhum canal de venda adicionado.</div>';
-    return;
-  }
-  
-  let html = '';
-  selectedMarketplaces.forEach(mp => {
-    const extrasCount = (mp.additionalCosts || []).length;
-    html += `
-      <div class="mp-item-row">
-        <div class="mp-item-info">
-          <div class="mp-item-name">
-            <i class="ph-bold ph-storefront" style="color:var(--blue); opacity:0.6"></i>
-            <span>${mp.name}</span>
-          </div>
-          <div class="mp-item-specs">
-            ${mp.commission}% comissão • ${fmtCurrency(mp.fixedFee)} fixo ${extrasCount > 0 ? '• '+extrasCount+' extras' : ''}
-          </div>
-        </div>
-        <div class="mp-row-actions">
-          <button class="btn-row-action" onclick="openMPModal(${mp.id})" title="Editar"><i class="ph-bold ph-pencil"></i></button>
-          <button class="btn-row-action del" onclick="removeMP(${mp.id})" title="Remover"><i class="ph-bold ph-trash"></i></button>
-        </div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function renderMarketplaceCards(baseResult) {
-  const container = document.getElementById('mpResultsContainer');
-  if (!container) return;
-  
-  if (selectedMarketplaces.length === 0 || baseResult.finalPrice <= 0) {
-    container.innerHTML = '';
-    return;
-  }
-  
-  let html = '';
-  selectedMarketplaces.forEach(mp => {
-    let totalFixed = mp.fixedFee || 0;
-    let totalPct = mp.commission || 0;
-    
-    (mp.additionalCosts || []).forEach(c => {
-      if (c.type === 'fixed') totalFixed += c.value;
-      else totalPct += c.value;
-    });
-
-    const commFactor = (1 - (totalPct / 100));
-    let mpFinalPrice = 0;
-    if (commFactor > 0) {
-        mpFinalPrice = (baseResult.finalPrice + totalFixed) / commFactor;
-    }
-    
-    if (mpFinalPrice > 100000) mpFinalPrice = 0;
-    
-    // Cálculos detalhados
-    const netReceived = (mpFinalPrice * (1 - (totalPct / 100))) - totalFixed;
-    const platformFee = mpFinalPrice - netReceived;
-    const profitAmount = netReceived - baseResult.productionCost;
-    const realMarginPct = mpFinalPrice > 0 ? (profitAmount / mpFinalPrice) * 100 : 0;
-    
-    html += `
-      <div class="mp-res-card">
-        <span class="mp-res-badge">${totalPct}% + ${fmtCurrency(totalFixed)}</span>
-        <div class="card-watermark"><i class="ph-bold ph-storefront"></i></div>
-        <div class="mp-res-title">Preço sugerido em ${mp.name}</div>
-        <div class="mp-res-val">${fmtCurrency(mpFinalPrice)}</div>
-        
-        <div class="mp-res-details">
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Taxa Plataforma</span>
-            <span class="mp-det-val warning">-${fmtCurrency(platformFee)}</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Líquido Recebido</span>
-            <span class="mp-det-val info">${fmtCurrency(netReceived)}</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Margem Real</span>
-            <span class="mp-det-val success">${realMarginPct.toFixed(1)}%</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Lucro Líquido</span>
-            <span class="mp-det-val success">${fmtCurrency(profitAmount)}</span>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
 }
 
 function sendWhatsApp() {
@@ -3364,86 +2243,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 <script src="sidebar.js"></script>
-
-<!-- MODAL SELEÇÃO DE MARKETPLACE -->
-<div class="modal-overlay" id="mpModalOverlay" onclick="if(event.target===this)closeMPModal()">
-  <div class="modal" style="max-width:650px; background:var(--bg-card); backdrop-filter:var(--blur); border:1.5px solid var(--border); border-radius:var(--rl);">
-    <div class="modal-header" style="padding:18px 22px; border-bottom:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-      <div class="modal-title" style="font-size:1.05rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:10px;">
-        <i class="ph-bold ph-storefront" style="color:var(--blue)"></i> Selecionar Canal de Venda
-      </div>
-      <button class="modal-close" onclick="closeMPModal()" style="width:30px; height:30px; border-radius:50%; border:none; background:var(--bg-hover); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted);"><i class="ph-bold ph-x"></i></button>
-    </div>
-    <div class="modal-body mp-modal-body" style="padding:22px; max-height:520px; overflow-y:auto;">
-      <input type="hidden" id="editMPId" value="">
-      
-      <div class="mp-form-group">
-        <label>Canal de Venda</label>
-        <select id="mpSelector" class="mp-select" onchange="onMPSelectChange()">
-           <!-- JS will fill options here based on locale -->
-        </select>
-      </div>
-
-      <div class="mp-form-group" id="customNameGroup" style="display:none">
-        <label>Nome do Canal</label>
-        <input type="text" id="mpCustomName" class="mp-input" placeholder="Ex: Etsy, Loja Própria...">
-      </div>
-
-      <div class="mp-form-grid">
-        <div class="mp-form-group">
-          <label>Comissão (%)</label>
-          <div class="mp-input-unit">
-            <input type="number" id="mpCommission" class="mp-input" value="0" step="0.1" min="0">
-            <span class="mp-unit-tag">%</span>
-          </div>
-        </div>
-        <div class="mp-form-group">
-          <label id="labelLabelFixed">Taxa Fixa</label>
-          <div class="mp-input-unit">
-            <input type="number" id="mpFixedFee" class="mp-input" value="0" step="0.01" min="0">
-            <span class="mp-unit-tag" id="mpUnitFixed">€</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gestão de Múltiplos Custos Adicionais -->
-      <div style="margin-top:20px; border-top:1.5px solid var(--border); padding-top:20px;">
-        <label style="font-size:0.75rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:10px;">Custos Adicionais</label>
-        <div id="mpCostsList" class="mp-costs-list">
-          <!-- Lista de custos adicionais adicionados -->
-        </div>
-
-        <div class="mp-add-cost-row">
-          <div class="mp-form-group" style="margin:0">
-            <label style="font-size:0.6rem">Nome</label>
-            <input type="text" id="addCostName" class="mp-input" placeholder="Ex: Embalagem" style="padding:8px">
-          </div>
-          <div class="mp-form-group" style="margin:0">
-            <label style="font-size:0.6rem">Tipo</label>
-            <select id="addCostType" class="mp-select" style="padding:8px">
-              <option value="fixed">Fixo</option>
-              <option value="pct">%</option>
-            </select>
-          </div>
-          <div class="mp-form-group" style="margin:0">
-            <label style="font-size:0.6rem">Valor</label>
-            <input type="number" id="addCostVal" class="mp-input" value="0" step="0.01" style="padding:8px">
-          </div>
-          <button class="btn-cost-add" onclick="addCostToModal()" title="Adicionar Custo">
-            <i class="ph-bold ph-plus"></i>
-          </button>
-        </div>
-      </div>
-
-    </div>
-    <div class="modal-footer" style="padding:15px 22px; border-top:1.5px solid var(--border); display:flex; gap:10px; background:var(--bg-modal-footer);">
-        <button class="btn-clear" style="flex:1" onclick="closeMPModal()">Cancelar</button>
-        <button class="mp-btn-save" style="flex:2" onclick="saveMP()">
-          <i class="ph-bold ph-check"></i> <span id="mpSaveBtnText">Adicionar Canal</span>
-        </button>
-    </div>
-  </div>
-</div>
 <script>Sidebar.init();</script>
 </body>
 </html>

@@ -405,7 +405,7 @@ avgValue = SUM(total) / COUNT()
 
 | Plano | EUR/mês | Módulos | Extras |
 |---|---|---|---|
-| Trial | Grátis | Todos | 14 dias; sem cartão |
+| Trial | Grátis | Todos | 7 dias; sem cartão |
 | Starter | €9.90 | Calculadora + Filamentos | — |
 | Pro | €19.90 | Starter + Pedidos | — |
 | Business | €39.90 | Pro + Financeiro + BackOffice | Personalização marca; multi-user |
