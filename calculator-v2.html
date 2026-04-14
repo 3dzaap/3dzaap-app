@@ -1091,7 +1091,7 @@
                 <span data-i18n="calc.sections.machine">Máquina</span>
               </div>
               <div class="fields-grid">
-                <div class="field full">
+                <div class="field full" id="fieldGlobalPrinter">
                   <label data-i18n="calc.fields.printer">Impressora</label>
                   <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
                     <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
@@ -1100,6 +1100,13 @@
                 <div class="field" id="fieldTotalTime" style="display:none">
                   <label data-i18n="calc.fields.total_time">Tempo Total Projecto (h)</label>
                   <input type="number" id="totalProjectTime" value="2" step="0.1" min="0" oninput="liveCalc()">
+                </div>
+                <div class="field" id="fieldTotalWeight" style="display:none">
+                  <label data-i18n="calc.fields.total_weight">Peso Total Projecto</label>
+                  <div class="field-wrap" style="background:var(--bg-card-s)">
+                    <input type="text" id="totalProjectWeight" value="0" readonly style="pointer-events:none;background:transparent;border:none;width:100%">
+                    <span class="field-unit unit-weight">g</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1515,6 +1522,10 @@ function setCalcMode(mode) {
   document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
   document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
+  document.getElementById('fieldTotalWeight').style.display = mode === 'advanced' ? 'block' : 'none';
+  
+  const fGlobal = document.getElementById('fieldGlobalPrinter');
+  if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
   
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
@@ -1665,6 +1676,14 @@ function updateMesaTech(mId, tech) {
   liveCalc();
 }
 
+function updateMesaPrinter(mId, pId) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m) {
+    m.printerId = pId;
+  }
+  liveCalc();
+}
+
 function deleteMesa(mId) {
   if (_mesas.length <= 1) {
     _mesas[0].name = 'Mesa 1';
@@ -1708,14 +1727,19 @@ function updatePart(mId, pId, field, val) {
   p[field] = val;
   
   if (_calcMode === 'advanced') {
-    let total = 0;
+    let totalTime = 0;
+    let totalWeight = 0;
     _mesas.forEach(mesa => {
       mesa.parts.forEach(part => {
-        total += (part.time * (part.qty || 1));
+        totalTime += (part.time * (part.qty || 1));
+        totalWeight += (part.weight * (part.qty || 1));
       });
     });
     const timeEl = document.getElementById('totalProjectTime');
-    if (timeEl) timeEl.value = total.toFixed(1);
+    if (timeEl) timeEl.value = totalTime.toFixed(1);
+    
+    const weightEl = document.getElementById('totalProjectWeight');
+    if (weightEl) weightEl.value = totalWeight.toFixed(1);
   }
   
   liveCalc();
@@ -1750,19 +1774,36 @@ function renderMesas() {
     hdr.style.background = 'var(--bg-card-s)';
     hdr.style.borderBottom = '1px solid var(--border)';
     hdr.style.display = 'flex';
-    hdr.style.justifyContent = 'space-between';
-    hdr.style.alignItems = 'center';
+    hdr.style.flexDirection = 'column';
+    hdr.style.gap = '8px';
     
+    // Preparar lista de impressoras para a mesa atual
+    const isResin = mTech === 'resin';
+    const validPrinters = _printers.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
+    const printerOptionsHtml = validPrinters.map(p => {
+      const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
+      return `<option value="${p.id}" ${String(p.id)===String(m.printerId)?'selected':''}>${p.customName || p.model || p.name} (${fmtCurrency(calcHr)}/h)</option>`;
+    }).join('');
+
     hdr.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;flex:1">
-        <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
-        <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1">
+          <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
+          <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
+        </div>
+        <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
+          <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
+          <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+        </div>
+        <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
       </div>
-      <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
-        <button class="mode-btn ${mTech==='fdm'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'fdm')"><i class="ph-bold ph-vinyl-record"></i> FDM</button>
-        <button class="mode-btn ${mTech==='resin'?'active':''}" style="font-size:0.7rem; padding:5px 8px" onclick="updateMesaTech(${m.id}, 'resin')"><i class="ph-bold ph-flask"></i> Resina</button>
+      <div style="display:flex; align-items:center; gap: 8px; font-size: 0.85rem;">
+        <label style="color:var(--subtle); margin-bottom:0;"><i class="ph-bold ph-printer"></i> <span data-i18n="calc.fields.printer">Impressora</span>:</label>
+        <select class="inp" style="padding: 4px 8px; font-size:0.85rem; height: auto;" onchange="updateMesaPrinter(${m.id}, this.value)">
+          <option value="">${i18n.getNestedTranslation('calc.printer_select_default')||'Genérica'} / Global</option>
+          ${printerOptionsHtml}
+        </select>
       </div>
-      <button class="btn-icon" style="color:var(--danger);font-size:0.9rem; margin-left:4px" onclick="deleteMesa(${m.id})" title="Apagar Mesa"><i class="ph-bold ph-trash"></i></button>
     `;
     mDiv.appendChild(hdr);
     
@@ -2080,18 +2121,47 @@ function computeResults(i) {
   let materialCost = 0;
   let machineTime = 0;
   
+  let amortizationCost = 0;
+  let electricityCost = 0;
+  
   if (i.mode === 'simple') {
     materialCost = (i.materialPrice / 1000) * i.weight;
     machineTime = i.time;
+    amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
+    electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   } else {
-    i.parts.forEach(p => {
-      materialCost += (p.price / 1000) * p.weight * p.qty;
+    // Modo Avançado: custo da impressora por mesa
+    i.mesas.forEach(m => {
+      let prn = _printers.find(p => String(p.id) === String(m.printerId));
+      let pPrice = prn ? (prn.price || i.printerPrice) : i.printerPrice;
+      let pLife = prn ? (prn.lifeHours || i.printerLife) : i.printerLife;
+      // Tratar o consumo de forma coerente
+      let pPower = i.powerConsumption;
+      if (prn) {
+        if (m.tech === 'resin') pPower = prn.powerPrint || prn.powerStandby || 60;
+        else pPower = prn.powerPrint || i.powerConsumption;
+      }
+      
+      let mesaTime = 0;
+      m.parts.forEach(p => {
+        let pQty = p.qty || 1;
+        materialCost += (p.price / 1000) * p.weight * pQty;
+        mesaTime += (p.time * pQty);
+      });
+      
+      amortizationCost += (pPrice / pLife) * mesaTime;
+      electricityCost += (pPower / 1000) * mesaTime * i.electricityPrice;
+      machineTime += mesaTime; // Acumular o tempo real de máquina aqui
     });
+    
+    // Se o user sobrepor o tempo no form, aplicar esse rácio aos custos calculados por mesa
+    if (machineTime > 0 && i.totalTime > 0 && i.totalTime !== machineTime) {
+      const ratio = i.totalTime / machineTime;
+      amortizationCost *= ratio;
+      electricityCost *= ratio;
+    }
     machineTime = i.totalTime;
   }
-
-  const amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
-  const electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
   
   const baseCost = materialCost + amortizationCost + electricityCost;
   const failureCost = baseCost * (i.failureRate / 100);
@@ -2140,6 +2210,13 @@ function _render() {
   setHeroText('rFinal', r.finalPrice);
   setHeroText('hMargin', r.marginCost);
   setHeroText('hProdCost', r.productionCost);
+  
+  // Atualizar label da margem de lucro com a percentagem
+  const hMarginLabel = document.querySelector('span.hero-stat-label[data-i18n="calc.results.margin"]');
+  if (hMarginLabel) {
+    const marginStr = window.i18n ? (window.i18n.getNestedTranslation('calc.results.margin') || 'Margem de Lucro') : 'Margem de Lucro';
+    hMarginLabel.textContent = `${marginStr} (${i.profitMargin}%)`;
+  }
 
   // 2. Technical Breakdown
   const setLineVal = (id, val) => {
