@@ -1122,7 +1122,6 @@
               </div>
             </div>
 
-            <!-- Modo Simples -->
             <div id="sectionSimple">
               <div class="form-section">
                 <div class="section-title">
@@ -1157,23 +1156,6 @@
                   <div class="field">
                     <label data-i18n="calc.fields.time">Tempo (h)</label>
                     <input type="number" id="printTime" value="0" step="0.1" min="0" oninput="liveCalc()">
-                  </div>
-                </div>
-              </div>
-
-                <!-- Configurações partilhadas (Máquina) - Apenas em Modo Simples -->
-                <div class="form-section">
-                  <div class="section-title">
-                    <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
-                    <span data-i18n="calc.sections.machine">Máquina</span>
-                  </div>
-                  <div class="fields-grid">
-                    <div class="field full" id="fieldGlobalPrinter">
-                      <label data-i18n="calc.fields.printer">Impressora</label>
-                      <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
-                        <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1219,6 +1201,21 @@
               </div>
             </div>
 
+            <!-- Configurações partilhadas (Máquina) - Oculto em Modo Avançado via JS -->
+            <div class="form-section" id="sectionMachine">
+              <div class="section-title">
+                <div class="section-title-icon" style="background:rgba(168,85,247,.1);color:#a855f7"><i class="ph-bold ph-printer"></i></div>
+                <span data-i18n="calc.sections.machine">Máquina</span>
+              </div>
+              <div class="fields-grid">
+                <div class="field full" id="fieldGlobalPrinter">
+                  <label data-i18n="calc.fields.printer">Impressora</label>
+                  <select class="inp" id="fPrinterSelect" onchange="applyPrinterSelect(this.value)">
+                    <option value="" data-i18n="calc.placeholders.select_printer">Selecionar impressora...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
             <!-- ── SEÇÃO: VENDER EM MARKETPLACE ── -->
             <div class="form-section marketplace-section-card">
@@ -1244,9 +1241,9 @@
           </div>
         </div>
 
-            <!-- ── RIGHT: RESULTS ── -->
-            <div class="glass-card results-col">
-              <div class="results-panel">
+        <!-- ── RIGHT: RESULTS ── -->
+        <div class="glass-card results-col">
+          <div class="results-panel">
                 <div class="res-hero">
                   <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
                   <div class="res-hero-val" id="rFinal">0,00 €</div>
@@ -1635,6 +1632,9 @@ function setCalcMode(mode) {
   
   const fGlobal = document.getElementById('fieldGlobalPrinter');
   if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
+  
+  const secMachine = document.getElementById('sectionMachine');
+  if (secMachine) secMachine.style.display = mode === 'simple' ? 'block' : 'none';
   
   if (mode === 'advanced' && _mesas.length === 0) {
     addMesa();
