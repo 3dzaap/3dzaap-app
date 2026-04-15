@@ -163,7 +163,7 @@ const Auth = {
     await _sb.auth.signOut();
     _companyId    = null;
     _companyCache = null;
-    window.location.href = 'auth-onboarding.html';
+    window.location.href = 'auth.html';
   },
 
   async _loadCompany(forceRefresh = false, passedUser = null) {
@@ -271,7 +271,7 @@ const Auth = {
   async requireAuth() {
     const { data: { session } } = await _sb.auth.getSession();
     if (!session) {
-      window.location.href = 'auth-onboarding.html';
+      window.location.href = 'auth.html';
       return false;
     }
     if (!_companyId) await Auth._loadCompany();
@@ -283,7 +283,7 @@ const Auth = {
       const expired = new Date(company.trial_ends_at) < new Date();
       if (expired) {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        const allowedPages = ['settings.html', 'auth-onboarding.html', 'terms.html', 'privacy.html', 'index.html'];
+        const allowedPages = ['settings.html', 'auth.html', 'terms.html', 'privacy.html', 'index.html'];
         if (!allowedPages.includes(currentPage)) {
           // Redirecionar para settings com tab de assinatura aberta
           window.location.href = 'settings.html?tab=assinatura&reason=trial_expired';
