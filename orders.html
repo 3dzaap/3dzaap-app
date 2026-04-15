@@ -1354,14 +1354,20 @@
       const weight = parseFloat(row.querySelector('input[min="0"]').value) || 0;
 
       const it = _items.find(i => i._id === rowId) || {};
-
-      const loadData = {
+      
+      // Prefer using the preserved config from the original calculation
+      const loadData = (it.config && it.config._orig_inputs) ? { ...it.config._orig_inputs } : {
         printName: description || 'Item do Pedido',
         weight: weight,
         tech: _isResinMaterial(materialId) ? 'resin' : 'fdm',
         materialId: materialId,
         time: it.printTime || 0
       };
+      
+      // Update with current values in case user edited them in the order form
+      loadData.printName = description;
+      loadData.weight = weight;
+      loadData.materialId = materialId;
 
       localStorage.setItem('3dzaap_calc_load', JSON.stringify(loadData));
       window.location.href = 'calculator.html?from=order_line';
@@ -1988,7 +1994,9 @@
         // filamentId stored as string from select value; fil.id is number — use == for loose compare
         if (!item.filamentId) return;
         const weightG = parseFloat(item.weightG) || 0;
+        const qty = parseInt(item.quantity) || 1;
         if (weightG <= 0) return;
+        const totalWeightG = weightG * qty;
         const fil = filaments.find(f => f.id == item.filamentId); // == intentional: number vs string
         if (!fil) return;
 
@@ -2011,8 +2019,8 @@
         // Resin: 1ml ≈ 1.1g average density; stored in rollSize as volume (ml)
         // We treat kgRemaining as "litres" for resin (1L = 1000ml)
         let remainingToConsume = _isResin
-          ? (weightG / 1000)   // ml → L (stored like kg for resin bottles)
-          : (weightG / 1000);  // g  → kg
+          ? (totalWeightG / 1000)   // ml → L (stored like kg for resin bottles)
+          : (totalWeightG / 1000);  // g  → kg
 
         while (remainingToConsume > 0) {
           if (fil.kgRemaining > 0) {
@@ -2076,13 +2084,15 @@
       its.forEach(item => {
         if (!item.filamentId) return;
         const weightG = parseFloat(item.weightG) || 0;
+        const qty = parseInt(item.quantity) || 1;
         if (weightG <= 0) return;
+        const totalWeightG = weightG * qty;
         const fil = filaments.find(f => f.id == item.filamentId);
         if (!fil) return;
 
         const rollKgMap = { '1kg': 1, '500g': 0.5, '300g': 0.3, '250g': 0.25, '100g': 0.1 };
         const kgPerRoll = rollKgMap[fil.rollSize] || 1;
-        const weightKg = weightG / 1000;
+        const weightKg = totalWeightG / 1000;
 
         // Add back the kg consumed
         fil.kgRemaining = (fil.kgRemaining || 0) + weightKg;
@@ -2235,17 +2245,25 @@
               quantity: part.qty || 1,
               weightG: part.weight || 0,
               unitPrice: part.unitPrice || 0,
-              filamentId: part.materialId || ''
+              filamentId: part.materialId || '',
+              config: p.config || {} // Store original calc context
             });
           });
         } else {
+          // Backward compatibility for old "Total Weight" payloads (pre-v2)
+          let unitWeight = p.mode === 'resin' ? (p.resin_volume || 0) : (p.filament_weight || 0);
+          if (p._v !== 2 && p.quantity > 1) {
+             unitWeight = unitWeight / p.quantity;
+          }
+
           addOrderItem({
             description: p.description || '',
             quantity: p.quantity || 1,
-            weightG: p.mode === 'resin' ? p.resin_volume : p.filament_weight,
+            weightG: unitWeight,
             unitPrice: p.unit_price || 0,
             filamentId: p.material_id || '',
-            printTime: p.time || 0
+            printTime: p.time || 0,
+            config: p.config || {} // Store original calc context
           });
         }
 
@@ -2383,6 +2401,7 @@
       if (!it) return;
       if (field === 'quantity') it.quantity = parseInt(val) || 0;
       else if (field === 'unitPrice') it.unitPrice = parseFloat(val) || 0;
+      else if (field === 'weightG') it.weightG = parseFloat(val) || 0;
       else it[field] = val;
       if (field === 'filamentId') _updateWeightUnit(id, val);
       recalcTotal();

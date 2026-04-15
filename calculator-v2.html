@@ -2173,13 +2173,16 @@ function criarPedido() {
       description: desc,
       quantity: i.qty || 1,
       total: parseFloat(r.finalPrice.toFixed(2)),
-      filament_weight: i.tech === 'fdm' ? i.weight * (i.qty || 1) : null,
-      resin_volume: i.tech === 'resin' ? i.weight * (i.qty || 1) : null,
+      // Fix: send Unit Weight, not total weight
+      filament_weight: i.tech === 'fdm' ? i.weight : null,
+      resin_volume: i.tech === 'resin' ? i.weight : null,
       unit_price: parseFloat(r.unitPrice.toFixed(2)),
       material_id: _selectedMaterial ? _selectedMaterial.id : null,
-      material_cost: parseFloat((r.materialCost * (i.qty || 1)).toFixed(4)),
+      material_cost: parseFloat(r.materialCost.toFixed(4)),
       time: i.time,
-      _from_calc: true
+      _from_calc: true,
+      _v: 2,
+      config: { _orig_inputs: i } 
     };
   } else {
     // Advanced mode: distribute overhead proportional to material cost
@@ -2191,6 +2194,7 @@ function criarPedido() {
       mode: 'advanced',
       description: desc,
       _from_calc: true,
+      config: { _orig_inputs: i },
       parts: i.parts.map(p => {
         const unitMatCost = (p.price / 1000) * p.weight;
         const rowUnitPrice = unitMatCost * (1 + overheadFactor);
