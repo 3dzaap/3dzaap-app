@@ -558,13 +558,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function handleSession(session) {
     if (bootProcessed) return;
-    if (!session) {
-      console.info('[3DZAAP] Nenhuma sessão encontrada.');
-      if (overlay) overlay.classList.add('hidden');
-      return;
-    }
+    if (!session) return; // Não fechar o overlay se não houver sessão ainda
 
     bootProcessed = true;
+    console.info('[3DZAAP] Sessão detetada:', session.user.email);
+
     try {
       // Verificar se o utilizador já tem empresa
       const company = await Auth._loadCompany(true);
@@ -604,18 +602,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 1. Ouvir mudanças de estado (essencial para apanhar o redirecionamento OAuth)
   _sb.auth.onAuthStateChange((event, session) => {
     console.info('[3DZAAP] Auth State Change:', event);
-    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+    // Só processamos se houver uma sessão real
+    if (session) {
       handleSession(session);
     }
   });
 
-  // 2. Fallback: Se após 2 segundos não houver sessão, libertar o overlay
+  // 2. Fallback: Se após 4 segundos não houver sessão, libertar o ecrã para login manual
   setTimeout(() => {
     if (!bootProcessed) {
-      console.info('[3DZAAP] Tempo esgotado para detecção automática de sessão.');
+      console.info('[3DZAAP] Login automático ignorado (sem sessão detetada).');
       if (overlay) overlay.classList.add('hidden');
     }
-  }, 2500);
+  }, 4000);
 
   // Parse URL parameters
   const params = new URLSearchParams(window.location.search);
