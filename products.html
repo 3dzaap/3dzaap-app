@@ -599,7 +599,8 @@ function createOrderFromProduct(id) {
     filament_weight: cfg.filament_weight || null,
     resin_volume: cfg.resin_volume || null,
     est_print_hours: cfg.est_print_hours || null,
-    mode: cfg.mode || 'fdm'
+    mode: cfg.mode || 'fdm',
+    config: cfg // Preserve full context for future recalculations
   };
   
   sessionStorage.setItem('3dzaap_calc_prefill', JSON.stringify(payload));

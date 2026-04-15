@@ -1517,8 +1517,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (src.tech) setTechMode(src.tech);
       
       // Restore printer-specific financial parameters
-      const common = ['printerPrice','printerLife','powerConsumption'];
-      common.forEach(k => { if (src[k] !== undefined) setEl(k, src[k]); });
+      const common = ['printerPrice','printerLife','powerConsumption','electricityPrice','failureRate','indirectCosts','profitMargin','filamentPrice'];
+      common.forEach(k => { 
+        if (src[k] !== undefined) {
+          setEl(k, src[k]);
+          // Sync sliders if they exist
+          if (k === 'failureRate')   setEl('failureSlider', src[k]);
+          if (k === 'indirectCosts') setEl('indirectSlider', src[k]);
+          if (k === 'profitMargin')  setEl('marginSlider', src[k]);
+        }
+      });
+
+      // Update labels and UI state to reflect loaded values
+      if (typeof updateSliderLabels === 'function') updateSliderLabels();
+      if (typeof updatePctLabels === 'function') updatePctLabels();
 
       // Detect and set calculation mode
       const mode = src.mode || (src.parts ? 'advanced' : 'simple');
