@@ -201,9 +201,30 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
     display: none !important;
     pointer-events: none;
   }
+
+  /* ── BOOT OVERLAY ──────────────────── */
+  .boot-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #d0e4f4;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; transition: opacity 0.4s var(--ease), visibility 0.4s;
+  }
+  .boot-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .boot-spinner {
+    width: 44px; height: 44px;
+    border: 3.5px solid rgba(59,143,212,0.15);
+    border-top-color: var(--blue);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  .boot-text { font-size: 0.9rem; font-weight: 700; color: var(--blue); letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
+<div class="boot-overlay" id="bootOverlay">
+  <div class="boot-spinner"></div>
+  <div class="boot-text">A verificar sessão...</div>
+</div>
+
 <div class="bg"></div>
 <div class="orb o1"></div>
 <div class="orb o2"></div>
@@ -532,10 +553,47 @@ const PRICES = {
 //  BOOT — verificar sessão existente
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  const overlay = document.getElementById('bootOverlay');
+
   try {
     const { data: { session } } = await _sb.auth.getSession();
-    if (session) { window.location.href = 'dashboard.html'; return; }
-  } catch(e) {}
+    
+    if (session) {
+      // Verificar se o utilizador já tem empresa
+      const company = await Auth._loadCompany(true);
+      if (company) {
+        console.info('[3DZAAP] Empresa encontrada. A redirecionar para o Dashboard...');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      // NOVO: Fluxo Opção B - Sessão activa mas sem empresa (Social Login recente)
+      console.info('[3DZAAP] Sessão activa sem empresa detectada. Iniciando Onboarding...');
+      
+      const user = session.user;
+      const meta = user.user_metadata || {};
+      STATE.form.email = user.email;
+      
+      // Refinação de metadados do Google/Social
+      STATE.form.fname = meta.fname || meta.first_name || meta.given_name || meta.full_name?.split(' ')[0] || '';
+      STATE.form.lname = meta.lname || meta.last_name || meta.family_name || meta.full_name?.split(' ').slice(1).join(' ') || '';
+      
+      // Preencher campos do Step 1 caso já tenhamos os nomes
+      if (STATE.form.fname) document.getElementById('signupFname').value = STATE.form.fname;
+      if (STATE.form.lname) document.getElementById('signupLname').value = STATE.form.lname;
+      if (STATE.form.email) document.getElementById('signupEmail').value = STATE.form.email;
+
+      // Mostrar Onboarding directamente
+      document.getElementById('authPanel').style.display = 'none';
+      document.getElementById('onboardingPanel').style.display = 'block';
+      setStep(1);
+    }
+  } catch(e) {
+    console.error('[3DZAAP] Erro no Boot:', e);
+  } finally {
+    // Esconder overlay após o check inicial
+    if (overlay) overlay.classList.add('hidden');
+  }
 
   // Parse URL parameters
   const params = new URLSearchParams(window.location.search);
@@ -697,20 +755,39 @@ async function finishOnboarding() {
   };
 
   try {
-    const result = await Auth.register({
-      fname:       STATE.form.fname,
-      lname:       STATE.form.lname,
-      email:       STATE.form.email,
-      pass:        STATE.form.pass,
-      companyName: STATE.form.companyName,
-      slug:        STATE.form.slug,
-      country:     document.getElementById('companyCountry').value,
-      plan:        STATE.plan,
-      billing:     STATE.billing,
-      config,
-      logo:        STATE.logoB64 || null,
-      signature:   STATE.signatureB64 || null
-    });
+    const { data: { session } } = await _sb.auth.getSession();
+    let result;
+
+    if (session) {
+      // UTILIZADOR JÁ AUTENTICADO (Google ou Email confirmado)
+      const company = await Auth.completeOnboarding({
+        userId:      session.user.id,
+        companyName: STATE.form.companyName,
+        slug:        STATE.form.slug,
+        country:     document.getElementById('companyCountry').value,
+        plan:        STATE.plan,
+        config,
+        logo:        STATE.logoB64 || null,
+        signature:   STATE.signatureB64 || null
+      });
+      result = { user: session.user, company, needsEmailConfirm: false };
+    } else {
+      // NOVO UTILIZADOR (Signup por Email/Pass)
+      result = await Auth.register({
+        fname:       STATE.form.fname,
+        lname:       STATE.form.lname,
+        email:       STATE.form.email,
+        pass:        STATE.form.pass,
+        companyName: STATE.form.companyName,
+        slug:        STATE.form.slug,
+        country:     document.getElementById('companyCountry').value,
+        plan:        STATE.plan,
+        billing:     STATE.billing,
+        config,
+        logo:        STATE.logoB64 || null,
+        signature:   STATE.signatureB64 || null
+      });
+    }
 
     document.getElementById('onboardingPanel').style.display = 'none';
     document.getElementById('successPanel').style.display    = 'block';

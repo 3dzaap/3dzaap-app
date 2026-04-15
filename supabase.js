@@ -21,23 +21,44 @@ const TRIAL_DAYS        = 7;
 // ============================================================
 const Auth = {
 
-  async register({ fname, lname, email, pass, companyName, slug, plan, config, signature, logo, initFilament, initPrinter }) {
+  async register(params) {
+    // 1. Criar utilizador
     const { data: authData, error: authErr } = await _sb.auth.signUp({
-      email, password: pass,
-      options: { data: { fname, lname } }
+      email: params.email,
+      password: params.pass,
+      options: { data: { fname: params.fname, lname: params.lname } }
     });
     if (authErr) throw authErr;
 
     const userId = authData.user?.id;
     if (!userId) throw new Error('Utilizador não foi criado correctamente.');
 
-    const cleanSlug = (slug || companyName).toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
     if (authData.session) {
       await _sb.auth.setSession(authData.session);
     }
+
+    // 2. Se temos sessão (ou não precisa confirm), criar empresa
+    if (authData.session) {
+      const company = await Auth.completeOnboarding({ ...params, userId });
+      return { user: authData.user, company, needsEmailConfirm: false };
+    }
+
+    return { user: authData.user, company: null, needsEmailConfirm: true };
+  },
+
+  /**
+   * Cria a empresa para um utilizador já autenticado (Email confirmado ou Social)
+   */
+  async completeOnboarding({ userId, companyName, slug, plan, config, signature, logo, initFilament, initPrinter }) {
+    if (!userId) {
+      const { data: { user } } = await _sb.auth.getUser();
+      userId = user?.id;
+    }
+    if (!userId) throw new Error('Utilizador não autenticado.');
+
+    const cleanSlug = (slug || companyName).toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     let company = null;
     const { data: rpcData, error: rpcErr } = await _sb
@@ -54,7 +75,6 @@ const Auth = {
     if (!rpcErr && rpcData?.length) {
       company = rpcData[0];
     } else {
-      if (rpcErr) console.warn('[3DZAAP] rpc create_company_for_user:', rpcErr.message);
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
 
@@ -79,35 +99,23 @@ const Auth = {
     _companyId    = company.id;
     _companyCache = company;
 
-    // ── INITIAL DATA (OPCIONAL) ───────────────────────────────
-    if (initFilament && initFilament.name) {
-      try {
-        await _sb.from('filaments').insert({
-          company_id: _companyId,
-          name:       initFilament.name,
-          price:      parseFloat(initFilament.price || 25),
-          total:      parseFloat(initFilament.stock || 1),
-          inUse:      0,
-          alerta:     0.5,
-          color:      '#3B8FD4'
-        });
-      } catch(e) { console.warn('[3DZAAP] initFilament err:', e); }
+    // Initial Data
+    if (initFilament?.name) {
+      await _sb.from('filaments').insert({
+        company_id: _companyId,
+        name: initFilament.name,
+        price: 25, total: 1, inUse: 0, alerta: 0.5, color: '#3B8FD4'
+      });
+    }
+    if (initPrinter?.name) {
+      await _sb.from('printers').insert({
+        company_id: _companyId,
+        name: initPrinter.name,
+        status: 'disponivel', custo_hora: 0.5
+      });
     }
 
-    if (initPrinter && initPrinter.name) {
-      try {
-        await _sb.from('printers').insert({
-          company_id: _companyId,
-          name:       initPrinter.name,
-          status:     'disponivel',
-          custo_hora: 0.5,
-          created_at: new Date().toISOString()
-        });
-      } catch(e) { console.warn('[3DZAAP] initPrinter err:', e); }
-    }
-
-    const needsEmailConfirm = !authData.session;
-    return { user: authData.user, company, needsEmailConfirm };
+    return company;
   },
 
   async login(email, pass) {
@@ -123,7 +131,8 @@ const Auth = {
     const { data, error } = await _sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/auth-onboarding.html'
+        queryParams: { access_type: 'offline', prompt: 'consent' },
+        redirectTo: window.location.origin + window.location.pathname
       }
     });
     if (error) throw error;
@@ -141,12 +150,16 @@ const Auth = {
     if (!forceRefresh && _companyCache) return _companyCache;
 
     const { data: { user }, error: userErr } = await _sb.auth.getUser();
-    if (userErr || !user) return null;
+    if (userErr || !user) {
+      console.info('[3DZAAP] Nenhum utilizador autenticado encontrado.');
+      return null;
+    }
 
     let company = null;
     let role    = 'owner';
 
     try {
+      // 1. Tentar via Memberships (utilizadores convidados ou membros)
       const { data: mem, error: memErr } = await _sb
         .from('memberships')
         .select('role, companies(id, name, slug, plan, config, signature, logo_url, trial_ends_at)')
@@ -158,29 +171,37 @@ const Auth = {
         company = Array.isArray(mem.companies) ? mem.companies[0] : mem.companies;
         role    = mem.role || 'member';
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[3DZAAP] Falha ao ler memberships:', err.message);
+    }
 
+    // 2. Tentar via Companies (donos de empresa)
     if (!company) {
-      const { data: owned, error: ownedErr } = await _sb
-        .from('companies')
-        .select('id, name, slug, plan, config, signature, logo_url, trial_ends_at')
-        .eq('owner_id', user.id)
-        .limit(1)
-        .maybeSingle();
+      try {
+        const { data: owned, error: ownedErr } = await _sb
+          .from('companies')
+          .select('id, name, slug, plan, config, signature, logo_url, trial_ends_at')
+          .eq('owner_id', user.id)
+          .limit(1)
+          .maybeSingle();
 
-      if (!ownedErr && owned) {
-        company = owned;
-        role    = 'owner';
+        if (!ownedErr && owned) {
+          company = owned;
+          role    = 'owner';
+        }
+      } catch (err) {
+        console.warn('[3DZAAP] Falha ao ler empresas próprias:', err.message);
       }
     }
 
     if (!company) {
-      console.warn('[3DZAAP] Company not found for user', user.id);
+      console.info('[3DZAAP] Utilizador sem empresa associada:', user.id);
       return null;
     }
 
     _companyId    = company.id;
     _companyCache = { ...company, role };
+    console.info('[3DZAAP] Empresa carregada:', company.name, `(${role})`);
     return _companyCache;
   },
 
