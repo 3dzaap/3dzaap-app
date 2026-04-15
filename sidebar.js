@@ -258,7 +258,7 @@ const Sidebar = (() => {
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
     const next = cur === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('3dzaap_theme', next);
+    try { localStorage.setItem('3dzaap_theme', next); } catch (e) {}
     document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
       btn.innerHTML = next === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
     });

@@ -8,7 +8,27 @@ console.info('[3DZAAP] supabase.js v2.2.1-fix-onboarding inicializado.');
 const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqZ2dzbmR4YXRlemdxbGpsaHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjE0MTgsImV4cCI6MjA4OTA5NzQxOH0.zVzA2siKsix8tOK44H5U-cZK1Wdd_4u_sY1g2JgGYUA';
 
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+// Utility to handle localStorage in Safari Private / Restricted environments
+const SafeStorage = {
+  getItem: (key) => {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  },
+  setItem: (key, val) => {
+    try { localStorage.setItem(key, val); } catch (e) { }
+  },
+  removeItem: (key) => {
+    try { localStorage.removeItem(key); } catch (e) { }
+  }
+};
+
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: {
+    storage: SafeStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 let _companyId    = null;   // UUID da empresa
 let _companyCache = null;   // objecto completo — evita queries repetidas

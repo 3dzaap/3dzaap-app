@@ -9,8 +9,12 @@
 <!-- Supabase SDK -->
 <script>
 (function(){
-  var t = localStorage.getItem('3dzaap_theme') || 'light';
-  document.documentElement.setAttribute('data-theme', t);
+  try {
+    var t = localStorage.getItem('3dzaap_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -9,7 +9,10 @@
  */
 
 const i18n = {
-    currentLocale: localStorage.getItem('3dzaap_lang') || 'pt-PT',
+    currentLocale: (() => {
+        try { return localStorage.getItem('3dzaap_lang') || 'pt-PT'; } 
+        catch (e) { return 'pt-PT'; }
+    })(),
     translations: {},
     supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB'],
 
@@ -30,7 +33,7 @@ const i18n = {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             this.translations = await response.json();
             this.currentLocale = locale;
-            localStorage.setItem('3dzaap_lang', locale);
+            try { localStorage.setItem('3dzaap_lang', locale); } catch (e) {}
             document.documentElement.lang = locale;
         } catch (error) {
             console.warn(`[i18n] Failed to load ${locale}:`, error.message);
@@ -120,7 +123,7 @@ const i18n = {
             console.warn(`[i18n] Locale ${locale} not supported`);
             return;
         }
-        localStorage.setItem('3dzaap_lang', locale);
+        try { localStorage.setItem('3dzaap_lang', locale); } catch (e) {}
         window.location.reload();
     },
 
@@ -131,7 +134,7 @@ const i18n = {
     async setLanguageSilent(locale) {
         if (!this.supportedLocales.includes(locale)) return;
         this.currentLocale = locale;
-        localStorage.setItem('3dzaap_lang', locale);
+        try { localStorage.setItem('3dzaap_lang', locale); } catch (e) {}
         await this.loadTranslations(locale);
         this.translatePage();
         this.updateLanguageSwitcherUI();

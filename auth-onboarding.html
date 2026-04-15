@@ -10,6 +10,16 @@
 <script src="supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('3dzaap_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
 <style>
 :root{
   --blue:#3B8FD4; --blue-d:#2a6fb0; --blue-dd:#1a4f80; --blue-lt:#72B8F0; --blue-g:rgba(59,143,212,0.10);
@@ -609,10 +619,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 1. Verificar sessão imediatamente (mais rápido que esperar pelo onAuthStateChange)
-  const { data: { session: initialSession } } = await _sb.auth.getSession();
-  if (initialSession) {
-    handleSession(initialSession);
+  // 1. Verificar sessão com timeout agressivo (800ms) para não prender o UI em browsers lentos/privados
+  try {
+    const sessionPromise = _sb.auth.getSession();
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 800));
+    
+    // Tentar obter sessão rapidamente
+    const result = await Promise.race([sessionPromise, timeoutPromise]).catch(() => null);
+    
+    if (result && result.data && result.data.session) {
+      handleSession(result.data.session);
+    } else {
+      // Se não houver sessão imediata, libertar o overlay para o utilizador poder interagir
+      console.info('[3DZAAP] Sem sessão imediata detetada.');
+      if (overlay) overlay.classList.add('hidden');
+    }
+  } catch (e) {
+    if (overlay) overlay.classList.add('hidden');
   }
 
   // 2. Ouvir mudanças de estado (essencial para apanhar o redirecionamento OAuth)
@@ -623,13 +646,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // 3. Fallback: Se após 4 segundos não houver sessão, libertar o ecrã para login manual
+  // 3. Fallback final (curto): Garantir que o overlay desaparece sempre
   setTimeout(() => {
-    if (!bootProcessed) {
-      console.info('[3DZAAP] Login automático ignorado (sem sessão detetada).');
-      if (overlay) overlay.classList.add('hidden');
+    if (overlay && !overlay.classList.contains('hidden')) {
+      overlay.classList.add('hidden');
     }
-  }, 4000);
+  }, 1200);
 
   // Parse URL parameters
   const params = new URLSearchParams(window.location.search);

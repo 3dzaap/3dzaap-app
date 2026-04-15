@@ -1,20 +1,24 @@
 // ============================================================
-// utils.js — 3DZAAP  v1.0
-// Funções utilitárias partilhadas por todas as páginas.
-//
-// USO EM CADA PÁGINA:
-//   Adicionar antes de </body> (depois de supabase.js, antes de sidebar.js):
-//     <script src="utils.js"></script>
-//
-// EXPÕE GLOBALMENTE:
-//   escH(s)             — escape HTML
-//   escAttr(s)          — escape atributos HTML
-//   fmtEur(v)           — formata valor monetário (usa _cfg)
-//   fmtDate(s)          — formata data ISO (usa _cfg)
-//   showToast(msg,type) — toast de feedback ('ok' | 'err' | '')
-//   loadCfg(session)    — inicializa _cfg a partir da sessão
-//   toggleTheme()       — alterna dark/light mode
-//   initThemeToggle()   — sincroniza ícone do botão de tema
+// Safely handle localStorage and document.body for restricted environments (Safari Private/Incognito)
+(function() {
+  try {
+    var testKey = '__test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+  } catch (e) {
+    console.warn('[3DZAAP] LocalStorage bloqueado. Usando memória temporária.');
+    var _mem = {};
+    window.localStorage = {
+      getItem: function(k) { return _mem[k] || null; },
+      setItem: function(k, v) { _mem[k] = String(v); },
+      removeItem: function(k) { delete _mem[k]; },
+      clear: function() { _mem = {}; },
+      key: function(i) { return Object.keys(_mem)[i] || null; },
+      get length() { return Object.keys(_mem).length; }
+    };
+  }
+})();
+
 // ============================================================
 
 // ── ESCAPE ───────────────────────────────────────────────────
