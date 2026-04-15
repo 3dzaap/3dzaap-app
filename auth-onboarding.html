@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       // Verificar se o utilizador já tem empresa
-      const company = await Auth._loadCompany(true);
+      const company = await Auth._loadCompany(true, session.user);
       if (company) {
         console.info('[3DZAAP] Empresa encontrada. A redirecionar para o Dashboard...');
         window.location.href = 'dashboard.html';
@@ -580,13 +580,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       STATE.form.email = user.email;
       
       // Refinação de metadados do Google/Social
-      STATE.form.fname = meta.fname || meta.first_name || meta.given_name || meta.full_name?.split(' ')[0] || '';
-      STATE.form.lname = meta.lname || meta.last_name || meta.family_name || meta.full_name?.split(' ').slice(1).join(' ') || '';
+      const fullName = meta.full_name || '';
+      STATE.form.fname = meta.fname || meta.first_name || meta.given_name || fullName.split(' ')[0] || '';
+      STATE.form.lname = meta.lname || meta.last_name || meta.family_name || (fullName.includes(' ') ? fullName.split(' ').slice(1).join(' ') : '') || '';
       
       // Preencher campos do Step 1 caso já tenhamos os nomes
-      if (STATE.form.fname) document.getElementById('signupFname').value = STATE.form.fname;
-      if (STATE.form.lname) document.getElementById('signupLname').value = STATE.form.lname;
-      if (STATE.form.email) document.getElementById('signupEmail').value = STATE.form.email;
+      if (STATE.form.fname) {
+        const fnameInp = document.getElementById('signupFname');
+        if (fnameInp) fnameInp.value = STATE.form.fname;
+      }
+      if (STATE.form.lname) {
+        const lnameInp = document.getElementById('signupLname');
+        if (lnameInp) lnameInp.value = STATE.form.lname;
+      }
+      if (STATE.form.email) {
+        const emailInp = document.getElementById('signupEmail');
+        if (emailInp) emailInp.value = STATE.form.email;
+      }
 
       // Mostrar Onboarding directamente
       document.getElementById('authPanel').style.display = 'none';
@@ -599,16 +609,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 1. Ouvir mudanças de estado (essencial para apanhar o redirecionamento OAuth)
+  // 1. Verificar sessão imediatamente (mais rápido que esperar pelo onAuthStateChange)
+  const { data: { session: initialSession } } = await _sb.auth.getSession();
+  if (initialSession) {
+    handleSession(initialSession);
+  }
+
+  // 2. Ouvir mudanças de estado (essencial para apanhar o redirecionamento OAuth)
   _sb.auth.onAuthStateChange((event, session) => {
     console.info('[3DZAAP] Auth State Change:', event);
-    // Só processamos se houver uma sessão real
     if (session) {
       handleSession(session);
     }
   });
 
-  // 2. Fallback: Se após 4 segundos não houver sessão, libertar o ecrã para login manual
+  // 3. Fallback: Se após 4 segundos não houver sessão, libertar o ecrã para login manual
   setTimeout(() => {
     if (!bootProcessed) {
       console.info('[3DZAAP] Login automático ignorado (sem sessão detetada).');

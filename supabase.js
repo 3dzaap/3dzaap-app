@@ -146,13 +146,22 @@ const Auth = {
     window.location.href = 'auth-onboarding.html';
   },
 
-  async _loadCompany(forceRefresh = false) {
+  async _loadCompany(forceRefresh = false, passedUser = null) {
     if (!forceRefresh && _companyCache) return _companyCache;
 
-    const { data: { user }, error: userErr } = await _sb.auth.getUser();
-    if (userErr || !user) {
-      console.info('[3DZAAP] Nenhum utilizador autenticado encontrado.');
-      return null;
+    let user = passedUser;
+    if (!user) {
+      const { data: { session } } = await _sb.auth.getSession();
+      user = session?.user;
+    }
+
+    if (!user) {
+      const { data: { user: freshUser }, error: userErr } = await _sb.auth.getUser();
+      if (userErr || !freshUser) {
+        console.info('[3DZAAP] Nenhum utilizador autenticado encontrado.');
+        return null;
+      }
+      user = freshUser;
     }
 
     let company = null;
