@@ -953,36 +953,16 @@ function calcHealthScore() {
   const insights   = [];
   let score = 0;
 
-  // 1. SETUP (50 pts) — Checks logo, signature, printers, config
-  // Validação explícita de strings b64 ou URLs
-  const hasLogo  = !!(state.company && state.company.logo_url && state.company.logo_url.length > 5);
-  const hasSig   = !!(state.company && state.company.signature && state.company.signature.length > 5);
-  const hasPrnt  = printers.length > 0;
-  const hasMat   = filaments.length > 0;
-  const isCfg    = _cfg && (_cfg.setup_done === true || _cfg.electricityPrice !== 0.22);
-
-  if (hasLogo) { score += 10; }
-  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-image"></i>', key:'setup_logo_miss', page:'settings.html?tab=marca'}); }
-
-  if (hasSig) { score += 10; }
-  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-signature"></i>', key:'setup_sig_miss', page:'settings.html?tab=marca'}); }
-
-  if (hasPrnt) { score += 10; }
-  else { insights.push({t:'bad', icon:'<i class="ph-bold ph-printer"></i>', key:'setup_printers_miss', page:'printers.html'}); }
-
-  if (hasMat) { score += 10; }
-  else { insights.push({t:'bad', icon:'<i class="ph-bold ph-palette"></i>', key:'setup_materials_miss', page:'materials.html'}); }
-
-  if (isCfg) { score += 10; }
-  else { insights.push({t:'warn', icon:'<i class="ph-bold ph-lightning"></i>', key:'setup_configs_miss', page:'settings.html?tab=preferencias'}); }
-
-  // 2. PERFORMANCE & REVENUE (50 pts) — O(N) single pass
   let doneCount = 0;
   let lateCount = 0;
-  let unpaid    = 0;
   let openCount = 0;
+  
   let revThis = 0;
   let revPrev = 0;
+  
+  let weightThis = 0;
+  let unpaidValue = 0;
+  let totalPipelineValue = 0;
   let ordersWithoutDue = [];
 
   orders.forEach(o => {
@@ -994,13 +974,20 @@ function calcHealthScore() {
 
     if (isD) {
       doneCount++;
-      if (o.paymentStatus === 'pago') {
-        if (date.startsWith(todayStr)) revThis += total;
-        if (date.startsWith(prevStr))  revPrev += total;
+      if (date.startsWith(todayStr)) {
+        if (o.paymentStatus === 'pago') revThis += total;
+        
+        const its = o.items || [{ weightG: o.weightG || 0, quantity: o.quantity || 1 }];
+        its.forEach(it => {
+          weightThis += (parseFloat(it.weightG) || 0) * (parseInt(it.quantity||it.qty) || 1);
+        });
       }
+      if (date.startsWith(prevStr) && o.paymentStatus === 'pago') revPrev += total;
+      
     } else if (!isC) {
       openCount++;
-      if (o.paymentStatus !== 'pago') unpaid++;
+      totalPipelineValue += total;
+      if (o.paymentStatus !== 'pago') unpaidValue += total;
       
       const dueDate = o.dueDate || o.due_date;
       if (!dueDate) {
@@ -1014,49 +1001,83 @@ function calcHealthScore() {
 
   const missingDueDates = openCount > 0 && (ordersWithoutDue.length / openCount) > 0.3;
 
-  // Score Calculations & Specific Insights
-  if (orders.length > 0) { 
-    score += 10; 
-  } else {
-    insights.push({t:'warn', icon:'<i class="ph-bold ph-package"></i>', key:'perf_no_orders', page:'calculator.html'});
-  }
-
-  if (openCount > 0) {
-    if (lateCount === 0) score += 10;
-    else insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', page:'orders.html'});
+  // 1. Rentabilidade Real (25 pts)
+  let marginScore = 0;
+  if (weightThis > 0) {
+    const ticketG = revThis / weightThis;
+    if (ticketG >= 0.10) marginScore = 25;
+    else if (ticketG >= 0.07) marginScore = 18;
+    else if (ticketG >= 0.04) marginScore = 10;
+    else marginScore = 0;
     
-    if (unpaid === 0) score += 10;
-    else insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'perf_unpaid_orders', page:'orders.html'});
-  } else if (orders.length > 0) {
-    // Se não tem pedidos abertos mas já teve pedidos, bónus de limpeza
-    score += 20;
-    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear'}); 
+    if (ticketG < 0.07) insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'health_margin_low', msg:`Ticket médio de ${ticketG.toFixed(2)}€/g é baixo.`});
+  } else {
+    // Fallback para definições globais
+    const profitTarget = window._cfg ? parseFloat(window._cfg.calc_profit_margin || 30) : 30;
+    if (profitTarget >= 30) marginScore = 25;
+    else if (profitTarget >= 20) marginScore = 18;
+    else if (profitTarget >= 10) marginScore = 10;
+    
+    if (profitTarget < 20) insights.push({t:'warn', icon:'<i class="ph-bold ph-target"></i>', key:'health_margin_target_low', msg:'A tua meta de lucro nas definições é baixa.', page:'settings.html?tab=preferencias'});
   }
-  
-  // Filament stock score — Sincronizado com os cards
-  const hasCritical = filaments.some(f => getFilamentStatus(f) !== 'green');
-  
-  if (hasMat && !hasCritical) {
-    score += 10;
-  } else if (hasMat && hasCritical) {
-    insights.push({t:'bad', icon:'<i class="ph-bold ph-warning-octagon"></i>', key:'perf_stock_low', page:'materials.html'});
-  }
+  score += marginScore;
 
-  // Trend Score (10 pts)
+  // 2. Eficiência Operacional Relativa (25 pts)
+  let effScore = 25;
+  if (openCount > 0) {
+    const latePct = lateCount / openCount;
+    if (latePct === 0) effScore = 25;
+    else if (latePct <= 0.05) effScore = 25;
+    else if (latePct <= 0.15) effScore = 15;
+    else if (latePct <= 0.25) effScore = 5;
+    else effScore = 0;
+    
+    if (latePct > 0.15) insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', msg:'Elevada percentagem de pedidos em atraso.', page:'orders.html'});
+  } else if (orders.length > 0) {
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear', msg:'Não há pedidos pendentes!'}); 
+  }
+  score += effScore;
+
+  // 3. Capital Retido / Cashflow (20 pts)
+  let cashScore = 20;
+  if (totalPipelineValue > 0) {
+    const lockedPct = unpaidValue / totalPipelineValue;
+    if (lockedPct <= 0.10) cashScore = 20;
+    else if (lockedPct <= 0.30) cashScore = 12;
+    else cashScore = 0;
+    
+    if (lockedPct > 0.30) insights.push({t:'bad', icon:'<i class="ph-bold ph-wallet"></i>', key:'perf_unpaid_orders', msg:'Elevado valor faturado por receber.', page:'orders.html'});
+  }
+  score += cashScore;
+
+  // 4. Supply Chain & Assets (20 pts)
+  const criticalMats = filaments.filter(f => getFilamentStatus(f) !== 'green').length;
+  const brokenPrinters = printers.filter(p => (p.status || '').toLowerCase() !== 'operacional').length;
+  
+  let scScore = Math.max(0, 20 - (criticalMats * 4) - (brokenPrinters * 10));
+  score += scScore;
+  
+  if (criticalMats > 0) insights.push({t:'warn', icon:'<i class="ph-bold ph-warning-octagon"></i>', key:'perf_stock_low', msg:`Atenção a ${criticalMats} material(is) esgotado(s).`, page:'materials.html'});
+  if (brokenPrinters > 0) insights.push({t:'bad', icon:'<i class="ph-bold ph-printer"></i>', key:'health_broken_printers', msg:`${brokenPrinters} impressora(s) parada(s).`, page:'printers.html'});
+
+  // 5. Tendência da Receita (10 pts)
   let trendScore = 10;
   if (revPrev > 0) {
     const change = (revThis - revPrev) / revPrev;
-    if (change < -0.1) {
-      trendScore = 5;
-      insights.push({t:'warn', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_warn', vars:{p:Math.round(change*100)*-1}});
-    } else if (change < -0.3) {
+    if (change < -0.20) {
       trendScore = 0;
-      insights.push({t:'bad', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_bad', vars:{p:Math.round(change*100)*-1}});
-    } else if (change > 0) {
-      // Opcional: mostrar tendência positiva apenas se score for alto
+      insights.push({t:'bad', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_bad', vars:{p:Math.round(change*100)*-1}, msg:`Quebra rápida na faturação (${Math.round(change*100)*-1}%).`});
+    } else if (change < 0) {
+      trendScore = 5;
+      insights.push({t:'warn', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_warn', vars:{p:Math.round(change*100)*-1}, msg:`Ligeira descida na faturação.`});
     }
   }
   score += trendScore;
+  
+  // Avisos iniciais
+  if (orders.length === 0) {
+    insights.push({t:'warn', icon:'<i class="ph-bold ph-package"></i>', key:'perf_no_orders', msg:'Cria pedidos para ativar a análise financeira.', page:'calculator.html'});
+  }
 
   // ── RENDER ──────────────────────────────────────────────────
   const t = (k, v) => window.i18n ? window.i18n.getNestedTranslation(k, v) : null;
@@ -1128,7 +1149,7 @@ function calcHealthScore() {
     displayInsights.sort((a,b) => priority.indexOf(a.t) - priority.indexOf(b.t));
     
     insightsEl.innerHTML = displayInsights.slice(0,3).map(i => {
-      let msg = t('dash.health.insights.' + i.key, i.vars) || i.key;
+      let msg = t('dash.health.insights.' + i.key, i.vars) || i.msg || i.key;
       return `<a href="${i.page || '#'}" class="health-insight ${i.t}">
         <span class="health-insight-icon">${i.icon}</span>
         <span>${msg}</span>
