@@ -620,6 +620,28 @@
   </style>
 
   <style>
+    /* ── OVERDUE ROWS ────────────────────── */
+    .ord-row--overdue {
+      border-left: 3px solid var(--danger);
+      background: rgba(239, 68, 68, 0.04);
+    }
+    [data-theme="dark"] .ord-row--overdue {
+      background: rgba(239, 68, 68, 0.07);
+    }
+    .ord-row--overdue .ord-due-date {
+      color: var(--danger) !important;
+      font-weight: 700;
+    }
+    .mob-ord-card--overdue {
+      border-left: 3px solid var(--danger);
+      background: rgba(239, 68, 68, 0.04);
+    }
+    [data-theme="dark"] .mob-ord-card--overdue {
+      background: rgba(239, 68, 68, 0.07);
+    }
+  </style>
+
+  <style>
     /* ── GLOBAL CONTROLS ────────────────── */
     .global-ctrls {
       display: flex;
@@ -1681,6 +1703,8 @@
       tableEl.style.display = '';
 
       const rows = [];
+      const _today = new Date(); _today.setHours(0,0,0,0); // normaliza para meia-noite
+      const _DONE_STS = ['done', 'concluido', 'entregue', 'cancelado'];
       filtered.forEach(o => {
         const its = (o.items?.length) ? o.items : [{ description: o.description || '', quantity: o.quantity || 1, unitPrice: o.unitPrice || 0 }];
         // Support legacy items with 'total' field (from old calculator format)
@@ -1714,8 +1738,12 @@
 
         const itemsCountKey = its.length === 1 ? 'orders.table.th_items_1' : 'orders.table.th_items_n';
 
+        const isOverdue = !_DONE_STS.includes((o.status || '').toLowerCase())
+          && !!o.dueDate
+          && new Date(o.dueDate) < _today;
+
         rows.push(`
-      <tr class="ord-row" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
+      <tr class="ord-row${isOverdue ? ' ord-row--overdue' : ''}" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
         <td><span class="ord-number">${escH(o.orderNumber || '—')}</span></td>
         <td>
           <div class="ord-client">${escH(o.clientName)}</div>
@@ -1731,7 +1759,7 @@
         <td class="cell-mono">${fmtCurrency(grand)}</td>
         <td class="cell-mono" style="color:var(--blue);font-weight:700">${grandWeight > 0 ? grandWeight.toFixed(1).replace('.0', '') + finalUnit : '—'}</td>
         <td style="font-size:.78rem;color:var(--muted)">${o.createdAt ? fmtDate(o.createdAt) : '—'}</td>
-        <td style="font-size:.78rem;color:var(--muted)">${o.dueDate ? fmtDate(o.dueDate) : '—'}</td>
+        <td class="${isOverdue ? 'ord-due-date' : ''}" style="font-size:.78rem;${isOverdue ? '' : 'color:var(--muted)'}">${o.dueDate ? (isOverdue ? '<i class="ph-bold ph-warning-circle" style="margin-right:3px"></i>' : '') + fmtDate(o.dueDate) : '—'}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn-icon" onclick="duplicateOrder('${o.id}')" title="${i18n.getNestedTranslation('orders.details.duplicate')}" style="margin-right:2px"><i class="ph-bold ph-copy"></i></button>
           <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px"><i class="ph-bold ph-pencil-simple"></i></button>
