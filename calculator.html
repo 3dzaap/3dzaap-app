@@ -1488,63 +1488,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyDefaultsToForm();
   
   // ── Load from Product Library / Recalculate ──────────────────
-  const rawData = localStorage.getItem('3dzaap_calc_load');
-  
-  // Garantir que impressoras de utilizador também sejam carregadas para o dropdown legado
-  try {
-    _userPrinters = await DB.getPrinters();
-  } catch(e) { _userPrinters = []; }
-  renderPrintersDropdown();
-  
-  applyFeatureGating();
-  renderHistory();
-  
-  try {
-    const raw = rawData;
-    if (raw) {
-      const data = JSON.parse(raw);
+  setTimeout(async () => {
+    const rawData = localStorage.getItem('3dzaap_calc_load');
+    if (!rawData) return;
+    
+    try {
+      const data = JSON.parse(rawData);
       localStorage.removeItem('3dzaap_calc_load');
       
       const setEl = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.value = val;
+        if (el && val !== undefined && val !== null) el.value = val;
       };
 
       // 1. Recover full state from _orig_inputs if available
       const src = (data.config && data.config._orig_inputs) ? data.config._orig_inputs : data;
       
+      // Step A: Set Mode & Tech first (this updates UI structure)
       if (src.printName) setEl('printName', src.printName);
-      if (src.tech) setTechMode(src.tech);
+      if (src.tech)      setTechMode(src.tech);
       
-      // Restore printer-specific financial parameters
-      const common = ['printerPrice','printerLife','powerConsumption','electricityPrice','failureRate','indirectCosts','profitMargin','filamentPrice'];
-      common.forEach(k => { 
-        if (src[k] !== undefined) {
-          setEl(k, src[k]);
-          // Sync sliders if they exist
-          if (k === 'failureRate')   setEl('failureSlider', src[k]);
-          if (k === 'indirectCosts') setEl('indirectSlider', src[k]);
-          if (k === 'profitMargin')  setEl('marginSlider', src[k]);
-        }
-      });
-
-      // Update labels and UI state to reflect loaded values
-      if (typeof updateSliderLabels === 'function') updateSliderLabels();
-      if (typeof updatePctLabels === 'function') updatePctLabels();
-
-      // Detect and set calculation mode
       const mode = src.mode || (src.parts ? 'advanced' : 'simple');
       setCalcMode(mode);
 
+      // Step B: Financials
+      const common = ['printerPrice','printerLife','powerConsumption','electricityPrice','failureRate','indirectCosts','profitMargin','filamentPrice','resinPrice'];
+      common.forEach(k => { 
+        const val = src[k];
+        if (val !== undefined && val !== null) {
+          setEl(k, val);
+          if (k === 'failureRate')   setEl('failureSlider', val);
+          if (k === 'indirectCosts') setEl('indirectSlider', val);
+          if (k === 'profitMargin')  setEl('marginSlider', val);
+        }
+      });
+
+      // Step C: Mode-specific logic (Weight/Time aliasing)
       if (mode === 'simple') {
-        if (src.weight !== undefined) setEl('partWeight', src.weight);
-        if (src.time !== undefined)      setEl('printTime', src.time);
-        else if (src.printTime !== undefined) setEl('printTime', src.printTime);
-        if (src.materialId) {
+        const w = src.weight ?? src.partWeight ?? src.filament_weight ?? src.filamentWeight ?? src.resin_volume;
+        if (w !== undefined) setEl('partWeight', w);
+        
+        const t = src.time ?? src.printTime ?? src.est_print_hours;
+        if (t !== undefined) setEl('printTime', t);
+
+        const matId = src.materialId || src.material_id;
+        if (matId) {
           const mSel = document.getElementById('fMaterialSelect');
           if (mSel) {
-            mSel.value = src.materialId;
-            applyMaterialSelect(src.materialId);
+            mSel.value = matId;
+            applyMaterialSelect(matId);
           }
         }
       } else {
@@ -1553,16 +1545,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           _mesas = JSON.parse(JSON.stringify(src.mesas));
           renderMesas();
         } else if (src.parts && Array.isArray(src.parts)) {
-          // Fallback for legacy parts-only data
           _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: src.parts }];
           renderMesas();
         }
-        if (src.totalTime !== undefined) setEl('totalProjectTime', src.totalTime);
+        const t = src.totalTime ?? src.time ?? src.printTime ?? src.est_print_hours;
+        if (t !== undefined) setEl('totalProjectTime', t);
       }
-    }
-  } catch(e) { console.warn('[3DZAAP] error loading state:', e); }
 
-  liveCalc();
+      // Step D: UI Sync and Final Calc
+      if (typeof updateSliderLabels === 'function') updateSliderLabels();
+      if (typeof updatePctLabels === 'function') updatePctLabels();
+      liveCalc();
+
+    } catch(e) { console.warn('[3DZAAP] error loading state:', e); }
+  }, 150);
 });
 
 // ── USER DATA ──────────────────────────
