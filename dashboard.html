@@ -1031,10 +1031,15 @@ function calcHealthScore() {
     else if (latePct <= 0.15) effScore = 15;
     else if (latePct <= 0.25) effScore = 5;
     else effScore = 0;
-    
-    if (latePct > 0.15) insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', msg:'Elevada percentagem de pedidos em atraso.', page:'orders.html'});
+
+    if (lateCount > 0) {
+      const lateMsg = lateCount === 1
+        ? `1 pedido com prazo de entrega ultrapassado.`
+        : `${lateCount} pedidos com prazo de entrega ultrapassado.`;
+      insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', msg: lateMsg, page:'orders.html'});
+    }
   } else if (orders.length > 0) {
-    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear', msg:'Não há pedidos pendentes!'}); 
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear', msg:'Não há pedidos pendentes!'});
   }
   score += effScore;
 
