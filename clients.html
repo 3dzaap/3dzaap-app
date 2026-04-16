@@ -408,7 +408,11 @@ async function lookupAddress() {
       url = `https://api.zippopotam.us/${country}/${zip}`;
     }
     
-    const resp = await fetch(url);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const resp = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
     if(!resp.ok) throw new Error('Zip não encontrado.');
     const data = await resp.json();
     
@@ -433,7 +437,11 @@ async function lookupAddress() {
     addrEl.value = result;
     showToast('Morada localizada!', 'ok');
   } catch(e) {
-    showToast(e.message, 'err');
+    if (e.name === 'AbortError') {
+      showToast('A API demorou demasiado tempo. Introduz manualmente, por favor.', 'warn');
+    } else {
+      showToast(e.message, 'err');
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = window.i18n ? i18n.getNestedTranslation('clients.modal.btn_lookup') : 'Procurar';

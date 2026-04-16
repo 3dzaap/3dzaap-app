@@ -515,11 +515,11 @@ body {
 .form-label           { font-size: .76rem; font-weight: 700; color: var(--muted); }
 .form-label span      { font-weight: 400; color: var(--subtle); }
 
-/* Tooltip on form-label */
-.form-label .tip-icon              { position: relative; display: inline-flex; cursor: help; margin-left: 4px; }
-.form-label .tip-icon .tip-bubble  { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(30,30,30,.92); color: #fff; font-size: .72rem; font-weight: 400; padding: 6px 10px; border-radius: 8px; white-space: nowrap; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,.2); pointer-events: none; max-width: 260px; white-space: normal; text-align: center; }
-.form-label .tip-icon .tip-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(30,30,30,.92); }
-.form-label .tip-icon:hover .tip-bubble { display: block; }
+/* Common Tooltip Component */
+.tip-icon { position: relative; display: inline-flex; cursor: help; margin-left: 4px; }
+.tip-icon .tip-bubble { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(30,30,30,.92); color: #fff; font-size: .72rem; font-weight: 400; padding: 6px 10px; border-radius: 8px; white-space: normal; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,.2); pointer-events: none; max-width: 260px; text-align: center; }
+.tip-icon .tip-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(30,30,30,.92); }
+.tip-icon:hover .tip-bubble { display: block; }
 
 .form-input, .form-select, .form-textarea {
   width: 100%; padding: 9px 12px; border-radius: var(--r);

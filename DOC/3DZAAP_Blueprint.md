@@ -537,13 +537,13 @@ Sidebar fixa (desktop) / drawer (mobile). Header com logo, nome do utilizador e 
 
 Feature anti-churn. Score 0–100 actualizado uma vez por dia; delta vs sessão anterior guardado em `localStorage` (`3dzaap_health_prev`).
 
-| Componente | Peso | Lógica |
+| Componente | Peso | Lógica Inteligente (P2) |
 |---|---|---|
-| Margem média | 25 pts | ≥30%=25 · 20-29%=18 · 10-19%=10 · <10%=0 |
-| Pedidos em atraso | 25 pts | 0=25 · 1=15 · 2=8 · 3+=0 |
-| Stock crítico | 20 pts | 0 alertas=20 · 1-2=12 · 3+=0 |
-| Pagamentos pendentes | 20 pts | 0%=20 · <20%=14 · <50%=6 · ≥50%=0 |
-| Tendência receita | 10 pts | ≥mês anterior=10 · queda <20%=5 · ≥20%=0 |
+| Rentabilidade Real (Ticket/g) | 25 pts | ≥0.10€/g=25 · >0.07€=18 · >0.04€=10 · <0.04€=0 |
+| Eficiência Operacional Relativa | 25 pts | % Pedidos em Atraso (≤5%=25 · ≤15%=15 · ≤25%=5 · >25%=0) |
+| Risco de Cashflow (Valor €) | 20 pts | % Retido no total pendente (≤10%=20 · ≤30%=12 · >30%=0) |
+| Supply Chain & Assets | 20 pts | Base 20pts: (-4 por máx. mat. esgotado) (-10 por máx. impressora parada) |
+| Tendência Receita Mensal | 10 pts | ≥ mês anterior=10 · queda <20%=5 · queda máx=0 |
 
 **Bandas:** 80–100 Saudável · 55–79 Atenção · 30–54 Em risco · 0–29 Crítico
 

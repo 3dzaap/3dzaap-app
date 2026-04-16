@@ -968,12 +968,8 @@
         <div class="items-header">
           <span data-i18n="orders.modal.th_desc">Descrição</span><span data-i18n="orders.modal.th_qty">Qtd</span>
           <span style="text-align:right"><span data-i18n="orders.modal.th_mat">Material</span>
-            <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px"><i
-                class="ph-bold ph-info"></i>
-              <span
-                style="display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;font-size:.72rem;padding:6px 10px;border-radius:8px;white-space:normal;width:220px;text-align:center;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none"
-                id="filTipBubble" data-i18n="orders.modal.tip_material">Se não seleccionares material, o consumo não
-                será descontado do stock automaticamente.</span>
+            <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px"><i class="ph-bold ph-info"></i>
+              <div class="tip-bubble" id="filTipBubble" data-i18n="orders.modal.tip_material">Se não selecionares material, o consumo não será descontado automaticamente.</div>
             </span>
           </span>
           <span style="text-align:right;white-space:nowrap" id="weightUnitHeader"><span
@@ -1080,7 +1076,7 @@
 
   <!-- PRODUCT LIBRARY MODAL (Small overlay) -->
   <div class="modal-overlay" id="libraryOverlay" onclick="if(event.target===this)closeLibraryModal()"
-    style="z-index:650">
+    style="z-index:9990">
     <div class="modal" style="max-width:500px">
       <div class="modal-header">
         <div class="modal-title"><i class="ph-bold ph-plus"></i> Biblioteca de Produtos</div>
@@ -1202,12 +1198,7 @@
       applyFeatureGating();
       await loadData();
 
-      // filament tooltip hover
-      const icon = document.querySelector('#orderItemsList')?.parentElement?.querySelector('.tip-icon');
-      if (icon) {
-        icon.addEventListener('mouseenter', () => { document.getElementById('filTipBubble').style.display = 'block'; });
-        icon.addEventListener('mouseleave', () => { document.getElementById('filTipBubble').style.display = 'none'; });
-      }
+      // filament tooltip is handled by shared.css .tip-icon:hover
 
       // ── Pre-fill from Calculator or Product Library ──────────────────────────────
       const prefillFrom = new URLSearchParams(window.location.search).get('from');
@@ -1546,22 +1537,26 @@
 
       try {
         let addr = '';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         if (country === 'BR') {
-          const res = await fetch(`https://viacep.com.br/ws/${zip.replace(/\D/g, '')}/json/`).then(r => r.json());
+          const res = await fetch(`https://viacep.com.br/ws/${zip.replace(/\D/g, '')}/json/`, { signal: controller.signal }).then(r => r.json());
           if (!res.erro) addr = `${res.logradouro}, ${res.bairro}, ${res.localidade} - ${res.uf}`;
         } else if (country === 'PT' || country === 'ES' || country === 'US') {
-          const res = await fetch(`https://api.zippopotam.us/${country.toLowerCase()}/${zip}`).then(r => r.json());
+          const res = await fetch(`https://api.zippopotam.us/${country.toLowerCase()}/${zip}`, { signal: controller.signal }).then(r => r.json());
           if (res.places && res.places.length) {
             const p = res.places[0];
             addr = `${p['place name']}, ${p['state']}, ${res.country}`;
           }
         } else if (country === 'UK') {
-          const res = await fetch(`https://api.postcodes.io/postcodes/${zip}`).then(r => r.json());
+          const res = await fetch(`https://api.postcodes.io/postcodes/${zip}`, { signal: controller.signal }).then(r => r.json());
           if (res.status === 200 && res.result) {
             const r = res.result;
             addr = `${r.parliamentary_constituency || ''}, ${r.admin_district}, ${r.country}`;
           }
         }
+        clearTimeout(timeoutId);
 
         if (addr) {
           const current = document.getElementById('clAddress').value;
@@ -1571,7 +1566,11 @@
           showToast('Código postal não encontrado.', 'err');
         }
       } catch (e) {
-        showToast('Erro na pesquisa.', 'err');
+        if (e.name === 'AbortError') {
+          showToast('A API demorou demasiado tempo. Introduz manualmente, por favor.', 'warn');
+        } else {
+          showToast('Erro na pesquisa.', 'err');
+        }
       } finally {
         btn.disabled = false;
         btn.textContent = oldText;
