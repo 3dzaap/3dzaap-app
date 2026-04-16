@@ -1372,16 +1372,17 @@ function renderStats() {
   const stockRolls = stock.reduce((s,m) => s + (parseInt(m.total)||0), 0);
   const lowRolls   = low.reduce((s,m) => s + (parseInt(m.total)||0), 0);
 
-  // Total volume (peso/volume total de todo o stock)
-  let unitStr;
-  if (isFDM) {
-    const kgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
-    const totalKg = list.reduce((s,m) => s + (parseInt(m.total)||0) * (kgMap[m.rollSize]||1), 0);
-    unitStr = totalKg % 1 === 0 ? totalKg + ' kg' : totalKg.toFixed(2) + ' kg';
-  } else {
-    const mlMap = {'500ml':0.5,'1L':1,'2L':2,'5L':5};
-    const totalL = list.reduce((s,m) => s + (parseInt(m.total)||0) * (mlMap[m.rollSize]||1), 0);
-    unitStr = totalL % 1 === 0 ? totalL + ' L' : totalL.toFixed(2) + ' L';
+  // Helper: volume para qualquer sub-lista
+  function calcVol(subList) {
+    if (isFDM) {
+      const kgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
+      const kg = subList.reduce((s,m) => s + (parseInt(m.total)||0) * (kgMap[m.rollSize]||1), 0);
+      return kg % 1 === 0 ? kg + ' kg' : kg.toFixed(2) + ' kg';
+    } else {
+      const mlMap = {'500ml':0.5,'1L':1,'2L':2,'5L':5};
+      const L = subList.reduce((s,m) => s + (parseInt(m.total)||0) * (mlMap[m.rollSize]||1), 0);
+      return L % 1 === 0 ? L + ' L' : L.toFixed(2) + ' L';
+    }
   }
 
   const prevTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
@@ -1391,22 +1392,22 @@ function renderStats() {
 
   // Card Total: número = cores, sub = "X bobinas · Y kg"
   animateValue('statTotal', prevTotal, list.length, 800);
-  document.getElementById('statUnit').textContent = totalRolls + ' ' + rollWord + ' · ' + unitStr;
+  document.getElementById('statUnit').textContent = totalRolls + ' ' + rollWord + ' · ' + calcVol(list);
 
-  // Card Em stock: número = cores, sub = "X bobinas"
+  // Card Em stock: número = cores, sub = "X bobinas · Y kg"
   animateValue('statStock', prevStock, stock.length, 800);
   const elStockSub = document.getElementById('statStockSub');
-  if (elStockSub) elStockSub.textContent = stockRolls + ' ' + rollWord;
+  if (elStockSub) elStockSub.textContent = stockRolls + ' ' + rollWord + ' · ' + calcVol(stock);
 
-  // Card Stock baixo: número = cores, sub = "X bobinas"
+  // Card Stock baixo: número = cores, sub = "X bobinas · Y kg"
   animateValue('statLow', prevLow, low.length, 800);
   const elLowSub = document.getElementById('statLowSub');
-  if (elLowSub) elLowSub.textContent = lowRolls + ' ' + rollWord;
+  if (elLowSub) elLowSub.textContent = lowRolls + ' ' + rollWord + ' · ' + calcVol(low);
 
-  // Card Esgotados: número = cores (sem bobinas disponíveis), sub = "X cores s/ stock"
+  // Card Esgotados: número = cores, sub = "0 bobinas · 0 kg"
   animateValue('statEmpty', prevEmpty, empty.length, 800);
   const elEmptySub = document.getElementById('statEmptySub');
-  if (elEmptySub) elEmptySub.textContent = empty.length + ' ' + (empty.length === 1 ? 'cor' : coreWord) + ' s/ stock';
+  if (elEmptySub) elEmptySub.textContent = '0 ' + rollWord + ' · ' + calcVol(empty);
 
   buildTooltip('tipTotal', list);
   buildTooltip('tipStock', stock);
