@@ -2470,7 +2470,48 @@
       delete base.order_number;
       if (base.paymentStatus === 'pago' && !base.paymentDate) base.paymentDate = new Date().toISOString().split('T')[0];
 
+      // Verificação de Stock (Alerta se exceder o disponível)
+      let stockWarnings = [];
+      let requiredStock = {};
+      
+      // Contabiliza apenas se o pedido estiver a ser guardado e consumir stock
+      // (Não impede orçamentos, mas avisa preventivamente)
+      items.forEach(it => {
+        if (!it.filamentId || !it.weightG) return;
+        const w = parseFloat(it.weightG) || 0;
+        const q = parseInt(it.quantity) || 1;
+        if (w <= 0) return;
+        if (!requiredStock[it.filamentId]) requiredStock[it.filamentId] = 0;
+        requiredStock[it.filamentId] += (w * q) / 1000;
+      });
+
+      for (const [fId, reqKg] of Object.entries(requiredStock)) {
+        const fil = filaments.find(f => f.id == fId);
+        if (fil) {
+           const rollKgMap = { '1kg': 1, '500g': 0.5, '300g': 0.3, '250g': 0.25, '100g': 0.1 };
+           const mlMap = {'500ml':0.5,'1L':1,'2L':2,'5L':5};
+           const isRes = _isResinMaterial(fId);
+           const kgPerRoll = isRes ? (mlMap[fil.rollSize] || 1) : (rollKgMap[fil.rollSize] || 1);
+           
+           const newRolls = Math.max(0, (parseInt(fil.total) || 0) - (parseInt(fil.inUse) || 0));
+           const inUseKg = (fil.kgRemaining !== undefined && fil.kgRemaining !== null) ? fil.kgRemaining : (parseInt(fil.inUse) || 0) * kgPerRoll;
+           const availableKg = inUseKg + (newRolls * kgPerRoll);
+           
+           if (reqKg > availableKg) {
+             const matName = (fil.colorName || 'Sem nome') + " (" + (fil.type || '') + ")";
+             const unit = isRes ? "L" : "kg";
+             stockWarnings.push(`• ${matName}: necessário ${reqKg.toFixed(2)}${unit}, disponível apenas ${availableKg.toFixed(2)}${unit}`);
+           }
+        }
+      }
+
+      if (stockWarnings.length > 0) {
+        const msg = "⚠️ ATENÇÃO: O consumo previsto para este pedido excede o stock disponível:\n\n" + stockWarnings.join("\n") + "\n\nDeseja guardar o pedido mesmo assim?";
+        if (!window.confirm(msg)) return;
+      }
+
       try {
+
         if (editingId) {
           const prev = orders.find(o => o.id === editingId) || {};
           if (prev.status === 'done') revertFilamentConsumption(prev);
