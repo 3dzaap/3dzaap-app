@@ -885,7 +885,16 @@ A modal de novo pedido (`orders.html`) inclui autocomplete inteligente no campo 
 
 ---
 
-## 22. Auditoria Pré-Lançamento (Abril 2026)
+## 22. Padrões de Robustez UI/UX e APIs
+
+Para evitar regressões futuras, os seguintes padrões foram estabelecidos como arquitetura base de Frontend:
+- **Tooltips:** Nunca usar `mouseenter` / `mouseleave` via JS que retém o foco "fantasma" em dispositivos iOS/Touch. Utilizar exclusivamente o CSS (`.tip-icon:hover .tip-bubble`) para garantir que ocorrem drops automáticos ao clicar noutros pontos do ecrã.
+- **Fail-safe de APIs Externas:** Qualquer pedido (`fetch()`) a APIs não controladas por nós (e.g. `viacep`, `zippopotam`, `postcodes.io`) deve ser obrigatoriamente encapsulado por um `AbortController` com limite cravado em **5000ms**. Isto previne cenários de encravamento silencioso da aplicação caso o serviço espelho esteja em timeout crónico.
+- **Hierarquia de Modals (Z-Index):** O Modal de *Biblioteca de Produtos* está indexado como Mestre-Superior no valor assíncrono de `z-index: 9990`. Quaisquer Dropdowns nativos ou auto-completes (como sugestões de clientes) não devem exceder este teto para garantir blindagem isolada.
+
+---
+
+## 23. Auditoria Pré-Lançamento (Abril 2026)
 
 ### Traduções (i18n)
 - ✅ Adicionada secção `common` (delete, cancel, save, edit, close, confirm) a todos os 5 locales.
