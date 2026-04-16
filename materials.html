@@ -470,7 +470,10 @@
           <div class="stat-mini-icon si-blue" id="statIcon"><i class="ph-bold ph-palette"></i></div>
           <div>
             <div class="stat-mini-val" id="statTotal">0</div>
-            <div class="stat-mini-lbl"><span data-i18n="materials.stats.total">Total</span> · <span id="statUnit">0 kg</span></div>
+            <div class="stat-mini-lbl">
+              <span id="statTotalCoresLabel" data-i18n="materials.stats.total_cores">cores</span>
+              <span style="color:var(--muted);font-weight:400"> · <span id="statUnit">0 kg</span></span>
+            </div>
           </div>
           <div class="stat-tooltip" id="tipTotal"></div>
         </div>
@@ -478,7 +481,10 @@
           <div class="stat-mini-icon si-green"><i class="ph-bold ph-check-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statStock">0</div>
-            <div class="stat-mini-lbl" data-i18n="materials.stats.in_stock">Em stock</div>
+            <div class="stat-mini-lbl">
+              <span data-i18n="materials.stats.in_stock">Em stock</span>
+              <span style="color:var(--muted);font-weight:400"> · <span id="statStockSub">0 bobinas</span></span>
+            </div>
           </div>
           <div class="stat-tooltip" id="tipStock"></div>
         </div>
@@ -486,7 +492,10 @@
           <div class="stat-mini-icon si-orange"><i class="ph-bold ph-warning-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statLow">0</div>
-            <div class="stat-mini-lbl" data-i18n="materials.stats.low_stock">Stock baixo</div>
+            <div class="stat-mini-lbl">
+              <span data-i18n="materials.stats.low_stock">Stock baixo</span>
+              <span style="color:var(--muted);font-weight:400"> · <span id="statLowSub">0 bobinas</span></span>
+            </div>
           </div>
           <div class="stat-tooltip" id="tipLow"></div>
         </div>
@@ -494,7 +503,10 @@
           <div class="stat-mini-icon si-red"><i class="ph-bold ph-x-circle"></i></div>
           <div>
             <div class="stat-mini-val" id="statEmpty">0</div>
-            <div class="stat-mini-lbl" id="statEmptyLbl" data-i18n="materials.stats.out_of_stock">Esgotados</div>
+            <div class="stat-mini-lbl">
+              <span id="statEmptyLbl" data-i18n="materials.stats.out_of_stock">Esgotados</span>
+              <span style="color:var(--muted);font-weight:400"> · <span id="statEmptySub">0 cores</span></span>
+            </div>
           </div>
           <div class="stat-tooltip" id="tipEmpty"></div>
         </div>
@@ -519,7 +531,7 @@
           <option value="orange" data-i18n="materials.filters.status_orange">Stock baixo</option>
           <option value="red" data-i18n="materials.filters.status_red">Esgotado</option>
         </select>
-        <span class="filter-count" id="filterCount">0 <span data-i18n="materials.filters.count_n">itens</span></span>
+        <span class="filter-count" id="filterCount">0 <span data-i18n="materials.filters.count_cores">cores</span></span>
       </div>
 
       <!-- Table -->
@@ -1214,7 +1226,8 @@ function renderTable() {
     return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
   });
 
-  document.getElementById('filterCount').textContent = i18n.getNestedTranslation(filtered.length === 1 ? 'materials.filters.count_1' : 'materials.filters.count_n', {n: filtered.length});
+  const _coresLabel = i18n.getNestedTranslation('materials.filters.count_cores') || 'cores';
+  document.getElementById('filterCount').innerHTML = `${filtered.length} <span data-i18n="materials.filters.count_cores">${_coresLabel}</span>`;
 
   const emptyEl = document.getElementById('tableEmpty');
   const tableEl = document.getElementById('filTable');
@@ -1351,8 +1364,15 @@ function renderStats() {
   const low   = list.filter(m => getStatus(m) === 'orange');
   const empty = list.filter(m => getStatus(m) === 'red');
   const isFDM = currentView === 'fdm';
+  const rollWord  = isFDM ? 'bobinas' : 'frascos';
+  const coreWord  = 'cores';
 
-  // Total volume
+  // Somas de bobinas/frascos por categoria
+  const totalRolls = list.reduce((s,m) => s + (parseInt(m.total)||0), 0);
+  const stockRolls = stock.reduce((s,m) => s + (parseInt(m.total)||0), 0);
+  const lowRolls   = low.reduce((s,m) => s + (parseInt(m.total)||0), 0);
+
+  // Total volume (peso/volume total de todo o stock)
   let unitStr;
   if (isFDM) {
     const kgMap = {'1kg':1,'500g':0.5,'300g':0.3,'250g':0.25,'100g':0.1};
@@ -1369,11 +1389,24 @@ function renderStats() {
   const prevLow   = parseInt(document.getElementById('statLow').textContent) || 0;
   const prevEmpty = parseInt(document.getElementById('statEmpty').textContent) || 0;
 
+  // Card Total: número = cores, sub = "X bobinas · Y kg"
   animateValue('statTotal', prevTotal, list.length, 800);
-  document.getElementById('statUnit').textContent  = unitStr;
+  document.getElementById('statUnit').textContent = totalRolls + ' ' + rollWord + ' · ' + unitStr;
+
+  // Card Em stock: número = cores, sub = "X bobinas"
   animateValue('statStock', prevStock, stock.length, 800);
-  animateValue('statLow',   prevLow,   low.length,   800);
+  const elStockSub = document.getElementById('statStockSub');
+  if (elStockSub) elStockSub.textContent = stockRolls + ' ' + rollWord;
+
+  // Card Stock baixo: número = cores, sub = "X bobinas"
+  animateValue('statLow', prevLow, low.length, 800);
+  const elLowSub = document.getElementById('statLowSub');
+  if (elLowSub) elLowSub.textContent = lowRolls + ' ' + rollWord;
+
+  // Card Esgotados: número = cores (sem bobinas disponíveis), sub = "X cores s/ stock"
   animateValue('statEmpty', prevEmpty, empty.length, 800);
+  const elEmptySub = document.getElementById('statEmptySub');
+  if (elEmptySub) elEmptySub.textContent = empty.length + ' ' + (empty.length === 1 ? 'cor' : coreWord) + ' s/ stock';
 
   buildTooltip('tipTotal', list);
   buildTooltip('tipStock', stock);
