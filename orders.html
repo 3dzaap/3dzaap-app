@@ -1815,7 +1815,12 @@
           const nextStatus = STATUS_NEXT[o.status];
           const canAdvance = !!nextStatus;
 
-          return `<div class="mob-ord-card" id="mc-${o.id}">
+          const _mobDONE = ['done', 'concluido', 'entregue', 'cancelado'];
+          const isOverdue = !_mobDONE.includes((o.status || '').toLowerCase())
+            && !!o.dueDate
+            && new Date(o.dueDate) < _today;
+
+          return `<div class="mob-ord-card${isOverdue ? ' mob-ord-card--overdue' : ''}" id="mc-${o.id}">
         <div class="mob-ord-top">
           <span class="mob-ord-num">${escH(o.orderNumber || '—')}</span>
           <div style="text-align:right">
@@ -1827,7 +1832,7 @@
         <div class="mob-ord-meta">
           ${renderStatusBadge(o.status)}
           ${renderPaymentBadge(o.paymentStatus)}
-          ${o.dueDate ? `<span class="mob-ord-date"><span data-i18n="orders.table.due">${i18n.getNestedTranslation('orders.table.due')}</span>: ${fmtDate(o.dueDate)}</span>` : ''}
+          ${o.dueDate ? `<span class="mob-ord-date${isOverdue ? ' ord-due-date' : ''}"><span data-i18n="orders.table.due">${i18n.getNestedTranslation('orders.table.due')}</span>: ${isOverdue?'<i class="ph-bold ph-warning-circle" style="margin-right:3px"></i>':''}${fmtDate(o.dueDate)}</span>` : ''}
         </div>
         <div class="mob-ord-expand" id="mce-${o.id}">
           <div class="mob-expand-grid">
