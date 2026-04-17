@@ -988,8 +988,9 @@
 
         <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_items"><i
             class="ph-bold ph-package"></i> Itens do Pedido</div>
-        <div class="items-header" style="display:grid; grid-template-columns: 1fr 60px 80px 48px; gap:8px;">
+        <div class="items-header" style="display:grid; grid-template-columns: 1fr 60px 50px 80px 60px; gap:6px; align-items:center;">
           <span data-i18n="orders.modal.th_desc">Descrição</span>
+          <span style="text-align:center">Tempo</span>
           <span style="text-align:center" data-i18n="orders.modal.th_qty">Qtd</span>
           <span style="text-align:right" data-i18n="orders.modal.th_price">Preço un.</span>
           <span></span>
@@ -1148,14 +1149,6 @@
             <div class="stat-mini" style="padding:10px; gap:8px">
               <div class="stat-mini-icon si-green" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-clock"></i></div>
               <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatHours" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Horas Estimadas</div></div>
-            </div>
-          </div>
-          <!-- Horas Globais -->
-          <div class="form-row full" style="margin-bottom:14px">
-            <div class="form-group">
-              <label class="form-label">Tempo estimado total (h) <span>(opcional)</span></label>
-              <input type="number" id="ptEstHours" class="form-input" min="0" step="0.1" placeholder="ex: 4.5">
-              <span class="form-hint">Soma matemática baseada nos itens. Podes ajustar livremente. O tempo será redistribuído no contador de vida útil na proporção de cada impressora escolhida.</span>
             </div>
           </div>
         </div>
@@ -2013,6 +2006,7 @@
     let _printingOrderId = null;
 
     // Updates the top dashboard cards based on user selection in the session modal
+    let _sessionTotalHours = 0; // State variable to hold computed hours
     function updatePrintingStats() {
       if (!_printingOrderId) return;
       const checkedBoxes = document.querySelectorAll('.pt-item-cb:checked:not(:disabled)');
@@ -2025,7 +2019,7 @@
       checkedBoxes.forEach(cb => {
         const idx = parseInt(cb.dataset.idx);
         const remQty = parseInt(cb.dataset.qty) || 1;
-        const printTime = parseFloat(cb.dataset.printtime) || 0;
+        const printTime = parseFloat(String(cb.dataset.printtime).replace(',', '.')) || 0;
         
         sumItems += remQty;
         sumHoras += printTime * remQty;
@@ -2052,8 +2046,7 @@
       document.getElementById('ptStatFilament').textContent = (Math.round(sumMass*100)/100);
       document.getElementById('ptStatHours').textContent = (Math.round(sumHoras*100)/100);
       
-      // Update global input (serves as the override block)
-      document.getElementById('ptEstHours').value = (Math.round(sumHoras*100)/100);
+      _sessionTotalHours = sumHoras;
     }
 
     function openPrintingModal(orderId) {
@@ -2061,7 +2054,7 @@
       const o = orders.find(x => x.id === orderId);
       if (!o) return;
 
-      document.getElementById('ptEstHours').value = '';
+      _sessionTotalHours = 0;
 
       // Progress header
       const { total, printed } = _printProgress(o);
@@ -2141,7 +2134,7 @@
       const o = orders.find(x => x.id === _printingOrderId);
       if (!o) return;
 
-      const estHours = parseFloat(document.getElementById('ptEstHours').value) || null;
+      const estHours = _sessionTotalHours || 0;
 
       // Gather selected items and quantities
       const checkedBoxes = document.querySelectorAll('.pt-item-cb:checked:not(:disabled)');
@@ -2163,7 +2156,7 @@
           if (lp) printerLabel = (lp.customName || 'Impressora') + (lp.model ? ' - ' + lp.model : '');
         }
 
-        const pTime = parseFloat(it.printTime) || 0;
+        const pTime = parseFloat(String(it.printTime).replace(',', '.')) || 0;
 
         sessionItems.push({ 
           itemIndex: idx, 
@@ -2592,9 +2585,9 @@
       if (!it) return it;
       const qty = parseInt(it.quantity || it.qty || 1) || 1;
       // Derive unitPrice from total/qty when unitPrice is missing or zero
-      const rawUnitPrice = parseFloat(it.unitPrice);
+      const rawUnitPrice = parseFloat(String(it.unitPrice).replace(',', '.'));
       const unitPrice = (rawUnitPrice > 0) ? rawUnitPrice
-        : (it.total ? parseFloat(it.total) / qty : 0);
+        : (it.total ? parseFloat(String(it.total).replace(',', '.')) / qty : 0);
       return {
         description: it.description || '',
         quantity: qty,
@@ -2603,21 +2596,31 @@
         weightG: it.weightG || it.weight || '',
         material: it.material || '',
         printTime: it.printTime || it.time || 0,
+        tech: it.tech || 'fdm'
       };
     }
 
     function _iid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 4); }
 
-    function buildMaterialOptions(selectedId) {
+    function buildMaterialOptions(selectedId, techFilter = null) {
       const none = `<option value="">— selecionar material —</option>`;
       if (!filaments || !filaments.length) return none;
 
       // Criar cópia para ordenar sem alterar o array global
-      const sorted = [...filaments].sort((a, b) => {
+      let sorted = [...filaments].sort((a, b) => {
         const la = `${a.colorName || ''} ${a.type || ''}`.trim().toLowerCase();
         const lb = `${b.colorName || ''} ${b.type || ''}`.trim().toLowerCase();
         return la.localeCompare(lb);
       });
+
+      if (techFilter) {
+        sorted = sorted.filter(f => {
+          const isResin = _isResinMaterial_byObj(f);
+          if (techFilter === 'resin' && !isResin) return false;
+          if (techFilter === 'fdm' && isResin) return false;
+          return true;
+        });
+      }
 
       const opts = sorted.map(f => {
         const isResin = _isResinMaterial_byObj(f);
@@ -2677,8 +2680,8 @@
         mats = [{ filamentId: item.filamentId, colorName: '', colorHex: '', weightG: item.weightG || '' }];
       }
       const it = item
-        ? { ...item, _id: id, materials: mats }
-        : { _id: id, description: '', quantity: 1, unitPrice: 0, materials: [], printedQty: 0 };
+        ? { ...item, _id: id, materials: mats, tech: item.tech || 'fdm' }
+        : { _id: id, description: '', quantity: 1, unitPrice: 0, materials: [], printedQty: 0, printTime: 0, tech: 'fdm' };
       _items.push(it);
 
       const matsHtml = mats.map((m, mi) => _buildMaterialRow(id, mi, m)).join('');
@@ -2688,23 +2691,31 @@
       wrapper.className = 'item-row-wrap';
       wrapper.dataset.id = id;
       wrapper.innerHTML = `
-        <div class="item-row" data-id="${id}">
+        <div class="item-row" data-id="${id}" style="display:grid; grid-template-columns: 1fr 60px 40px 80px 60px; gap:6px; align-items:center; margin-bottom:6px">
           <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description || '')}"
             oninput="updateItem('${id}','description',this.value)">
+          <input type="number" class="item-input mono" placeholder="h" min="0" step="0.1" value="${it.printTime || ''}"
+            oninput="updateItem('${id}','printTime',this.value)" style="text-align:center">
           <input type="number" class="item-input mono" min="1" value="${it.quantity || 1}"
             oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
           <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice || 0}"
             oninput="updateItem('${id}','unitPrice',this.value)">
-          <div style="display:flex; gap:4px; align-items:center">
+          <div style="display:flex; gap:4px; align-items:center;">
             <button type="button" class="btn btn-ghost btn-sm" style="padding:4px; font-size:0.9rem; border:none; color:var(--muted)" onclick="recalculateItem('${id}')" title="Recalcular"><i class="ph-bold ph-calculator"></i></button>
             <button type="button" class="item-remove" onclick="removeItem('${id}')"><i class="ph-bold ph-x"></i></button>
           </div>
         </div>
         <div class="item-mats-panel" data-id="${id}">
-          <div class="item-mats-header" onclick="toggleMatsPanel('${id}')">
-            <i class="ph-bold ph-palette" style="font-size:.8rem"></i>
-            <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
-            <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
+          <div class="item-mats-header" style="display:flex; align-items:center; justify-content:space-between">
+            <div style="cursor:pointer; display:flex; align-items:center; gap:6px; flex:1" onclick="toggleMatsPanel('${id}')">
+              <i class="ph-bold ph-palette" style="font-size:.8rem"></i>
+              <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
+              <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
+            </div>
+            <select class="item-select" style="width:auto; padding:2px 8px; font-size:0.75rem; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--dark);" onchange="updateItem('${id}','tech',this.value)">
+               <option value="fdm" ${it.tech==='fdm'?'selected':''}>FDM</option>
+               <option value="resin" ${it.tech==='resin'?'selected':''}>Resina</option>
+            </select>
           </div>
           <div class="item-mats-body" id="matsBody-${id}" style="display:none; flex-direction:column">
             <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
@@ -2719,10 +2730,13 @@
     }
 
     function _buildMaterialRow(itemId, matIdx, m) {
-      return `<div class="item-mat-row" data-matidx="${matIdx}">
-        <select class="item-select item-mat-select" onchange="updateMaterial('${itemId}',${matIdx},'filamentId',this.value)">${buildMaterialOptions(m.filamentId || '')}</select>
-        <input type="number" class="item-input mono item-mat-weight" min="0" step="0.1" placeholder="g/ml" value="${m.weightG || ''}" oninput="updateMaterial('${itemId}',${matIdx},'weightG',this.value)">
-        <button type="button" class="item-remove" style="width:24px;height:24px;font-size:.75rem" onclick="removeMaterialFromItem('${itemId}',${matIdx})"><i class="ph-bold ph-x"></i></button>
+      const it = _items.find(i => i._id === itemId);
+      const tech = it ? (it.tech || 'fdm') : 'fdm';
+      const unit = tech === 'resin' ? 'ml' : 'g';
+      return `<div class="item-mat-row" data-matidx="${matIdx}" style="display:flex; gap:6px; align-items:center; width:100%; margin-bottom:4px;">
+        <select class="item-select item-mat-select" style="flex:1" onchange="updateMaterial('${itemId}',${matIdx},'filamentId',this.value)">${buildMaterialOptions(m.filamentId || '', tech)}</select>
+        <input type="number" class="item-input mono item-mat-weight" style="width:80px" min="0" step="0.1" placeholder="${unit}" value="${m.weightG || ''}" oninput="updateMaterial('${itemId}',${matIdx},'weightG',this.value)">
+        <button type="button" class="item-remove" style="width:28px;height:28px;font-size:.85rem;display:flex;align-items:center;justify-content:center;margin-left:4px" onclick="removeMaterialFromItem('${itemId}',${matIdx})"><i class="ph-bold ph-x"></i></button>
       </div>`;
     }
 
@@ -2796,7 +2810,28 @@
       if (!it) return;
       if (field === 'quantity') it.quantity = parseInt(val) || 0;
       else if (field === 'unitPrice') it.unitPrice = parseFloat(val) || 0;
+      else if (field === 'printTime') it.printTime = parseFloat(String(val).replace(',', '.')) || 0;
       else it[field] = val;
+
+      if (field === 'tech') {
+        if (it.materials) {
+           it.materials.forEach(m => {
+             if (m.filamentId) {
+                const isResin = _isResinMaterial(m.filamentId);
+                if ((val === 'resin' && !isResin) || (val === 'fdm' && isResin)) {
+                   m.filamentId = '';
+                   m.colorName = '';
+                   m.colorHex = '';
+                }
+             }
+           });
+        }
+        const rowsEl = document.getElementById('matsRows-' + id);
+        if (rowsEl) {
+          rowsEl.innerHTML = (it.materials || []).map((m, mi) => _buildMaterialRow(id, mi, m)).join('');
+        }
+      }
+
       recalcTotal();
     }
 

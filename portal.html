@@ -861,7 +861,16 @@ function renderPortal() {
   const container = document.getElementById('portalContent');
   const actions = document.getElementById('actionsBar');
   
-  let html = renderHeroStatus();
+  const isBusiness = _company && (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano');
+  const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
+
+  let html = `
+    <div style="text-align:center; margin-bottom: 24px;">
+      <img src="${topLogo}" style="height:56px; width:auto; border-radius:16px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);" onerror="this.onerror=null; this.src='logo.jpg';">
+    </div>
+  `;
+
+  html += renderHeroStatus();
   if (_order.status !== 'declined') {
     html += renderTracker();
     if (_order.status === 'printing') {
