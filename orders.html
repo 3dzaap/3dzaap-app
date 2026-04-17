@@ -896,7 +896,8 @@
             <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
             <option value="validacao" data-i18n="status.validacao">Validação</option>
             <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
-            <option value="printing" data-i18n="status.printing">Printing</option>
+            <option value="printing" data-i18n="status.printing">Em Produção</option>
+            <option value="preparacao" data-i18n="status.preparacao">Expedição</option>
             <option value="done" data-i18n="status.done">Concluído</option>
           </select>
           <select id="filterPayment" class="filter-select" onchange="renderOrders()">
@@ -1021,7 +1022,8 @@
               <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
               <option value="validacao" data-i18n="status.validacao">Validação</option>
               <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
-              <option value="printing" data-i18n="status.printing">Printing</option>
+              <option value="printing" data-i18n="status.printing">Em Produção</option>
+              <option value="preparacao" data-i18n="status.preparacao">Expedição</option>
               <option value="done" data-i18n="status.done">Concluído</option>
             </select>
           </div>
@@ -1116,39 +1118,52 @@
     </div>
   </div>
 
-  <!-- PRINTING MODAL -->
+  <!-- PRINTING MODAL — Sessões de Impressão por Item -->
   <div class="modal-overlay" id="printingModalOverlay" onclick="if(event.target===this)closePrintingModal()">
-    <div class="modal" style="max-width:440px">
+    <div class="modal" style="max-width:600px">
       <div class="modal-header">
-        <div class="modal-title" data-i18n="orders.printing.modal_title"><i class="ph-bold ph-printer"></i> Iniciar
-          impressão</div>
+        <div class="modal-title" id="ptModalTitle"><i class="ph-bold ph-printer"></i> Sessão de Impressão</div>
         <button class="modal-close" onclick="closePrintingModal()"><i class="ph-bold ph-x"></i></button>
       </div>
-      <div class="modal-body">
-        <p style="font-size:.85rem;color:var(--muted);margin:0 0 16px" data-i18n="orders.printing.modal_desc">Antes de
-          avançar para <strong>Produção</strong>, indica qual a impressora e o tempo estimado de impressão.</p>
-        <div class="form-group" style="margin-bottom:14px">
-          <label class="form-label" data-i18n="orders.printing.lbl_printer">Impressora <span>(opcional)</span></label>
-          <select id="ptPrinterId" class="form-select">
-            <option value="" data-i18n="orders.printing.no_printer">— não atribuir impressora —</option>
-          </select>
-          <span class="form-hint"><span data-i18n="orders.printing.hint_printers">Só aparecem impressoras
-              operacionais.</span> <a href="printers.html" style="color:var(--blue)"
-              data-i18n="orders.printing.manage_link">Gerenciar impressoras →</a></span>
+      <div class="modal-body" style="padding:0">
+        <!-- Progress header -->
+        <div id="ptProgressBar" style="padding:14px 20px 12px; background:var(--bg-card-s); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px">
+          <div style="flex:1">
+            <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px">Progresso do Pedido</div>
+            <div style="background:var(--bg-input); border-radius:100px; height:6px; overflow:hidden">
+              <div id="ptProgressFill" style="height:100%; background:var(--blue); border-radius:100px; transition:width .5s"></div>
+            </div>
+          </div>
+          <div id="ptProgressLabel" style="font-family:var(--mono); font-size:.82rem; font-weight:800; color:var(--blue); white-space:nowrap">0 / 0</div>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label" data-i18n="orders.printing.lbl_time">Tempo estimado de impressão (horas)
-            <span>(opcional)</span></label>
-          <input type="number" id="ptEstHours" class="form-input" placeholder="ex: 4.5" min="0" step="0.5">
-          <span class="form-hint" data-i18n="orders.printing.hint_time">Será acumulado automaticamente no contador da
-            impressora quando o pedido for concluído.</span>
+
+        <div style="padding:16px 20px">
+          <!-- Impressora + Horas -->
+          <div class="form-row" style="margin-bottom:14px">
+            <div class="form-group">
+              <label class="form-label">Impressora <span>(opcional)</span></label>
+              <select id="ptPrinterId" class="form-select">
+                <option value="">— não atribuir impressora —</option>
+              </select>
+              <span class="form-hint">Só aparecem impressoras operacionais. <a href="printers.html" style="color:var(--blue)">Gerir →</a></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tempo estimado (h) <span>(opcional)</span></label>
+              <input type="number" id="ptEstHours" class="form-input" placeholder="ex: 4.5" min="0" step="0.5">
+              <span class="form-hint">Acumulado no contador da impressora ao concluir.</span>
+            </div>
+          </div>
+
+          <!-- Lista de itens a seleccionar -->
+          <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Itens a imprimir nesta sessão</div>
+          <div id="ptItemList" style="display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:2px"></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closePrintingModal()"
-          data-i18n="orders.confirm.btn_cancel">Cancelar</button>
-        <button class="btn btn-primary" onclick="confirmPrinting()" data-i18n="orders.printing.btn_confirm"><i
-            class="ph-bold ph-printer"></i> Avançar para Produção</button>
+        <button class="btn btn-ghost" onclick="closePrintingModal()">Cancelar</button>
+        <button class="btn btn-primary" id="ptConfirmBtn" onclick="confirmPrinting()">
+          <i class="ph-bold ph-printer"></i> Guardar sessão
+        </button>
       </div>
     </div>
   </div>
@@ -1169,17 +1184,19 @@
     let _items = []; // modal items buffer
 
     const STATUS_LABELS = {
-      orcamento: () => i18n.getNestedTranslation('status.orcamento') || 'Orçamento',
-      modelagem: () => i18n.getNestedTranslation('status.modelagem') || 'Modelagem',
-      validacao: () => i18n.getNestedTranslation('status.validacao') || 'Validação',
-      aprovado: () => i18n.getNestedTranslation('status.aprovado') || 'Aprovado',
-      printing: () => i18n.getNestedTranslation('status.printing') || 'Printing',
-      done: () => i18n.getNestedTranslation('status.done') || 'Concluído',
-      pendente: () => i18n.getNestedTranslation('status.pendente') || 'Pendente',
-      pago: () => i18n.getNestedTranslation('status.pago') || 'Pago',
-      fila: () => i18n.getNestedTranslation('status.aprovado') || 'Na Fila'
+      orcamento:   () => i18n.getNestedTranslation('status.orcamento')   || 'Orçamento',
+      modelagem:   () => i18n.getNestedTranslation('status.modelagem')   || 'Modelagem',
+      validacao:   () => i18n.getNestedTranslation('status.validacao')   || 'Validação',
+      aprovado:    () => i18n.getNestedTranslation('status.aprovado')    || 'Aprovado',
+      printing:    () => i18n.getNestedTranslation('status.printing')    || 'Em Produção',
+      preparacao:  () => i18n.getNestedTranslation('status.preparacao')  || 'Expedição',
+      done:        () => i18n.getNestedTranslation('status.done')        || 'Concluído',
+      pendente:    () => i18n.getNestedTranslation('status.pendente')    || 'Pendente',
+      pago:        () => i18n.getNestedTranslation('status.pago')        || 'Pago',
+      fila:        () => i18n.getNestedTranslation('status.aprovado')    || 'Na Fila',
+      enviado:     () => i18n.getNestedTranslation('status.preparacao')  || 'Enviado',
     };
-    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'printing', printing: 'done', done: null };
+    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'printing', printing: 'preparacao', preparacao: 'done', done: null };
 
     // ── HELPERS ────────────────────────────
     function renderStatusBadge(status) {
@@ -1948,26 +1965,45 @@
       const next = STATUS_NEXT[o.status];
       if (!next) return;
 
-      // Intercept transition to 'printing' — show printer selection modal
-      if (next === 'printing') {
-        openPrintingModal(id);
-        return;
+      // Intercept transition to/within 'printing' — show session modal
+      if (next === 'printing' || o.status === 'printing') {
+        // Check if all items are fully printed
+        const allPrinted = _allItemsPrinted(o);
+        if (!allPrinted) {
+          openPrintingModal(id);
+          return;
+        }
+        // All printed — accumulate all printer hours from sessions & advance
+        await _accumulatePrinterHoursFromSessions(o);
       }
 
       o.status = next;
       o.updatedAt = new Date().toISOString();
-      if (next === 'done') {
-        applyFilamentConsumption(o);
-        await _accumulatePrinterHours(o);
-      }
-      if (o.status === 'done') { for (const fil of filaments) { if (fil._changed) { await DB.saveFilament(fil); delete fil._changed; } } }
+      if (next === 'done') applyFilamentConsumptionForOrder(o);
       await DB.saveOrder(o);
+      // Persist any filament changes
+      for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
       renderOrders(id);
       const statusName = typeof STATUS_LABELS[next] === 'function' ? STATUS_LABELS[next]() : (STATUS_LABELS[next] || next);
       showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
     }
 
-    // ── PRINTING MODAL ─────────────────────
+    // Check if all items in an order have been fully printed
+    function _allItemsPrinted(o) {
+      const its = o.items || [];
+      if (!its.length) return true;
+      return its.every(it => (it.printedQty || 0) >= (parseInt(it.quantity) || 1));
+    }
+
+    // Count total and printed quantities across all items
+    function _printProgress(o) {
+      const its = o.items || [];
+      const total = its.reduce((s, it) => s + (parseInt(it.quantity) || 1), 0);
+      const printed = its.reduce((s, it) => s + Math.min(it.printedQty || 0, parseInt(it.quantity) || 1), 0);
+      return { total, printed };
+    }
+
+    // ── PRINTING MODAL — Session-based ────
     let _printingOrderId = null;
 
     function openPrintingModal(orderId) {
@@ -1978,14 +2014,56 @@
       // Build printer options (operacionais only)
       const operacionais = printers.filter(p => p.status === 'operacional');
       const printerOpts = operacionais.length
-        ? operacionais.map(p => `<option value="${p.id}">${escH(p.brand)} ${escH(p.model)} (${p.hoursUsed || 0}h usadas)</option>`).join('')
-        : `<option value="">— sem impressoras operacionais —</option>`;
-
-      // Pre-fill estimated hours from order notes / description hint
+        ? operacionais.map(p => `<option value="${p.id}">${escH(p.customName || p.brand + ' ' + p.model)} (${p.hoursUsed || 0}h)</option>`).join('')
+        : '';
       document.getElementById('ptPrinterId').innerHTML = `<option value="">— não atribuir impressora —</option>` + printerOpts;
       document.getElementById('ptEstHours').value = '';
+
+      // Progress header
+      const { total, printed } = _printProgress(o);
+      document.getElementById('ptProgressFill').style.width = total ? ((printed / total) * 100) + '%' : '0%';
+      document.getElementById('ptProgressLabel').textContent = printed + ' / ' + total;
+      const printerLabel = printers.find(p => p.id === o.printerId);
+      document.getElementById('ptModalTitle').innerHTML = `<i class="ph-bold ph-printer"></i> Sessão de Impressão — ${escH(o.orderNumber)}`;
+
+      // Render item list — show only items not fully printed
+      const its = o.items || [];
+      const itemListEl = document.getElementById('ptItemList');
+      itemListEl.innerHTML = its.map((it, idx) => {
+        const qty = parseInt(it.quantity) || 1;
+        const printed = Math.min(it.printedQty || 0, qty);
+        const remaining = qty - printed;
+        const isDone = remaining <= 0;
+        const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
+        const matsHtml = mats.map(m => {
+          const fil = filaments.find(f => String(f.id) === String(m.filamentId));
+          if (!fil) return '';
+          const colorDot = fil.colorHex ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${fil.colorHex};border:1px solid rgba(0,0,0,.15);margin-right:4px"></span>` : '';
+          return `<span style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center">${colorDot}${escH(fil.colorName||fil.color||'')} ${escH(fil.type||'')} ${m.weightG?'· '+m.weightG+'g/ml':''}</span>`;
+        }).filter(Boolean).join('<span style="margin:0 4px;color:var(--border)">+</span>');
+
+        return `<div class="pt-item-card ${isDone ? 'pt-item-done' : ''}">
+          <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}">
+            <input type="checkbox" class="pt-item-cb" data-idx="${idx}" data-qty="${remaining}" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px">
+            <div style="flex:1; min-width:0">
+              <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--dark)'}">${escH(it.description || 'Item ' + (idx+1))}</div>
+              <div style="margin-top:2px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                ${matsHtml}
+              </div>
+            </div>
+            <div style="text-align:right; flex-shrink:0">
+              <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' por imprimir'}</div>
+              <div style="font-size:.65rem; color:var(--muted); margin-top:2px">Total: ${qty} | Impresso: ${printed}</div>
+              ${!isDone ? `<div style="margin-top:6px">
+                <label style="font-size:.7rem; color:var(--muted); font-weight:700">Qtd nesta sessão:</label>
+                <input type="number" class="pt-item-qty item-input mono" data-idx="${idx}" min="1" max="${remaining}" value="${remaining}" style="width:60px; padding:3px 6px; font-size:.8rem; display:inline-block">
+              </div>` : ''}
+            </div>
+          </label>
+        </div>`;
+      }).join('');
+
       document.getElementById('printingModalOverlay').classList.add('open');
-      document.getElementById('ptEstHours').focus();
     }
 
     function closePrintingModal() {
@@ -1997,25 +2075,87 @@
       const o = orders.find(x => x.id === _printingOrderId);
       if (!o) return;
 
-      const printerId = document.getElementById('ptPrinterId').value;
+      const printerId = document.getElementById('ptPrinterId').value || null;
       const estHours = parseFloat(document.getElementById('ptEstHours').value) || null;
 
-      // Save printer assignment on the order
-      o.printerId = printerId || null;
-      o.estPrintHours = estHours;
-      o.status = 'printing';
+      // Gather selected items and quantities
+      const checkedBoxes = document.querySelectorAll('.pt-item-cb:checked:not(:disabled)');
+      if (!checkedBoxes.length) { showToast('Selecciona pelo menos um item para imprimir.', 'err'); return; }
+
+      const sessionItems = [];
+      const its = o.items || [];
+      checkedBoxes.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        const qtyInput = document.querySelector(`.pt-item-qty[data-idx="${idx}"]`);
+        const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : (parseInt(cb.dataset.qty) || 1);
+        const it = its[idx];
+        if (!it) return;
+        sessionItems.push({ itemIndex: idx, description: it.description, quantity: qty, materials: it.materials || [] });
+      });
+
+      // Create session record
+      const printerL = printers.find(p => p.id === printerId);
+      const session = {
+        id: _iid(),
+        startedAt: new Date().toISOString(),
+        completedAt: null,
+        printerId: printerId || null,
+        printerLabel: printerL ? (printerL.customName || printerL.brand + ' ' + printerL.model) : null,
+        estHours,
+        items: sessionItems
+      };
+
+      // Update printedQty on items
+      o.printSessions = o.printSessions || [];
+      o.printSessions.push(session);
+      sessionItems.forEach(si => {
+        const it = its[si.itemIndex];
+        if (!it) return;
+        it.printedQty = Math.min((parseInt(it.printedQty) || 0) + si.quantity, parseInt(it.quantity) || 1);
+      });
+
+      // Ensure status is 'printing'
+      if (o.status !== 'printing') o.status = 'printing';
+      o.printerId = printerId || o.printerId;
+      o.estPrintHours = estHours || o.estPrintHours;
       o.updatedAt = new Date().toISOString();
 
+      const btn = document.getElementById('ptConfirmBtn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner"></i> A guardar…'; }
+
       try {
+        // Debit stock for this session
+        await _applyFilamentConsumptionForItems(sessionItems, o.orderNumber);
         await DB.saveOrder(o);
         closePrintingModal();
         renderOrders(_printingOrderId);
-        const msg = i18n.getNestedTranslation('orders.toasts.status_updated', { s: i18n.getNestedTranslation('status.printing') });
-        showToast(`<i class="ph-bold ph-printer"></i> ${o.orderNumber} ${msg}`, 'ok');
-      } catch (e) { showToast('Erro: ' + e.message, 'err'); }
+        showToast(`<i class="ph-bold ph-printer"></i> Sessão de impressão guardada (${sessionItems.length} item/s)`, 'ok');
+      } catch (e) {
+        showToast('Erro ao guardar sessão: ' + e.message, 'err');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-printer"></i> Guardar sessão'; }
+      }
     }
 
-    // Accumulate hours on the printer when order is marked done
+    // Accumulate hours from ALL print sessions
+    async function _accumulatePrinterHoursFromSessions(order) {
+      const sessions = order.printSessions || [];
+      // Group hours by printer
+      const byPrinter = {};
+      sessions.forEach(s => {
+        if (!s.printerId || !s.estHours) return;
+        byPrinter[s.printerId] = (byPrinter[s.printerId] || 0) + s.estHours;
+        s.completedAt = s.completedAt || new Date().toISOString();
+      });
+      for (const [pid, hours] of Object.entries(byPrinter)) {
+        const p = printers.find(x => x.id === pid);
+        if (!p) continue;
+        p.hoursUsed = (parseInt(p.hoursUsed) || 0) + hours;
+        try { const saved = await DB.savePrinter(p); const idx = printers.findIndex(x => x.id === pid); if (idx>-1) printers[idx]=saved; } catch(e){}
+      }
+    }
+
+    // Legacy single-printer hours accumulator (kept for backward compat)
     async function _accumulatePrinterHours(order) {
       if (!order.printerId || !order.estPrintHours) return;
       const p = printers.find(x => x.id === order.printerId);
@@ -2028,96 +2168,111 @@
       } catch (e) { console.warn('[3DZAAP] printer hours update failed:', e); }
     }
 
-    // ── OPÇÃO A: filament auto-discount ────
-    async function applyFilamentConsumption(order) {
+    // ── OPÇÃO A: filament auto-discount (PER-SESSION) ────
+    async function _applyFilamentConsumptionForItems(itemsArr, orderRefString) {
       let changed = false;
-      const its = order.items || [];
-      its.forEach(item => {
-        // filamentId stored as string from select value; fil.id is number — use == for loose compare
-        if (!item.filamentId) return;
-        const weightG = parseFloat(item.weightG) || 0;
+      itemsArr.forEach(item => {
+        const mats = item.materials || [];
+        // If empty materials but has legacy filamentId, normalize
+        if (!mats.length && item.filamentId) mats.push({ filamentId: item.filamentId, weightG: item.weightG });
+
         const qty = parseInt(item.quantity) || 1;
-        if (weightG <= 0) return;
-        const totalWeightG = weightG * qty;
-        const fil = filaments.find(f => f.id == item.filamentId); // == intentional: number vs string
-        if (!fil) return;
+        
+        mats.forEach(m => {
+          if (!m.filamentId) return;
+          const weightG = parseFloat(m.weightG) || 0;
+          if (weightG <= 0) return;
+          const totalWeightG = weightG * qty;
+          const fil = filaments.find(f => String(f.id) === String(m.filamentId));
+          if (!fil) return;
 
-        const rollKgMap = { '1kg': 1, '500g': 0.5, '300g': 0.3, '250g': 0.25, '100g': 0.1 };
-        const kgPerRoll = rollKgMap[fil.rollSize] || 1;
+          const rollKgMap = { '1kg': 1, '500g': 0.5, '300g': 0.3, '250g': 0.25, '100g': 0.1 };
+          const kgPerRoll = rollKgMap[fil.rollSize] || 1;
 
-        // Initialise kgRemaining if never set: assume inUse rolls are full
-        if (fil.kgRemaining === undefined || fil.kgRemaining === null) {
-          fil.kgRemaining = (parseInt(fil.inUse) || 0) * kgPerRoll;
-          // If no inUse rolls, try to open one from newRolls
-          if (fil.kgRemaining === 0 && (parseInt(fil.newRolls) || 0) > 0) {
-            fil.inUse = (parseInt(fil.inUse) || 0) + 1;
-            fil.newRolls = Math.max(0, (parseInt(fil.newRolls) || 1) - 1);
-            fil.kgRemaining = kgPerRoll;
-          }
-        }
-
-        // For resin materials, weightG field contains ml — convert differently
-        const _isResin = _isResinMaterial(item.filamentId);
-        // Resin: 1ml ≈ 1.1g average density; stored in rollSize as volume (ml)
-        // We treat kgRemaining as "litres" for resin (1L = 1000ml)
-        let remainingToConsume = _isResin
-          ? (totalWeightG / 1000)   // ml → L (stored like kg for resin bottles)
-          : (totalWeightG / 1000);  // g  → kg
-
-        while (remainingToConsume > 0) {
-          if (fil.kgRemaining > 0) {
-            // consume from current roll
-            const consumed = Math.min(fil.kgRemaining, remainingToConsume);
-            fil.kgRemaining -= consumed;
-            remainingToConsume -= consumed;
-            remainingToConsume = Math.round(remainingToConsume * 10000) / 10000; // float precision
-          }
-
-          if (fil.kgRemaining <= 0.001) { // roll exhausted (allow tiny float error)
-            fil.kgRemaining = 0;
-            // Close this roll
-            fil.inUse = Math.max(0, (parseInt(fil.inUse) || 1) - 1);
-            fil.total = Math.max(0, (parseInt(fil.total) || 1) - 1);
-            fil.newRolls = Math.max(0, (parseInt(fil.total) || 0) - (parseInt(fil.inUse) || 0));
-
-            if (parseInt(fil.total) === 0) {
-              // Truly exhausted
-              fil.emptyConfirmed = true;
-              fil.emptyByOrder = order.orderNumber;
-              fil.emptyAt = new Date().toISOString();
-              fil.kgRemaining = 0;
-              remainingToConsume = 0; // nothing left to consume
-            } else if (remainingToConsume > 0) {
-              // Open next roll from newRolls if available
-              const newR = parseInt(fil.newRolls) || 0;
-              if (newR > 0) {
-                fil.inUse = (parseInt(fil.inUse) || 0) + 1;
-                fil.newRolls = Math.max(0, newR - 1);
-                fil.kgRemaining = kgPerRoll;
-              } else if ((parseInt(fil.inUse) || 0) > 0) {
-                // Already open rolls remain, keep consuming
-                fil.kgRemaining = kgPerRoll;
-              } else {
-                // No more rolls at all
-                remainingToConsume = 0;
-              }
+          // Initialise kgRemaining if never set
+          if (fil.kgRemaining === undefined || fil.kgRemaining === null) {
+            fil.kgRemaining = (parseInt(fil.inUse) || 0) * kgPerRoll;
+            if (fil.kgRemaining === 0 && (parseInt(fil.newRolls) || 0) > 0) {
+              fil.inUse = (parseInt(fil.inUse) || 0) + 1;
+              fil.newRolls = Math.max(0, (parseInt(fil.newRolls) || 1) - 1);
+              fil.kgRemaining = kgPerRoll;
             }
-          } else {
-            break; // still kg in current roll, consumption complete
           }
-        }
 
-        fil.updatedAt = new Date().toISOString();
-        fil._changed = true;
-        changed = true;
+          const _isResin = _isResinMaterial_byObj(fil);
+          let remainingToConsume = _isResin ? (totalWeightG / 1000) : (totalWeightG / 1000);
+
+          while (remainingToConsume > 0) {
+            if (fil.kgRemaining > 0) {
+              const consumed = Math.min(fil.kgRemaining, remainingToConsume);
+              fil.kgRemaining -= consumed;
+              remainingToConsume -= consumed;
+              remainingToConsume = Math.round(remainingToConsume * 10000) / 10000;
+            }
+
+            if (fil.kgRemaining <= 0.001) {
+              fil.kgRemaining = 0;
+              fil.inUse = Math.max(0, (parseInt(fil.inUse) || 1) - 1);
+              fil.total = Math.max(0, (parseInt(fil.total) || 1) - 1);
+              fil.newRolls = Math.max(0, (parseInt(fil.total) || 0) - (parseInt(fil.inUse) || 0));
+
+              if (parseInt(fil.total) === 0) {
+                fil.emptyConfirmed = true;
+                fil.emptyByOrder = orderRefString || 'N/A';
+                fil.emptyAt = new Date().toISOString();
+                fil.kgRemaining = 0;
+                remainingToConsume = 0;
+              } else if (remainingToConsume > 0) {
+                const newR = parseInt(fil.newRolls) || 0;
+                if (newR > 0) {
+                  fil.inUse = (parseInt(fil.inUse) || 0) + 1;
+                  fil.newRolls = Math.max(0, newR - 1);
+                  fil.kgRemaining = kgPerRoll;
+                } else if ((parseInt(fil.inUse) || 0) > 0) {
+                  fil.kgRemaining = kgPerRoll;
+                } else {
+                  remainingToConsume = 0;
+                }
+              }
+            } else {
+              break;
+            }
+          }
+
+          fil.updatedAt = new Date().toISOString();
+          fil._changed = true;
+          changed = true;
+        });
       });
-      if (changed) {
-        for (const fil of filaments) {
-          if (fil._changed) { try { await DB.saveFilament(fil); } catch (e) { } delete fil._changed; }
-        }
-        showToast(i18n.getNestedTranslation('materials.toasts.saved'), 'ok');
+      return changed;
+    }
+
+    // Single-order legacy / cleanup entrypoint 
+    async function applyFilamentConsumptionForOrder(order) {
+      // If we don't use sessions, or if we have leftover unprinted quantity, consume them here.
+      // But typically, sessions consume as they go. This function just ensures
+      // that any items with NO sessions get consumed when forced to "done"
+      const its = order.items || [];
+      const unprintedItems = its.map((it, idx) => {
+        const qty = parseInt(it.quantity) || 1;
+        const printed = Math.min(it.printedQty || 0, qty);
+        if (qty > printed) return { ...it, quantity: qty - printed };
+        return null;
+      }).filter(Boolean);
+
+      if (unprintedItems.length > 0) {
+        await _applyFilamentConsumptionForItems(unprintedItems, order.orderNumber);
+        // Correct the printedQty so it matches
+        its.forEach(it => it.printedQty = parseInt(it.quantity) || 1);
       }
     }
+    
+    // Backward compat alias
+    async function applyFilamentConsumption(order) {
+       await applyFilamentConsumptionForOrder(order);
+    }
+
+
 
     // ── OPÇÃO A: revert filament consumption ──
     async function revertFilamentConsumption(order) {
@@ -2411,31 +2566,126 @@
 
     function addOrderItem(item = null) {
       const id = _iid();
-      const it = item ? { ...item, _id: id } : { _id: id, description: '', quantity: 1, unitPrice: 0, filamentId: '', weightG: '' };
+      // Normalise incoming item: se tem filamentId legacy, converter para materials[]
+      let mats = [];
+      if (item && Array.isArray(item.materials) && item.materials.length) {
+        mats = item.materials;
+      } else if (item && item.filamentId) {
+        mats = [{ filamentId: item.filamentId, colorName: '', colorHex: '', weightG: item.weightG || '' }];
+      }
+      const it = item
+        ? { ...item, _id: id, materials: mats }
+        : { _id: id, description: '', quantity: 1, unitPrice: 0, materials: [], printedQty: 0 };
       _items.push(it);
 
+      const matsHtml = mats.map((m, mi) => _buildMaterialRow(id, mi, m)).join('');
+
       const list = document.getElementById('orderItemsList');
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      row.dataset.id = id;
-      row.innerHTML = `
-    <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description || '')}"
-      oninput="updateItem('${id}','description',this.value)">
-    <input type="number" class="item-input mono" min="1" value="${it.quantity || 1}"
-      oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
-    <select class="item-select" onchange="updateItem('${id}','filamentId',this.value)">${buildMaterialOptions(it.filamentId)}</select>
-    <input type="number" class="item-input mono" min="0" value="${it.weightG || ''}"
-      oninput="updateItem('${id}','weightG',this.value)">
-    <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice || 0}"
-      oninput="updateItem('${id}','unitPrice',this.value)">
-    <div style="display:flex; gap:4px">
-      <button type="button" class="btn btn-ghost btn-sm" style="padding:4px; font-size:0.9rem; border:none; color:var(--muted)" onclick="recalculateItem('${id}')" title="Recalcular na Calculadora"><i class="ph-bold ph-calculator"></i></button>
-      <button type="button" class="item-remove" onclick="removeItem('${id}')"><i class="ph-bold ph-x"></i></button>
-    </div>`;
-      list.appendChild(row);
-      // Actualizar unidade após append (DOM já existe)
-      _updateWeightUnit(id, it.filamentId);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'item-row-wrap';
+      wrapper.dataset.id = id;
+      wrapper.innerHTML = `
+        <div class="item-row" data-id="${id}">
+          <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description || '')}"
+            oninput="updateItem('${id}','description',this.value)">
+          <input type="number" class="item-input mono" min="1" value="${it.quantity || 1}"
+            oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
+          <input type="number" class="item-input mono" placeholder="0,00" min="0" step="0.01" value="${it.unitPrice || 0}"
+            oninput="updateItem('${id}','unitPrice',this.value)">
+          <div style="display:flex; gap:4px; align-items:center">
+            <button type="button" class="btn btn-ghost btn-sm" style="padding:4px; font-size:0.9rem; border:none; color:var(--muted)" onclick="recalculateItem('${id}')" title="Recalcular"><i class="ph-bold ph-calculator"></i></button>
+            <button type="button" class="item-remove" onclick="removeItem('${id}')"><i class="ph-bold ph-x"></i></button>
+          </div>
+        </div>
+        <div class="item-mats-panel" data-id="${id}">
+          <div class="item-mats-header" onclick="toggleMatsPanel('${id}')">
+            <i class="ph-bold ph-palette" style="font-size:.8rem"></i>
+            <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
+            <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
+          </div>
+          <div class="item-mats-body" id="matsBody-${id}" style="display:none">
+            <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
+            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue)" onclick="addMaterialToItem('${id}')">
+              <i class="ph-bold ph-plus"></i> Adicionar material
+            </button>
+          </div>
+        </div>`;
+
+      list.appendChild(wrapper);
       recalcTotal();
+    }
+
+    function _buildMaterialRow(itemId, matIdx, m) {
+      return `<div class="item-mat-row" data-matidx="${matIdx}">
+        <select class="item-select item-mat-select" onchange="updateMaterial('${itemId}',${matIdx},'filamentId',this.value)">${buildMaterialOptions(m.filamentId || '')}</select>
+        <input type="number" class="item-input mono item-mat-weight" min="0" step="0.1" placeholder="g/ml" value="${m.weightG || ''}" oninput="updateMaterial('${itemId}',${matIdx},'weightG',this.value)">
+        <button type="button" class="item-remove" style="width:24px;height:24px;font-size:.75rem" onclick="removeMaterialFromItem('${itemId}',${matIdx})"><i class="ph-bold ph-x"></i></button>
+      </div>`;
+    }
+
+    function toggleMatsPanel(id) {
+      const body = document.getElementById('matsBody-' + id);
+      const caret = document.getElementById('matscaret-' + id);
+      if (!body) return;
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'flex';
+      if (caret) caret.style.transform = open ? '' : 'rotate(180deg)';
+    }
+
+    function addMaterialToItem(itemId) {
+      const it = _items.find(i => i._id === itemId);
+      if (!it) return;
+      const newMat = { filamentId: '', colorName: '', colorHex: '', weightG: '' };
+      it.materials = it.materials || [];
+      const matIdx = it.materials.length;
+      it.materials.push(newMat);
+      const rowsEl = document.getElementById('matsRows-' + itemId);
+      if (rowsEl) {
+        const div = document.createElement('div');
+        div.innerHTML = _buildMaterialRow(itemId, matIdx, newMat);
+        rowsEl.appendChild(div.firstElementChild);
+      }
+      // Open panel
+      const body = document.getElementById('matsBody-' + itemId);
+      const caret = document.getElementById('matscaret-' + itemId);
+      if (body) body.style.display = 'flex';
+      if (caret) caret.style.transform = 'rotate(180deg)';
+      _refreshMatsLabel(itemId);
+    }
+
+    function removeMaterialFromItem(itemId, matIdx) {
+      const it = _items.find(i => i._id === itemId);
+      if (!it || !it.materials) return;
+      it.materials.splice(matIdx, 1);
+      // Re-render all rows for this item
+      const rowsEl = document.getElementById('matsRows-' + itemId);
+      if (rowsEl) {
+        rowsEl.innerHTML = it.materials.map((m, mi) => _buildMaterialRow(itemId, mi, m)).join('');
+      }
+      _refreshMatsLabel(itemId);
+    }
+
+    function updateMaterial(itemId, matIdx, field, val) {
+      const it = _items.find(i => i._id === itemId);
+      if (!it || !it.materials || !it.materials[matIdx]) return;
+      if (field === 'weightG') it.materials[matIdx].weightG = parseFloat(val) || '';
+      else it.materials[matIdx][field] = val;
+      // Update colorName/colorHex from filament data
+      if (field === 'filamentId' && val) {
+        const fil = filaments.find(f => String(f.id) === String(val));
+        if (fil) {
+          it.materials[matIdx].colorName = fil.colorName || fil.color || '';
+          it.materials[matIdx].colorHex  = fil.colorHex || '';
+        }
+      }
+    }
+
+    function _refreshMatsLabel(itemId) {
+      const it = _items.find(i => i._id === itemId);
+      const lbl = document.getElementById('matslbl-' + itemId);
+      if (!lbl || !it) return;
+      const count = (it.materials || []).length;
+      lbl.textContent = count ? count + ' material(is)' : 'Materiais (opcional)';
     }
 
     function updateItem(id, field, val) {
@@ -2443,16 +2693,18 @@
       if (!it) return;
       if (field === 'quantity') it.quantity = parseInt(val) || 0;
       else if (field === 'unitPrice') it.unitPrice = parseFloat(val) || 0;
-      else if (field === 'weightG') it.weightG = parseFloat(val) || 0;
       else it[field] = val;
-      if (field === 'filamentId') _updateWeightUnit(id, val);
       recalcTotal();
     }
 
     function removeItem(id) {
       _items = _items.filter(i => i._id !== id);
-      const row = document.querySelector(`.item-row[data-id="${id}"]`);
-      if (row) row.remove();
+      const wrapper = document.querySelector(`.item-row-wrap[data-id="${id}"]`);
+      if (wrapper) wrapper.remove();
+      else {
+        const row = document.querySelector(`.item-row[data-id="${id}"]`);
+        if (row) row.remove();
+      }
       recalcTotal();
     }
 
@@ -2465,7 +2717,14 @@
       return _items.map(it => {
         const row = document.querySelector(`.item-row[data-id="${it._id}"]`);
         if (row) it.description = row.querySelector('input[type="text"]').value.trim();
+        // Ensure materials array is clean
+        it.materials = (it.materials || []).filter(m => m.filamentId);
         const { _id, ...rest } = it;
+        // Keep backward-compat: populate top-level filamentId/weightG from first material
+        if (rest.materials && rest.materials.length && !rest.filamentId) {
+          rest.filamentId = rest.materials[0].filamentId || '';
+          rest.weightG = rest.materials[0].weightG || '';
+        }
         return rest;
       });
     }

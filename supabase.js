@@ -476,8 +476,10 @@ const DB = {
         *,
         companies (
           name, 
+          plan,
           config, 
-          signature
+          signature,
+          logo_url
         )
       `)
       .eq('share_token', shareToken)
@@ -497,8 +499,9 @@ const DB = {
     return { 
       order, 
       companyName: company.name || '3DZAAP',
+      companyPlan: company.plan || 'trial',
       companyConfig: config,
-      logoUrl: config.logoUrl || '', // Fallback to config
+      logoUrl: company.logo_url || config.logoUrl || '', // DB logo_url first, then config fallback
       signature: company.signature || null
     };
   },
@@ -931,6 +934,8 @@ function _mapOrderFromDB(row) {
     clientName:    row.client_name,
     clientEmail:   row.client_email  || '',
     clientPhone:   row.client_phone  || '',
+    clientNif:     row.client_nif    || '',
+    clientAddress: row.client_address|| '',
     items:         row.items         || [],
     description:   row.description   || '',
     total:         parseFloat(row.total || 0),
@@ -942,6 +947,7 @@ function _mapOrderFromDB(row) {
     notes:         row.notes         || '',
     printerId:     row.printer_id    || null,
     estPrintHours: row.est_print_hours ? parseFloat(row.est_print_hours) : null,
+    printSessions: Array.isArray(row.print_sessions) ? row.print_sessions : (row.print_sessions ? JSON.parse(row.print_sessions) : []),
     shareToken:    row.share_token,
     passphrase:    row.passphrase,
     expiresAt:     row.expires_at,
@@ -955,6 +961,8 @@ function _mapOrderToDB(o) {
     client_name:     o.clientName,
     client_email:    o.clientEmail  || null,
     client_phone:    o.clientPhone  || null,
+    client_nif:      o.clientNif    || null,
+    client_address:  o.clientAddress|| null,
     items:           o.items        || [],
     description:     o.description  || '',
     total:           parseFloat(o.total) || 0,
@@ -965,6 +973,7 @@ function _mapOrderToDB(o) {
     notes:           o.notes        || null,
     printer_id:      o.printerId    || null,
     est_print_hours: o.estPrintHours || null,
+    print_sessions:  o.printSessions || [],
     share_token:     o.shareToken   || null,
     passphrase:      o.passphrase   || null,
     expires_at:      o.expiresAt    || null,
