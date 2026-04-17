@@ -988,17 +988,11 @@
 
         <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_items"><i
             class="ph-bold ph-package"></i> Itens do Pedido</div>
-        <div class="items-header">
-          <span data-i18n="orders.modal.th_desc">Descrição</span><span data-i18n="orders.modal.th_qty">Qtd</span>
-          <span style="text-align:right"><span data-i18n="orders.modal.th_mat">Material</span>
-            <span class="tip-icon" style="position:relative;display:inline-flex;cursor:help;margin-left:3px"><i class="ph-bold ph-info"></i>
-              <div class="tip-bubble" id="filTipBubble" data-i18n="orders.modal.tip_material">Se não selecionares material, o consumo não será descontado automaticamente.</div>
-            </span>
-          </span>
-          <span style="text-align:right;white-space:nowrap" id="weightUnitHeader"><span
-              data-i18n="orders.modal.th_qty">Qtd</span> <span id="weightUnitLabel"
-              style="font-family:var(--mono)">g/ml</span></span>
-          <span style="text-align:right" data-i18n="orders.modal.th_price">Preço un.</span><span></span>
+        <div class="items-header" style="display:grid; grid-template-columns: 1fr 60px 80px 48px; gap:8px;">
+          <span data-i18n="orders.modal.th_desc">Descrição</span>
+          <span style="text-align:center" data-i18n="orders.modal.th_qty">Qtd</span>
+          <span style="text-align:right" data-i18n="orders.modal.th_price">Preço un.</span>
+          <span></span>
         </div>
         <div id="orderItemsList"></div>
         <div style="display:flex; gap:10px; margin-top:8px">
@@ -2029,27 +2023,42 @@
       // Render item list — show only items not fully printed
       const its = o.items || [];
       const itemListEl = document.getElementById('ptItemList');
+      
+      let sumEstHours = 0;
+
       itemListEl.innerHTML = its.map((it, idx) => {
         const qty = parseInt(it.quantity) || 1;
         const printed = Math.min(it.printedQty || 0, qty);
         const remaining = qty - printed;
         const isDone = remaining <= 0;
+        
+        if (!isDone) {
+          sumEstHours += (parseFloat(it.printTime) || 0) * remaining;
+        }
+
         const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
-        const matsHtml = mats.map(m => {
-          const fil = filaments.find(f => String(f.id) === String(m.filamentId));
-          if (!fil) return '';
-          const colorDot = fil.colorHex ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${fil.colorHex};border:1px solid rgba(0,0,0,.15);margin-right:4px"></span>` : '';
-          return `<span style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center">${colorDot}${escH(fil.colorName||fil.color||'')} ${escH(fil.type||'')} ${m.weightG?'· '+m.weightG+'g/ml':''}</span>`;
-        }).filter(Boolean).join('<span style="margin:0 4px;color:var(--border)">+</span>');
+        
+        const matsHtml = mats.map((m, mIdx) => {
+          return `<div style="margin-top:6px">
+            <select class="item-select pt-mat-override" data-item="${idx}" data-mat="${mIdx}">
+              ${buildMaterialOptions(m.filamentId || '')}
+            </select>
+          </div>`;
+        }).join('');
+
+        const fallbackMatHtml = !mats.length ? `<div style="margin-top:6px"><select class="item-select pt-mat-override" data-item="${idx}" data-mat="0">${buildMaterialOptions('')}</select></div>` : '';
 
         return `<div class="pt-item-card ${isDone ? 'pt-item-done' : ''}">
           <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}">
             <input type="checkbox" class="pt-item-cb" data-idx="${idx}" data-qty="${remaining}" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px">
             <div style="flex:1; min-width:0">
               <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--dark)'}">${escH(it.description || 'Item ' + (idx+1))}</div>
-              <div style="margin-top:2px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
-                ${matsHtml}
-              </div>
+              ${!isDone ? `
+                <div style="margin-top:4px;">
+                  ${matsHtml}${fallbackMatHtml}
+                </div>
+              ` : ''}
+              ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo: ${it.printTime}h / peça</div>` : ''}
             </div>
             <div style="text-align:right; flex-shrink:0">
               <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' por imprimir'}</div>
@@ -2063,6 +2072,9 @@
         </div>`;
       }).join('');
 
+      if (sumEstHours > 0) {
+        document.getElementById('ptEstHours').value = (Math.round(sumEstHours * 100) / 100);
+      }
       document.getElementById('printingModalOverlay').classList.add('open');
     }
 
@@ -2090,7 +2102,19 @@
         const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : (parseInt(cb.dataset.qty) || 1);
         const it = its[idx];
         if (!it) return;
-        sessionItems.push({ itemIndex: idx, description: it.description, quantity: qty, materials: it.materials || [] });
+
+        // Apply material overrides from the session modal back to the item
+        it.materials = it.materials || [];
+        const overrides = document.querySelectorAll(`.pt-mat-override[data-item="${idx}"]`);
+        overrides.forEach(ov => {
+          const mIdx = parseInt(ov.dataset.mat);
+          if (ov.value) {
+            if (!it.materials[mIdx]) it.materials[mIdx] = { filamentId: '', weightG: '' };
+            it.materials[mIdx].filamentId = ov.value;
+          }
+        });
+
+        sessionItems.push({ itemIndex: idx, description: it.description, quantity: qty, materials: it.materials });
       });
 
       // Create session record
@@ -2603,9 +2627,9 @@
             <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
             <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
           </div>
-          <div class="item-mats-body" id="matsBody-${id}" style="display:none">
+          <div class="item-mats-body" id="matsBody-${id}" style="display:none; flex-direction:column">
             <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
-            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue)" onclick="addMaterialToItem('${id}')">
+            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue); align-self:flex-start" onclick="addMaterialToItem('${id}')">
               <i class="ph-bold ph-plus"></i> Adicionar material
             </button>
           </div>
