@@ -1131,23 +1131,35 @@
           <div id="ptProgressLabel" style="font-family:var(--mono); font-size:.82rem; font-weight:800; color:var(--blue); white-space:nowrap">0 / 0</div>
         </div>
 
-        <div style="padding:16px 20px">
-          <!-- Impressora + Horas -->
-          <div class="form-row" style="margin-bottom:14px">
-            <div class="form-group">
-              <label class="form-label">Impressora <span>(opcional)</span></label>
-              <select id="ptPrinterId" class="form-select">
-                <option value="">— não atribuir impressora —</option>
-              </select>
-              <span class="form-hint">Só aparecem impressoras operacionais. <a href="printers.html" style="color:var(--blue)">Gerir →</a></span>
+        <div style="padding:16px 20px 0;">
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:16px;">
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-blue" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-package"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatItems" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Itens escolhidos</div></div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Tempo estimado (h) <span>(opcional)</span></label>
-              <input type="number" id="ptEstHours" class="form-input" placeholder="ex: 4.5" min="0" step="0.5">
-              <span class="form-hint">Acumulado no contador da impressora ao concluir.</span>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-purple" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-printer"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatPrinters" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Impressoras</div></div>
+            </div>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-orange" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-palette"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatFilament" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Material (g/ml)</div></div>
+            </div>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-green" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-clock"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatHours" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Horas Estimadas</div></div>
             </div>
           </div>
-
+          <!-- Horas Globais -->
+          <div class="form-row full" style="margin-bottom:14px">
+            <div class="form-group">
+              <label class="form-label">Tempo estimado total (h) <span>(opcional)</span></label>
+              <input type="number" id="ptEstHours" class="form-input" min="0" step="0.1" placeholder="ex: 4.5">
+              <span class="form-hint">Soma matemática baseada nos itens. Podes ajustar livremente. O tempo será redistribuído no contador de vida útil na proporção de cada impressora escolhida.</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:0 20px 16px">
           <!-- Lista de itens a seleccionar -->
           <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Itens a imprimir nesta sessão</div>
           <div id="ptItemList" style="display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:2px"></div>
@@ -2000,81 +2012,123 @@
     // ── PRINTING MODAL — Session-based ────
     let _printingOrderId = null;
 
+    // Updates the top dashboard cards based on user selection in the session modal
+    function updatePrintingStats() {
+      if (!_printingOrderId) return;
+      const checkedBoxes = document.querySelectorAll('.pt-item-cb:checked:not(:disabled)');
+      
+      let sumItems = 0;
+      let sumHoras = 0;
+      let sumMass = 0;
+      const unqPrinters = new Set();
+
+      checkedBoxes.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        const remQty = parseInt(cb.dataset.qty) || 1;
+        const printTime = parseFloat(cb.dataset.printtime) || 0;
+        
+        sumItems += remQty;
+        sumHoras += printTime * remQty;
+
+        const sel = document.querySelector(`.pt-item-printer[data-idx="${idx}"]`);
+        if (sel && sel.value) unqPrinters.add(sel.value);
+
+        const rowCard = cb.closest('.pt-item-card');
+        if (rowCard) {
+          const matsDiv = rowCard.querySelector('.pt-item-mats-raw');
+          if (matsDiv) {
+             try {
+               const mm = JSON.parse(matsDiv.textContent);
+               mm.forEach(m => {
+                  sumMass += (parseFloat(m.weightG)||0) * remQty;
+               });
+             }catch(e){}
+          }
+        }
+      });
+
+      document.getElementById('ptStatItems').textContent = sumItems;
+      document.getElementById('ptStatPrinters').textContent = unqPrinters.size;
+      document.getElementById('ptStatFilament').textContent = (Math.round(sumMass*100)/100);
+      document.getElementById('ptStatHours').textContent = (Math.round(sumHoras*100)/100);
+      
+      // Update global input (serves as the override block)
+      document.getElementById('ptEstHours').value = (Math.round(sumHoras*100)/100);
+    }
+
     function openPrintingModal(orderId) {
       _printingOrderId = orderId;
       const o = orders.find(x => x.id === orderId);
       if (!o) return;
 
-      // Build printer options (operacionais only)
-      const operacionais = printers.filter(p => p.status === 'operacional');
-      const printerOpts = operacionais.length
-        ? operacionais.map(p => `<option value="${p.id}">${escH(p.customName || p.brand + ' ' + p.model)} (${p.hoursUsed || 0}h)</option>`).join('')
-        : '';
-      document.getElementById('ptPrinterId').innerHTML = `<option value="">— não atribuir impressora —</option>` + printerOpts;
       document.getElementById('ptEstHours').value = '';
 
       // Progress header
       const { total, printed } = _printProgress(o);
       document.getElementById('ptProgressFill').style.width = total ? ((printed / total) * 100) + '%' : '0%';
       document.getElementById('ptProgressLabel').textContent = printed + ' / ' + total;
-      const printerLabel = printers.find(p => p.id === o.printerId);
       document.getElementById('ptModalTitle').innerHTML = `<i class="ph-bold ph-printer"></i> Sessão de Impressão — ${escH(o.orderNumber)}`;
 
       // Render item list — show only items not fully printed
       const its = o.items || [];
       const itemListEl = document.getElementById('ptItemList');
       
-      let sumEstHours = 0;
-
+      // Printer selector markup
+      const operacionais = printers.filter(p => p.status === 'operacional');
+      const printerSelectHtml = operacionais.map(p => {
+        const pName = p.customName || 'Impressora';
+        const modelStr = p.model ? ` - ${p.model}` : '';
+        const brandStr = p.brand ? ` - ${p.brand}` : '';
+        return `<option value="${p.id}">${escH(pName + modelStr + brandStr)}</option>`;
+      }).join('');
+      
       itemListEl.innerHTML = its.map((it, idx) => {
         const qty = parseInt(it.quantity) || 1;
         const printed = Math.min(it.printedQty || 0, qty);
         const remaining = qty - printed;
         const isDone = remaining <= 0;
         
-        if (!isDone) {
-          sumEstHours += (parseFloat(it.printTime) || 0) * remaining;
-        }
-
         const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
         
         const matsHtml = mats.map((m, mIdx) => {
-          return `<div style="margin-top:6px">
-            <select class="item-select pt-mat-override" data-item="${idx}" data-mat="${mIdx}">
-              ${buildMaterialOptions(m.filamentId || '')}
-            </select>
-          </div>`;
-        }).join('');
+          const fil = filaments.find(f => String(f.id) === String(m.filamentId));
+          if (!fil) return '';
+          const colorDot = fil.colorHex ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${fil.colorHex};border:1px solid rgba(0,0,0,.15);margin-right:4px"></span>` : '';
+          const brandText = Array.isArray(fil.brand) ? fil.brand.join(' ') : (fil.brand || '');
+          const infoStr = `${escH(fil.colorName||fil.color||'')} - ${escH(fil.type||'')} - ${escH(brandText)}`;
+          return `<span style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center">${colorDot}${infoStr} ${m.weightG?'· '+m.weightG+'g/ml':''}</span>`;
+        }).filter(Boolean).join('<span style="margin:0 4px;color:var(--border)">+</span>');
 
-        const fallbackMatHtml = !mats.length ? `<div style="margin-top:6px"><select class="item-select pt-mat-override" data-item="${idx}" data-mat="0">${buildMaterialOptions('')}</select></div>` : '';
-
-        return `<div class="pt-item-card ${isDone ? 'pt-item-done' : ''}">
-          <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}">
-            <input type="checkbox" class="pt-item-cb" data-idx="${idx}" data-qty="${remaining}" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px">
+        return `<div class="pt-item-card ${isDone ? 'pt-item-done' : ''}" style="display:flex; flex-direction:column; gap:8px; position:relative">
+          <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}" style="align-items:flex-start">
+            <input type="checkbox" class="pt-item-cb" data-idx="${idx}" data-qty="${remaining}" data-printtime="${it.printTime||0}" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px; margin-top:2px" onchange="updatePrintingStats()">
             <div style="flex:1; min-width:0">
               <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--dark)'}">${escH(it.description || 'Item ' + (idx+1))}</div>
               ${!isDone ? `
-                <div style="margin-top:4px;">
-                  ${matsHtml}${fallbackMatHtml}
+                <div style="margin-top:4px; margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                  ${matsHtml}
                 </div>
               ` : ''}
-              ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo: ${it.printTime}h / peça</div>` : ''}
+              ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo estimado orçamentado: ${parseFloat(it.printTime).toFixed(2)}h / peça</div>` : ''}
             </div>
-            <div style="text-align:right; flex-shrink:0">
-              <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' por imprimir'}</div>
+            <div style="text-align:right; flex-shrink:0; padding-left:8px">
+              <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' restantes'}</div>
               <div style="font-size:.65rem; color:var(--muted); margin-top:2px">Total: ${qty} | Impresso: ${printed}</div>
-              ${!isDone ? `<div style="margin-top:6px">
-                <label style="font-size:.7rem; color:var(--muted); font-weight:700">Qtd nesta sessão:</label>
-                <input type="number" class="pt-item-qty item-input mono" data-idx="${idx}" min="1" max="${remaining}" value="${remaining}" style="width:60px; padding:3px 6px; font-size:.8rem; display:inline-block">
-              </div>` : ''}
             </div>
           </label>
+          ${!isDone ? `
+          <div style="margin-top:2px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border)">
+             <select class="form-select item-select pt-item-printer" data-idx="${idx}" style="padding:4px 8px; font-size:.75rem" onchange="updatePrintingStats()">
+                <option value="">— Atribuir Impressora (Opcional) —</option>
+                ${printerSelectHtml}
+             </select>
+             <div style="display:none" class="pt-item-mats-raw">${escH(JSON.stringify(mats))}</div>
+          </div>
+          ` : ''}
         </div>`;
       }).join('');
 
-      if (sumEstHours > 0) {
-        document.getElementById('ptEstHours').value = (Math.round(sumEstHours * 100) / 100);
-      }
+      updatePrintingStats();
       document.getElementById('printingModalOverlay').classList.add('open');
     }
 
@@ -2087,7 +2141,6 @@
       const o = orders.find(x => x.id === _printingOrderId);
       if (!o) return;
 
-      const printerId = document.getElementById('ptPrinterId').value || null;
       const estHours = parseFloat(document.getElementById('ptEstHours').value) || null;
 
       // Gather selected items and quantities
@@ -2098,33 +2151,36 @@
       const its = o.items || [];
       checkedBoxes.forEach(cb => {
         const idx = parseInt(cb.dataset.idx);
-        const qtyInput = document.querySelector(`.pt-item-qty[data-idx="${idx}"]`);
-        const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : (parseInt(cb.dataset.qty) || 1);
+        const qty = parseInt(cb.dataset.qty) || 1;
         const it = its[idx];
         if (!it) return;
 
-        // Apply material overrides from the session modal back to the item
-        it.materials = it.materials || [];
-        const overrides = document.querySelectorAll(`.pt-mat-override[data-item="${idx}"]`);
-        overrides.forEach(ov => {
-          const mIdx = parseInt(ov.dataset.mat);
-          if (ov.value) {
-            if (!it.materials[mIdx]) it.materials[mIdx] = { filamentId: '', weightG: '' };
-            it.materials[mIdx].filamentId = ov.value;
-          }
-        });
+        const pSel = document.querySelector(`.pt-item-printer[data-idx="${idx}"]`);
+        const printerId = pSel ? pSel.value : null;
+        let printerLabel = null;
+        if (printerId) {
+          const lp = printers.find(x => x.id === printerId);
+          if (lp) printerLabel = (lp.customName || 'Impressora') + (lp.model ? ' - ' + lp.model : '');
+        }
 
-        sessionItems.push({ itemIndex: idx, description: it.description, quantity: qty, materials: it.materials });
+        const pTime = parseFloat(it.printTime) || 0;
+
+        sessionItems.push({ 
+          itemIndex: idx, 
+          description: it.description, 
+          quantity: qty, 
+          materials: it.materials || [],
+          printerId: printerId,
+          printerLabel: printerLabel,
+          itemEstHours: pTime * qty
+        });
       });
 
       // Create session record
-      const printerL = printers.find(p => p.id === printerId);
       const session = {
         id: _iid(),
         startedAt: new Date().toISOString(),
         completedAt: null,
-        printerId: printerId || null,
-        printerLabel: printerL ? (printerL.customName || printerL.brand + ' ' + printerL.model) : null,
         estHours,
         items: sessionItems
       };
@@ -2166,11 +2222,34 @@
       const sessions = order.printSessions || [];
       // Group hours by printer
       const byPrinter = {};
+      
       sessions.forEach(s => {
-        if (!s.printerId || !s.estHours) return;
-        byPrinter[s.printerId] = (byPrinter[s.printerId] || 0) + s.estHours;
         s.completedAt = s.completedAt || new Date().toISOString();
+        if (!s.estHours) return;
+
+        // Legacy format fallback: if the session has a top-level printerId and no per-item printers
+        if (s.printerId) {
+          byPrinter[s.printerId] = (byPrinter[s.printerId] || 0) + s.estHours;
+          return;
+        }
+
+        if (!s.items || !s.items.length) return;
+        
+        // NextGen proportional hours split based on item hours
+        const totItemsHours = s.items.reduce((acc, si) => acc + (si.itemEstHours || 0), 0);
+        
+        s.items.forEach(si => {
+          if (!si.printerId) return;
+          let alloc = 0;
+          if (totItemsHours > 0) {
+             alloc = s.estHours * ((si.itemEstHours || 0) / totItemsHours);
+          } else {
+             alloc = s.estHours / s.items.length;
+          }
+          byPrinter[si.printerId] = (byPrinter[si.printerId] || 0) + alloc;
+        });
       });
+      
       for (const [pid, hours] of Object.entries(byPrinter)) {
         const p = printers.find(x => x.id === pid);
         if (!p) continue;
