@@ -1177,7 +1177,8 @@ async function handleAction(action) {
 }
 
 function notifyOwner() {
-  const phone = (_company.companyConfig?.phone || _company.companyConfig?.cPhone || '').replace(/\D/g, '');
+  const cfg = _company.companyConfig || {};
+  const phone = (cfg.whatsapp || cfg.phone || cfg.cPhone || '').replace(/\D/g, '');
   const msg = encodeURIComponent(`Olá! Vi o estado do meu pedido ${_order.orderNumber} no portal e gostaria de falar consigo.`);
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }

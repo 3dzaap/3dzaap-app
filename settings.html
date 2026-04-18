@@ -398,6 +398,10 @@
                   <input type="tel" id="cPhone" class="form-input" placeholder="+351 912 345 678">
                 </div>
                 <div class="form-group">
+                  <label class="form-label">WhatsApp <span class="hint">(portal do cliente)</span></label>
+                  <input type="tel" id="cWhatsapp" class="form-input" placeholder="+351 912 345 678">
+                </div>
+                <div class="form-group">
                   <label class="form-label" data-i18n="settings.company.web">Website</label>
                   <input type="url" id="cWebsite" class="form-input" placeholder="https://empresa.com">
                 </div>
@@ -785,6 +789,7 @@ function loadData() {
   document.getElementById('cNif').value = cfg.nif || '';
   document.getElementById('cEmail').value = cfg.email || '';
   document.getElementById('cPhone').value = cfg.phone || '';
+  document.getElementById('cWhatsapp').value = cfg.whatsapp || '';
   document.getElementById('cWebsite').value = cfg.website || '';
   document.getElementById('cCity').value = cfg.city || '';
   document.getElementById('cAddress').value = cfg.address || '';
@@ -937,6 +942,7 @@ async function saveAll() {
     nif: document.getElementById('cNif').value,
     email: document.getElementById('cEmail').value,
     phone: document.getElementById('cPhone').value,
+    whatsapp: document.getElementById('cWhatsapp').value,
     website: document.getElementById('cWebsite').value,
     city: document.getElementById('cCity').value,
     address: document.getElementById('cAddress').value,
