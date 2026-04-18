@@ -880,9 +880,12 @@ function renderPortal() {
 
   // "View Details" trigger
   html += `
-    <div style="text-align:center; padding: 10px 0 20px">
-      <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px">
+    <div style="text-align:center; padding: 18px 20px 24px; display:flex; flex-wrap:wrap; justify-content:center; gap:12px">
+      <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px; border-radius:12px">
         <i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes do Pedido')}
+      </button>
+      <button class="btn btn-primary" onclick="notifyOwner()" style="font-weight:800; gap:8px; background:#25D366; color:#fff; border:none; padding: 10px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(37,211,102,0.2)">
+        <i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp', 'Falar no WhatsApp')}
       </button>
     </div>
     
@@ -1156,10 +1159,11 @@ function renderButtons() {
   } else if (s === 'declined') {
     html += `<div style="color:var(--danger);font-weight:700;width:100%;text-align:center">${t('portal.status_declined_msg', 'Pedido Cancelado')}</div>`;
   } else {
-    html += `<button class="btn-portal btn-print" onclick="toggleDetails()"><i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes')}</button>
-             <button class="btn-portal btn-approve" onclick="notifyOwner()" style="background:#25D366"><i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp', 'WhatsApp')}</button>`;
+    bar.style.display = 'none';
+    return;
   }
   bar.innerHTML = html;
+  bar.style.display = 'flex';
 }
 
 async function handleAction(action) {
@@ -1173,7 +1177,7 @@ async function handleAction(action) {
 }
 
 function notifyOwner() {
-  const phone = (_company.companyConfig?.cPhone || '').replace(/\D/g, '');
+  const phone = (_company.companyConfig?.phone || _company.companyConfig?.cPhone || '').replace(/\D/g, '');
   const msg = encodeURIComponent(`Olá! Vi o estado do meu pedido ${_order.orderNumber} no portal e gostaria de falar consigo.`);
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
