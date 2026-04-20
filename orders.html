@@ -2613,7 +2613,9 @@
         weightG: it.weightG || it.weight || '',
         material: it.material || '',
         printTime: it.printTime || it.time || 0,
-        tech: it.tech || 'fdm'
+        tech: it.tech || 'fdm',
+        materials: Array.isArray(it.materials) ? JSON.parse(JSON.stringify(it.materials)) : [],
+        printedQty: parseInt(it.printedQty) || 0
       };
     }
 
@@ -2802,7 +2804,7 @@
     function updateMaterial(itemId, matIdx, field, val) {
       const it = _items.find(i => i._id === itemId);
       if (!it || !it.materials || !it.materials[matIdx]) return;
-      if (field === 'weightG') it.materials[matIdx].weightG = parseFloat(val) || '';
+      if (field === 'weightG') it.materials[matIdx].weightG = parseFloat(String(val).replace(',','.')) || '';
       else it.materials[matIdx][field] = val;
       // Update colorName/colorHex from filament data
       if (field === 'filamentId' && val) {
@@ -2875,10 +2877,10 @@
         // Ensure materials array is clean
         it.materials = (it.materials || []).filter(m => m.filamentId);
         const { _id, ...rest } = it;
-        // Keep backward-compat: populate top-level filamentId/weightG from first material
-        if (rest.materials && rest.materials.length && !rest.filamentId) {
-          rest.filamentId = rest.materials[0].filamentId || '';
-          rest.weightG = rest.materials[0].weightG || '';
+        // Keep backward-compat: sync top-level filamentId/weightG from first material
+        if (it.materials && it.materials.length) {
+          rest.filamentId = it.materials[0].filamentId || '';
+          rest.weightG = it.materials[0].weightG || '';
         }
         return rest;
       });
