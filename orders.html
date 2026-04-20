@@ -281,6 +281,17 @@
       .mob-card-list {
         display: flex
       }
+
+      .pt-stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
+
+    .pt-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     /* RECEIPT MODAL — fonte de verdade */
@@ -1133,7 +1144,7 @@
         </div>
 
         <div style="padding:16px 20px 0;">
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:16px;">
+          <div class="pt-stats-grid">
             <div class="stat-mini" style="padding:10px; gap:8px">
               <div class="stat-mini-icon si-blue" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-package"></i></div>
               <div style="flex:1;min-width:0"><div class="stat-mini-val" id="ptStatItems" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Itens escolhidos</div></div>
@@ -1749,7 +1760,10 @@
           ...(o.estPrintHours ? [{ lbl: 'orders.details.est_time', val: o.estPrintHours + 'h' }] : []),
         ].map(d => `<div><div class="detail-item-lbl" data-i18n="${d.lbl}">${i18n.getNestedTranslation(d.lbl)}</div><div class="detail-item-val">${escH(d.val)}</div></div>`).join('');
 
-        const nextStatus = STATUS_NEXT[o.status];
+        let nextStatus = STATUS_NEXT[o.status];
+        if (o.status === 'printing' && !_allItemsPrinted(o)) {
+          nextStatus = 'printing';
+        }
         const canAdvance = nextStatus !== null;
 
         const itemsCountKey = its.length === 1 ? 'orders.table.th_items_1' : 'orders.table.th_items_n';
@@ -1828,7 +1842,10 @@
           const finalUnit = !anySet ? 'g' : (allResin ? 'ml' : (allFDM ? 'g' : 'g/ml'));
           const itemsHtml = its.map(it => `<div class="mob-item-row"><span class="mob-item-desc">${escH(it.description || '—')}</span><span class="mob-item-qty">×${it.quantity || it.qty || 1}</span><span class="mob-item-total">${fmtCurrency(_itTotal(it))}</span></div>`).join('');
 
-          const nextStatus = STATUS_NEXT[o.status];
+          let nextStatus = STATUS_NEXT[o.status];
+          if (o.status === 'printing' && !_allItemsPrinted(o)) {
+            nextStatus = 'printing';
+          }
           const canAdvance = !!nextStatus;
 
           const _mobDONE = ['done', 'concluido', 'entregue', 'cancelado'];
