@@ -2043,14 +2043,14 @@
 
     // Check if all items in an order have been fully printed
     function _allItemsPrinted(o) {
-      const its = o.items || [];
+      const its = (o.items || []).filter(it => it.tech !== 'service');
       if (!its.length) return true;
       return its.every(it => (it.printedQty || 0) >= (parseInt(it.quantity) || 1));
     }
 
     // Count total and printed quantities across all items
     function _printProgress(o) {
-      const its = o.items || [];
+      const its = (o.items || []).filter(it => it.tech !== 'service');
       const total = its.reduce((s, it) => s + (parseInt(it.quantity) || 1), 0);
       const printed = its.reduce((s, it) => s + Math.min(it.printedQty || 0, parseInt(it.quantity) || 1), 0);
       return { total, printed };
@@ -2129,7 +2129,16 @@
         return `<option value="${p.id}">${escH(pName + modelStr + brandStr)}</option>`;
       }).join('');
       
-      itemListEl.innerHTML = its.map((it, idx) => {
+      const printableItems = its.map((it, idx) => ({ ...it, originalIdx: idx }))
+                                .filter(it => it.tech !== 'service');
+
+      if (printableItems.length === 0) {
+        itemListEl.innerHTML = '<div style="padding:24px; text-align:center; color:var(--muted); font-size:.9rem;"><i class="ph-bold ph-info" style="font-size:1.5rem; display:block; margin:0 auto 10px; opacity:.3"></i> Nenhum item imprimível neste pedido.</div>';
+        return;
+      }
+
+      itemListEl.innerHTML = printableItems.map((it) => {
+        const idx = it.originalIdx;
         const qty = parseInt(it.quantity) || 1;
         const printed = Math.min(it.printedQty || 0, qty);
         const remaining = qty - printed;
@@ -2766,7 +2775,7 @@
         </div>
         <div class="item-mats-panel" data-id="${id}">
           <div class="item-mats-header" style="display:flex; align-items:center; justify-content:space-between">
-            <div style="cursor:pointer; display:flex; align-items:center; gap:6px; flex:1" onclick="toggleMatsPanel('${id}')">
+            <div style="cursor:pointer; display:flex; align-items:center; gap:6px; flex:1; visibility:${it.tech === 'service' ? 'hidden' : 'visible'}" onclick="toggleMatsPanel('${id}')">
               <i class="ph-bold ph-palette" style="font-size:.8rem"></i>
               <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
               <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
@@ -2774,9 +2783,10 @@
             <div class="tech-toggle" id="techtoggle-${id}">
               <button type="button" class="tech-btn ${it.tech === 'fdm' ? 'active' : ''}" onclick="updateItem('${id}','tech','fdm')">FDM</button>
               <button type="button" class="tech-btn ${it.tech === 'resin' ? 'active' : ''}" onclick="updateItem('${id}','tech','resin')">Resina</button>
+              <button type="button" class="tech-btn ${it.tech === 'service' ? 'active' : ''}" onclick="updateItem('${id}','tech','service')">Serviço</button>
             </div>
           </div>
-          <div class="item-mats-body" id="matsBody-${id}" style="display:none; flex-direction:column; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border)">
+          <div class="item-mats-body" id="matsBody-${id}" style="display:${it.tech === 'service' ? 'none' : 'none'}; flex-direction:column; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border)">
             <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
             <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue); align-self:flex-start" onclick="addMaterialToItem('${id}')">
               <i class="ph-bold ph-plus"></i> Adicionar material
@@ -2885,12 +2895,28 @@
              }
            });
         }
+        // If service, hide material panel completely
+        const panel = document.querySelector(`.item-mats-panel[data-id="${id}"]`);
+        if (panel) {
+          const header = panel.querySelector('.item-mats-header > div:first-child');
+          if (header) header.style.visibility = (val === 'service') ? 'hidden' : 'visible';
+          const body = document.getElementById('matsBody-' + id);
+          if (body) {
+            body.style.display = 'none';
+            if (val !== 'service') {
+               // Optional: could keep it hidden until manually toggled, or show it. 
+               // For now, keep it hidden but accessible.
+            }
+          }
+        }
+
         // Update toggle UI
         const toggle = document.getElementById('techtoggle-' + id);
         if (toggle) {
           const btns = toggle.querySelectorAll('.tech-btn');
           btns.forEach(b => {
-             const mode = b.textContent.toLowerCase().includes('resina') ? 'resin' : 'fdm';
+             const t = b.textContent.toLowerCase();
+             const mode = t.includes('resina') ? 'resin' : (t.includes('serviço') ? 'service' : 'fdm');
              b.classList.toggle('active', it.tech === mode);
           });
         }
