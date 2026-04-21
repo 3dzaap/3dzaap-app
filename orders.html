@@ -287,6 +287,43 @@
       }
     }
 
+    /* ── Tech Toggle (FDM/Resina) ───────────────── */
+    .tech-toggle {
+      display: flex;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-input);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+      width: fit-content;
+    }
+    .tech-btn {
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .tech-btn.active {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .item-mats-panel {
+      background: rgba(59, 143, 212, 0.04);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+
     .pt-stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -2159,6 +2196,7 @@
 
       const sessionItems = [];
       const its = o.items || [];
+      let mainPrinterId = null;
       checkedBoxes.forEach(cb => {
         const idx = parseInt(cb.dataset.idx);
         const qty = parseInt(cb.dataset.qty) || 1;
@@ -2166,10 +2204,12 @@
         if (!it) return;
 
         const pSel = document.querySelector(`.pt-item-printer[data-idx="${idx}"]`);
-        const printerId = pSel ? pSel.value : null;
+        const pId = pSel ? pSel.value : null;
+        if (!mainPrinterId) mainPrinterId = pId;
+
         let printerLabel = null;
-        if (printerId) {
-          const lp = printers.find(x => x.id === printerId);
+        if (pId) {
+          const lp = printers.find(x => x.id === pId);
           if (lp) printerLabel = (lp.customName || 'Impressora') + (lp.model ? ' - ' + lp.model : '');
         }
 
@@ -2180,7 +2220,7 @@
           description: it.description, 
           quantity: qty, 
           materials: it.materials || [],
-          printerId: printerId,
+          printerId: pId,
           printerLabel: printerLabel,
           itemEstHours: pTime * qty
         });
@@ -2206,7 +2246,7 @@
 
       // Ensure status is 'printing'
       if (o.status !== 'printing') o.status = 'printing';
-      o.printerId = printerId || o.printerId;
+      o.printerId = mainPrinterId || o.printerId;
       o.estPrintHours = estHours || o.estPrintHours;
       o.updatedAt = new Date().toISOString();
 
@@ -2731,12 +2771,12 @@
               <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
               <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
             </div>
-            <select class="item-select" style="width:auto; padding:2px 8px; font-size:0.75rem; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--dark);" onchange="updateItem('${id}','tech',this.value)">
-               <option value="fdm" ${it.tech==='fdm'?'selected':''}>FDM</option>
-               <option value="resin" ${it.tech==='resin'?'selected':''}>Resina</option>
-            </select>
+            <div class="tech-toggle" id="techtoggle-${id}">
+              <button type="button" class="tech-btn ${it.tech === 'fdm' ? 'active' : ''}" onclick="updateItem('${id}','tech','fdm')">FDM</button>
+              <button type="button" class="tech-btn ${it.tech === 'resin' ? 'active' : ''}" onclick="updateItem('${id}','tech','resin')">Resina</button>
+            </div>
           </div>
-          <div class="item-mats-body" id="matsBody-${id}" style="display:none; flex-direction:column">
+          <div class="item-mats-body" id="matsBody-${id}" style="display:none; flex-direction:column; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border)">
             <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
             <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue); align-self:flex-start" onclick="addMaterialToItem('${id}')">
               <i class="ph-bold ph-plus"></i> Adicionar material
@@ -2845,7 +2885,17 @@
              }
            });
         }
+        // Update toggle UI
+        const toggle = document.getElementById('techtoggle-' + id);
+        if (toggle) {
+          const btns = toggle.querySelectorAll('.tech-btn');
+          btns.forEach(b => {
+             const mode = b.textContent.toLowerCase().includes('resina') ? 'resin' : 'fdm';
+             b.classList.toggle('active', it.tech === mode);
+          });
+        }
         const rowsEl = document.getElementById('matsRows-' + id);
+
         if (rowsEl) {
           rowsEl.innerHTML = (it.materials || []).map((m, mi) => _buildMaterialRow(id, mi, m)).join('');
         }
