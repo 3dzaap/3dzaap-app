@@ -1307,7 +1307,7 @@ function renderTable() {
       <td>${renderBadge(m)}</td>
       <td class="cell-actions">
         <button class="btn-icon" onclick="openModal('${m.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
-        <button class="btn-icon del" onclick="confirmArchive('${m.id}')" title="Arquivar"><i class="ph-bold ph-archive"></i></button>
+        <button class="btn-icon del" onclick="confirmDelete('${m.id}')" title="Eliminar"><i class="ph-bold ph-trash"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -1346,7 +1346,7 @@ function renderTable() {
         <div class="mob-fil-bottom">
           <div class="mob-fil-actions">
             <button class="btn-icon" onclick="openModal('${m.id}')"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
-            <button class="btn-icon del" onclick="confirmArchive('${m.id}')" title="Arquivar"><i class="ph-bold ph-archive"></i></button>
+            <button class="btn-icon del" onclick="confirmDelete('${m.id}')"><i class="ph-bold ph-trash"></i></button>
           </div>
         </div>
       </div>`;
@@ -1641,24 +1641,25 @@ function showUpgradeNotice(module) {
   UI.showFeatureGate(module);
 }
 
-function confirmArchive(id) {
+function confirmDelete(id) {
   const m = allMaterials.find(x => x.id === id);
   if (!m) return;
-  document.getElementById('confirmTitle').setAttribute('data-i18n', 'materials.confirm_archive_title');
-  document.getElementById('confirmMsg').textContent = i18n.getNestedTranslation('materials.confirm_archive_msg', {m: `${m.colorName} ${m.type}`});
+  const mc = m.materialClass || m.material_class || 'fdm';
+  document.getElementById('confirmTitle').setAttribute('data-i18n', 'materials.confirm_delete_title');
+  document.getElementById('confirmMsg').textContent = i18n.getNestedTranslation('materials.confirm_delete_msg', {m: `${m.colorName} ${m.type}`});
   if (window.i18n) i18n.translatePage();
-  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); archiveMaterial(id); };
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); deleteMaterial(id); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
-async function archiveMaterial(id) {
+async function deleteMaterial(id) {
   try {
-    await DB.deleteFilament(id); // DB.deleteFilament is now soft delete
+    await DB.deleteFilament(id);
     allMaterials = allMaterials.filter(m => m.id !== id);
     updateToggleCounts();
     applyFilters();
-    showToast('<i class="ph-bold ph-archive"></i> ' + i18n.getNestedTranslation('materials.toasts.archived'), '');
-  } catch(e) { showToast('Erro ao arquivar: ' + e.message, 'err'); }
+    showToast('<i class="ph-bold ph-trash"></i> ' + i18n.getNestedTranslation('materials.toasts.deleted'), '');
+  } catch(e) { showToast('Erro ao eliminar: ' + e.message, 'err'); }
 }
 
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
