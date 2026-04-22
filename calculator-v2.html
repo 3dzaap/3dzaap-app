@@ -15,11 +15,10 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script src="supabase.js" type="module"></script>
-<script src="utils.js" type="module"></script>
-<script src="i18n.js" type="module"></script>
-<script src="calculator-v2.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
@@ -2231,11 +2230,8 @@ function criarPedido() {
 function updatePctLabels() {} // Já tratado no _render
 function updateSliderLabels() {} // Não mais necessário com a nova UI de inputs diretos
 
-import { computeResults } from './calculator-v2.js';
-window.computeResults = computeResults;
-
 // ══════════════════════════════════════
-//  DOM HELPERS & INPUTS
+//  CORE CALCULATION — homologated + resina
 // ══════════════════════════════════════
 let _activeTech = 'fdm'; // 'fdm' | 'resin'
 
@@ -2330,9 +2326,84 @@ function getInputs() {
   }
 }
 
-// ══════════════════════════════════════
-//  LIVE CALC & RENDER
-// ══════════════════════════════════════
+function computeResults(i) {
+  let materialCost = 0;
+  let machineTime = 0;
+  
+  let amortizationCost = 0;
+  let electricityCost = 0;
+  
+  if (i.mode === 'simple') {
+    materialCost = (i.materialPrice / 1000) * i.weight;
+    machineTime = i.time;
+    amortizationCost = (i.printerPrice / i.printerLife) * machineTime;
+    electricityCost = (i.powerConsumption / 1000) * machineTime * i.electricityPrice;
+  } else {
+    // Modo Avançado: custo da impressora por mesa
+    i.mesas.forEach(m => {
+      let prn = _printers.find(p => String(p.id) === String(m.printerId));
+      let pPrice = prn ? (prn.price || i.printerPrice) : i.printerPrice;
+      let pLife = prn ? (prn.lifeHours || i.printerLife) : i.printerLife;
+      // Tratar o consumo de forma coerente
+      let pPower = i.powerConsumption;
+      if (prn) {
+        if (m.tech === 'resin') pPower = prn.powerPrint || prn.powerStandby || 60;
+        else pPower = prn.powerPrint || i.powerConsumption;
+      }
+      
+      let mesaTime = 0;
+      m.parts.forEach(p => {
+        let pQty = p.qty || 1;
+        // Fix do Material Price: buscar no array global de filamentos se não estiver na peça
+        let pPriceMat = p.price;
+        if (!pPriceMat) {
+          const mat = _filaments.find(f => String(f.id) === String(p.materialId));
+          pPriceMat = mat ? (mat.price || 0) : 25; // fallback
+        }
+        materialCost += (pPriceMat / 1000) * p.weight * pQty;
+        mesaTime += (p.time * pQty);
+      });
+      
+      amortizationCost += (pPrice / pLife) * mesaTime;
+      electricityCost += (pPower / 1000) * mesaTime * i.electricityPrice;
+      machineTime += mesaTime; // Acumular o tempo real de máquina aqui
+    });
+    
+    // Se o user sobrepor o tempo no form, aplicar esse rácio aos custos calculados por mesa
+    if (machineTime > 0 && i.totalTime > 0 && i.totalTime !== machineTime) {
+      const ratio = i.totalTime / machineTime;
+      amortizationCost *= ratio;
+      electricityCost *= ratio;
+    }
+    machineTime = i.totalTime;
+  }
+  
+  const baseCost = materialCost + amortizationCost + electricityCost;
+  const failureCost = baseCost * (i.failureRate / 100);
+  const indirectCost = baseCost * (i.indirectCosts / 100);
+  
+  const productionCost = baseCost + failureCost + indirectCost;
+  const marginCost = productionCost * (i.profitMargin / 100);
+  const finalPrice = productionCost + marginCost;
+
+  const validTime = machineTime > 0 ? machineTime : 1;
+  const profitPerHour = marginCost / validTime;
+
+  return {
+    materialCost,
+    amortizationCost,
+    electricityCost,
+    baseCost,
+    failureCost,
+    indirectCost,
+    productionCost,
+    marginCost,
+    finalPrice,
+    profitPerHour,
+    unitPrice: finalPrice / (i.qty || 1),
+    qty: i.qty || 1
+  };
+}
 
 let _lt;
 function liveCalc(){

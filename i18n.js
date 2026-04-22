@@ -160,5 +160,3 @@ const i18n = {
 document.addEventListener('DOMContentLoaded', () => i18n.init());
 window.i18n = i18n;
 window.t = (key, vars, fallback) => i18n.getNestedTranslation(key, vars, fallback);
-
-export { i18n };
