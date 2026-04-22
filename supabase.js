@@ -345,13 +345,18 @@ const DB = {
 
   // ── FILAMENTS ───────────────────────────────────────────────
 
-  async getFilaments() {
+  async getFilaments(includeArchived = false) {
     await _ensureCompany();
-    const { data, error } = await _sb
+    let query = _sb
       .from('filaments')
       .select('*')
-      .eq('company_id', _companyId)
-      .order('created_at', { ascending: false });
+      .eq('company_id', _companyId);
+    
+    if (!includeArchived) {
+      query = query.or('is_active.eq.true,is_active.is.null'); // null for backward compatibility
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data.map(_mapFilamentFromDB);
   },
@@ -379,7 +384,12 @@ const DB = {
 
   async deleteFilament(id) {
     await _ensureCompany();
-    const { error } = await _sb.from('filaments').delete().eq('id', id).eq('company_id', _companyId);
+    // Soft delete: update is_active to false instead of deleting
+    const { error } = await _sb
+      .from('filaments')
+      .update({ is_active: false })
+      .eq('id', id)
+      .eq('company_id', _companyId);
     if (error) throw error;
   },
 
@@ -895,6 +905,7 @@ function _mapFilamentFromDB(row) {
     emptyAt:        row.empty_at       || null,
     createdAt:      row.created_at,
     updatedAt:      row.updated_at,
+    isActive:       row.is_active ?? true,
   };
 }
 
@@ -921,6 +932,7 @@ function _mapFilamentToDB(f) {
     empty_confirmed: f.emptyConfirmed ?? f.empty_confirmed ?? false,
     empty_by_order:  f.emptyByOrder  ?? f.empty_by_order  ?? null,
     empty_at:        f.emptyAt       ?? f.empty_at        ?? null,
+    is_active:       f.isActive      ?? f.is_active       ?? true,
   };
 }
 
