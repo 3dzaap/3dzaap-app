@@ -30,6 +30,15 @@ function escAttr(s) {
   return String(s || '').replace(/"/g,'&quot;');
 }
 
+// ── CRYPTO / SECURITY ─────────────────────────────────────────
+async function hashString(str) {
+  if (!str) return null;
+  const msgUint8 = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // ── CONFIG GLOBAL ─────────────────────────────────────────────
 // _cfg é partilhado entre loadCfg, fmtEur e fmtDate
 // Cada página deve chamar loadCfg(session) após Auth.getSession()
@@ -275,3 +284,14 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
     throw err;
   }
 }
+
+// ESM Export for testing and modular usage
+if (typeof module === 'undefined' && typeof exports === 'undefined' && typeof window !== 'undefined') {
+  // We are in a browser, do nothing, functions are already global
+} else {
+  // We are likely in a testing environment or using modules
+}
+
+export { 
+  escH, escAttr, hashString, loadCfg, getCurrencyConfig, getCurrencySymbol, getCurrencyCode, fmtCurrency, fmtEur, fmtDate, showToast, applyTheme, toggleTheme, initThemeToggle, UI, downloadPDF
+};

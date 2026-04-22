@@ -424,6 +424,12 @@ const DB = {
     // Check if it's a new order without a number (e.g. from Calculator)
     const isNew = !order.id || _isLocalId(order.id);
 
+    // Security: Hash passphrase if present
+    if (order.passphrase && !order.passphrase.startsWith('sha256:')) {
+      const hash = await hashString(order.passphrase);
+      order.passphrase = 'sha256:' + hash;
+    }
+
     const row   = _mapOrderToDB(order);
     if (!isNew) {
       const { data, error } = await _sb
@@ -525,8 +531,16 @@ const DB = {
       }
     }
 
-    if (passphrase && check.passphrase && check.passphrase !== passphrase) {
-      throw new Error('Palavra-passe incorrecta.');
+    if (passphrase && check.passphrase) {
+      let isValid = false;
+      if (check.passphrase.startsWith('sha256:')) {
+        const hash = await hashString(passphrase);
+        isValid = (check.passphrase === 'sha256:' + hash);
+      } else {
+        // Legacy plain text check
+        isValid = (check.passphrase === passphrase);
+      }
+      if (!isValid) throw new Error('Palavra-passe incorrecta.');
     }
 
     let newStatus = 'aprovado';
@@ -1137,3 +1151,5 @@ const Migration = {
     return localStorage.getItem('3dzaap_migrated') === '1';
   },
 };
+
+export { Auth, DB, Migration, _sb, _companyId, _companyCache };
