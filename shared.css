@@ -567,6 +567,16 @@ body {
   overflow-y: auto;
   max-height: calc(100vh - 180px); /* topbar 60px + page padding + filtros */
   -webkit-overflow-scrolling: touch;
+  
+  /* Indicadores visuais de scroll */
+  background:
+    linear-gradient(to right, var(--bg-card) 30%, transparent),
+    linear-gradient(to left, var(--bg-card) 30%, transparent) 100% 0,
+    radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.15), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.15), transparent) 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .ord-table, .fil-table, .fin-orders-table, .fin-status-table, .admin-table { width: 100%; border-collapse: collapse; }

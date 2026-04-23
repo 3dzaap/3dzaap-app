@@ -38,7 +38,19 @@
 .mode-opt .pro-badge { font-size: .62rem; background: var(--orange); color: #fff; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; }
 
 /* ── MULTI-PART TABLE (Modo Avançado) ── */
-.parts-table-wrap { overflow-x: auto; margin-top: 10px; margin-bottom: 20px; border-radius: var(--rm); border: 1.5px solid var(--border); background: rgba(255,255,255,.05); }
+.parts-table-wrap { 
+  overflow-x: auto; 
+  margin-top: 10px; margin-bottom: 20px; border-radius: var(--rm); border: 1.5px solid var(--border); background: rgba(255,255,255,.05);
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,.05) 30%, transparent),
+    linear-gradient(to left, rgba(255,255,255,.05) 30%, transparent),
+    radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.15), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.15), transparent);
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 .parts-table { width: 100%; border-collapse: collapse; min-width: 500px; }
 .parts-table th { text-align: left; padding: 12px 14px; font-size: .72rem; color: var(--muted); border-bottom: 1.5px solid var(--border); text-transform: uppercase; letter-spacing: .5px; }
 .parts-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
@@ -374,7 +386,17 @@
 
 .history-clear-btn:hover{color:var(--danger);background:rgba(239,68,68,.07)}
 
-.history-table-wrap{overflow-x:auto;overflow-y:auto;max-height:340px}
+.history-table-wrap{
+  overflow-x:auto;overflow-y:auto;max-height:340px;
+  background:
+    linear-gradient(to right, var(--bg-card-s) 30%, transparent),
+    linear-gradient(to left, var(--bg-card-s) 30%, transparent) 100% 0,
+    radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.15), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.15), transparent) 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 
 .history-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:36px 20px;color:var(--subtle);font-size:.82rem;text-align:center;line-height:1.6}
 
