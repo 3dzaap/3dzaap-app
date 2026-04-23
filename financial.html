@@ -13,6 +13,7 @@
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="supabase.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
@@ -190,8 +191,21 @@
 .fin-empty p{font-size:.82rem}
 
 @media(max-width:1100px){.fin-kpi-grid{grid-template-columns:repeat(3,1fr)}}
-
 @media(max-width:680px){.fin-grid{grid-template-columns:1fr}.fin-kpi-grid{grid-template-columns:1fr 1fr}}
+
+.yearly-chart-card { margin-bottom: 20px; }
+.intelligence-card { display: flex; flex-direction: column; gap: 15px; }
+.suggestion-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.suggestion-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; padding: 10px 14px; background: var(--bg-card-s); border-radius: 10px; border: 1.5px solid var(--border); transition: transform .2s var(--ease); }
+.suggestion-item:hover { transform: translateX(5px); background: var(--bg-hover-s); }
+.suggestion-icon { font-size: 1.1rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0; color: #fff; }
+.suggestion-info { flex: 1; min-width: 0; margin-left: 12px; }
+.suggestion-name { font-weight: 700; color: var(--dark); display: block; }
+.suggestion-percent { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.suggestion-value { font-family: var(--mono); font-weight: 800; color: var(--dark); font-size: 0.85rem; }
+.suggestion-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; margin-bottom: 4px; }
+.chart-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.chart-card-title { font-size: 0.72rem; font-weight: 800; color: var(--subtle); letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 
 
 </style>
@@ -339,6 +353,15 @@
         <span id="periodoLabel" style="font-size:.78rem;color:var(--subtle);margin-left:4px"></span>
       </div>
 
+      <div id="yearlyChartSection" class="fin-card yearly-chart-card" style="display:none">
+        <div class="chart-card-header">
+          <div class="chart-card-title"><i class="ph-bold ph-chart-line-up"></i> <span data-i18n="financial.year_chart_title">Desempenho Anual</span></div>
+        </div>
+        <div style="height:280px; position:relative; width:100%">
+          <canvas id="yearlyChart"></canvas>
+        </div>
+      </div>
+
       <div class="fin-kpi-grid">
         <div class="fin-kpi accent">
           <div class="fin-kpi-lbl" data-i18n="financial.kpi_total">Volume de Pedidos</div>
@@ -377,6 +400,22 @@
             </tbody>
           </table>
         </div>
+        
+        <div class="fin-card intelligence-card">
+          <div class="fin-card-title"><i class="ph-bold ph-lightbulb"></i> <span data-i18n="financial.card_intelligence">Inteligência Financeira</span></div>
+          <div style="display:grid; grid-template-columns: 140px 1fr; gap:20px; align-items:center">
+             <div style="height:140px; position:relative; width:140px">
+               <canvas id="suggestionChart"></canvas>
+             </div>
+             <div>
+               <p class="suggestion-desc" data-i18n="financial.suggestion_desc">Com base em boas práticas, sugerimos a seguinte distribuição do seu lucro líquido:</p>
+               <ul class="suggestion-list" id="suggestionList">
+                 <!-- Sugestões injetadas via JS -->
+               </ul>
+             </div>
+          </div>
+        </div>
+
         <div class="fin-card">
           <div class="fin-card-title" data-i18n="financial.card_done"><i class="ph-bold ph-check-circle"></i> Pedidos Concluídos</div>
           <div id="doneStats" style="font-size:.84rem;color:var(--muted)" data-i18n="settings.team.loading">A carregar…</div>
@@ -475,6 +514,9 @@ let orders = [];
 let expenses = [];
 let _periodo = '';
 
+let yearlyChart = null;
+let suggestionChart = null;
+
 const STATUS_LABELS = {
   orcamento:  () => i18n.getNestedTranslation('status.orcamento'),
   modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
@@ -513,6 +555,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyFeatureGating();
 });
 
+function renderStatusDistribution(periodOrders) {
+  const statusGroups = {};
+  periodOrders.forEach(o => {
+    const k = o.status || 'orcamento';
+    if (!statusGroups[k]) statusGroups[k] = {count:0, total:0};
+    statusGroups[k].count++;
+    statusGroups[k].total += o.total||0;
+  });
+  const statusOrder = ['orcamento','modelagem','validacao','aprovado','printing','done'];
+  const tbody = document.getElementById('statusTableBody');
+  if (!periodOrders.length) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:16px">${t('financial.empty_period')}</td></tr>`;
+  } else {
+    tbody.innerHTML = statusOrder
+      .filter(s => statusGroups[s])
+      .map(s => `<tr>
+        <td>${typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s)}</td>
+        <td class="r">${statusGroups[s].count}</td>
+        <td class="r">${fmtCurrency(statusGroups[s].total)}</td>
+      </tr>`).join('');
+  }
+}
+
+function renderDoneStats(periodOrders) {
+  const done = periodOrders.filter(o => o.status === 'done');
+  const doneEl = document.getElementById('doneStats');
+  if (!doneEl) return;
+  doneEl.innerHTML = done.length
+    ? `<div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--dark)">${done.length}</div>
+        <div style="font-size:.82rem;color:var(--muted)">${done.length===1 ? t('financial.done_orders_1') : t('financial.done_orders_n')}</div>
+        <div style="font-size:.9rem;font-weight:700;color:#15803d;font-family:var(--mono)">${fmtCurrency(done.reduce((s,o)=>s+(o.total||0),0))}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${t('financial.done_total')}</div>
+       </div>`
+    : `<div style="color:var(--subtle);font-size:.84rem">${t('financial.done_none')}</div>`;
+}
 
 // ── CONFIG GLOBALS ──────────────────────────────────────────
 async function loadUserData() {
@@ -565,6 +643,7 @@ async function loadOrders() {
     showToast((t('financial.toast_err_load')||'Erro ao carregar pedidos:') + ' ' + e.message, 'err');
   }
   renderAll();
+  renderYearlyChart();
 }
 
 async function loadExpenses() {
@@ -585,6 +664,7 @@ async function loadExpenses() {
     expenses = [];
   }
   renderAll();
+  renderYearlyChart();
 }
 
 function renderAll() {
@@ -607,6 +687,12 @@ function renderAll() {
   const periodExps = expenses.filter(e => (e.date || '').slice(0, 7) === _periodo);
   const totalExp = periodExps.reduce((s,e) => s + (e.value || 0), 0);
   const balanco = pago - totalExp;
+  animateValue('kpiBalanco', parseFloat(document.getElementById('kpiBalanco').textContent.replace(/[^0-9.-]/g,''))||0, balanco, 600);
+  document.getElementById('kpiBalancoWrap').className = 'fin-kpi ' + (balanco >= 0 ? 'green' : 'red');
+
+  renderFinancialSuggestions(balanco);
+  renderStatusDistribution(periodOrders);
+  renderDoneStats(periodOrders);
 
   animateValue('kpiTotal', 0, total, 800);
   document.getElementById('kpiTotalSub').textContent    = i18n.getNestedTranslation(periodOrders.length === 1 ? 'financial.kpi_total_sub_1' : 'financial.kpi_total_sub_n', {n: periodOrders.length});
@@ -619,12 +705,6 @@ function renderAll() {
   
   animateValue('kpiDespesas', 0, totalExp, 800);
   document.getElementById('kpiDespesasSub').textContent = `${periodExps.length} despesa${periodExps.length !== 1 ? 's' : ''}`;
-  
-  animateValue('kpiBalanco', 0, balanco, 800);
-  const bWrap = document.getElementById('kpiBalancoWrap');
-  if (bWrap) {
-    bWrap.className = 'fin-kpi ' + (balanco >= 0 ? 'green' : 'red');
-  }
 
   // Render Expense Table
   const trArr = periodExps.sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -676,40 +756,6 @@ function renderAll() {
       </div>`).join('');
     }
   }
-
-  // Status distribution
-  const statusGroups = {};
-  periodOrders.forEach(o => {
-    const k = o.status || 'orcamento';
-    if (!statusGroups[k]) statusGroups[k] = {count:0, total:0};
-    statusGroups[k].count++;
-    statusGroups[k].total += o.total||0;
-  });
-  const statusOrder = ['orcamento','modelagem','validacao','aprovado','printing','done'];
-  const tbody = document.getElementById('statusTableBody');
-  if (!periodOrders.length) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:16px">${t('financial.empty_period')}</td></tr>`;
-  } else {
-    tbody.innerHTML = statusOrder
-      .filter(s => statusGroups[s])
-      .map(s => `<tr>
-        <td>${typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s)}</td>
-        <td class="r">${statusGroups[s].count}</td>
-        <td class="r">${fmtCurrency(statusGroups[s].total)}</td>
-      </tr>`).join('');
-  }
-
-  // Done stats
-  const done = periodOrders.filter(o => o.status === 'done');
-  const doneEl = document.getElementById('doneStats');
-  doneEl.innerHTML = done.length
-    ? `<div style="display:flex;flex-direction:column;gap:8px">
-        <div style="font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--dark)">${done.length}</div>
-        <div style="font-size:.82rem;color:var(--muted)">${done.length===1 ? t('financial.done_orders_1') : t('financial.done_orders_n')}</div>
-        <div style="font-size:.9rem;font-weight:700;color:#15803d;font-family:var(--mono)">${fmtCurrency(done.reduce((s,o)=>s+(o.total||0),0))}</div>
-        <div style="font-size:.78rem;color:var(--muted)">${t('financial.done_total')}</div>
-       </div>`
-    : `<div style="color:var(--subtle);font-size:.84rem">${t('financial.done_none')}</div>`;
 
   // Orders table
   const tableEl = document.getElementById('ordersTable');
@@ -904,6 +950,164 @@ async function confirmDelExp(id) {
   } catch(e) {
      showToast('Erro ao apagar: ' + e.message, 'err');
   }
+}
+
+async function renderYearlyChart() {
+  const currentYear = new Date().getFullYear();
+  if (!orders.length && !expenses.length) return;
+
+  const monthLabels = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const revenueData = new Array(12).fill(0);
+  const expenseData = new Array(12).fill(0);
+
+  orders.forEach(o => {
+    const d = new Date(o.createdAt);
+    if (d.getFullYear() === currentYear && o.paymentStatus === 'pago') {
+      revenueData[d.getMonth()] += (o.total || 0);
+    }
+  });
+
+  expenses.forEach(e => {
+    const d = new Date(e.date);
+    if (d.getFullYear() === currentYear) {
+      expenseData[d.getMonth()] += (e.value || 0);
+    }
+  });
+
+  const ctx = document.getElementById('yearlyChart');
+  if (!ctx) return;
+  
+  if (yearlyChart) yearlyChart.destroy();
+  document.getElementById('yearlyChartSection').style.display = 'block';
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+
+  yearlyChart = new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: monthLabels,
+      datasets: [
+        {
+          label: t('financial.year_chart_revenue'),
+          data: revenueData,
+          borderColor: '#3b8fd4',
+          backgroundColor: 'rgba(59, 143, 212, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 3
+        },
+        {
+          label: t('financial.year_chart_expenses'),
+          data: expenseData,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.05)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { color: textColor, boxWidth: 12, font: { weight: '700', size: 11 } } },
+        tooltip: { 
+          backgroundColor: isDark ? '#1e2d40' : '#fff',
+          titleColor: isDark ? '#fff' : '#1e2d40',
+          bodyColor: isDark ? '#94a3b8' : '#64748b',
+          borderColor: 'rgba(0,0,0,0.1)',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: true,
+          callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmtCurrency(ctx.raw)}` }
+        }
+      },
+      scales: {
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10, weight: '600' }, callback: v => fmtCurrency(v) } },
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, weight: '600' } } }
+      }
+    }
+  });
+}
+
+function renderFinancialSuggestions(profit) {
+  const container = document.getElementById('suggestionList');
+  if (!container) return;
+  
+  if (profit <= 0) {
+    container.innerHTML = `<li style="font-size:0.8rem; color:var(--muted); padding:20px; text-align:center">Registe lucro positivo neste período para ver sugestões de distribuição estratégica.</li>`;
+    if (suggestionChart) suggestionChart.destroy();
+    return;
+  }
+
+  const allocations = [
+    { key: 'suggestion_personal', percent: 40, color: '#3b8fd4', icon: 'ph-user' },
+    { key: 'suggestion_investment', percent: 30, color: '#10b981', icon: 'ph-wrench' },
+    { key: 'suggestion_working_capital', percent: 20, color: '#f59e0b', icon: 'ph-arrows-left-right' },
+    { key: 'suggestion_reserve', percent: 10, color: '#6366f1', icon: 'ph-shield-check' }
+  ];
+
+  let html = '';
+  const chartLabels = [];
+  const chartData = [];
+  const chartColors = [];
+
+  allocations.forEach(a => {
+    const val = profit * (a.percent / 100);
+    chartLabels.push(t('financial.' + a.key));
+    chartData.push(val);
+    chartColors.push(a.color);
+
+    html += `
+      <li class="suggestion-item">
+        <div class="suggestion-icon" style="background:${a.color}"><i class="ph-bold ${a.icon}"></i></div>
+        <div class="suggestion-info">
+          <span class="suggestion-name">${t('financial.' + a.key)}</span>
+          <span class="suggestion-percent">${a.percent}% — ${t('financial.suggestion_amount')}</span>
+        </div>
+        <div class="suggestion-value">${fmtCurrency(val)}</div>
+      </li>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  const ctx = document.getElementById('suggestionChart');
+  if (!ctx) return;
+  
+  if (suggestionChart) suggestionChart.destroy();
+
+  suggestionChart = new Chart(ctx.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        data: chartData,
+        backgroundColor: chartColors,
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '75%',
+      plugins: { 
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: (ctx) => ` ${ctx.label}: ${fmtCurrency(ctx.raw)}` }
+        }
+      }
+    }
+  });
 }
 
 </script>
