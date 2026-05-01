@@ -434,7 +434,13 @@ async function lookupAddress() {
        result = `${p['place name']}, ${p['state']}, ${country}`;
     }
     
-    addrEl.value = result;
+    let zipPrefix = 'CP';
+    if (country === 'BR') zipPrefix = 'CEP';
+    else if (country === 'US') zipPrefix = 'Zip Code';
+    else if (country === 'UK') zipPrefix = 'Postcode';
+    else if (country === 'ES') zipPrefix = 'C.P.';
+    
+    addrEl.value = result + '\n' + zipPrefix + ': ' + zip;
     showToast('Morada localizada!', 'ok');
   } catch(e) {
     if (e.name === 'AbortError') {
