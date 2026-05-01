@@ -940,6 +940,7 @@
           <div class="filter-sep"></div>
           <select id="filterStatus" class="filter-select" onchange="renderOrders()">
             <option value="" data-i18n="orders.filters.status_all">Todos os estados</option>
+            <option value="unread" style="color:var(--danger);font-weight:bold">🔴 Atualizações do Cliente</option>
             <option value="orcamento" data-i18n="status.orcamento">Orçamento</option>
             <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
             <option value="validacao" data-i18n="status.validacao">Validação</option>
@@ -1780,7 +1781,8 @@
       const pf = document.getElementById('filterPayment').value;
 
       let filtered = orders.filter(o => {
-        if (sf && o.status !== sf) return false;
+        if (sf === 'unread' && !o.hasUnreadClientUpdate) return false;
+        if (sf && sf !== 'unread' && o.status !== sf) return false;
         if (pf && o.paymentStatus !== pf) return false;
         if (q) {
           const hay = [o.orderNumber, o.clientName, o.clientEmail, o.clientPhone,
@@ -1861,9 +1863,11 @@
           && !!o.dueDate
           && new Date(o.dueDate) < _today;
 
+        const unreadDot = o.hasUnreadClientUpdate ? `<span style="display:inline-block;width:10px;height:10px;background:var(--danger);border-radius:50%;margin-right:6px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)" title="Atualização Nova"></span>` : '';
+
         rows.push(`
       <tr class="ord-row${isOverdue ? ' ord-row--overdue' : ''}" id="row-${o.id}" onclick="toggleExpand('${o.id}')">
-        <td><span class="ord-number">${escH(o.orderNumber || '—')}</span></td>
+        <td><div style="display:flex;align-items:center">${unreadDot}<span class="ord-number">${escH(o.orderNumber || '—')}</span></div></td>
         <td>
           <div class="ord-client">${escH(o.clientName)}</div>
           <div class="ord-date-sub" data-i18n="${itemsCountKey}" data-i18n-n="${its.length}">
@@ -2000,7 +2004,24 @@
       i18n.translatePage(mContainer);
     }
 
+    function clearUnread(id) {
+      const order = orders.find(o => String(o.id) === String(id));
+      if (order && order.hasUnreadClientUpdate) {
+        order.hasUnreadClientUpdate = false;
+        DB.saveOrder(order).catch(e => console.error("Error clearing unread status:", e));
+        
+        // Remove the dot from the UI immediately to prevent full render
+        const row = document.getElementById('row-' + id);
+        if (row) {
+          const dot = row.querySelector('.ord-number').previousSibling;
+          if (dot && dot.tagName === 'SPAN') dot.remove();
+        }
+        updateStats(); // Update sidebar indicator
+      }
+    }
+
     function toggleExpand(id) {
+      clearUnread(id);
       const exp = document.getElementById('exp-' + id);
       const btn = document.getElementById('ebtn-' + id);
       const row = document.getElementById('row-' + id);
@@ -2578,6 +2599,7 @@
 
     // ── MODAL ──────────────────────────────
     function openModal(id = null) {
+      if (id) clearUnread(id);
       editingId = id;
       _items = [];
       document.getElementById('orderItemsList').innerHTML = '';

@@ -68,7 +68,8 @@ const Sidebar = (() => {
         const onclickAttr = item.onclick      ? ` onclick="${item.onclick}"` : '';
         const superAttr   = item.superAdmin   ? ' data-superadmin="1" style="display:none"' : '';
         const targetAttr  = item.external     ? ' target="_blank" rel="noopener noreferrer"' : '';
-        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${lockSpan}</a>`;
+        const unreadBadge = item.id === 'orders' ? `<span id="sidebarUnreadOrdersBadge" style="display:none;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-left:8px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)"></span>` : '';
+        return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${unreadBadge}${lockSpan}</a>`;
       }).join('\n        ');
 
       return `<div class="nav-section">
@@ -217,6 +218,18 @@ const Sidebar = (() => {
     document.querySelectorAll('[data-superadmin]').forEach(el => {
       el.style.display = session.isSuperAdmin ? '' : 'none';
     });
+    
+    _checkUnreadNotifications();
+  }
+
+  async function _checkUnreadNotifications() {
+    try {
+      if (typeof DB !== 'undefined' && DB.hasUnreadOrders) {
+        const hasUnread = await DB.hasUnreadOrders();
+        const badge = document.getElementById('sidebarUnreadOrdersBadge');
+        if (badge) badge.style.display = hasUnread ? 'inline-block' : 'none';
+      }
+    } catch (e) {}
   }
 
   // ── FEATURE LOCKS ─────────────────────────────────────────

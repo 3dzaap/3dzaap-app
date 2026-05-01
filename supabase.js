@@ -447,6 +447,18 @@ const DB = {
     }
   },
 
+  async hasUnreadOrders() {
+    if (!_companyId) await Auth._loadCompany();
+    if (!_companyId) return false;
+    const { data } = await _sb
+      .from('orders')
+      .select('id')
+      .eq('company_id', _companyId)
+      .eq('has_unread_client_update', true)
+      .limit(1);
+    return data && data.length > 0;
+  },
+
   async deleteOrder(id) {
     await _ensureCompany();
     const { error } = await _sb.from('orders').delete().eq('id', id).eq('company_id', _companyId);
@@ -540,7 +552,8 @@ const DB = {
 
     const updateFields = { 
       status: newStatus,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      has_unread_client_update: true
     };
     
     // If approved at final stage or initial budget, it might no longer be just a "quote"
@@ -952,6 +965,7 @@ function _mapOrderFromDB(row) {
     passphrase:    row.passphrase,
     expiresAt:     row.expires_at,
     isQuote:       row.is_quote || false,
+    hasUnreadClientUpdate: row.has_unread_client_update || false,
     updatedAt:     row.updated_at,
   };
 }
@@ -986,6 +1000,7 @@ function _mapOrderToDB(o) {
   if (o.shareToken)   row.share_token   = o.shareToken;
   if (o.passphrase)   row.passphrase    = o.passphrase;
   if (o.createdAt)    row.created_at    = o.createdAt;
+  if (o.hasUnreadClientUpdate !== undefined) row.has_unread_client_update = o.hasUnreadClientUpdate;
   
   return row;
 }

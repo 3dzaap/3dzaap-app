@@ -965,6 +965,7 @@ function calcHealthScore() {
   let unpaidValue = 0;
   let totalPipelineValue = 0;
   let ordersWithoutDue = [];
+  let unreadUpdatesCount = 0;
 
   orders.forEach(o => {
     const s    = (o.status || '').toLowerCase();
@@ -972,6 +973,8 @@ function calcHealthScore() {
     const isC  = ['cancelado'].includes(s);
     const date = o.createdAt || '';
     const total= parseFloat(o.total || 0);
+
+    if (o.hasUnreadClientUpdate || o.has_unread_client_update) unreadUpdatesCount++;
 
     if (isD) {
       doneCount++;
@@ -1079,6 +1082,13 @@ function calcHealthScore() {
     }
   }
   score += trendScore;
+  
+  // 6. Atualizações Pendentes do Cliente (Penalidade)
+  if (unreadUpdatesCount > 0) {
+    score -= (unreadUpdatesCount * 5); // Penalidade de 5 pontos por atualização
+    if (score < 0) score = 0;
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-bell-ringing"></i>', key:'health_unread_updates', msg:`${unreadUpdatesCount} pedido(s) com atualizações não lidas do cliente.`, page:'orders.html'});
+  }
   
   // Avisos iniciais
   if (orders.length === 0) {
