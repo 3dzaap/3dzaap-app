@@ -952,7 +952,6 @@ function updateReceiptModal() {
     aprovado: t('status.aprovado', 'Confirmado'),
     fila: t('status.fila', 'Em Fila'),
     printing: t('status.printing', 'Produção'),
-    preparacao: t('status.preparacao', 'Expedição'),
     enviado: t('status.enviado', 'Enviado'),
     done: t('status.done', 'Concluído')
   };
@@ -1068,7 +1067,7 @@ function renderTracker() {
     { k: 'validacao',  l: t('portal.tracker_step_3', 'Aprovação'), i: '<i class="ph-bold ph-check-circle"></i>' },
     { k: 'fila',       l: t('portal.tracker_step_4', 'Em Fila'), i: '<i class="ph-bold ph-package"></i>' },
     { k: 'printing',   l: t('portal.tracker_step_5', 'Produção'), i: '<i class="ph-bold ph-printer"></i>' },
-    { k: 'preparacao', l: t('portal.tracker_step_6', 'Expedição'), i: '<i class="ph-bold ph-rocket-launch"></i>' },
+    { k: 'enviado',    l: t('portal.tracker_step_6', 'Enviado'), i: '<i class="ph-bold ph-rocket-launch"></i>' },
     { k: 'done',       l: t('portal.tracker_step_7', 'Concluído'), i: '<i class="ph-bold ph-flag-checkered"></i>' }
   ];
   
@@ -1078,7 +1077,7 @@ function renderTracker() {
   else if (s === 'validacao') stepIdx = 2;
   else if (s === 'aprovado' || s === 'fila') stepIdx = 3;
   else if (s === 'printing') stepIdx = 4;
-  else if (s === 'preparacao' || s === 'enviado') stepIdx = 5;
+  else if (s === 'enviado') stepIdx = 5;
   else if (s === 'done') stepIdx = 6;
   
   const stepPercent = (stepIdx / (steps.length - 1)) * 100;
