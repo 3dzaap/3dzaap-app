@@ -2106,12 +2106,18 @@
       o.status = next;
       o.updatedAt = new Date().toISOString();
       if (next === 'done') applyFilamentConsumptionForOrder(o);
-      await DB.saveOrder(o);
-      // Persist any filament changes
-      for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
-      renderOrders(id);
-      const statusName = typeof STATUS_LABELS[next] === 'function' ? STATUS_LABELS[next]() : (STATUS_LABELS[next] || next);
-      showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+      try {
+        await DB.saveOrder(o);
+        // Persist any filament changes
+        for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
+        renderOrders(id);
+        const statusName = typeof STATUS_LABELS[next] === 'function' ? STATUS_LABELS[next]() : (STATUS_LABELS[next] || next);
+        showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+      } catch (e) {
+        console.error("DEBUG ERROR SAVE ORDER:", JSON.stringify(e, null, 2));
+        alert("Erro Supabase: " + (e.message || e.code || JSON.stringify(e)));
+        throw e;
+      }
     }
 
     // Check if all items in an order have been fully printed

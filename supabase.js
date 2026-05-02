@@ -430,7 +430,17 @@ const DB = {
         .from('orders').update(row)
         .eq('id', order.id).eq('company_id', _companyId)
         .select().single();
-      if (error) throw error;
+      if (error) {
+        // Fallback se a coluna não existir (ex: erro PGRST204 ou status 400 por coluna não encontrada)
+        if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
+          console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Removendo do payload.');
+          delete row.has_unread_client_update;
+          const retry = await _sb.from('orders').update(row).eq('id', order.id).eq('company_id', _companyId).select().single();
+          if (retry.error) throw retry.error;
+          return _mapOrderFromDB(retry.data);
+        }
+        throw error;
+      }
       return _mapOrderFromDB(data);
     } else {
       // Set default expiration for new orders if not provided (7 days)
@@ -442,7 +452,16 @@ const DB = {
       const { data, error } = await _sb
         .from('orders').insert({ ...row, company_id: _companyId })
         .select().single();
-      if (error) throw error;
+      if (error) {
+        if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
+          console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Removendo do payload no insert.');
+          delete row.has_unread_client_update;
+          const retry = await _sb.from('orders').insert({ ...row, company_id: _companyId }).select().single();
+          if (retry.error) throw retry.error;
+          return _mapOrderFromDB(retry.data);
+        }
+        throw error;
+      }
       return _mapOrderFromDB(data);
     }
   },
@@ -564,7 +583,16 @@ const DB = {
       .update(updateFields)
       .eq('share_token', shareToken);
 
-    if (error) throw error;
+    if (error) {
+      if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
+        console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Tentando sem ela.');
+        delete updateFields.has_unread_client_update;
+        const retry = await _sb.from('orders').update(updateFields).eq('share_token', shareToken);
+        if (retry.error) throw retry.error;
+      } else {
+        throw error;
+      }
+    }
     return { status: newStatus };
   },
 
