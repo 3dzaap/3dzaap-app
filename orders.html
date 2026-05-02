@@ -946,7 +946,7 @@
             <option value="validacao" data-i18n="status.validacao">Validação</option>
             <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
             <option value="printing" data-i18n="status.printing">Em Produção</option>
-            <option value="preparacao" data-i18n="status.preparacao">Expedição</option>
+            <option value="enviado" data-i18n="status.preparacao">Expedição</option>
             <option value="done" data-i18n="status.done">Concluído</option>
           </select>
           <select id="filterPayment" class="filter-select" onchange="renderOrders()">
@@ -1067,7 +1067,7 @@
               <option value="validacao" data-i18n="status.validacao">Validação</option>
               <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
               <option value="printing" data-i18n="status.printing">Em Produção</option>
-              <option value="preparacao" data-i18n="status.preparacao">Expedição</option>
+              <option value="enviado" data-i18n="status.preparacao">Expedição</option>
               <option value="done" data-i18n="status.done">Concluído</option>
             </select>
           </div>
@@ -1250,7 +1250,7 @@
       fila:        () => i18n.getNestedTranslation('status.aprovado')    || 'Na Fila',
       enviado:     () => i18n.getNestedTranslation('status.preparacao')  || 'Enviado',
     };
-    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'printing', printing: 'preparacao', preparacao: 'done', done: null };
+    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'printing', printing: 'enviado', enviado: 'done', done: null };
 
     // ── HELPERS ────────────────────────────
     function renderStatusBadge(status) {
