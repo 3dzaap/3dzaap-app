@@ -2831,6 +2831,11 @@
       const wrapper = document.createElement('div');
       wrapper.className = 'item-row-wrap';
       wrapper.dataset.id = id;
+      wrapper.style.backgroundColor = 'var(--surface-color, rgba(0,0,0,0.03))';
+      wrapper.style.border = '1px solid var(--border, rgba(0,0,0,0.08))';
+      wrapper.style.borderRadius = '8px';
+      wrapper.style.padding = '10px';
+      wrapper.style.marginBottom = '12px';
       wrapper.innerHTML = `
         <div class="item-row" data-id="${id}" style="display:grid; grid-template-columns: 1fr 60px 40px 80px 60px; gap:6px; align-items:center; margin-bottom:6px">
           <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description || '')}"
@@ -2861,9 +2866,12 @@
           </div>
           <div class="item-mats-body" id="matsBody-${id}" style="display:${it.tech === 'service' ? 'none' : 'none'}; flex-direction:column; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border)">
             <div class="item-mats-rows" id="matsRows-${id}">${matsHtml}</div>
-            <button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px; font-size:.78rem; color:var(--blue); align-self:flex-start" onclick="addMaterialToItem('${id}')">
-              <i class="ph-bold ph-plus"></i> Adicionar material
-            </button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; width:100%">
+              <button type="button" class="btn btn-ghost btn-sm" style="font-size:.78rem; color:var(--blue); align-self:flex-start" onclick="addMaterialToItem('${id}')">
+                <i class="ph-bold ph-plus"></i> Adicionar material
+              </button>
+              <div id="matsTotal-${id}" style="font-size:0.8rem; color:var(--muted); text-align:right;"></div>
+            </div>
           </div>
         </div>`;
 
@@ -2922,6 +2930,7 @@
         rowsEl.innerHTML = it.materials.map((m, mi) => _buildMaterialRow(itemId, mi, m)).join('');
       }
       _refreshMatsLabel(itemId);
+      recalcTotal();
     }
 
     function updateMaterial(itemId, matIdx, field, val) {
@@ -2937,6 +2946,7 @@
           it.materials[matIdx].colorHex  = fil.colorHex || '';
         }
       }
+      recalcTotal();
     }
 
     function _refreshMatsLabel(itemId) {
@@ -3017,6 +3027,26 @@
     function recalcTotal() {
       const total = _items.reduce((s, i) => s + (i.quantity || 0) * (i.unitPrice || 0), 0);
       document.getElementById('oGrandTotal').textContent = fmtCurrency(total);
+
+      // Atualizar totais de material por item
+      _items.forEach(it => {
+        const totalEl = document.getElementById('matsTotal-' + it._id);
+        if (totalEl) {
+          const qty = it.quantity || 1;
+          const tech = it.tech || 'fdm';
+          const unit = tech === 'resin' ? 'ml' : 'g';
+          let matTotal = 0;
+          if (it.materials && it.materials.length > 0) {
+            matTotal = it.materials.reduce((sum, m) => sum + (parseFloat(m.weightG) || 0), 0);
+          }
+          if (matTotal > 0) {
+            const grandMatTotal = matTotal * qty;
+            totalEl.innerHTML = `Total de material: <strong>${matTotal.toFixed(1)}${unit}</strong> &times; ${qty} un. = <strong>${grandMatTotal.toFixed(1)}${unit}</strong>`;
+          } else {
+            totalEl.innerHTML = '';
+          }
+        }
+      });
     }
 
     function getItemsFromDOM() {
