@@ -144,6 +144,60 @@
 .printer-hours-fill.warn  { background: var(--warning); }
 .printer-hours-fill.crit  { background: var(--danger); }
 
+/* ROI bar */
+.printer-roi-wrap {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.printer-roi-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.printer-roi-status {
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.printer-roi-status.paying { color: var(--blue); }
+.printer-roi-status.profit { color: #16a34a; }
+.printer-roi-val {
+  font-family: var(--mono);
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+.printer-roi-bar {
+  height: 8px;
+  background: var(--bg-card-s, rgba(0,0,0,0.05));
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+.printer-roi-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--blue);
+}
+.printer-roi-fill.profit {
+  background: linear-gradient(90deg, var(--blue) 0%, #16a34a 100%);
+}
+.printer-roi-profit-tag {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
 /* Card footer stats */
 .printer-card-stats {
   display: grid;
@@ -853,6 +907,35 @@ function renderPrinters() {
           </div>
           <div class="printer-hours-bar">
             <div class="printer-hours-fill ${fillCls}" style="width:${Math.min(pct,100)}%"></div>
+          </div>
+        </div>
+
+        <!-- ROI Tracker -->
+        <div class="printer-roi-wrap">
+          <div class="printer-roi-labels">
+            <span class="printer-roi-status ${p.hoursUsed * (p.price / (p.lifeHours||5000)) > (parseFloat(p.price)||0) + totalMaintCost ? 'profit' : 'paying'}">
+              ${p.hoursUsed * (p.price / (p.lifeHours||5000)) > (parseFloat(p.price)||0) + totalMaintCost ? t('printers.card.roi_profitable') : t('printers.card.roi_paying')}
+            </span>
+            <span class="printer-roi-val">
+              ${(function(){
+                const inv = (parseFloat(p.price)||0) + totalMaintCost;
+                const rev = (p.hoursUsed||0) * ((parseFloat(p.price)||0) / (p.lifeHours||5000));
+                if (rev > inv) return '+' + fmtCurrency(rev - inv);
+                return Math.round((rev / (inv||1)) * 100) + '%';
+              })()}
+            </span>
+          </div>
+          <div class="printer-roi-bar">
+            ${(function(){
+              const inv = (parseFloat(p.price)||0) + totalMaintCost;
+              const rev = (p.hoursUsed||0) * ((parseFloat(p.price)||0) / (p.lifeHours||5000));
+              const roiPct = Math.min((rev / (inv||1)) * 100, 100);
+              const isProfit = rev > inv;
+              return `
+                <div class="printer-roi-fill ${isProfit ? 'profit' : ''}" style="width:${roiPct}%"></div>
+                ${isProfit ? `<span class="printer-roi-profit-tag">${t('printers.card.roi_profit_label')}</span>` : ''}
+              `;
+            })()}
           </div>
         </div>
       </div>
