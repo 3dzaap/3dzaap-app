@@ -1847,7 +1847,7 @@
           { lbl: 'orders.details.created', val: o.createdAt ? fmtDate(o.createdAt) : '—' },
           { lbl: 'orders.details.due', val: o.dueDate ? fmtDate(o.dueDate) : '—' },
           ...(o.printerId ? [{ lbl: 'orders.details.printer', val: _printerLabel(o.printerId) }] : []),
-          ...(o.estPrintHours ? [{ lbl: 'orders.details.est_time', val: o.estPrintHours + 'h' }] : []),
+          ...(o.estPrintHours ? [{ lbl: 'orders.details.est_time', val: formatTime(o.estPrintHours) }] : []),
         ].map(d => `<div><div class="detail-item-lbl" data-i18n="${d.lbl}">${i18n.getNestedTranslation(d.lbl)}</div><div class="detail-item-val">${escH(d.val)}</div></div>`).join('');
 
         let nextStatus = STATUS_NEXT[o.status];
@@ -2170,7 +2170,7 @@
       document.getElementById('ptStatItems').textContent = sumItems;
       document.getElementById('ptStatPrinters').textContent = unqPrinters.size;
       document.getElementById('ptStatFilament').textContent = (Math.round(sumMass*100)/100);
-      document.getElementById('ptStatHours').textContent = (Math.round(sumHoras*100)/100);
+      document.getElementById('ptStatHours').textContent = formatTime(sumHoras);
       
       _sessionTotalHours = sumHoras;
     }
@@ -2237,7 +2237,7 @@
                   ${matsHtml}
                 </div>
               ` : ''}
-              ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo estimado orçamentado: ${parseFloat(it.printTime).toFixed(2)}h / peça</div>` : ''}
+              ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo estimado orçamentado: ${formatTime(it.printTime)} / peça</div>` : ''}
             </div>
             <div style="text-align:right; flex-shrink:0; padding-left:8px">
               <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' restantes'}</div>
@@ -2851,7 +2851,7 @@
         <div class="item-row" data-id="${id}" style="display:grid; grid-template-columns: 1fr 60px 40px 80px 60px; gap:6px; align-items:center; margin-bottom:6px">
           <input type="text" class="item-input" placeholder="Descrição…" value="${escAttr(it.description || '')}"
             oninput="updateItem('${id}','description',this.value)">
-          <input type="number" class="item-input mono" placeholder="h" min="0" step="0.1" value="${it.printTime || ''}"
+          <input type="text" class="item-input mono" placeholder="1:45" value="${it.printTime ? formatTime(it.printTime) : ''}"
             oninput="updateItem('${id}','printTime',this.value)" style="text-align:center">
           <input type="number" class="item-input mono" min="1" value="${it.quantity || 1}"
             oninput="updateItem('${id}','quantity',this.value)" style="text-align:center">
@@ -2973,7 +2973,7 @@
       if (!it) return;
       if (field === 'quantity') it.quantity = parseInt(val) || 0;
       else if (field === 'unitPrice') it.unitPrice = parseFloat(val) || 0;
-      else if (field === 'printTime') it.printTime = parseFloat(String(val).replace(',', '.')) || 0;
+      else if (field === 'printTime') it.printTime = parseTime(val);
       else it[field] = val;
 
       if (field === 'tech') {

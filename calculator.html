@@ -1155,7 +1155,7 @@
                   </div>
                   <div class="field">
                     <label data-i18n="calc.fields.time">Tempo (h)</label>
-                    <input type="number" id="printTime" value="0" step="0.1" min="0" oninput="liveCalc()">
+                    <input type="text" id="printTime" value="0" placeholder="Ex: 1:45 ou 1.75" oninput="liveCalc()">
                   </div>
                 </div>
               </div>
@@ -1193,7 +1193,7 @@
                     <span class="summary-lbl" data-i18n="calc.fields.total_time">Tempo Total do Projeto</span>
                     <div class="summary-val">
                       <i class="ph-bold ph-clock" style="font-size: 1.2rem; color: var(--orange);"></i>
-                      <input type="number" id="totalProjectTime" class="summary-input" value="0" step="0.1" oninput="liveCalc()">
+                      <input type="text" id="totalProjectTime" class="summary-input" value="0" placeholder="1:45" oninput="liveCalc()">
                       <span style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">h</span>
                     </div>
                   </div>
@@ -1550,7 +1550,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (w !== undefined) setEl('partWeight', w);
         
         const t = src.time ?? src.printTime ?? src.est_print_hours;
-        if (t !== undefined) setEl('printTime', t);
+        if (t !== undefined) {
+          const el = document.getElementById('printTime');
+          if (el) el.value = formatTime(t);
+        }
 
         const matId = src.materialId || src.material_id;
         if (matId) {
@@ -1570,7 +1573,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           renderMesas();
         }
         const t = src.totalTime ?? src.time ?? src.printTime ?? src.est_print_hours;
-        if (t !== undefined) setEl('totalProjectTime', t);
+        if (t !== undefined) {
+          const el = document.getElementById('totalProjectTime');
+          if (el) el.value = formatTime(t);
+        }
       }
 
       // Step D: UI Sync and Final Calc
@@ -1905,7 +1911,8 @@ function updatePart(mId, pId, field, val) {
   if (!m) return;
   const p = m.parts.find(x => x.id === pId);
   if (!p) return;
-  if (field === 'weight' || field === 'qty' || field === 'time') val = parseFloat(val) || 0;
+  if (field === 'weight' || field === 'qty') val = parseFloat(String(val).replace(',', '.')) || 0;
+  if (field === 'time') val = parseTime(val);
   p[field] = val;
   
   // Atualizar sumário na interface (Tempo e Peso totais)
@@ -2043,7 +2050,7 @@ function renderMesas() {
           </td>
           <td><input type="number" class="part-input" style="text-align:right" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
           <td><input type="number" class="part-input" style="text-align:right" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
-          <td><input type="number" class="part-input" style="text-align:right" value="${p.time}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="h"></td>
+          <td><input type="text" class="part-input" style="text-align:right" value="${formatTime(p.time)}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="1:45"></td>
           <td style="text-align:right">
             <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})"><i class="ph-bold ph-x"></i></button>
           </td>
@@ -2092,7 +2099,7 @@ function renderMesas() {
       </button>
       <div style="display:flex; gap: 15px; font-size: 0.8rem; font-weight: 700; color: var(--muted); font-family: var(--mono);">
         <span><i class="ph-bold ph-scales"></i> <span id="mesaWeightSum-${m.id}">${mesaWeight.toFixed(1)}</span>${mTech === 'resin' ? 'ml' : 'g'}</span>
-        <span><i class="ph-bold ph-clock"></i> <span id="mesaTimeSum-${m.id}">${mesaTime.toFixed(1)}</span>h</span>
+        <span><i class="ph-bold ph-clock"></i> <span id="mesaTimeSum-${m.id}">${formatTime(mesaTime)}</span></span>
       </div>
     `;
     mDiv.appendChild(ftr);
@@ -2289,7 +2296,8 @@ function onCalcPrinterChange() {
 }
 
 function getInputs() {
-  const pf = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+  const pf = (id) => parseFloat(String(document.getElementById(id)?.value || '0').replace(',', '.')) || 0;
+  const pv = (id) => document.getElementById(id)?.value || '0';
   const config = _sessionData?.config || {};
   
   const common = {
@@ -2312,10 +2320,9 @@ function getInputs() {
       materialPrice: matPrice,
       materialId: _selectedMaterial ? _selectedMaterial.id : '',
       weight: pf('partWeight'),
-      time: pf('printTime')
+      time: parseTime(pv('printTime'))
     };
   } else {
-    // Advanced mode: parts array
     // Advanced mode: array of mesas > array of parts
     let partsTotalWeight = 0;
     let advancedPartsInfo = [];
@@ -2327,7 +2334,7 @@ function getInputs() {
       });
     });
     
-    const totalTimeValue = pf('totalProjectTime');
+    const totalTimeValue = parseTime(pv('totalProjectTime'));
     
     return {
       ...common,
@@ -3139,13 +3146,13 @@ function renderHistory(){
     var weightCol=e.mode==='resin'?(e.inputs.resinVolume||weightTotal||'—')+'mL':(weightTotal||'—')+'g';
     
     var timePrint = e.inputs.time || (isAdvanced ? 0 : e.inputs.printTime);
-    var tPrint = (timePrint || '—');
+    var tPrint = timePrint ? formatTime(timePrint) : '—';
 
     var restoreBtnLabel = i18n.getNestedTranslation('calc.restore_btn') || 'Restaurar';
     return '<tr onclick="restoreHistory('+e.id+')">'
       +'<td class="td-name">'+(e.name?hl(e.name):'<span class="no-name">' + (i18n.getNestedTranslation('calc.no_name') || 'Sem nome') + '</span>')+modeBadge+qtyBadge+'</td>'
       +'<td class="td-mono">'+weightCol+'</td>'
-      +'<td class="td-mono">'+tPrint+'h</td>'
+      +'<td class="td-mono">'+tPrint+'</td>'
       +'<td class="td-mono">'+e.inputs.profitMargin+'%</td>'
       +'<td class="td-mono">'+fmtCurrency(e.results.baseCost)+'</td>'
       +'<td class="td-price">'+fmtCurrency(e.results.finalPrice)+'</td>'
@@ -3172,7 +3179,9 @@ function restoreHistory(id){
   if (cMode === 'simple') {
     setV('filamentPrice', i.materialPrice || i.filamentPrice || i.resinPrice || 25);
     setV('partWeight', i.weight || i.partWeight || i.resinVolume || 50);
-    setV('printTime', i.time || i.printTime || i.resinPrintTime || 2);
+    const tVal = i.time || i.printTime || i.resinPrintTime || 0;
+    const elT = document.getElementById('printTime');
+    if (elT) elT.value = formatTime(tVal);
   } else {
     if (i.mesas && Array.isArray(i.mesas) && i.mesas.length > 0) {
       _mesas = i.mesas;
@@ -3181,7 +3190,9 @@ function restoreHistory(id){
     } else {
       _mesas = [{ id: Date.now(), name: 'Mesa 1', parts: [] }];
     }
-    setV('totalProjectTime', i.totalTime || i.time || 0);
+    const ttVal = i.totalTime || i.time || 0;
+    const elTT = document.getElementById('totalProjectTime');
+    if (elTT) elTT.value = formatTime(ttVal);
     renderMesas();
   }
 

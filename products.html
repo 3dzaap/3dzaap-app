@@ -391,7 +391,7 @@ function renderProducts() {
                 </div>
                 <div class="summary-item">
                   <label>Tempo de Impressão</label>
-                  <span>${time.toFixed(1)}h</span>
+                  <span>${formatTime(time)}</span>
                 </div>
                 <div class="summary-item">
                   <label>Material ID</label>
@@ -437,7 +437,7 @@ function renderProducts() {
           <div class="summary-grid">
             <div class="summary-item"><label data-i18n="products.table.th_tech">Tipo de material</label><span>${isResin?'Resina':'FDM'}</span></div>
             <div class="summary-item"><label>Consumo</label><span>${weight.toFixed(1)}${isResin?'ml':'g'}</span></div>
-            <div class="summary-item"><label>Tempo</label><span>${time.toFixed(1)}h</span></div>
+            <div class="summary-item"><label>Tempo</label><span>${formatTime(time)}</span></div>
             <div class="summary-item"><label>Preço</label><span>${fmtCurrency(p.salePrice)}</span></div>
           </div>
         </div>

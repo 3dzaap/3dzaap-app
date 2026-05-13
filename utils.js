@@ -117,6 +117,30 @@ function fmtDate(s) {
   return dd + '/' + mm + '/' + yyyy;
 }
 
+/**
+ * 3DZAAP Duration Parsers & Formatters
+ * Used to handle HH:MM format across the platform.
+ */
+function parseTime(val) {
+  if (!val) return 0;
+  val = String(val).trim();
+  if (val.includes(':')) {
+    const parts = val.split(':');
+    const h = parseFloat(parts[0]) || 0;
+    const m = parseFloat(parts[1]) || 0;
+    return h + (m / 60);
+  }
+  return parseFloat(String(val).replace(',', '.')) || 0;
+}
+
+function formatTime(decimalHours) {
+  if (!decimalHours || decimalHours <= 0) return "0:00";
+  const h = Math.floor(decimalHours);
+  const m = Math.round((decimalHours - h) * 60);
+  if (m === 60) return `${h + 1}:00`;
+  return `${h}:${m.toString().padStart(2, '0')}`;
+}
+
 // ── TOAST ─────────────────────────────────────────────────────
 var _toastTimer;
 function showToast(msg, type) {
