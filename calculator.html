@@ -249,6 +249,44 @@
 
 .field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,143,212,.12);background:var(--bg-input)}
 
+/* ── TIME STEPPER ───────────────────── */
+.time-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.time-input-wrap input {
+  padding-right: 32px !important;
+}
+.time-stepper {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 5;
+}
+.time-stepper button {
+  background: transparent;
+  border: none;
+  color: var(--subtle);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  line-height: 1;
+  transition: all 0.2s;
+  border-radius: 3px;
+}
+.time-stepper button:hover {
+  background: var(--bg-hover-s);
+  color: var(--blue);
+}
+
 .field input:hover:not(:focus){border-color:rgba(59,143,212,.35)}
 
 .field-with-slider{display:flex;flex-direction:column;gap:5px}
@@ -1119,7 +1157,7 @@
               </div>
               <div class="fields-grid">
                 <div class="field full">
-                  <input type="text" id="printName" class="inp" data-i18n="[placeholder]calc.print_name_placeholder" placeholder="Ex: Suporte GoPro...">
+                  <input type="text" id="printName" class="inp" data-i18n="[placeholder]calc.print_name_placeholder" placeholder="Ex: Suporte GoPro..." onfocus="this.select()">
                 </div>
               </div>
             </div>
@@ -1147,17 +1185,23 @@
                   <div class="field full">
                     <label data-i18n="calc.filament_price_label">Preço do material</label>
                     <div class="field-wrap">
-                      <input type="number" id="filamentPrice" value="0" step="0.01" min="0" oninput="liveCalc()">
+                      <input type="number" id="filamentPrice" value="0" step="0.01" min="0" oninput="liveCalc()" onfocus="this.select()">
                       <span class="field-unit" id="labelFilPrice">/kg</span>
                     </div>
                   </div>
                   <div class="field">
                     <label><span data-i18n="calc.fields.weight">Peso</span> (<span class="unit-weight">g</span>)</label>
-                    <input type="number" id="partWeight" value="0" step="0.1" min="0" oninput="liveCalc()">
+                    <input type="number" id="partWeight" value="0" step="0.1" min="0" oninput="liveCalc()" onfocus="this.select()">
                   </div>
                   <div class="field">
                     <label data-i18n="calc.fields.time">Tempo (h)</label>
-                    <input type="text" id="printTime" value="0" placeholder="Ex: 1:45 ou 1.75" oninput="liveCalc()">
+                    <div class="time-input-wrap">
+                      <input type="text" id="printTime" value="0" placeholder="Ex: 1:45 ou 1.75" oninput="liveCalc()" onfocus="this.select()">
+                      <div class="time-stepper">
+                        <button onclick="adjTime('printTime', 15)"><i class="ph-bold ph-caret-up"></i></button>
+                        <button onclick="adjTime('printTime', -15)"><i class="ph-bold ph-caret-down"></i></button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1195,7 +1239,13 @@
                     <span class="summary-lbl" data-i18n="calc.fields.total_time">Tempo Total do Projeto</span>
                     <div class="summary-val">
                       <i class="ph-bold ph-clock" style="font-size: 1.2rem; color: var(--orange);"></i>
-                      <input type="text" id="totalProjectTime" class="summary-input" value="0" placeholder="1:45" oninput="liveCalc()">
+                      <div class="time-input-wrap">
+                        <input type="text" id="totalProjectTime" class="summary-input" value="0" placeholder="1:45" oninput="liveCalc()" onfocus="this.select()">
+                        <div class="time-stepper">
+                          <button onclick="adjTime('totalProjectTime', 15)"><i class="ph-bold ph-caret-up"></i></button>
+                          <button onclick="adjTime('totalProjectTime', -15)"><i class="ph-bold ph-caret-down"></i></button>
+                        </div>
+                      </div>
                       <span style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">h</span>
                     </div>
                   </div>
@@ -2265,6 +2315,15 @@ function criarPedido() {
 
 function updatePctLabels() {} // Já tratado no _render
 function updateSliderLabels() {} // Não mais necessário com a nova UI de inputs diretos
+
+function adjTime(id, mins) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const current = parseTime(el.value);
+  const newTime = Math.max(0, current + (mins / 60));
+  el.value = formatTime(newTime);
+  liveCalc();
+}
 
 // ══════════════════════════════════════
 //  CORE CALCULATION — homologated + resina
