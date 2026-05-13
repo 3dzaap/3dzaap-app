@@ -1275,7 +1275,18 @@
                 <!-- Painel Inteligência Financeira -->
                 <div class="finance-panel">
                   <div class="profit-hour-card">
-                    <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
+                    <div class="profit-hour-label">
+                      <span data-i18n="calc.results.profit_hour">Lucro / Hora</span>
+                      <span class="tip-icon">
+                        <i class="ph-bold ph-question"></i>
+                        <div class="tip-bubble" data-i18n="calc.results.profit_hour_tip">
+                          Níveis de rentabilidade por hora:<br>
+                          <b>BAIXO:</b> < 0.50 €/h<br>
+                          <b>MÉDIO:</b> 0.50 - 1.50 €/h<br>
+                          <b>ÓTIMO:</b> > 1.50 €/h
+                        </div>
+                      </span>
+                    </div>
                     <div class="profit-hour-val" id="profitPerHour">0,00 €</div>
                     <div class="profit-hour-badge" id="profitHourBadge">--</div>
                   </div>
@@ -2487,15 +2498,18 @@ function _render() {
     phBadge.classList.remove('red', 'yellow', 'green');
     if (r.finalPrice === 0) {
       phBadge.textContent = "--";
-    } else if (r.profitPerHour < 1.00) {
+    } else if (r.profitPerHour < 0.50) {
       phBadge.classList.add('red');
-      phBadge.innerHTML = '<i class="ph-bold ph-warning"></i> BAIXO';
-    } else if (r.profitPerHour < 2.50) {
+      const txt = window.i18n ? (window.i18n.getNestedTranslation('calc.results.profit_low') || 'BAIXO') : 'BAIXO';
+      phBadge.innerHTML = '<i class="ph-bold ph-warning"></i> ' + txt;
+    } else if (r.profitPerHour < 1.50) {
       phBadge.classList.add('yellow');
-      phBadge.innerHTML = '<i class="ph-bold ph-minus"></i> MÉDIO';
+      const txt = window.i18n ? (window.i18n.getNestedTranslation('calc.results.profit_medium') || 'MÉDIO') : 'MÉDIO';
+      phBadge.innerHTML = '<i class="ph-bold ph-minus"></i> ' + txt;
     } else {
       phBadge.classList.add('green');
-      phBadge.innerHTML = '<i class="ph-bold ph-trend-up"></i> ÓTIMO';
+      const txt = window.i18n ? (window.i18n.getNestedTranslation('calc.results.profit_great') || 'ÓTIMO') : 'ÓTIMO';
+      phBadge.innerHTML = '<i class="ph-bold ph-trend-up"></i> ' + txt;
     }
   }
 
