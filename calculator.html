@@ -1325,21 +1325,31 @@
               </div>
 
             <div class="results-actions">
-              <button class="btn-wa" onclick="sendWhatsApp()" style="margin-bottom: 4px;">
-                <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
-                <span data-i18n="calc.buttons.whatsapp">Enviar por WhatsApp</span>
+              <!-- AÇÃO PRIMÁRIA: Criar Pedido -->
+              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()" style="margin-bottom: 2px;">
+                <i class="ph-bold ph-shopping-cart"></i>
+                <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
               </button>
-              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()" style="margin-bottom: 4px;">
-                <span data-i18n="calc.buttons.create_order"><i class="ph-bold ph-shopping-cart"></i> Criar Pedido</span>
-              </button>
+
+              <!-- AÇÕES DE FLUXO: WhatsApp e Guardar -->
               <div class="results-actions-row">
-                <button class="btn-action" style="background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
-                  <span><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save_history">Guardar</span></span>
+                <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 2;">
+                  <span class="btn-wa-icon"><i class="ph-bold ph-whatsapp-logo"></i></span>
+                  <span data-i18n="calc.buttons.whatsapp" style="font-size: 0.75rem;">WhatsApp</span>
                 </button>
-                <button class="btn-action" onclick="copyResults()">
-                  <span><span data-i18n="calc.buttons.copy">Copiar</span> <i class="ph-bold ph-copy"></i></span>
+                <button class="btn-action" style="flex: 1.2; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
+                  <i class="ph-bold ph-floppy-disk"></i>
+                  <span data-i18n="calc.buttons.save_history" style="font-size: 0.7rem;">Guardar</span>
                 </button>
-                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()">
+              </div>
+
+              <!-- UTILITÁRIOS: Copiar e Configurações -->
+              <div class="results-actions-row">
+                <button class="btn-action" onclick="copyResults()" style="flex: 1;">
+                  <i class="ph-bold ph-copy"></i>
+                  <span data-i18n="calc.buttons.copy">Copiar Resultados</span>
+                </button>
+                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()" style="flex: 0 0 46px; background: var(--bg-card-s);">
                    <i class="ph-bold ph-gear"></i>
                 </button>
               </div>
