@@ -626,6 +626,14 @@ body {
 .table-empty h3   { font-size: .95rem; font-weight: 700; color: var(--muted); }
 .table-empty p    { font-size: .82rem; line-height: 1.6; max-width: 320px; }
 
+/* Educational Empty States */
+.educational-state { padding: 80px 40px; border-radius: var(--rl); background: radial-gradient(circle at 50% 0%, rgba(59,143,212,0.08), transparent 70%); }
+.edu-icon-wrap     { width: 80px; height: 80px; border-radius: var(--rl); background: var(--bg-card-s); box-shadow: var(--sh-float); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--blue); margin-bottom: 24px; position: relative; }
+.edu-icon-wrap::after { content: ''; position: absolute; inset: -8px; border: 2px dashed var(--blue); border-radius: inherit; opacity: 0.2; animation: rotate 10s linear infinite; }
+.educational-state h3 { font-size: 1.6rem; font-weight: 800; color: var(--dark); margin-bottom: 12px; }
+.educational-state p  { font-size: 1.05rem; color: var(--muted); max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 /* Table expand row */
 .expand-details      { display: none; background: var(--bg-expand); border-bottom: 1.5px solid var(--border); }
 .expand-details.open { display: table-row; }

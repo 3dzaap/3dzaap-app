@@ -104,10 +104,13 @@
 
       <div class="table-card">
         <div class="table-wrap">
-          <div id="clientsEmpty" class="table-empty" style="display:none">
-            <div class="table-empty-icon"><i class="ph-bold ph-users"></i></div>
-            <h3 data-i18n="clients.empty_title">Sem clientes registados</h3>
-            <p data-i18n="clients.empty_desc">Os teus clientes aparecerão aqui assim que os adicionares.</p>
+          <div id="clientsEmpty" class="educational-state" style="display:none">
+            <div class="edu-icon"><i class="ph-bold ph-users"></i></div>
+            <h2 data-i18n="clients.edu.title">A tua rede de contactos.</h2>
+            <p data-i18n="clients.edu.desc">Organiza a tua base de clientes para emitir orçamentos mais rápidos e oferecer um atendimento profissional.</p>
+            <button class="btn btn-primary" onclick="openClientModal()">
+              <i class="ph-bold ph-plus"></i> <span data-i18n="clients.edu.cta">Adicionar Meu Primeiro Cliente</span>
+            </button>
           </div>
           
           <table class="ord-table" id="clientTable" style="display:none">

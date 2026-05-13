@@ -1005,34 +1005,62 @@ function calcHealthScore() {
 
   const missingDueDates = openCount > 0 && (ordersWithoutDue.length / openCount) > 0.3;
 
-  // 1. Rentabilidade Real (25 pts)
+  // ── ONBOARDING / SETUP (20 pts) ──
+  let setupScore = 0;
+  
+  // Impressoras
+  if (printers.length > 0) {
+    setupScore += 10;
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-printer"></i>', key:'setup_printers_ok', msg:'Equipamentos configurados.'});
+  } else {
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-printer"></i>', key:'setup_printers_miss', msg:'Nenhuma impressora registada. Adicione equipamentos!', page:'printers.html'});
+  }
+
+  // Materiais
+  if (filaments.length > 0) {
+    setupScore += 5;
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-sketch-logo"></i>', key:'setup_materials_ok', msg:'Inventário inicial registado.'});
+  } else {
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-sketch-logo"></i>', key:'setup_materials_miss', msg:'Nenhum material em stock. Configure os seus filamentos.', page:'materials.html'});
+  }
+
+  // Branding (Logo)
+  const hasLogo = (window._cfg && window._cfg.company_logo_url);
+  if (hasLogo) {
+    setupScore += 5;
+    insights.push({t:'ok', icon:'<i class="ph-bold ph-palette"></i>', key:'setup_logo_ok', msg:'Identidade visual ativa.'});
+  } else {
+    insights.push({t:'warn', icon:'<i class="ph-bold ph-palette"></i>', key:'setup_logo_miss', msg:'Branding em falta. Carregue o seu logótipo!', page:'settings.html?tab=branding'});
+  }
+  score += setupScore;
+
+  // 1. Rentabilidade Real (20 pts)
   let marginScore = 0;
   if (weightThis > 0) {
     const ticketG = revThis / weightThis;
-    if (ticketG >= 0.10) marginScore = 25;
-    else if (ticketG >= 0.07) marginScore = 18;
-    else if (ticketG >= 0.04) marginScore = 10;
+    if (ticketG >= 0.10) marginScore = 20;
+    else if (ticketG >= 0.07) marginScore = 15;
+    else if (ticketG >= 0.04) marginScore = 8;
     else marginScore = 0;
     
     if (ticketG < 0.07) insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'health_margin_low', msg:`Ticket médio de ${ticketG.toFixed(2)}€/g é baixo.`});
   } else {
-    // Fallback para definições globais
     const profitTarget = window._cfg ? parseFloat(window._cfg.calc_profit_margin || 30) : 30;
-    if (profitTarget >= 30) marginScore = 25;
-    else if (profitTarget >= 20) marginScore = 18;
-    else if (profitTarget >= 10) marginScore = 10;
+    if (profitTarget >= 30) marginScore = 20;
+    else if (profitTarget >= 20) marginScore = 15;
+    else if (profitTarget >= 10) marginScore = 8;
     
     if (profitTarget < 20) insights.push({t:'warn', icon:'<i class="ph-bold ph-target"></i>', key:'health_margin_target_low', msg:'A tua meta de lucro nas definições é baixa.', page:'settings.html?tab=preferencias'});
   }
   score += marginScore;
 
-  // 2. Eficiência Operacional Relativa (25 pts)
-  let effScore = 25;
+  // 2. Eficiência Operacional (20 pts)
+  let effScore = 20;
   if (openCount > 0) {
     const latePct = lateCount / openCount;
-    if (latePct === 0) effScore = 25;
-    else if (latePct <= 0.05) effScore = 25;
-    else if (latePct <= 0.15) effScore = 15;
+    if (latePct === 0) effScore = 20;
+    else if (latePct <= 0.05) effScore = 18;
+    else if (latePct <= 0.15) effScore = 12;
     else if (latePct <= 0.25) effScore = 5;
     else effScore = 0;
 
@@ -1042,8 +1070,6 @@ function calcHealthScore() {
         : `${lateCount} pedidos com prazo de entrega ultrapassado.`;
       insights.push({t:'bad', icon:'<i class="ph-bold ph-timer"></i>', key:'perf_late_orders', msg: lateMsg, page:'orders.html'});
     }
-  } else if (orders.length > 0) {
-    insights.push({t:'ok', icon:'<i class="ph-bold ph-check-circle"></i>', key:'perf_all_clear', msg:'Não há pedidos pendentes!'});
   }
   score += effScore;
 
@@ -1059,11 +1085,11 @@ function calcHealthScore() {
   }
   score += cashScore;
 
-  // 4. Supply Chain & Assets (20 pts)
+  // 4. Supply Chain & Assets (10 pts)
   const criticalMats = filaments.filter(f => getFilamentStatus(f) !== 'green').length;
   const brokenPrinters = printers.filter(p => (p.status || '').toLowerCase() !== 'operacional').length;
   
-  let scScore = Math.max(0, 20 - (criticalMats * 4) - (brokenPrinters * 10));
+  let scScore = Math.max(0, 10 - (criticalMats * 2) - (brokenPrinters * 5));
   score += scScore;
   
   if (criticalMats > 0) insights.push({t:'warn', icon:'<i class="ph-bold ph-warning-octagon"></i>', key:'perf_stock_low', msg:`Atenção a ${criticalMats} material(is) esgotado(s).`, page:'materials.html'});
@@ -1073,26 +1099,21 @@ function calcHealthScore() {
   let trendScore = 10;
   if (revPrev > 0) {
     const change = (revThis - revPrev) / revPrev;
-    if (change < -0.20) {
-      trendScore = 0;
-      insights.push({t:'bad', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_bad', vars:{p:Math.round(change*100)*-1}, msg:`Quebra rápida na faturação (${Math.round(change*100)*-1}%).`});
-    } else if (change < 0) {
-      trendScore = 5;
-      insights.push({t:'warn', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'rev_warn', vars:{p:Math.round(change*100)*-1}, msg:`Ligeira descida na faturação.`});
-    }
+    if (change < -0.20) trendScore = 0;
+    else if (change < 0) trendScore = 5;
   }
   score += trendScore;
   
-  // 6. Atualizações Pendentes do Cliente (Penalidade)
+  // Penas por atualizações não lidas
   if (unreadUpdatesCount > 0) {
-    score -= (unreadUpdatesCount * 5); // Penalidade de 5 pontos por atualização
+    score -= (unreadUpdatesCount * 2);
     if (score < 0) score = 0;
-    insights.push({t:'bad', icon:'<i class="ph-bold ph-bell-ringing"></i>', key:'health_unread_updates', msg:`${unreadUpdatesCount} pedido(s) com atualizações não lidas do cliente.`, page:'orders.html'});
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-bell-ringing"></i>', key:'health_unread_updates', msg:`${unreadUpdatesCount} atualização(ões) não lida(s).`, page:'orders.html'});
   }
-  
-  // Avisos iniciais
+
+  // Se não houver pedidos, incentivar a criação
   if (orders.length === 0) {
-    insights.push({t:'warn', icon:'<i class="ph-bold ph-package"></i>', key:'perf_no_orders', msg:'Cria pedidos para ativar a análise financeira.', page:'calculator.html'});
+    insights.push({t:'warn', icon:'<i class="ph-bold ph-package"></i>', key:'perf_no_orders', msg:'Registe o seu primeiro pedido para ativar a análise operacional.', page:'calculator.html'});
   }
 
   // ── RENDER ──────────────────────────────────────────────────

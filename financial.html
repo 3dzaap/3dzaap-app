@@ -365,6 +365,15 @@
         <span id="periodoLabel" style="font-size:.78rem;color:var(--subtle);margin-left:4px"></span>
       </div>
 
+      <div id="finEduState" class="educational-state" style="display:none; margin-bottom: 30px;">
+        <div class="edu-icon"><i class="ph-bold ph-chart-line-up"></i></div>
+        <h2 data-i18n="financial.edu.title">Onde está o teu lucro?</h2>
+        <p data-i18n="financial.edu.desc">Regista as tuas despesas e receitas para ver a saúde real do teu negócio.</p>
+        <button class="btn btn-primary" onclick="openExpModal()">
+          <i class="ph-bold ph-plus-circle"></i> <span data-i18n="financial.edu.cta">Lançar Primeira Despesa</span>
+        </button>
+      </div>
+
       <div id="yearlyChartSection" class="fin-card yearly-chart-card" style="display:none">
         <div class="chart-card-header">
           <div class="chart-card-title"><i class="ph-bold ph-chart-line-up"></i> <span data-i18n="financial.year_chart_title">Desempenho Anual</span></div>
@@ -741,6 +750,23 @@ function renderAll() {
   renderStatusDistribution(periodOrders);
   renderDoneStats(periodOrders);
   renderPrinterEfficiency(periodOrders);
+  
+  // Educational State Logic
+  const eduState = document.getElementById('finEduState');
+  if (orders.length === 0 && expenses.length === 0) {
+    eduState.style.display = 'flex';
+    // Hide other sections to focus on onboarding
+    document.getElementById('yearlyChartSection').style.display = 'none';
+    document.querySelector('.fin-kpi-grid').style.display = 'none';
+    document.querySelectorAll('.fin-grid').forEach(g => g.style.display = 'none');
+    document.querySelectorAll('.fin-card').forEach(c => c.style.display = 'none');
+  } else {
+    eduState.style.display = 'none';
+    document.querySelector('.fin-kpi-grid').style.display = 'grid';
+    document.querySelectorAll('.fin-grid').forEach(g => g.style.display = 'grid');
+    document.querySelectorAll('.fin-card').forEach(c => c.style.display = 'block');
+    // yearlyChartSection and specific grids handled by their own logic later or in renderAll
+  }
 
   animateValue('kpiTotal', 0, total, 800);
   document.getElementById('kpiTotalSub').textContent    = i18n.getNestedTranslation(periodOrders.length === 1 ? 'financial.kpi_total_sub_1' : 'financial.kpi_total_sub_n', {n: periodOrders.length});

@@ -1244,7 +1244,17 @@
         <!-- ── RIGHT: RESULTS ── -->
         <div class="glass-card results-col">
           <div class="results-panel">
-                <div class="res-hero">
+                <div id="calcEduState" class="educational-state" style="display:none; margin-bottom: 20px;">
+                  <div class="edu-icon"><i class="ph-bold ph-lightning"></i></div>
+                  <h2 data-i18n="calc.edu.title">Pronto para Calcular?</h2>
+                  <div style="text-align:left; width:100%; margin-top:10px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px; color:var(--muted)">
+                    <div data-i18n="calc.edu.step1">1. Seleciona o material e tempo</div>
+                    <div data-i18n="calc.edu.step2">2. Vê o lucro real (não apenas o custo)</div>
+                    <div data-i18n="calc.edu.step3">3. Cria o pedido em 1 clique</div>
+                  </div>
+                </div>
+
+                <div class="res-hero" id="priceHeroCard">
                   <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
                   <div class="res-hero-val" id="rFinal">0,00 €</div>
                   
@@ -2412,6 +2422,27 @@ function _render() {
   const i = getInputs();
   const r = computeResults(i);
   
+  // Educational State Logic
+  const eduState = document.getElementById('calcEduState');
+  const heroCard = document.getElementById('priceHeroCard');
+  const finPanel = document.querySelector('.finance-panel');
+  const breakdown = document.querySelector('.breakdown-list');
+  const mpResults = document.getElementById('mpResultsContainer');
+
+  if (r.finalPrice === 0) {
+    if (eduState) eduState.style.display = 'flex';
+    if (heroCard) heroCard.style.display = 'none';
+    if (finPanel) finPanel.style.display = 'none';
+    if (breakdown) breakdown.style.display = 'none';
+    if (mpResults) mpResults.style.display = 'none';
+  } else {
+    if (eduState) eduState.style.display = 'none';
+    if (heroCard) heroCard.style.display = 'block';
+    if (finPanel) finPanel.style.display = 'flex';
+    if (breakdown) breakdown.style.display = 'flex';
+    if (mpResults) mpResults.style.display = 'grid';
+  }
+
   // 1. Hero Card (3 values)
   const setHeroText = (id, val) => {
     const el = document.getElementById(id);
