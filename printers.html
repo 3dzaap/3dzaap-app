@@ -759,23 +759,24 @@ let printers = [];
 let _editingPrinterId = null;
 let _detailPrinterId  = null;
 const STATUS_LABELS = { 
-  operacional: () => i18n.getNestedTranslation('printers.card.operational'), 
-  manutencao:  () => i18n.getNestedTranslation('printers.card.maintenance'), 
-  inativa:     () => i18n.getNestedTranslation('printers.card.inactive') 
+  operacional: () => t('printers.status.operacional') || 'Operacional',
+  manutencao:  () => t('printers.status.manutencao')  || 'Em Manutenção',
+  avaria:      () => t('printers.status.avaria')      || 'Avaria',
+  desativada:  () => t('printers.status.desativada')  || 'Desativada'
 };
 const TYPE_LABELS = { 
-  fdm: 'FDM', 
-  resina: () => t('materials.modal.resin') 
+  fdm:    () => t('sidebar.cards.printer_type_fdm')   || 'FDM',
+  resina: () => t('sidebar.cards.printer_type_resin') || 'Resina'
 };
 const MAINT_LABELS = {
-  lubrificacao: () => i18n.getNestedTranslation('printers.maint_types.lubrificacao'),
-  limpeza:      () => i18n.getNestedTranslation('printers.maint_types.limpeza'),
-  substituicao_nozzle: () => i18n.getNestedTranslation('printers.maint_types.substituicao_nozzle'),
-  substituicao_belt:   () => i18n.getNestedTranslation('printers.maint_types.substituicao_belt'),
-  substituicao_peca:   () => i18n.getNestedTranslation('printers.maint_types.substituicao_peca'),
-  calibracao:   () => i18n.getNestedTranslation('printers.maint_types.calibracao'),
-  reparacao:    () => i18n.getNestedTranslation('printers.maint_types.reparacao'),
-  outro:        () => i18n.getNestedTranslation('printers.maint_types.outro'),
+  lubrificacao: () => t('printers.maint_types.lubrificacao') || 'Lubrificação',
+  limpeza:      () => t('printers.maint_types.limpeza')      || 'Limpeza',
+  substituicao_nozzle: () => t('printers.maint_types.substituicao_nozzle') || 'Nozzle',
+  substituicao_belt:   () => t('printers.maint_types.substituicao_belt')   || 'Correia',
+  substituicao_peca:   () => t('printers.maint_types.substituicao_peca')   || 'Peça',
+  calibracao:   () => t('printers.maint_types.calibracao')   || 'Calibração',
+  reparacao:    () => t('printers.maint_types.reparacao')    || 'Reparação',
+  outro:        () => t('printers.maint_types.outro')        || 'Outro',
 };
 
 // ── INIT ───────────────────────────────
@@ -783,6 +784,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
   await loadUserData();
   await loadData();
+});
+
+// Re-render when language changes to ensure all dynamic labels are translated
+window.addEventListener('languageChanged', () => {
+  if (printers && printers.length > 0) {
+    renderPrinters();
+    updateStats();
+  }
 });
 
 // ── USER DATA ───────────────────────────
