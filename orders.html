@@ -1048,7 +1048,7 @@
         <div style="display:flex; gap:10px; margin-top:8px">
           <button type="button" class="btn btn-ghost btn-sm" onclick="addOrderItem()"
             data-i18n="orders.modal.btn_add"><i class="ph-bold ph-plus"></i> Adicionar item</button>
-          <button type="button" class="btn btn-ghost btn-sm" style="color:var(--blue); border-color:var(--blue)"
+          <button type="button" id="btnOpenLibrary" class="btn btn-ghost btn-sm" style="color:var(--blue); border-color:var(--blue)"
             onclick="openLibraryModal()"><i class="ph-bold ph-plus"></i> Biblioteca de Produtos</button>
         </div>
         <div class="grand-total-row" style="margin-top:12px">
@@ -2648,6 +2648,17 @@
         addOrderItem();
       }
       document.getElementById('clientSugs').style.display = 'none';
+      
+      // Control library button visibility/state
+      const libBtn = document.getElementById('btnOpenLibrary');
+      if (libBtn) {
+        const hasProducts = (_dbProducts && _dbProducts.length > 0);
+        libBtn.disabled = !hasProducts;
+        libBtn.style.opacity = hasProducts ? '1' : '0.5';
+        libBtn.style.cursor = hasProducts ? 'pointer' : 'not-allowed';
+        libBtn.title = hasProducts ? '' : (i18n.getNestedTranslation('orders.modal.lib_empty') || 'A biblioteca de produtos está vazia.');
+      }
+
       document.getElementById('modalOverlay').classList.add('open');
     }
 
