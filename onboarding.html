@@ -110,6 +110,10 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
 .plan-card.selected .plan-check{border-color:var(--blue);background:var(--blue)}
 .plan-check::after{content:'✓';font-size:.65rem;color:#fff;display:none;font-weight:800}
 .plan-card.selected .plan-check::after{display:block}
+.plan-desc{font-size:.72rem;color:var(--muted);margin-bottom:10px;line-height:1.2;font-weight:500}
+.plan-features-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--bdark);padding-top:10px}
+.plan-feature-item{font-size:.68rem;color:var(--dark);display:flex;align-items:center;gap:6px;font-weight:600}
+.plan-feature-item i{color:var(--success);font-size:.75rem}
 .trial-info{background:rgba(34,197,94,.1);border:1.5px solid rgba(34,197,94,.25);border-radius:var(--rm);padding:10px 14px;font-size:.8rem;color:#15803d;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
 .success-screen{text-align:center;padding:8px 0}
 .success-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(34,197,94,.08));border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;animation:popIn .5s var(--ease) both}
@@ -140,6 +144,16 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
       <div class="brand-text"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
     </div>
 
+  <script src="utils.js"></script>
+  <script src="i18n.js"></script>
+  <script src="sidebar.js"></script>
+
+  <div class="card">
+    <div class="brand-logo-wrap">
+      <img src="logo.jpg" class="brand-nozzle" alt="3DZAAP">
+      <div class="brand-text"><span class="b3d">3D</span><span class="bzp">ZAAP</span></div>
+    </div>
+
     <div id="onboardingPanel">
       <div class="steps-bar">
         <div class="step-dot active" id="dot1">1</div>
@@ -147,70 +161,82 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
         <div class="step-dot" id="dot2">2</div>
       </div>
 
+      <!-- STEP 1 -->
       <div class="step-panel active" id="step1">
         <div class="steps-header">
-          <div class="steps-title"><i class="ph-bold ph-buildings"></i> A tua empresa</div>
-          <div class="steps-sub">Configura os dados base da tua operação.</div>
+          <div class="steps-title" data-i18n="onboarding.step1_title"><i class="ph-bold ph-buildings"></i> A tua empresa</div>
+          <div class="steps-sub" data-i18n="onboarding.step1_desc">Configura os dados base da tua operação.</div>
         </div>
         <div class="field" id="f-cname">
-          <label>Nome da empresa</label>
+          <label data-i18n="onboarding.company_name">Nome da empresa</label>
           <div class="field-wrap">
             <span class="ico"><i class="ph-bold ph-buildings"></i></span>
-            <input type="text" class="inp" id="companyName" placeholder="Ex: PrintLab Studio" oninput="generateSlug(this.value)">
+            <input type="text" class="inp" id="companyName" data-i18n="[placeholder]onboarding.company_name_placeholder" placeholder="Ex: PrintLab Studio" oninput="generateSlug(this.value)">
           </div>
           <div class="slug-preview" id="slugPreview"></div>
         </div>
         <div class="field" id="f-slug">
-          <label>URL da empresa</label>
+          <label data-i18n="onboarding.company_url">URL da empresa</label>
           <div class="field-wrap">
             <span class="ico" style="font-size:.75rem;font-family:var(--mono);color:var(--muted);left:12px">app/</span>
-            <input type="text" class="inp" id="companySlug" placeholder="printlab-studio" style="padding-left:52px">
+            <input type="text" class="inp" id="companySlug" data-i18n="[placeholder]onboarding.company_url_placeholder" placeholder="printlab-studio" style="padding-left:52px">
           </div>
         </div>
         <div class="field">
-          <label>País</label>
+          <label data-i18n="onboarding.country">País</label>
           <div class="field-wrap">
             <span class="ico"><i class="ph-bold ph-globe"></i></span>
             <select class="inp" id="companyCountry">
-              <option value="pt">🇵🇹 Portugal</option>
-              <option value="br">🇧🇷 Brasil</option>
-              <option value="other">🌍 Outro</option>
+              <option value="pt" data-i18n="onboarding.country_pt">🇵🇹 Portugal</option>
+              <option value="br" data-i18n="onboarding.country_br">🇧🇷 Brasil</option>
+              <option value="es" data-i18n="onboarding.country_es">🇪🇸 Espanha</option>
+              <option value="us" data-i18n="onboarding.country_us">🇺🇸 Estados Unidos</option>
+              <option value="uk" data-i18n="onboarding.country_uk">🇬🇧 Reino Unido</option>
+              <option value="other" data-i18n="onboarding.country_other">🌍 Outro</option>
             </select>
           </div>
         </div>
-        <button class="btn-primary" onclick="goStep(2)" id="step1Btn"><span class="btn-label">Próximo Passo →</span></button>
+        <button class="btn-primary" onclick="goStep(2)" id="step1Btn">
+          <span class="btn-label" data-i18n="onboarding.next_step">Próximo Passo →</span>
+        </button>
       </div>
 
+      <!-- STEP 2 -->
       <div class="step-panel" id="step2">
         <div class="steps-header">
-          <div class="steps-title">✨ Escolhe o teu plano</div>
-          <div class="steps-sub">Podes mudar a qualquer momento.</div>
+          <div class="steps-title" data-i18n="onboarding.step2_title">✨ Escolhe o teu plano</div>
+          <div class="steps-sub" data-i18n="onboarding.step2_desc">Podes mudar a qualquer momento.</div>
         </div>
         <div class="plan-toggle-wrap">
-          <span class="pt-lbl" id="lbl-mon">Mensal</span>
+          <span class="pt-lbl" id="lbl-mon" data-i18n="onboarding.monthly">Mensal</span>
           <div class="pt-sw" id="planToggle" onclick="toggleBilling()"></div>
-          <span class="pt-lbl" id="lbl-ann">Anual</span>
+          <span class="pt-lbl" id="lbl-ann" data-i18n="onboarding.annual">Anual</span>
         </div>
-        <div class="plan-grid">
-          <div class="plan-card" id="plan-trial" onclick="selectPlan('trial')"><div class="plan-check"></div><div class="plan-name">Trial</div><div class="plan-price free">Grátis <small>7 dias</small></div></div>
-          <div class="plan-card selected" id="plan-starter" onclick="selectPlan('starter')"><div class="plan-check"></div><div class="plan-name">Starter</div><div class="plan-price" id="pr-starter">€9,90<small>/mês</small></div></div>
-          <div class="plan-card recommended" id="plan-pro" onclick="selectPlan('pro')"><div class="plan-badge">Popular</div><div class="plan-check"></div><div class="plan-name">Pro</div><div class="plan-price" id="pr-pro">€19,90<small>/mês</small></div></div>
-          <div class="plan-card" id="plan-business" onclick="selectPlan('business')"><div class="plan-check"></div><div class="plan-name">Business</div><div class="plan-price" id="pr-business">€39,90<small>/mês</small></div></div>
+
+        <div class="plan-grid" id="planGrid">
+          <!-- Renderizado via JS para incluir descrições dinâmicas -->
         </div>
-        <button class="btn-primary" id="finishBtn" onclick="finishOnboarding()"><span class="btn-label">Finalizar Configuração</span><div class="spinner"></div></button>
-        <div style="text-align:center;margin-top:12px"><span style="font-size:.8rem;color:var(--muted);cursor:pointer" onclick="goStep(1)">← Voltar</span></div>
+
+        <button class="btn-primary" id="finishBtn" onclick="finishOnboarding()">
+          <span class="btn-label" data-i18n="onboarding.finish">Finalizar Configuração</span>
+          <div class="spinner"></div>
+        </button>
+        <div style="text-align:center;margin-top:12px">
+          <span style="font-size:.8rem;color:var(--muted);cursor:pointer" onclick="goStep(1)" data-i18n="onboarding.back">← Voltar</span>
+        </div>
       </div>
     </div>
 
     <div id="successPanel" style="display:none">
       <div class="success-screen">
         <div class="success-icon"><i class="ph-bold ph-confetti"></i></div>
-        <h2>Tudo pronto!</h2>
+        <h2 data-i18n="onboarding.success_title">Tudo pronto!</h2>
         <div class="company-pill" id="successCompanyPill"></div>
-        <p>A tua conta está pronta a usar.</p>
-        <button class="btn-primary" onclick="window.location.href='dashboard.html'">Ir para o Dashboard →</button>
+        <p data-i18n="onboarding.success_desc">A tua conta está pronta a usar.</p>
+        <button class="btn-primary" onclick="window.location.href='dashboard.html'" data-i18n="onboarding.go_dash">Ir para o Dashboard →</button>
       </div>
     </div>
+  </div>
   </div>
 </div>
 
@@ -235,14 +261,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const company = await Auth._loadCompany(true, session.user);
     if (company) { window.location.href = 'dashboard.html'; return; }
 
+    if (window.i18n) {
+      await window.i18n.init();
+      window.i18n.translatePage();
+      renderPlans();
+    }
+
     document.getElementById('bootOverlay').style.display = 'none';
   } catch(e) { window.location.href = 'auth.html'; }
 });
 
 function goStep(n) {
+  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   if (n === 2) {
     const name = document.getElementById('companyName').value.trim();
-    if (name.length < 2) { toast('Nome da empresa é muito curto', 'err'); return; }
+    if (name.length < 2) { toast(t('onboarding.err_name_short') || 'Nome da empresa é muito curto', 'err'); return; }
     document.getElementById('dot1').classList.add('done');
     document.getElementById('dot1').textContent = '✓';
     document.getElementById('line1').classList.add('done');
@@ -259,18 +292,52 @@ function goStep(n) {
 
 function selectPlan(p) {
   STATE.plan = p;
-  document.querySelectorAll('.plan-card').forEach(c => c.classList.toggle('selected', c.id === 'plan-'+p));
+  renderPlans();
 }
 
 function toggleBilling() {
   STATE.billing = STATE.billing === 'monthly' ? 'yearly' : 'monthly';
   const isAnn = STATE.billing === 'yearly';
   document.getElementById('planToggle').classList.toggle('on', isAnn);
-  for (let k in PRICES) {
-    const v = isAnn ? PRICES[k].yearly : PRICES[k].monthly;
-    const el = document.getElementById('pr-'+k);
-    if (el) el.innerHTML = `€${v.toFixed(2).replace('.',',')}<small>/mês${isAnn?' (anual)':''}</small>`;
-  }
+  renderPlans();
+}
+
+function renderPlans() {
+  const container = document.getElementById('planGrid');
+  if (!container) return;
+  
+  const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
+  const isAnn = STATE.billing === 'yearly';
+  const plans = ['trial', 'starter', 'pro', 'business'];
+  
+  container.innerHTML = '';
+  
+  plans.forEach(p => {
+    const pName = t(`onboarding.plans.${p}.name`) || p.toUpperCase();
+    const pDesc = t(`onboarding.plans.${p}.desc`) || '';
+    const pPrice = p === 'trial' ? (t('onboarding.plans.trial.price') || 'Grátis') : (isAnn ? PRICES[p].yearly : PRICES[p].monthly);
+    const pSub = p === 'trial' ? (t('onboarding.days_7') || '7 dias') : (t('onboarding.per_month') || '/mês') + (isAnn ? ' ' + (t('onboarding.annually_label') || '(anual)') : '');
+    const pFeatures = window.i18n ? window.i18n.getNestedTranslation(`onboarding.plans.${p}.features`) : [];
+    
+    const card = document.createElement('div');
+    card.className = 'plan-card' + (STATE.plan === p ? ' selected' : '') + (p === 'pro' ? ' recommended' : '');
+    card.id = 'plan-' + p;
+    card.onclick = () => selectPlan(p);
+    
+    let html = '';
+    if (p === 'pro') html += `<div class="plan-badge">${t('onboarding.popular') || 'Popular'}</div>`;
+    html += `
+      <div class="plan-check"></div>
+      <div class="plan-name">${pName}</div>
+      <div class="plan-desc">${pDesc}</div>
+      <div class="plan-price">${p === 'trial' ? pPrice : '€' + pPrice.toFixed(2).replace('.', ',')}<small>${pSub}</small></div>
+      <ul class="plan-features-list">
+        ${(pFeatures || []).map(f => `<li class="plan-feature-item"><i class="ph-bold ph-check"></i> ${f}</li>`).join('')}
+      </ul>
+    `;
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
 }
 
 async function finishOnboarding() {

@@ -604,6 +604,13 @@ NEXT_PUBLIC_APP_URL=https://app.3dzaap.com
 | Supabase | Postgres + Auth + Edge Functions + Realtime + Storage |
 | GitHub Actions | CI/CD pipeline |
 | Stripe | Billing, webhooks, customer portal |
+| Google Cloud | OAuth 2.0 Credentials (Google Login) |
+
+### 14.3 Branding & Trust (Custom Domain)
+Para remover o domínio técnico do Supabase (`*.supabase.co`) do ecrã de login do Google e comunicações, é obrigatório:
+- **Supabase Custom Domain:** Configurar CNAME (ex: `api.3dzaap.com`) no Supabase (requer plano Pro).
+- **Google OAuth Console:** Atualizar *Authorized Redirect URIs* para o novo domínio customizado.
+- **SSL/TLS:** Garantir certificados via Cloudflare para o subdomínio da API.
 
 ### Ambientes
 
@@ -771,6 +778,7 @@ Deno.serve(async (req) => {
 - [ ] Deploy Edge Functions: stripe-checkout, stripe-portal, stripe-webhook
 - [ ] Reescrita completa da UI (React/Radix)
 - [ ] Rate Limiting (Cloudflare WAF)
+- [ ] Configurar **Custom Domain** no Supabase e Google Cloud (Remover url .supabase.co do login)
 - [ ] Smoke tests em staging antes de apontar DNS para produção
 
 ### Pós-Lançamento
