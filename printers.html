@@ -958,7 +958,7 @@ function renderPrinters() {
           <span class="printer-stat-lbl" data-i18n="printers.stats.revisions">Revisões</span>
         </div>
         <div class="printer-stat">
-          <span class="printer-stat-val">${totalMaintCost > 0 ? fmtCurrency(totalMaintCost) : '—'}</span>
+          <span class="printer-stat-val">${totalMaintCost > 0 ? fmtCurrency(totalMaintCost) : fmtCurrency(0)}</span>
           <span class="printer-stat-lbl" data-i18n="printers.card.total_cost">Custo Total</span>
         </div>
       </div>
@@ -972,7 +972,7 @@ function renderPrinters() {
       </div>
     </div>`;
   }).join('');
-  i18n.translatePage();
+  i18n.translatePage(grid);
 }
 
 // Returns HTML chip for maintenance alert
@@ -1361,7 +1361,7 @@ function openDetailModal(id) {
   const p = printers.find(x => x.id === id);
   if (!p) return;
 
-  document.getElementById('detailModalTitle').textContent = `<i class="ph-bold ph-printer"></i> ${p.customName ? p.customName + ' (' + p.brand + ' ' + p.model + ')' : p.brand + ' ' + p.model}`;
+  document.getElementById('detailModalTitle').innerHTML = `<i class="ph-bold ph-printer"></i> ${escH(p.customName ? p.customName + ' (' + p.brand + ' ' + p.model + ')' : p.brand + ' ' + p.model)}`;
 
   // Summary fields
   const pct = _hoursPercent(p);
@@ -1420,7 +1420,7 @@ function _renderMaintList(p) {
   const list = document.getElementById('maintList');
   const maints = (p.maintenances || []).slice().sort((a,b) => new Date(b.date) - new Date(a.date));
   if (!maints.length) {
-    list.innerHTML = `<div class="maint-empty" data-i18n="printers.details.empty_maint">${i18n.getNestedTranslation('printers.details.empty_maint')}</div>`;
+    list.innerHTML = `<div class="maint-empty" data-i18n="printers.details.empty_maint">${i18n.getNestedTranslation('printers.details.empty_maint', null, 'Sem histórico de manutenções.')}</div>`;
     return;
   }
   list.innerHTML = maints.map((m, idx) => {
@@ -1434,7 +1434,7 @@ function _renderMaintList(p) {
       <button class="btn-icon del" onclick="deleteMaintenance('${p.id}', ${idx})" title="${i18n.getNestedTranslation('printers.card.btn_delete')}"><i class="ph-bold ph-trash"></i></button>
     </div>`;
   }).join('');
-  i18n.translatePage();
+  i18n.translatePage(list);
 }
 
 function closeDetailModal() {

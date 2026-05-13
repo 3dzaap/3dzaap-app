@@ -84,11 +84,13 @@ const i18n = {
             }
         });
 
-        // Só disparar o evento se for Tradução Completa de Documento para evitar recursion Loops no orders.html
-        if (root === document) {
+        // Só disparar o evento se for Tradução Completa de Documento para evitar recursion Loops
+        if (root === document && !this._isTranslating) {
+            this._isTranslating = true;
             document.body.classList.remove(...this.supportedLocales.map(l => `lang-${l}`));
             document.body.classList.add(`lang-${this.currentLocale}`);
             window.dispatchEvent(new CustomEvent('languageChanged', { detail: { locale: this.currentLocale } }));
+            this._isTranslating = false;
         }
     },
 
