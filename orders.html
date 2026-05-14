@@ -1833,13 +1833,35 @@
         const allResin = anySet && validMats.every(it => _isResinMaterial(it.filamentId));
         const allFDM = anySet && validMats.every(it => !_isResinMaterial(it.filamentId));
         const finalUnit = !anySet ? 'g' : (allResin ? 'ml' : (allFDM ? 'g' : 'g/ml'));
-        const itemsHtml = its.map((it, idx) => `
-      <tr>
-        <td>${idx + 1}. ${escH(it.description || '—')}</td>
-        <td class="r">${it.quantity || it.qty || 1}</td>
-        <td class="r">${fmtCurrency(parseFloat(it.unitPrice) || 0)}</td>
-        <td class="bold">${fmtCurrency(_itTotal(it))}</td>
-      </tr>`).join('');
+        const itemsHtml = its.map((it, idx) => {
+          const cfg = it.config || {};
+          let advancedHtml = '';
+          if (cfg.calc_mode === 'advanced' && cfg._orig_inputs && cfg._orig_inputs.mesas) {
+             const mesas = cfg._orig_inputs.mesas;
+             advancedHtml = `<div style="margin-top:4px; padding:6px 10px; background:rgba(0,0,0,0.03); border-radius:6px; font-size:0.7rem; color:var(--muted)">
+                <div style="font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.02em"><i class="ph-bold ph-layers"></i> Composição Técnica (${mesas.length} mesas)</div>
+                ${mesas.map(m => {
+                   const mesaW = m.parts.reduce((s,p) => s + (parseFloat(p.weight)||0)*(parseInt(p.qty)||1), 0);
+                   const mesaT = m.parts.reduce((s,p) => s + (parseFloat(p.time)||0)*(parseInt(p.qty)||1), 0);
+                   return `<div style="display:flex; justify-content:space-between; border-bottom:1px dashed rgba(0,0,0,0.05); padding:2px 0">
+                      <span>${escH(m.name)}</span>
+                      <span>${mesaW.toFixed(1)}${finalUnit} • ${formatTime(mesaT)}</span>
+                   </div>`;
+                }).join('')}
+             </div>`;
+          }
+
+          return `
+          <tr>
+            <td style="padding-bottom:12px">
+              <strong>${idx + 1}. ${escH(it.description || '—')}</strong>
+              ${advancedHtml}
+            </td>
+            <td class="r" style="vertical-align:top">${it.quantity || it.qty || 1}</td>
+            <td class="r" style="vertical-align:top">${fmtCurrency(parseFloat(it.unitPrice) || 0)}</td>
+            <td class="bold" style="vertical-align:top">${fmtCurrency(_itTotal(it))}</td>
+          </tr>`;
+        }).join('');
 
         const detailGrid = [
           { lbl: 'orders.details.email', val: o.clientEmail || '—' },
@@ -3249,13 +3271,31 @@
       const city = cfg.city || 'Portugal';
       const today = new Date().toLocaleDateString('pt-PT');
 
-      const itemRows = its.map((it, i) => `
-    <tr>
-      <td><strong>${i + 1}. ${escH(it.description || '—')}</strong></td>
-      <td class="r">${it.quantity}</td>
-      <td class="r">${fmtCurrency(it.unitPrice || 0)}</td>
-      <td class="r bold">${fmtCurrency((it.quantity || 1) * (it.unitPrice || 0))}</td>
-    </tr>`).join('');
+      const itemRows = its.map((it, i) => {
+        const cfg = it.config || {};
+        let advancedDetails = '';
+        if (cfg.calc_mode === 'advanced' && cfg._orig_inputs && cfg._orig_inputs.mesas) {
+          const mesas = cfg._orig_inputs.mesas;
+          advancedDetails = `<div style="font-size:0.65rem; color:#64748b; margin-top:4px; padding-left:12px; border-left:2px solid #e2e8f0">
+            ${mesas.map(m => {
+              const mesaW = m.parts.reduce((s,p) => s + (parseFloat(p.weight)||0)*(parseInt(p.qty)||1), 0);
+              const mesaUnit = (it.tech === 'resin' ? 'ml' : 'g');
+              return `• ${escH(m.name)}: ${mesaW.toFixed(1)}${mesaUnit}`;
+            }).join('<br>')}
+          </div>`;
+        }
+
+        return `
+        <tr>
+          <td style="padding-bottom:12px">
+            <strong>${i + 1}. ${escH(it.description || '—')}</strong>
+            ${advancedDetails}
+          </td>
+          <td class="r" style="vertical-align:top">${it.quantity}</td>
+          <td class="r" style="vertical-align:top">${fmtCurrency(it.unitPrice || 0)}</td>
+          <td class="r bold" style="vertical-align:top">${fmtCurrency((it.quantity || 1) * (it.unitPrice || 0))}</td>
+        </tr>`;
+      }).join('');
 
       const sigRow = `
     <div class="rcpt-sig-row">
