@@ -322,8 +322,21 @@ input:checked + .ttr + .tth{transform:translateX(24px)}
 .save-badge{background:#e6fffa;color:#2c7a7b;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800}
 
 .pgrid{display:grid;grid-template-columns:repeat(4, 1fr);gap:20px}
-.pcard{padding:48px 32px;text-align:center;display:flex;flex-direction:column;gap:20px;background:#fff;border-radius:var(--rl);border:1.5px solid var(--border);transition:all 0.4s var(--ease)}
-.pcard:hover{border-color:var(--blue);transform:scale(1.03);z-index:3;box-shadow:0 20px 40px rgba(59,143,212,0.15)}
+.pcard{padding:48px 32px;text-align:center;display:flex;flex-direction:column;gap:20px;background:#fff;border-radius:var(--rl);border:1.5px solid var(--border);transition:all 0.4s var(--ease);position:relative}
+.pcard:hover{border-color:var(--blue);transform:translateY(-8px);z-index:3;box-shadow:0 20px 40px rgba(59,143,212,0.15)}
+
+/* Botões dinâmicos na Landing Page */
+.pcard .btn {
+  transition: all 0.3s ease;
+}
+.pcard:hover .btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59,143,212,0.3);
+}
+
 .pname{font-size:0.85rem;text-transform:uppercase;font-weight:800;letter-spacing:2px;color:var(--blue)}
 .pamt-wrap{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:8px 0}
 .pcur{font-size:1.4rem;font-weight:800;color:var(--black)}
