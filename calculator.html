@@ -1466,58 +1466,20 @@
                   </div>
                 </div>
 
-                <div class="mini-actions">
-                  <button class="btn-main-action" onclick="criarPedido()">
+                <div class="results-actions" style="margin-top: 15px; padding: 0 10px 10px;">
+                  <button class="btn-criar-pedido visible" onclick="criarPedido()" style="margin-bottom: 10px;">
                     <i class="ph-bold ph-shopping-cart"></i>
-                    <span data-i18n="calc.buttons.create_order">Pedido</span>
+                    <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
                   </button>
-                  
-                  <button class="btn-mini-tool" onclick="saveToHistory()" title="Guardar">
-                    <i class="ph-bold ph-floppy-disk"></i>
-                  </button>
-                  
-                  <button class="btn-mini-tool" onclick="sendWhatsApp()" title="WhatsApp">
-                    <i class="ph-bold ph-whatsapp-logo"></i>
-                  </button>
-
-                  <button class="btn-mini-tool" onclick="copyResults()" title="Copiar">
-                    <i class="ph-bold ph-copy"></i>
-                  </button>
-
-                  <button class="btn-mini-tool" onclick="toggleFullBreakdown()" title="Ver Detalhes">
-                    <i class="ph-bold ph-chart-bar"></i>
-                  </button>
+                  <div class="results-actions-row">
+                    <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 1;"><i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="calc.buttons.whatsapp">WhatsApp</span></button>
+                    <button class="btn-action" onclick="copyResults()" style="flex:1"><i class="ph-bold ph-copy"></i> <span data-i18n="calc.buttons.copy">Copiar</span></button>
+                  </div>
+                  <div class="results-actions-row">
+                    <button class="btn-action" style="flex: 1; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span></button>
+                  </div>
                 </div>
 
-                <!-- Painel de Detalhes Expansível (Modo Avançado) -->
-                <div id="fullBreakdownPanel" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1.5px solid var(--border); border-top:none; border-radius:0 0 16px 16px; padding:20px; box-shadow:var(--sh-float); z-index:99;">
-                   <div class="breakdown-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-top:0">
-                      <div class="res-line">
-                        <div class="res-label"><i class="ph-bold ph-sketch-logo"></i> <span data-i18n="calc.results.material">Material</span></div>
-                        <div class="res-value" id="resFilCostAdv">0,00 <span class="curr-sym">€</span></div>
-                      </div>
-                      <div class="res-line">
-                        <div class="res-label"><i class="ph-bold ph-printer"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
-                        <div class="res-value" id="resMchCostAdv">0,00 <span class="curr-sym">€</span></div>
-                      </div>
-                      <div class="res-line">
-                        <div class="res-label"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc.results.energy">Energia</span></div>
-                        <div class="res-value" id="resElecCostAdv">0,00 <span class="curr-sym">€</span></div>
-                      </div>
-                      <div class="res-line">
-                        <div class="res-label"><i class="ph-bold ph-warning-octagon"></i> <span data-i18n="calc.results.failure">Falhas</span></div>
-                        <div class="res-value" id="resFailCostAdv">0,00 <span class="curr-sym">€</span></div>
-                      </div>
-                      <div class="res-line">
-                        <div class="res-label"><i class="ph-bold ph-gear"></i> <span data-i18n="calc.results.indirect">Indiretos</span></div>
-                        <div class="res-value" id="resIndCostAdv">0,00 <span class="curr-sym">€</span></div>
-                      </div>
-                   </div>
-                   <div style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
-                      <button class="btn-action" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i> WhatsApp</button>
-                      <button class="btn-action" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> Salvar</button>
-                   </div>
-                </div>
 
                 <!-- ── LAYOUT CLÁSSICO (Modo Simples) ── -->
                 <div class="res-hero" id="priceHeroCard">
@@ -2748,40 +2710,33 @@ function _render() {
   
   // ── Atualizar DASHBOARD (Mini) ──
   const elRF = document.getElementById('rFinal');
-  if (elRF) elRF.innerHTML = `${formatCurr(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elRF) elRF.innerHTML = `${fmtCurrency(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
   
   const elHM = document.getElementById('hMarginMini');
-  if (elHM) elHM.innerHTML = `${formatCurr(r.marginCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elHM) elHM.innerHTML = `${fmtCurrency(r.marginCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
   
   const elPC = document.getElementById('hProdCostMini');
-  if (elPC) elPC.innerHTML = `${formatCurr(r.productionCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elPC) elPC.innerHTML = `${fmtCurrency(r.productionCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
   
   const elPH = document.getElementById('profitPerHourMini');
-  if (elPH) elPH.innerHTML = `${formatCurr(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elPH) elPH.innerHTML = `${fmtCurrency(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
   
   updateProfitBadge('profitHourBadgeMini', r.profitPerHour);
   
-  // Breakdown Avançado
-  setT('resFilCostAdv', formatCurr(r.materialCost));
-  setT('resMchCostAdv', formatCurr(r.amortizationCost));
-  setT('resElecCostAdv', formatCurr(r.electricityCost));
-  setT('resFailCostAdv', formatCurr(r.failureCost));
-  setT('resIndCostAdv', formatCurr(r.indirectCost));
-
   // ── Atualizar CLÁSSICO ──
   const elRFC = document.getElementById('rFinalClassic');
-  if (elRFC) elRFC.innerHTML = `${formatCurr(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elRFC) elRFC.innerHTML = `${fmtCurrency(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
   
-  setT('hMargin', formatCurr(r.marginCost));
-  setT('hProdCost', formatCurr(r.productionCost));
-  setT('profitPerHour', formatCurr(r.profitPerHour));
+  setT('hMargin', fmtCurrency(r.marginCost));
+  setT('hProdCost', fmtCurrency(r.productionCost));
+  setT('profitPerHour', fmtCurrency(r.profitPerHour));
   updateProfitBadge('profitHourBadge', r.profitPerHour);
   
-  setT('resFilCost', formatCurr(r.materialCost));
-  setT('resMchCost', formatCurr(r.amortizationCost));
-  setT('resElecCost', formatCurr(r.electricityCost));
-  setT('resFailCost', formatCurr(r.failureCost));
-  setT('resIndCost', formatCurr(r.indirectCost));
+  setT('resFilCost', fmtCurrency(r.materialCost));
+  setT('resMchCost', fmtCurrency(r.amortizationCost));
+  setT('resElecCost', fmtCurrency(r.electricityCost));
+  setT('resFailCost', fmtCurrency(r.failureCost));
+  setT('resIndCost', fmtCurrency(r.indirectCost));
   const eduState = document.getElementById('calcEduState');
   const heroCard = document.getElementById('priceHeroCard');
   const finPanel = document.querySelector('.finance-panel');
