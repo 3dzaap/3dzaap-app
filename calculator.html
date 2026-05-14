@@ -1732,8 +1732,9 @@ function setCalcMode(mode) {
   
   document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalWeight').style.display = mode === 'advanced' ? 'block' : 'none';
+  
+  const projSummary = document.getElementById('projectSummary');
+  if (projSummary) projSummary.style.display = mode === 'advanced' ? 'flex' : 'none';
   
   const fGlobal = document.getElementById('fieldGlobalPrinter');
   if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
@@ -1942,9 +1943,15 @@ function updateMesaPrinter(mId, pId) {
 }
 
 function deleteMesa(mId) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m && m.thumbnail && m.thumbnail.startsWith('blob:')) {
+    URL.revokeObjectURL(m.thumbnail);
+  }
+
   if (_mesas.length <= 1) {
     _mesas[0].name = 'Mesa 1';
     _mesas[0].parts = [];
+    _mesas[0].thumbnail = null;
     addPartToMesa(_mesas[0].id, false);
   } else {
     _mesas = _mesas.filter(m => m.id !== mId);
@@ -2068,7 +2075,7 @@ function renderMesas() {
     hdr.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex;align-items:center;gap:10px;flex:1">
-          <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
+          ${m.thumbnail ? `<img src="${m.thumbnail}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--border)">` : `<span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>`}
           <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
         </div>
         <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
@@ -3490,6 +3497,214 @@ document.addEventListener('DOMContentLoaded', function() {
     if (++attempt > 20) clearInterval(iv);
   }, 100);
   // Inicialização gerida no topo via DOMContentLoaded.
+
+async function handle3MFUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (typeof showToast === 'function') showToast('<i class="ph-bold ph-gear ph-spin"></i> Lendo ficheiro .3mf...', 'ok');
+  
+  try {
+    const zip = await JSZip.loadAsync(file);
+    
+    // 1. Encontrar o slice_info.config (Bambu/Orca)
+    const sliceInfoFile = zip.file("Metadata/slice_info.config");
+    if (sliceInfoFile) {
+      await processBambuMetadata(zip, sliceInfoFile);
+    } else {
+      // FALLBACK UNIVERSAL: Procurar por qualquer ficheiro .gcode dentro do zip
+      const gcodeFiles = zip.file(/\.gcode$/i);
+      if (gcodeFiles.length > 0) {
+        if (typeof showToast === 'function') showToast('<i class="ph-bold ph-magnifying-glass"></i> Metadados Bambu não encontrados. A tentar ler G-code...', 'ok');
+        await processGcodeMetadata(zip, gcodeFiles);
+      } else {
+        if (typeof showToast === 'function') showToast('O ficheiro .3mf não contém metadados conhecidos nem G-code.', 'err');
+      }
+    }
+    
+    input.value = '';
+
+  } catch (err) {
+    console.error('[3DZAAP] Erro ao ler .3mf:', err);
+    if (typeof showToast === 'function') showToast('Erro ao processar o ficheiro .3mf.', 'err');
+  }
+}
+
+async function processBambuMetadata(zip, sliceInfoFile) {
+  const sliceInfoXml = await sliceInfoFile.async("string");
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(sliceInfoXml, "text/xml");
+  
+  const plates = xmlDoc.getElementsByTagName("plate");
+  if (plates.length === 0) return;
+
+  if (typeof setCalcMode === 'function') setCalcMode('advanced');
+  
+  _mesas.forEach(m => { if (m.thumbnail && m.thumbnail.startsWith('blob:')) URL.revokeObjectURL(m.thumbnail); });
+  _mesas = []; 
+
+  for (let i = 0; i < plates.length; i++) {
+    const p = plates[i];
+    const index = p.querySelector('metadata[key="index"]')?.getAttribute('value') || (i + 1);
+    const predictionSecs = parseFloat(p.querySelector('metadata[key="prediction"]')?.getAttribute('value')) || 0;
+    const printerModel = p.querySelector('metadata[key="printer_model_id"]')?.getAttribute('value') || '';
+    
+    const timeHours = (predictionSecs / 3600).toFixed(2);
+    const mId = Date.now() + Math.random();
+    
+    const newMesa = {
+      id: mId,
+      name: `Mesa ${index}`,
+      tech: 'fdm',
+      parts: [],
+      thumbnail: null,
+      _printerHint: printerModel 
+    };
+
+    try {
+      const thumbFile = zip.file(`Metadata/plate_${index}.png`) || zip.file(`Metadata/plate_${i+1}.png`);
+      if (thumbFile) {
+        const thumbBlob = await thumbFile.async("blob");
+        newMesa.thumbnail = URL.createObjectURL(thumbBlob);
+      }
+    } catch (e) {}
+
+    const filaments = p.getElementsByTagName("filament");
+    for (let j = 0; j < filaments.length; j++) {
+      const f = filaments[j];
+      const type = f.getAttribute('type');
+      const color = f.getAttribute('color'); 
+      const usedG = parseFloat(f.getAttribute('used_g')) || 0;
+      
+      if (usedG > 0) {
+        const matMatch = findBestMaterialMatch(type, color);
+        newMesa.parts.push({
+          id: Date.now() + Math.random(),
+          name: `${type} (${color})`,
+          materialId: matMatch ? matMatch.id : '',
+          weight: usedG,
+          qty: 1,
+          time: j === 0 ? parseFloat(timeHours) : 0 
+        });
+      }
+    }
+    if (newMesa.parts.length > 0) _mesas.push(newMesa);
+  }
+
+  finishImport();
+}
+
+async function processGcodeMetadata(zip, gcodeFiles) {
+  if (typeof setCalcMode === 'function') setCalcMode('advanced');
+  _mesas.forEach(m => { if (m.thumbnail && m.thumbnail.startsWith('blob:')) URL.revokeObjectURL(m.thumbnail); });
+  _mesas = [];
+
+  for (let i = 0; i < gcodeFiles.length; i++) {
+    const gf = gcodeFiles[i];
+    const gcodeText = await gf.async("string");
+    const meta = parseGcodeComments(gcodeText);
+    
+    if (meta.weight > 0 || meta.time > 0) {
+      const mId = Date.now() + Math.random();
+      const newMesa = {
+        id: mId,
+        name: gf.name.split('/').pop().replace('.gcode',''),
+        tech: 'fdm',
+        parts: [{
+          id: Date.now() + Math.random(),
+          name: 'Modelo Importado',
+          materialId: '',
+          weight: meta.weight,
+          qty: 1,
+          time: meta.time
+        }],
+        thumbnail: null
+      };
+      _mesas.push(newMesa);
+    }
+  }
+  
+  if (_mesas.length === 0) {
+    if (typeof showToast === 'function') showToast('Não foi possível extrair dados dos ficheiros G-code.', 'err');
+    return;
+  }
+
+  finishImport();
+}
+
+function parseGcodeComments(text) {
+  const lines = text.split('\n');
+  let weight = 0;
+  let time = 0;
+
+  for (let i = lines.length - 1; i >= 0 && i > lines.length - 1000; i--) {
+    const line = lines[i].toLowerCase();
+    if (line.includes('filament used [g] =')) {
+      weight = parseFloat(line.split('=')[1]) || weight;
+    }
+    if (line.includes('estimated printing time (normal mode) =')) {
+      const timeStr = line.split('=')[1].trim();
+      time = parseGcodeTime(timeStr);
+    }
+    if (line.includes(';filament used:')) {
+      weight = parseFloat(line.split(':')[1]) || weight;
+    }
+    if (line.includes(';time:')) {
+      const secs = parseInt(line.split(':')[1]) || 0;
+      time = (secs / 3600);
+    }
+  }
+  return { weight, time };
+}
+
+function parseGcodeTime(str) {
+  let h=0, m=0, s=0;
+  const matchH = str.match(/(\d+)h/);
+  const matchM = str.match(/(\d+)m/);
+  const matchS = str.match(/(\d+)s/);
+  if(matchH) h = parseInt(matchH[1]);
+  if(matchM) m = parseInt(matchM[1]);
+  if(matchS) s = parseInt(matchS[1]);
+  return h + (m/60) + (s/3600);
+}
+
+function finishImport() {
+  if (_mesas.length > 0 && _mesas[0]._printerHint) {
+    const prnMatch = findBestPrinterMatch(_mesas[0]._printerHint);
+    if (prnMatch) {
+      const sel = document.getElementById('fPrinterSelect');
+      if (sel) {
+        sel.value = prnMatch.id;
+        if (typeof applyPrinterSelect === 'function') applyPrinterSelect(prnMatch.id);
+      }
+    }
+  }
+
+  if (typeof renderMesas === 'function') renderMesas();
+  if (typeof liveCalc === 'function') liveCalc();
+  if (typeof showToast === 'function') showToast(`<i class="ph-bold ph-check-circle"></i> Importação concluída!`, 'ok');
+}
+
+function findBestMaterialMatch(type, colorHex) {
+  if (typeof _filaments === 'undefined' || !_filaments || _filaments.length === 0) return null;
+  const exact = _filaments.find(f => 
+    f.type?.toLowerCase() === type.toLowerCase() && 
+    ((f.colorHex || '').toLowerCase() === colorHex.toLowerCase())
+  );
+  if (exact) return exact;
+  return _filaments.find(f => f.type?.toLowerCase() === type.toLowerCase()) || null;
+}
+
+function findBestPrinterMatch(modelName) {
+  if (typeof _printers === 'undefined' || !_printers || _printers.length === 0) return null;
+  const lowerName = modelName.toLowerCase();
+  return _printers.find(p => 
+    (p.model?.toLowerCase().includes(lowerName)) || 
+    (p.customName?.toLowerCase().includes(lowerName)) ||
+    (lowerName.includes(p.model?.toLowerCase() || '---'))
+  );
+}
+
 });
 </script>
 
