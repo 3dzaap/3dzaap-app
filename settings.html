@@ -1393,23 +1393,23 @@ async function startCheckout(planId) {
   try {
     showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe segura...', 'ok');
     
-    // TODO: Implementar chamada à Edge Function do Supabase
-    // const { data, error } = await _sb.functions.invoke('create-checkout-session', {
-    //   body: { plan: fullPlanId, companyId: _session.companyId }
-    // });
+    const { data, error } = await _sb.functions.invoke('stripe-checkout', {
+      body: { 
+        plan: fullPlanId, 
+        companyId: _session.id // Usar o ID da sessão atual
+      }
+    });
     
-    // if (error) throw error;
-    // window.location.href = data.url;
-
-    // Placeholder para o dia 15/05 (Amanhã)
-    setTimeout(() => {
-      showToast('Em breve: Irá redirecionar para o Stripe Checkout.', 'info');
-      btn.disabled = false;
-      btn.innerHTML = oldText;
-    }, 1500);
+    if (error) throw error;
+    if (data?.url) {
+      window.location.href = data.url; // Redireciona para o checkout do Stripe
+    } else {
+      throw new Error("Não foi possível gerar o link de pagamento.");
+    }
 
   } catch (err) {
-    showToast('Erro ao iniciar checkout: ' + err.message, 'err');
+    console.error('Checkout error:', err);
+    showToast('Erro ao iniciar checkout: ' + (err.message || 'Erro desconhecido'), 'err');
     btn.disabled = false;
     btn.innerHTML = oldText;
   }
