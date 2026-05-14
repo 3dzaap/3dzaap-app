@@ -139,74 +139,113 @@
 
 .glass-card .results-panel{flex:1}
 
-/* ── LAYOUT AVANÇADO & VERTICAL UNIFICADO ── */
+/* ── LAYOUT VERTICAL UNIFICADO ── */
 .calc-layout {
   display: flex;
   flex-direction: column-reverse;
-  gap: 20px;
+  gap: 24px;
 }
 
 .results-col {
   width: 100%;
-}
-
-.calc-layout.is-advanced .results-col,
-.calc-layout .results-col {
   position: sticky;
   top: 70px;
   z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: var(--sh-float);
+  border-radius: var(--rm);
+  overflow: visible;
 }
 
 .calc-layout .results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+}
+
+/* Fila Superior: Hero e Lucro/Hora */
+.results-top-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: 20px;
-  padding: 16px 20px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .calc-layout .res-hero {
   margin-bottom: 0;
-  padding: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
+
 .calc-layout .res-hero-val {
-  font-size: 2rem;
-  margin-bottom: 4px;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
 }
+
 .calc-layout .hero-sub-stats {
   flex-direction: row;
-  gap: 20px;
+  gap: 30px;
   justify-content: center;
-  margin-top: 8px;
-  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 12px;
 }
 
 .calc-layout .finance-panel {
   margin-bottom: 0;
+  height: 100%;
+  padding: 15px;
 }
 
-.calc-layout .breakdown-list,
-.calc-layout .results-actions,
-.calc-layout .mp-results-container {
-  grid-column: span 2;
+/* Breakdown em Grelha para poupar espaço */
+.calc-layout .breakdown-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 0;
+  padding: 12px;
+  background: var(--bg-card-s);
+  border-radius: var(--rm);
+  border: 1px solid var(--border);
+}
+
+.calc-layout .res-line {
+  padding: 6px 0;
+  border-bottom: none;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.calc-layout .res-value {
+  font-size: 0.85rem;
 }
 
 .calc-layout .results-actions {
   flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
 
 .calc-layout .btn-criar-pedido {
-  width: auto;
-  min-width: 200px;
+  flex: 1;
+  padding: 12px;
 }
 
 .calc-layout .results-actions-row {
-  flex: 1;
-  justify-content: flex-end;
+  flex: 1.5;
+}
+
+@media(max-width: 1000px) {
+  .results-top-row { grid-template-columns: 1fr; }
+  .calc-layout .breakdown-list { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width: 600px) {
+  .calc-layout .breakdown-list { grid-template-columns: 1fr; }
+  .calc-layout .results-actions { flex-direction: column; }
 }
 
 @media(max-width: 1100px) {
@@ -1370,11 +1409,7 @@
                 <div class="section-title-icon" style="background:rgba(59,143,212,.1);color:var(--blue)"><i class="ph-bold ph-storefront"></i></div>
                 <span>Vender em Marketplace</span>
               </div>
-              
-              <div id="selectedMarketplacesContainer">
-                <!-- JS will render selected marketplaces here -->
-              </div>
-
+              <div id="selectedMarketplacesContainer"></div>
               <button class="mp-add-btn" onclick="openMPModal()">
                 <i class="ph-bold ph-plus-circle"></i>
                 <span>Adicionar Canal de Venda</span>
@@ -1388,7 +1423,7 @@
           </div>
         </div>
 
-        <!-- ── RIGHT: RESULTS ── -->
+        <!-- ── RIGHT: RESULTS (FIXED TOP) ── -->
         <div class="glass-card results-col">
           <div class="results-panel">
                 <div id="calcEduState" class="educational-state" style="display:none; margin-bottom: 20px;">
@@ -1401,103 +1436,72 @@
                   </div>
                 </div>
 
-                <div class="res-hero" id="priceHeroCard">
-                  <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                    <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
-                  
-                  <div class="hero-sub-stats">
-                    <div class="hero-stat-line">
-                      <span class="hero-stat-label" data-i18n="calc.results.margin">Margem de Lucro</span>
-                      <span class="hero-stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
-                    </div>
-                    <div class="hero-stat-line">
-                      <span class="hero-stat-label">Custo de Produção</span>
-                      <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
+                <!-- Top Row: Hero and Finance -->
+                <div class="results-top-row">
+                  <div class="res-hero" id="priceHeroCard">
+                    <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
+                      <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
+                    
+                    <div class="hero-sub-stats">
+                      <div class="hero-stat-line">
+                        <span class="hero-stat-label" data-i18n="calc.results.margin">Lucro</span>
+                        <span class="hero-stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
+                      </div>
+                      <div class="hero-stat-line">
+                        <span class="hero-stat-label">Custo</span>
+                        <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
-                </div>
-
-                <!-- Painel Inteligência Financeira -->
-                <div class="finance-panel">
-                  <div class="profit-hour-card">
-                    <div class="profit-hour-label">
-                      <span data-i18n="calc.results.profit_hour">Lucro / Hora</span>
-                      <span class="tip-icon">
-                        <i class="ph-bold ph-question"></i>
-                        <div class="tip-bubble" data-i18n="calc.results.profit_hour_tip">
-                          Níveis de rentabilidade por hora:<br>
-                          <b>BAIXO:</b> < 0.50 <span class="curr-sym">€</span>/h<br>
-                          <b>MÉDIO:</b> 0.50 - 1.50 <span class="curr-sym">€</span>/h<br>
-                          <b>ÓTIMO:</b> > 1.50 <span class="curr-sym">€</span>/h
-                        </div>
-                      </span>
+                  <div class="finance-panel">
+                    <div class="profit-hour-card">
+                      <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
+                      <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
+                      <div class="profit-hour-badge" id="profitHourBadge">--</div>
                     </div>
-                    <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
-                    <div class="profit-hour-badge" id="profitHourBadge">--</div>
-                  </div>
-                  <div class="chart-container">
-                    <canvas id="costChart"></canvas>
+                    <div class="chart-container">
+                      <canvas id="costChart"></canvas>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Container para cards de Marketplaces (Ordem 2) -->
-                <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;">
-                  <!-- JS will render mp cards here -->
-                </div>
+                <div id="mpResultsContainer" class="mp-results-container"></div>
 
-                <div class="breakdown-list" style="margin-top:0">
+                <div class="breakdown-list">
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
                     <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span> <i class="ph-bold ph-question tip" title="Amortização da impressora baseada no custo de aquisição e vida útil (horas)."></i></div>
+                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
                     <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Eletricidade</span></div>
+                    <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Energia</span></div>
                     <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%) <i class="ph-bold ph-question tip" title="Margem de segurança para cobrir impressões falhadas, suportes e desperdício de material."></i></div>
+                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
                     <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
-                  <div class="res-line" style="margin-bottom:15px">
-                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%) <i class="ph-bold ph-question tip" title="Custos que não são material ou máquina diretamente, como embalagem, marketing, manutenção e software."></i></div>
+                  <div class="res-line">
+                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
                     <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                 </div>
-              </div>
 
-            <div class="results-actions">
-              <!-- AÇÃO PRIMÁRIA: Criar Pedido -->
-              <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
-                <i class="ph-bold ph-shopping-cart"></i>
-                <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
-              </button>
-
-              <!-- AÇÕES DE FLUXO: WhatsApp e Guardar -->
-              <div class="results-actions-row">
-                <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 1.8;">
-                  <i class="ph-bold ph-whatsapp-logo"></i>
-                  <span data-i18n="calc.buttons.whatsapp">WhatsApp</span>
-                </button>
-                <button class="btn-action" style="flex: 1.2; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
-                  <i class="ph-bold ph-floppy-disk"></i>
-                  <span data-i18n="calc.buttons.save">Guardar</span>
-                </button>
-              </div>
-
-              <!-- UTILITÁRIOS: Copiar -->
-              <div class="results-actions-row">
-                <button class="btn-action" onclick="copyResults()" style="flex:1">
-                  <i class="ph-bold ph-copy"></i>
-                  <span data-i18n="calc.buttons.copy">Copiar</span>
-                </button>
-              </div>
-            </div>
+                <div class="results-actions">
+                  <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
+                    <i class="ph-bold ph-shopping-cart"></i>
+                    <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
+                  </button>
+                  <div class="results-actions-row">
+                    <button class="btn-wa" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i></button>
+                    <button class="btn-action" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i></button>
+                    <button class="btn-action" onclick="copyResults()"><i class="ph-bold ph-copy"></i></button>
+                  </div>
+                </div>
           </div>
         </div>
       </div>
