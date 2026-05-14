@@ -16,6 +16,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="supabase.js"></script>
 <script src="utils.js"></script>
 <script src="i18n.js"></script>
@@ -1191,9 +1192,15 @@
                     <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)"><i class="ph-bold ph-sketch-logo"></i></div>
                     <span data-i18n="calc.sections.project">Mesa</span>
                   </div>
-                  <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
-                    <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
-                  </button>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto; background: var(--bg-card-s); border-style: solid;" onclick="document.getElementById('input3mf').click()">
+                      <i class="ph-bold ph-file-arrow-up"></i> <span data-i18n="calc.buttons.import_3mf">Importar .3mf</span>
+                    </button>
+                    <input type="file" id="input3mf" style="display:none" accept=".3mf" onchange="handle3MFUpload(this)">
+                    <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
+                      <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
+                    </button>
+                  </div>
                 </div>
                 <div id="mesasContainer" style="margin-top:10px;">
                   <!-- Dinâmico via JS -->
@@ -1873,9 +1880,15 @@ function updateMesaPrinter(mId, pId) {
 }
 
 function deleteMesa(mId) {
+  const m = _mesas.find(x => x.id === mId);
+  if (m && m.thumbnail && m.thumbnail.startsWith('blob:')) {
+    URL.revokeObjectURL(m.thumbnail);
+  }
+
   if (_mesas.length <= 1) {
     _mesas[0].name = 'Mesa 1';
     _mesas[0].parts = [];
+    _mesas[0].thumbnail = null;
     addPartToMesa(_mesas[0].id, false);
   } else {
     _mesas = _mesas.filter(m => m.id !== mId);
@@ -1998,7 +2011,7 @@ function renderMesas() {
     hdr.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex;align-items:center;gap:10px;flex:1">
-          <span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>
+          ${m.thumbnail ? `<img src="${m.thumbnail}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border);">` : '<span style="font-size:1.1rem"><i class="ph-bold ph-squares-four"></i></span>'}
           <input type="text" value="${m.name}" oninput="updateMesaName(${m.id}, this.value)" style="background:transparent;border:none;font-weight:700;font-size:1rem;color:var(--dark);flex:1;outline:none" placeholder="Nome da Mesa">
         </div>
         <div class="mode-toggle" style="margin:0; padding:3px; gap:2px">
@@ -3358,9 +3371,141 @@ function dlCSV(csv,fn){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
+// ── .3MF IMPORT LOGIC ──────────────────
+async function handle3MFUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
 
+  if (typeof showToast === 'function') showToast('<i class="ph-bold ph-gear ph-spin"></i> Lendo ficheiro .3mf...', 'ok');
+  
+  try {
+    const zip = await JSZip.loadAsync(file);
+    
+    // 1. Encontrar o slice_info.config
+    const sliceInfoFile = zip.file("Metadata/slice_info.config");
+    if (!sliceInfoFile) {
+      if (typeof showToast === 'function') showToast('O ficheiro .3mf não contém dados de fatiamento (slice info). Certifica-te de que exportaste do Slicer com metadados.', 'err');
+      return;
+    }
+    
+    const sliceInfoXml = await sliceInfoFile.async("string");
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(sliceInfoXml, "text/xml");
+    
+    const plates = xmlDoc.getElementsByTagName("plate");
+    if (plates.length === 0) {
+      if (typeof showToast === 'function') showToast('Nenhuma placa encontrada no ficheiro.', 'err');
+      return;
+    }
 
+    // 2. Definir o modo avançado
+    if (typeof setCalcMode === 'function') setCalcMode('advanced');
+    
+    // Limpar recursos antigos (ObjectURLs) antes de resetar as mesas
+    _mesas.forEach(m => {
+      if (m.thumbnail && m.thumbnail.startsWith('blob:')) {
+        URL.revokeObjectURL(m.thumbnail);
+      }
+    });
+    _mesas = []; 
 
+    // 3. Processar cada placa
+    for (let i = 0; i < plates.length; i++) {
+      const p = plates[i];
+      const index = p.querySelector('metadata[key="index"]')?.getAttribute('value') || (i + 1);
+      const predictionSecs = parseFloat(p.querySelector('metadata[key="prediction"]')?.getAttribute('value')) || 0;
+      const printerModel = p.querySelector('metadata[key="printer_model_id"]')?.getAttribute('value') || '';
+      
+      const timeHours = (predictionSecs / 3600).toFixed(2);
+      const mId = Date.now() + Math.random();
+      
+      const newMesa = {
+        id: mId,
+        name: `Mesa ${index}`,
+        tech: 'fdm',
+        parts: [],
+        thumbnail: null,
+        _printerHint: printerModel 
+      };
+
+      // Tentar extrair miniatura da placa
+      try {
+        const thumbFile = zip.file(`Metadata/plate_${index}.png`) || zip.file(`Metadata/plate_${i+1}.png`);
+        if (thumbFile) {
+          const thumbBlob = await thumbFile.async("blob");
+          newMesa.thumbnail = URL.createObjectURL(thumbBlob);
+        }
+      } catch (e) { console.warn('Erro ao carregar miniatura da placa', i); }
+
+      // Extrair filamentos
+      const filaments = p.getElementsByTagName("filament");
+      for (let j = 0; j < filaments.length; j++) {
+        const f = filaments[j];
+        const type = f.getAttribute('type');
+        const color = f.getAttribute('color'); 
+        const usedG = parseFloat(f.getAttribute('used_g')) || 0;
+        
+        if (usedG > 0) {
+          const matMatch = findBestMaterialMatch(type, color);
+          newMesa.parts.push({
+            id: Date.now() + Math.random(),
+            name: `${type} (${color})`,
+            materialId: matMatch ? matMatch.id : '',
+            weight: usedG,
+            qty: 1,
+            time: j === 0 ? parseFloat(timeHours) : 0 
+          });
+        }
+      }
+
+      if (newMesa.parts.length > 0) {
+        _mesas.push(newMesa);
+      }
+    }
+
+    // 4. Match global da impressora
+    if (_mesas.length > 0 && _mesas[0]._printerHint) {
+      const prnMatch = findBestPrinterMatch(_mesas[0]._printerHint);
+      if (prnMatch) {
+        const sel = document.getElementById('fPrinterSelect');
+        if (sel) {
+          sel.value = prnMatch.id;
+          if (typeof applyPrinterSelect === 'function') applyPrinterSelect(prnMatch.id);
+        }
+      }
+    }
+
+    if (typeof renderMesas === 'function') renderMesas();
+    if (typeof liveCalc === 'function') liveCalc();
+    if (typeof showToast === 'function') showToast(`<i class="ph-bold ph-check-circle"></i> Importadas ${plates.length} mesas com sucesso!`, 'ok');
+    
+    input.value = '';
+
+  } catch (err) {
+    console.error('[3DZAAP] Erro ao ler .3mf:', err);
+    if (typeof showToast === 'function') showToast('Erro ao processar o ficheiro .3mf.', 'err');
+  }
+}
+
+function findBestMaterialMatch(type, colorHex) {
+  if (typeof _filaments === 'undefined' || !_filaments || _filaments.length === 0) return null;
+  const exact = _filaments.find(f => 
+    f.type?.toLowerCase() === type.toLowerCase() && 
+    ((f.colorHex || '').toLowerCase() === colorHex.toLowerCase())
+  );
+  if (exact) return exact;
+  return _filaments.find(f => f.type?.toLowerCase() === type.toLowerCase()) || null;
+}
+
+function findBestPrinterMatch(modelName) {
+  if (typeof _printers === 'undefined' || !_printers || _printers.length === 0) return null;
+  const lowerName = modelName.toLowerCase();
+  return _printers.find(p => 
+    (p.model?.toLowerCase().includes(lowerName)) || 
+    (p.customName?.toLowerCase().includes(lowerName)) ||
+    (lowerName.includes(p.model?.toLowerCase() || '---'))
+  );
+}
 </script>
 
 <script>
