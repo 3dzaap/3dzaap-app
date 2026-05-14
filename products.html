@@ -337,10 +337,55 @@ function renderProducts() {
 
   tbody.innerHTML = filtered.map(p => {
     const cfg = p.config || {};
-    const weight = cfg.filament_weight || cfg.resin_volume || 0;
-    const time = cfg.est_print_hours || 0;
+    let weight = cfg.filament_weight || cfg.resin_volume || 0;
+    let time = cfg.est_print_hours || 0;
     const isResin = cfg.mode === 'resin';
     const isExpanded = expandId === p.id;
+    const isAdvanced = cfg.calc_mode === 'advanced';
+
+    // Se for avançado, calcular totais a partir das mesas
+    let matsSummaryHtml = '';
+    if (isAdvanced && cfg._orig_inputs && cfg._orig_inputs.mesas) {
+      weight = 0;
+      time = cfg._orig_inputs.totalTime || 0;
+      const matMap = {}; // materialId -> { weight, name }
+      
+      cfg._orig_inputs.mesas.forEach(m => {
+        m.parts.forEach(part => {
+          const w = (parseFloat(part.weight) || 0) * (parseInt(part.qty) || 1);
+          weight += w;
+          
+          let mName = part.name || 'Material s/ nome';
+          const foundMat = materials.find(f => String(f.id) === String(part.materialId));
+          if (foundMat) {
+            const color = foundMat.colorName || '';
+            const type = foundMat.type || '';
+            mName = `${color} ${type}`.trim();
+          }
+
+          const key = part.materialId || mName;
+          if (!matMap[key]) matMap[key] = { weight: 0, name: mName };
+          matMap[key].weight += w;
+        });
+      });
+
+      matsSummaryHtml = Object.values(matMap).map(m => `
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:4px; padding:4px 8px; background:rgba(0,0,0,0.03); border-radius:4px">
+          <span style="font-weight:600">${m.name}</span>
+          <span style="font-family:var(--mono)">${m.weight.toFixed(1)}${isResin?'ml':'g'}</span>
+        </div>
+      `).join('');
+    } else {
+      // Modo simples: tentar mostrar o nome do material em vez do ID
+      const foundMat = materials.find(f => String(f.id) === String(cfg.material_id));
+      let mName = 'N/A';
+      if (foundMat) {
+        mName = `${foundMat.colorName || ''} ${foundMat.type || ''}`.trim();
+      }
+      matsSummaryHtml = `
+        <div style="font-size:0.75rem; font-weight:600; margin-top:4px; color:var(--text-main)">${mName}</div>
+      `;
+    }
     
     return `
       <tr class="exp-tr ${isExpanded ? 'is-expanded' : ''}" onclick="toggleProductExpand('${p.id}')">
@@ -386,20 +431,22 @@ function renderProducts() {
               <div class="summary-title"><i class="ph-bold ph-flask"></i> Resumo Técnico</div>
               <div class="summary-grid">
                 <div class="summary-item">
-                  <label>Consumo</label>
+                  <label>Consumo Total</label>
                   <span>${weight.toFixed(1)}${isResin?'ml':'g'}</span>
                 </div>
                 <div class="summary-item">
                   <label>Tempo de Impressão</label>
                   <span>${formatTime(time)}</span>
                 </div>
-                <div class="summary-item">
-                  <label>Material ID</label>
-                  <span style="font-size:0.75rem">${cfg.material_id || 'N/A'}</span>
+                <div class="summary-item" style="grid-column: span 2">
+                  <label>Materiais Utilizados</label>
+                  <div style="margin-top:6px">
+                    ${matsSummaryHtml}
+                  </div>
                 </div>
-                <div class="summary-item">
-                  <label>Modo</label>
-                  <span>${cfg.mode === 'advanced' ? 'Avançado' : 'Simples'}</span>
+                <div class="summary-item" style="margin-top:8px">
+                  <label>Modo de Criação</label>
+                  <span style="font-size:0.8rem; color:var(--blue)">${cfg.calc_mode === 'advanced' ? 'Calculadora Avançada' : 'Modo Simples'}</span>
                 </div>
               </div>
             </div>
@@ -412,9 +459,20 @@ function renderProducts() {
   mobList.innerHTML = filtered.map(p => {
     const isExpanded = expandId === p.id;
     const cfg = p.config || {};
-    const weight = cfg.filament_weight || cfg.resin_volume || 0;
-    const time = cfg.est_print_hours || 0;
+    let weight = cfg.filament_weight || cfg.resin_volume || 0;
+    let time = cfg.est_print_hours || 0;
     const isResin = cfg.mode === 'resin';
+    const isAdvanced = cfg.calc_mode === 'advanced';
+
+    if (isAdvanced && cfg._orig_inputs && cfg._orig_inputs.mesas) {
+      weight = 0;
+      time = cfg._orig_inputs.totalTime || 0;
+      cfg._orig_inputs.mesas.forEach(m => {
+        m.parts.forEach(part => {
+          weight += (parseFloat(part.weight) || 0) * (parseInt(part.qty) || 1);
+        });
+      });
+    }
 
     return `
       <div class="mob-prod-card" onclick="toggleProductExpand('${p.id}')">
@@ -436,9 +494,9 @@ function renderProducts() {
         <div class="mob-expand-area ${isExpanded ? 'is-expanded' : ''}">
           <div class="summary-grid">
             <div class="summary-item"><label data-i18n="products.table.th_tech">Tipo de material</label><span>${isResin?'Resina':'FDM'}</span></div>
-            <div class="summary-item"><label>Consumo</label><span>${weight.toFixed(1)}${isResin?'ml':'g'}</span></div>
-            <div class="summary-item"><label>Tempo</label><span>${formatTime(time)}</span></div>
-            <div class="summary-item"><label>Preço</label><span>${fmtCurrency(p.salePrice)}</span></div>
+            <div class="summary-item"><label>Consumo Total</label><span>${weight.toFixed(1)}${isResin?'ml':'g'}</span></div>
+            <div class="summary-item"><label>Tempo Total</label><span>${formatTime(time)}</span></div>
+            <div class="summary-item"><label>Modo</label><span>${isAdvanced ? 'Avançado' : 'Simples'}</span></div>
           </div>
         </div>
       </div>
