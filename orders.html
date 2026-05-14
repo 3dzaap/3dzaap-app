@@ -2703,16 +2703,15 @@
         if (list) list.innerHTML = '';
         _items = [];
 
-        if (p.mode === 'advanced' && Array.isArray(p.parts)) {
-          p.parts.forEach(part => {
-            addOrderItem({
-              description: part.name || 'Peça do Projeto',
-              quantity: part.qty || 1,
-              weightG: part.weight || 0,
-              unitPrice: part.unitPrice || 0,
-              filamentId: part.materialId || '',
-              config: p.config || {} // Store original calc context
-            });
+        if (p.mode === 'advanced') {
+          // New consolidated structure: ONE item with multiple materials
+          addOrderItem({
+            description: p.description || 'Projeto Avançado',
+            quantity: p.quantity || 1,
+            unitPrice: p.unit_price || p.total || 0,
+            printTime: p.time || 0,
+            materials: p.materials || [],
+            config: p.config || {}
           });
         } else {
           // Backward compatibility for old "Total Weight" payloads (pre-v2)

@@ -2064,7 +2064,8 @@ function renderMesas() {
     const validPrinters = _printers.filter(p => isResin ? p.printerType === 'resina' : p.printerType !== 'resina');
     const printerOptionsHtml = validPrinters.map(p => {
       const calcHr = (p.price && p.lifeHours) ? (p.price / p.lifeHours) : 0;
-      return `<option value="${p.id}" ${String(p.id)===String(m.printerId)?'selected':''}>${p.customName || p.model || p.name} (${fmtCurrency(calcHr)}/h)</option>`;
+      const modelStr = p.model ? ` [${p.model}]` : '';
+      return `<option value="${p.id}" ${String(p.id)===String(m.printerId)?'selected':''}>${p.customName || p.name}${modelStr} (${fmtCurrency(calcHr)}/h)</option>`;
     }).join('');
 
     hdr.innerHTML = `
@@ -2121,7 +2122,15 @@ function renderMesas() {
           </td>
           <td><input type="number" class="part-input" style="text-align:right" value="${p.weight}" oninput="updatePart(${m.id}, ${p.id}, 'weight', this.value)" placeholder="${mTech === 'resin' ? 'ml' : 'g'}"></td>
           <td><input type="number" class="part-input" style="text-align:right" value="${p.qty}" oninput="updatePart(${m.id}, ${p.id}, 'qty', this.value)" placeholder="un"></td>
-          <td><input type="text" class="part-input" style="text-align:right" value="${formatTime(p.time)}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="1:45"></td>
+          <td>
+            <div class="time-input-wrap" style="height:32px; min-width:85px">
+              <input type="text" class="part-input" style="text-align:right; padding-right:24px" value="${formatTime(p.time)}" oninput="updatePart(${m.id}, ${p.id}, 'time', this.value)" placeholder="1:45">
+              <div class="time-stepper">
+                <button onclick="adjPartTime(${m.id}, ${p.id}, 15)"><i class="ph-bold ph-caret-up"></i></button>
+                <button onclick="adjPartTime(${m.id}, ${p.id}, -15)"><i class="ph-bold ph-caret-down"></i></button>
+              </div>
+            </div>
+          </td>
           <td style="text-align:right">
             <button class="btn-remove-part" onclick="removePartFromMesa(${m.id}, ${p.id})"><i class="ph-bold ph-x"></i></button>
           </td>
@@ -2137,7 +2146,7 @@ function renderMesas() {
             <th data-i18n="calc.table.material">${i18n.getNestedTranslation('calc.table.material')||'Material'}</th>
             <th style="text-align:right"><span data-i18n="calc.table.weight">${i18n.getNestedTranslation('calc.table.weight')?i18n.getNestedTranslation('calc.table.weight').replace(' (g)',''):'Peso'}</span> (${mTech === 'resin' ? 'ml' : 'g'})</th>
             <th data-i18n="calc.table.qty" style="text-align:right">${i18n.getNestedTranslation('calc.table.qty')||'Qtd'}</th>
-            <th data-i18n="calc.table.time_h" style="text-align:right">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo (h)'}</th>
+            <th data-i18n="calc.table.time_h" style="text-align:right">${i18n.getNestedTranslation('calc.table.time_h')||'Tempo'}</th>
             <th></th>
           </tr>
         </thead>
@@ -2147,6 +2156,27 @@ function renderMesas() {
       </table>
     `;
     mDiv.appendChild(tableWrap);
+
+    // Update Project Totals (Peso/Tempo)
+    let totalProjectW = 0;
+    let totalProjectT = 0;
+    _mesas.forEach(mesa => {
+      mesa.parts.forEach(part => {
+        const q = part.qty || 1;
+        totalProjectW += (parseFloat(part.weight) || 0) * q;
+        totalProjectT += (parseFloat(part.time) || 0) * q;
+      });
+    });
+    const displayW = document.getElementById('displayTotalWeight');
+    if (displayW) displayW.textContent = totalProjectW.toFixed(1);
+    const hiddenW = document.getElementById('totalProjectWeight');
+    if (hiddenW) hiddenW.value = totalProjectW.toFixed(1);
+    
+    const inputT = document.getElementById('totalProjectTime');
+    // Só atualizamos se o valor atual for 0 ou se não estiver focado (para não atrapalhar o user a digitar)
+    if (inputT && (parseTime(inputT.value) === 0 || document.activeElement !== inputT)) {
+       inputT.value = formatTime(totalProjectT);
+    }
     
     // Calcular totais parciais da mesa
     let mesaWeight = 0;
@@ -2292,27 +2322,36 @@ function criarPedido() {
       config: { _orig_inputs: i } 
     };
   } else {
-    // Advanced mode: distribute overhead proportional to material cost
-    const totalMat = r.materialCost || 1;
-    const overheadFactor = (r.finalPrice - r.materialCost) / totalMat;
-    
+    // Advanced mode: Consolidate all parts into a SINGLE order item with multiple materials
+    const matMap = {}; // materialId -> weight
+    i.parts.forEach(p => {
+      const mid = p.materialId || 'unknown';
+      if (!matMap[mid]) matMap[mid] = 0;
+      matMap[mid] += (parseFloat(p.weight) || 0) * (parseInt(p.qty) || 1);
+    });
+
+    const consolidatedMaterials = Object.keys(matMap).map(mid => {
+      const foundMat = _filaments.find(f => String(f.id) === String(mid));
+      return {
+        filamentId: mid === 'unknown' ? '' : mid,
+        weightG: matMap[mid],
+        colorName: foundMat ? foundMat.colorName : '',
+        colorHex: foundMat ? foundMat.colorHex : ''
+      };
+    });
+
     payload = {
       client_name: pClient,
       mode: 'advanced',
       description: desc,
       _from_calc: true,
-      config: { _orig_inputs: i },
-      parts: i.parts.map(p => {
-        const unitMatCost = (p.price / 1000) * p.weight;
-        const rowUnitPrice = unitMatCost * (1 + overheadFactor);
-        return {
-          name: p.name || 'Peça',
-          qty: p.qty,
-          weight: p.weight,
-          unitPrice: parseFloat(rowUnitPrice.toFixed(2)),
-          materialId: p.materialId
-        };
-      })
+      _v: 2,
+      quantity: i.qty || 1,
+      unit_price: parseFloat(r.unitPrice.toFixed(2)),
+      total: parseFloat(r.finalPrice.toFixed(2)),
+      time: i.totalTime || 0,
+      materials: consolidatedMaterials,
+      config: { _orig_inputs: i }
     };
   }
 
@@ -2330,6 +2369,17 @@ function adjTime(id, mins) {
   const current = parseTime(el.value);
   const newTime = Math.max(0, current + (mins / 60));
   el.value = formatTime(newTime);
+  liveCalc();
+}
+
+function adjPartTime(mesaId, partId, mins) {
+  const m = _mesas.find(x => x.id === mesaId);
+  if (!m) return;
+  const p = m.parts.find(x => x.id === partId);
+  if (!p) return;
+  const current = parseFloat(p.time) || 0;
+  p.time = Math.max(0, current + (mins / 60));
+  renderMesas();
   liveCalc();
 }
 
