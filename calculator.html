@@ -183,6 +183,25 @@
   display: flex !important;
 }
 
+.calc-layout.is-advanced .mini-actions {
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.calc-layout.is-advanced .mini-actions .btn-criar-pedido {
+  margin-bottom: 0 !important;
+  padding: 8px 16px !important;
+  font-size: 0.8rem !important;
+  min-width: 140px;
+}
+
+.calc-layout.is-advanced .mini-actions .btn-wa,
+.calc-layout.is-advanced .mini-actions .btn-action {
+  padding: 8px 12px !important;
+  font-size: 0.75rem !important;
+  white-space: nowrap;
+}
+
 /* Estilos Mini Barra */
 .res-hero-mini { align-items: center; gap: 24px; flex: 1; }
 .hero-main-price .price-lbl { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--blue); letter-spacing: 0.05em; }
@@ -1466,18 +1485,14 @@
                   </div>
                 </div>
 
-                <div class="results-actions" style="margin-top: 15px; padding: 0 10px 10px;">
-                  <button class="btn-criar-pedido visible" onclick="criarPedido()" style="margin-bottom: 10px;">
+                <div class="mini-actions">
+                  <button class="btn-criar-pedido visible" onclick="criarPedido()">
                     <i class="ph-bold ph-shopping-cart"></i>
-                    <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
+                    <span data-i18n="calc.buttons.create_order">Pedido</span>
                   </button>
-                  <div class="results-actions-row">
-                    <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 1;"><i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="calc.buttons.whatsapp">WhatsApp</span></button>
-                    <button class="btn-action" onclick="copyResults()" style="flex:1"><i class="ph-bold ph-copy"></i> <span data-i18n="calc.buttons.copy">Copiar</span></button>
-                  </div>
-                  <div class="results-actions-row">
-                    <button class="btn-action" style="flex: 1; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span></button>
-                  </div>
+                  <button class="btn-wa" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="calc.buttons.whatsapp">WhatsApp</span></button>
+                  <button class="btn-action" onclick="copyResults()"><i class="ph-bold ph-copy"></i> <span data-i18n="calc.buttons.copy">Copiar</span></button>
+                  <button class="btn-action" style="background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span></button>
                 </div>
 
 
