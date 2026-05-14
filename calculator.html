@@ -155,15 +155,16 @@
 }
 
 .calc-layout.is-advanced .results-panel {
-  padding: 10px 20px !important;
+  padding: 8px 16px !important;
   background: var(--bg-card);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
-  min-height: 80px;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 70px;
 }
 
 /* Visibilidade Condicional de Elementos */
@@ -184,22 +185,27 @@
 }
 
 .calc-layout.is-advanced .mini-actions {
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 6px;
+  flex-shrink: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .calc-layout.is-advanced .mini-actions .btn-criar-pedido {
   margin-bottom: 0 !important;
-  padding: 8px 14px !important;
-  font-size: 0.75rem !important;
-  min-width: 120px;
+  padding: 8px 12px !important;
+  font-size: 0.72rem !important;
+  min-width: 100px;
+  white-space: nowrap;
 }
 
 .calc-layout.is-advanced .mini-actions .btn-wa,
 .calc-layout.is-advanced .mini-actions .btn-action {
-  padding: 8px 10px !important;
-  font-size: 0.72rem !important;
+  padding: 8px 8px !important;
+  font-size: 0.7rem !important;
   white-space: nowrap;
+  min-width: auto;
 }
 
 /* Estilos Mini Barra */
@@ -3934,12 +3940,12 @@ function finishImport() {
 
 function findBestMaterialMatch(type, colorHex) {
   if (typeof _filaments === 'undefined' || !_filaments || _filaments.length === 0) return null;
-  const t = type.toLowerCase();
+  const t = (type || '').toLowerCase();
   const hex = (colorHex || '').toLowerCase().replace('#','');
   
   // 1. Exact Match (Type + Hex)
   const exact = _filaments.find(f => 
-    f.type?.toLowerCase() === t && 
+    f && f.type?.toLowerCase() === t && 
     (f.colorHex || '').toLowerCase().replace('#','') === hex
   );
   if (exact) return exact;
@@ -3950,8 +3956,8 @@ function findBestMaterialMatch(type, colorHex) {
   
   if (isBlack || isWhite) {
     const nameMatch = _filaments.find(f => {
-      const n = f.name.toLowerCase();
-      if (f.type?.toLowerCase() !== t) return false;
+      if (!f || f.type?.toLowerCase() !== t) return false;
+      const n = (f.name || '').toLowerCase();
       if (isBlack && (n.includes('preto') || n.includes('black') || n.includes('dark'))) return true;
       if (isWhite && (n.includes('branco') || n.includes('white'))) return true;
       return false;
@@ -3960,7 +3966,7 @@ function findBestMaterialMatch(type, colorHex) {
   }
 
   // 3. Fallback to same type but ONLY if there's only one filament of that type
-  const sameType = _filaments.filter(f => f.type?.toLowerCase() === t);
+  const sameType = _filaments.filter(f => f && f.type?.toLowerCase() === t);
   if (sameType.length === 1) return sameType[0];
 
   return null; 
