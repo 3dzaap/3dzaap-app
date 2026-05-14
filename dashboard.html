@@ -973,7 +973,7 @@ function calcHealthScore() {
 
   orders.forEach(o => {
     const s    = (o.status || '').toLowerCase();
-    const isD  = ['concluido','done','entregue'].includes(s);
+    const isD  = ['concluido','done','entregue','enviado','expedido'].includes(s);
     const isC  = ['cancelado'].includes(s);
     const date = o.createdAt || '';
     const total= parseFloat(o.total || 0);
@@ -1029,7 +1029,7 @@ function calcHealthScore() {
   }
 
   // Branding (Logo)
-  const hasLogo = (window._cfg && window._cfg.company_logo_url);
+  const hasLogo = !!(state.company.logo_url);
   if (hasLogo) {
     setupScore += 5;
     insights.push({t:'ok', icon:'<i class="ph-bold ph-palette"></i>', key:'setup_logo_ok', msg:'Identidade visual ativa.'});
