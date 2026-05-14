@@ -1390,14 +1390,9 @@
                     <span class="summary-lbl" data-i18n="calc.fields.total_time">Tempo Total do Projeto</span>
                     <div class="summary-val">
                       <i class="ph-bold ph-clock" style="font-size: 1.2rem; color: var(--orange);"></i>
-                      <div class="time-input-wrap">
-                        <input type="text" id="totalProjectTime" class="summary-input" value="0" placeholder="1:45" oninput="liveCalc()" onfocus="this.select()">
-                        <div class="time-stepper">
-                          <button onclick="adjTime('totalProjectTime', 15)"><i class="ph-bold ph-caret-up"></i></button>
-                          <button onclick="adjTime('totalProjectTime', -15)"><i class="ph-bold ph-caret-down"></i></button>
-                        </div>
-                      </div>
+                      <span id="displayTotalTime" style="font-family: var(--mono); font-weight: 800; font-size: 1.4rem; color: var(--dark);">0:00</span>
                       <span style="font-size: 1rem; color: var(--subtle); margin-left: 2px;">h</span>
+                      <input type="hidden" id="totalProjectTime" value="0">
                     </div>
                   </div>
                 </div>
@@ -1461,16 +1456,16 @@
                 <div class="res-hero-mini">
                   <div class="hero-main-price">
                     <div class="price-lbl" data-i18n="calc.results.final_price">Preço Sugerido</div>
-                    <div class="price-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
+                    <div class="price-val" id="rFinal">0,00</div>
                   </div>
                   <div class="hero-split-stats">
                     <div class="stat-item-mini">
                       <span class="stat-lbl" data-i18n="calc.results.margin">Lucro</span>
-                      <span class="stat-val margin" id="hMarginMini">0,00 <span class="curr-sym">€</span></span>
+                      <span class="stat-val margin" id="hMarginMini">0,00</span>
                     </div>
                     <div class="stat-item-mini">
                       <span class="stat-lbl">Custo</span>
-                      <span class="stat-val cost" id="hProdCostMini">0,00 <span class="curr-sym">€</span></span>
+                      <span class="stat-val cost" id="hProdCostMini">0,00</span>
                     </div>
                   </div>
                 </div>
@@ -1479,7 +1474,7 @@
                   <div class="stat-item-mini">
                     <span class="stat-lbl" data-i18n="calc.results.profit_hour">Lucro / Hora</span>
                     <div style="display:flex; align-items:center; gap:8px">
-                      <span class="ph-mini-val" id="profitPerHourMini">0,00 <span class="curr-sym">€</span></span>
+                      <span class="ph-mini-val" id="profitPerHourMini">0,00</span>
                       <span id="profitHourBadgeMini" class="profit-hour-badge" style="font-size:0.6rem; padding:2px 8px">--</span>
                     </div>
                   </div>
@@ -1499,16 +1494,16 @@
                 <!-- ── LAYOUT CLÁSSICO (Modo Simples) ── -->
                 <div class="res-hero" id="priceHeroCard">
                   <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                    <div class="res-hero-val" id="rFinalClassic">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-hero-val" id="rFinalClassic">0,00</div>
                   
                   <div class="hero-sub-stats">
                     <div class="hero-stat-line">
                       <span class="hero-stat-label" data-i18n="calc.results.margin">Margem de Lucro</span>
-                      <span class="hero-stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
+                      <span class="hero-stat-val margin" id="hMargin">0,00</span>
                     </div>
                     <div class="hero-stat-line">
-                      <span class="hero-stat-label">Custo de Produção</span>
-                      <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
+                      <span class="hero-stat-label" data-i18n="calc.results.production_cost">Custo de Produção</span>
+                      <span class="hero-stat-val cost" id="hProdCost">0,00</span>
                     </div>
                   </div>
                   <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
@@ -1517,7 +1512,7 @@
                 <div class="finance-panel">
                   <div class="profit-hour-card">
                     <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
-                    <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
+                    <div class="profit-hour-val" id="profitPerHour">0,00</div>
                     <div class="profit-hour-badge" id="profitHourBadge">--</div>
                   </div>
                   <div class="chart-container">
@@ -1530,19 +1525,19 @@
                 <div class="breakdown-list" style="margin-top:0">
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
-                    <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-value" id="resFilCost">0,00</div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
-                    <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-value" id="resMchCost">0,00</div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Eletricidade</span></div>
-                    <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-value" id="resElecCost">0,00</div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
-                    <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-value" id="resFailCost">0,00</div>
                   </div>
                   <div class="res-line" style="margin-bottom:15px">
                     <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
@@ -2163,13 +2158,9 @@ function updatePart(mId, pId, field, val) {
     
     // Update main summary card
     const timeEl = document.getElementById('totalProjectTime');
-    if (timeEl && (field !== 'totalTimeOverride')) {
-       // Apenas atualiza se não for o próprio input de tempo (ou se quisermos forçar o cálculo)
-       // Aqui vamos permitir override, então só atualizamos o valor se o campo de tempo não tiver mudado manualmente? 
-       // Simplificação: sempre atualiza o peso, tempo só se não for edição direta?
-       // O utilizador quer que seja automático.
-       timeEl.value = totalTime.toFixed(1);
-    }
+    const timeDisplay = document.getElementById('displayTotalTime');
+    if (timeEl) timeEl.value = totalTime.toFixed(2);
+    if (timeDisplay) timeDisplay.textContent = formatTime(totalTime);
     
     const weightEl = document.getElementById('totalProjectWeight');
     const weightDisplay = document.getElementById('displayTotalWeight');
@@ -2725,22 +2716,22 @@ function _render() {
   
   // ── Atualizar DASHBOARD (Mini) ──
   const elRF = document.getElementById('rFinal');
-  if (elRF) elRF.innerHTML = `${fmtCurrency(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elRF) elRF.textContent = fmtCurrency(r.finalPrice);
   
   const elHM = document.getElementById('hMarginMini');
-  if (elHM) elHM.innerHTML = `${fmtCurrency(r.marginCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elHM) elHM.textContent = fmtCurrency(r.marginCost);
   
   const elPC = document.getElementById('hProdCostMini');
-  if (elPC) elPC.innerHTML = `${fmtCurrency(r.productionCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elPC) elPC.textContent = fmtCurrency(r.productionCost);
   
   const elPH = document.getElementById('profitPerHourMini');
-  if (elPH) elPH.innerHTML = `${fmtCurrency(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elPH) elPH.textContent = fmtCurrency(r.profitPerHour);
   
   updateProfitBadge('profitHourBadgeMini', r.profitPerHour);
   
   // ── Atualizar CLÁSSICO ──
   const elRFC = document.getElementById('rFinalClassic');
-  if (elRFC) elRFC.innerHTML = `${fmtCurrency(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  if (elRFC) elRFC.textContent = fmtCurrency(r.finalPrice);
   
   setT('hMargin', fmtCurrency(r.marginCost));
   setT('hProdCost', fmtCurrency(r.productionCost));
