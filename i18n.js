@@ -156,9 +156,14 @@ const i18n = {
         document.querySelectorAll('#topbarThemeToggle').forEach(btn => {
             btn.innerHTML = isDark ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
         });
+    },
+
+    getCurrency() {
+        return this.getNestedTranslation('currency', {}, '€');
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => i18n.init());
 window.i18n = i18n;
 window.t = (key, vars, fallback) => i18n.getNestedTranslation(key, vars, fallback);
+window.getCurrency = () => i18n.getCurrency();
