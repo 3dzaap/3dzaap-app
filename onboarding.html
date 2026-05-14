@@ -334,7 +334,7 @@ function renderPlans() {
       <div class="plan-check"></div>
       <div class="plan-name">${pName}</div>
       <div class="plan-desc">${pDesc}</div>
-      <div class="plan-price">${p === 'trial' ? pPrice : '€' + pPrice.toFixed(2).replace('.', ',')}<small>${pSub}</small></div>
+      <div class="plan-price">${p === 'trial' ? pPrice : '<span class="curr-sym">€</span>' + pPrice.toFixed(2).replace('.', ',')}<small>${pSub}</small></div>
       <ul class="plan-features-list">
         ${(pFeatures || []).map(f => `<li class="plan-feature-item"><i class="ph-bold ph-check"></i> ${f}</li>`).join('')}
       </ul>

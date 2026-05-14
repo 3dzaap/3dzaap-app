@@ -698,38 +698,38 @@
           <div class="results-panel">
             <div class="res-hero">
               <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-              <div class="res-hero-val" id="rFinal">0,00 €</div>
+              <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
               <div class="price-hero-sub" id="rSubtext">A aguardar parâmetros...</div>
             </div>
 
             <div class="breakdown-list">
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> <span data-i18n="calc.results.material">Material</span></div>
-                <div class="res-value" id="resFilCost">0,00 €</div>
+                <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:var(--blue-lt)"></span> <span data-i18n="calc.results.machine">Máquina</span></div>
-                <div class="res-value" id="resMchCost">0,00 €</div>
+                <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:var(--subtle)"></span> <span data-i18n="calc.results.energy">Eletricidade</span></div>
-                <div class="res-value" id="resElecCost">0,00 €</div>
+                <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line" style="border-top:1.5px solid var(--border);margin-top:5px;padding-top:10px">
                 <div class="res-label" style="color:var(--success);font-weight:700"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.base">Custo Base</span></div>
-                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 €</div>
+                <div class="res-value" id="resBaseCost" style="color:var(--success)">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:var(--orange)"></span> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
-                <div class="res-value" id="resFailCost">0,00 €</div>
+                <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
-                <div class="res-value" id="resIndCost">0,00 €</div>
+                <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
               </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
-                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 €</div>
+                <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 <span class="curr-sym">€</span></div>
               </div>
             </div>
 
@@ -1071,7 +1071,7 @@ function setTechMode(tech) {
   document.getElementById('modeResin').classList.toggle('active', tech === 'resin');
   
   // Update UI units and labels
-  const currency = _sessionData?.currency || '€';
+  const currency = _sessionData?.config?.currency || (window.getCurrency ? window.getCurrency() : '€');
   const unitLabel = document.getElementById('labelFilPrice');
   if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
   document.querySelectorAll('.unit-weight').forEach(el => el.textContent = tech === 'resin' ? 'ml' : 'g');

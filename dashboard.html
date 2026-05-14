@@ -633,13 +633,13 @@
             <div class="stat-v2-badge badge-up" id="revBadge">+0%</div>
           </div>
           <div class="stat-v2-value-wrap">
-            <span class="stat-v2-value blue" id="statRevenue">€ 0,00</span>
+            <span class="stat-v2-value blue" id="statRevenue"><span class="curr-sym">€</span> 0,00</span>
           </div>
           <div class="stat-v2-label" data-i18n="dash.stats.revenue">Fluxo de Caixa (Facturado)</div>
           
           <div class="stat-v2-footer">
-            <span><span data-i18n="dash.stats.paid_label">Liquidado:</span> <strong id="statPaid" style="color:var(--success)">€ 0,00</strong></span>
-            <span><span data-i18n="dash.stats.pending_label">Pendente:</span> <strong id="statPending" style="color:var(--orange)">€ 0,00</strong></span>
+            <span><span data-i18n="dash.stats.paid_label">Liquidado:</span> <strong id="statPaid" style="color:var(--success)"><span class="curr-sym">€</span> 0,00</strong></span>
+            <span><span data-i18n="dash.stats.pending_label">Pendente:</span> <strong id="statPending" style="color:var(--orange)"><span class="curr-sym">€</span> 0,00</strong></span>
           </div>
         </div>
 
@@ -749,7 +749,11 @@ const PLAN_FEATURES = {
 };
 
 const PLAN_LABELS = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
-const PLAN_PRICES = { starter:'€9,90/mês', pro:'€19,90/mês', business:'€39,90/mês' };
+const PLAN_PRICES = { 
+  starter: (window.getCurrency ? window.getCurrency() : '€') + '9,90/mês', 
+  pro: (window.getCurrency ? window.getCurrency() : '€') + '19,90/mês', 
+  business: (window.getCurrency ? window.getCurrency() : '€') + '39,90/mês' 
+};
 
 let state = {
   user: { name:'—', email:'—', initials:'?' },
@@ -1043,7 +1047,7 @@ function calcHealthScore() {
     else if (ticketG >= 0.04) marginScore = 8;
     else marginScore = 0;
     
-    if (ticketG < 0.07) insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'health_margin_low', msg:`Ticket médio de ${ticketG.toFixed(2)}€/g é baixo.`});
+    if (ticketG < 0.07) insights.push({t:'warn', icon:'<i class="ph-bold ph-currency-dollar"></i>', key:'health_margin_low', msg:`Ticket médio de ${ticketG.toFixed(2)}${window.getCurrency ? window.getCurrency() : '€'}/g é baixo.`});
   } else {
     const profitTarget = window._cfg ? parseFloat(window._cfg.calc_profit_margin || 30) : 30;
     if (profitTarget >= 30) marginScore = 20;

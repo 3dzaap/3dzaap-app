@@ -62,6 +62,7 @@ function getCurrencyConfig() {
   // Regras de Símbolo solicitadas:
   // En: $ | PT e ES: € | BR: R$ | UK: £
   const map = {
+    'en-US': { symbol: '$',  code: 'USD', locale: 'en-US' },
     'en':    { symbol: '$',  code: 'USD', locale: 'en-US' },
     'pt-PT': { symbol: '€',  code: 'EUR', locale: 'pt-PT' },
     'es':    { symbol: '€',  code: 'EUR', locale: 'es-ES' },
@@ -69,9 +70,8 @@ function getCurrencyConfig() {
     'en-GB': { symbol: '£',  code: 'GBP', locale: 'en-GB' }
   };
   
-  // Fallback para EN base caso não coincida exactamente
   if (map[lang]) return map[lang];
-  if (lang.startsWith('en')) return map['en'];
+  if (lang.startsWith('en')) return map['en-US'];
   
   return map['pt-PT']; // Default de segurança
 }
@@ -210,7 +210,8 @@ var UI = {
     }
 
     var planLabels = window.PLAN_LABELS || { starter:'Starter', pro:'Pro', business:'Business' };
-    var planPrices = window.PLAN_PRICES || { starter: '€ 9.90', pro: '€ 19.90', business: '€ 39.90' };
+    var sym = window.getCurrency ? window.getCurrency() : '€';
+    var planPrices = window.PLAN_PRICES || { starter: sym + ' 9.90', pro: sym + ' 19.90', business: sym + ' 39.90' };
 
     var plansHtml = '<div class="gate-plans">' +
       cfg.plans.map(function(p) {

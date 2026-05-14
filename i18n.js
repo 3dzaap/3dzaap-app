@@ -43,6 +43,13 @@ const i18n = {
 
     translatePage(root = document) {
         if (!root) return;
+        
+        // Update currency symbols
+        const currency = this.getCurrency();
+        root.querySelectorAll('.curr-sym').forEach(el => {
+            el.textContent = currency;
+        });
+
         const elements = root.querySelectorAll('[data-i18n]');
         elements.forEach(el => {
             let key = el.getAttribute('data-i18n');

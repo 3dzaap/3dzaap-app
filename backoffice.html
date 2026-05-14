@@ -668,7 +668,7 @@ function exportExpenses() {
 
 function exportPrinters() {
   if (!printers.length) { showToast('Sem impressoras para exportar','err'); return; }
-  const hdr = ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado','Preço(€)','Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'];
+  const hdr = ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado',('Preço('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'];
   let csv = hdr.join(sep)+'\n';
   printers.forEach(p=>{
     csv += [p.id||'',p.brand||'',p.model||'',p.customName||'',p.printerType||'',p.status||'',
@@ -710,7 +710,7 @@ function exportAll() {
       .map(v=>`"${boEsc(v)}"`).join(sep)+'\n';
   });
   csv += '\n"#SECÇÃO";"Impressoras"\n';
-  csv += ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado','Preço(€)','Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'].join(sep)+'\n';
+  csv += ['ID','Fabricante','Modelo','Nome Personalizado','Tipo','Estado',('Preço('+((_cfg&&_cfg._currSymbol)||'€')+')'),'Horas Usadas','Vida Útil (h)','Data Compra','Garantia até','Sistema Multi-Material','Qtd. Unid. MM','Intervalo Manutenção (h)','Última Manutenção (h)','Notas'].join(sep)+'\n';
   printers.forEach(p=>{
     csv += [p.id||'',p.brand||'',p.model||'',p.customName||'',p.printerType||'',p.status||'',
       (p.price||0).toFixed(2),p.hoursUsed||0,p.lifeHours||5000,

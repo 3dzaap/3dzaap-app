@@ -1268,16 +1268,16 @@
           <div class="results-panel">
                 <div class="res-hero">
                   <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                  <div class="res-hero-val" id="rFinal">0,00 €</div>
+                  <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
                   
                   <div class="hero-sub-stats">
                     <div class="hero-stat-line">
                       <span class="hero-stat-label" data-i18n="calc.results.margin">Margem de Lucro</span>
-                      <span class="hero-stat-val margin" id="hMargin">0,00 €</span>
+                      <span class="hero-stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
                     </div>
                     <div class="hero-stat-line">
                       <span class="hero-stat-label">Custo de Produção</span>
-                      <span class="hero-stat-val cost" id="hProdCost">0,00 €</span>
+                      <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
                     </div>
                   </div>
 
@@ -1288,7 +1288,7 @@
                 <div class="finance-panel">
                   <div class="profit-hour-card">
                     <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
-                    <div class="profit-hour-val" id="profitPerHour">0,00 €</div>
+                    <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
                     <div class="profit-hour-badge" id="profitHourBadge">--</div>
                   </div>
                   <div class="chart-container">
@@ -1304,23 +1304,23 @@
                 <div class="breakdown-list" style="margin-top:0">
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
-                    <div class="res-value" id="resFilCost">0,00 €</div>
+                    <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span> <i class="ph-bold ph-question tip" title="Amortização da impressora baseada no custo de aquisição e vida útil (horas)."></i></div>
-                    <div class="res-value" id="resMchCost">0,00 €</div>
+                    <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Eletricidade</span></div>
-                    <div class="res-value" id="resElecCost">0,00 €</div>
+                    <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
                     <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%) <i class="ph-bold ph-question tip" title="Margem de segurança para cobrir impressões falhadas, suportes e desperdício de material."></i></div>
-                    <div class="res-value" id="resFailCost">0,00 €</div>
+                    <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line" style="margin-bottom:15px">
                     <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%) <i class="ph-bold ph-question tip" title="Custos que não são material ou máquina diretamente, como embalagem, marketing, manutenção e software."></i></div>
-                    <div class="res-value" id="resIndCost">0,00 €</div>
+                    <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                 </div>
               </div>
@@ -1683,7 +1683,7 @@ function setTechMode(tech) {
   document.getElementById('modeResin').classList.toggle('active', tech === 'resin');
   
   // Update UI units and labels
-  const currency = _sessionData?.currency || '€';
+  const currency = _sessionData?.config?.currency || (window.getCurrency ? window.getCurrency() : '€');
   const unitLabel = document.getElementById('labelFilPrice');
   if (unitLabel) unitLabel.textContent = `${currency}${tech === 'resin' ? '/L' : '/kg'}`;
   document.querySelectorAll('.unit-weight').forEach(el => el.textContent = tech === 'resin' ? 'ml' : 'g');
@@ -3440,7 +3440,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <label id="labelLabelFixed">Taxa Fixa</label>
           <div class="mp-input-unit">
             <input type="number" id="mpFixedFee" class="mp-input" value="0" step="0.01" min="0">
-            <span class="mp-unit-tag" id="mpUnitFixed">€</span>
+            <span class="mp-unit-tag" id="mpUnitFixed"><span class="curr-sym">€</span></span>
           </div>
         </div>
       </div>
