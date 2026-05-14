@@ -122,20 +122,155 @@
 .role-admin { background: #e0f2fe; color: #075985; }
 .role-member { background: #f1f5f9; color: #475569; }
 
-/* Plan Cards in Subscription */
-.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
-.plan-card { padding: 20px; border-radius: 16px; border: 1.5px solid var(--border); background: rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 12px; position: relative; transition: all 0.2s; }
-.plan-card.active { border-color: var(--blue); background: var(--blue-g); }
-.plan-badge-curr { position: absolute; top: -10px; right: 12px; background: var(--blue); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
-.plan-name { font-size: 0.85rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.plan-price { font-size: 1.5rem; font-weight: 900; color: var(--dark); }
-.plan-price .unit { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-left: 2px; }
-.plan-features { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-.plan-feature { font-size: 0.8rem; color: var(--muted); display: flex; align-items: flex-start; gap: 6px; }
-.plan-feature span { color: var(--blue); font-weight: 800; font-size: 1rem; line-height: 1; }
-.plan-feature.locked { opacity: 0.5; }
-.plan-feature.locked span { color: var(--muted); }
+/* Plan Cards in Subscription — Premium Redesign */
+.plans-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+  gap: 24px; 
+  margin-top: 24px; 
+}
+.plan-card { 
+  padding: 32px 24px; 
+  border-radius: 24px; 
+  border: 1.5px solid var(--border); 
+  background: var(--bg-card-s); 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+  position: relative; 
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); 
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+}
+.plan-card:hover { 
+  transform: translateY(-8px); 
+  box-shadow: var(--sh-xl);
+  border-color: var(--blue);
+}
+.plan-card.featured {
+  border: 2px solid var(--blue);
+  background: linear-gradient(135deg, var(--bg-card-s), var(--blue-g));
+  transform: scale(1.03);
+  z-index: 2;
+}
+.plan-card.featured:hover { transform: scale(1.05) translateY(-8px); }
 
+.plan-tag-featured {
+  position: absolute;
+  top: 12px;
+  right: -30px;
+  background: var(--blue);
+  color: white;
+  padding: 4px 40px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 10px rgba(59,143,212,0.3);
+}
+
+.plan-card.active { border-color: var(--admin-success, #22c55e); }
+.plan-badge-curr { 
+  position: absolute; 
+  top: 16px; 
+  left: 16px; 
+  background: var(--admin-success, #22c55e); 
+  color: white; 
+  padding: 4px 12px; 
+  border-radius: 20px; 
+  font-size: 0.65rem; 
+  font-weight: 800; 
+  text-transform: uppercase; 
+}
+
+.plan-header { text-align: center; }
+.plan-name { 
+  font-size: 0.9rem; 
+  font-weight: 800; 
+  color: var(--muted); 
+  text-transform: uppercase; 
+  letter-spacing: 0.1em; 
+  margin-bottom: 8px;
+}
+.plan-price { 
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+.plan-price .symbol { font-size: 1.2rem; font-weight: 700; color: var(--dark); }
+.plan-price .amount { font-size: 2.8rem; font-weight: 900; color: var(--dark); letter-spacing: -2px; }
+.plan-price .unit { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+
+.price-total-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: -12px;
+  min-height: 18px;
+}
+
+.plan-features { 
+  list-style: none; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  margin: 10px 0;
+  flex: 1;
+}
+.plan-feature { 
+  font-size: 0.85rem; 
+  color: var(--dark); 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+}
+.plan-feature i { color: var(--blue); font-size: 1.1rem; }
+.plan-feature.locked { opacity: 0.4; }
+.plan-feature.locked i { color: var(--muted); }
+
+.billing-cycle-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0 16px;
+}
+.billing-cycle-switch {
+  display: flex;
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  gap: 4px;
+}
+.btn-cycle {
+  padding: 10px 24px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-cycle.active {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59,143,212,0.3);
+}
+
+.plan-discount-badge {
+  background: #22c55e;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+}
 /* Annual Savings Badge */
 .annual-badge { 
   background: #22c55e; 
@@ -617,7 +752,7 @@
                   <button class="btn-cycle active" id="btn-monthly" onclick="setBillingCycle('monthly')" data-i18n="pricing.monthly">Mensal</button>
                   <button class="btn-cycle" id="btn-annual" onclick="setBillingCycle('annual')">
                     <span data-i18n="pricing.annual">Anual</span>
-                    <span class="annual-badge" data-i18n="pricing.annual_save">Poupa 20%</span>
+                    <span class="plan-discount-badge" data-i18n="pricing.annual_save">Poupa 20%</span>
                   </button>
                 </div>
               </div>
@@ -625,48 +760,63 @@
               <div class="plans-grid">
                 <!-- STARTER -->
                 <div class="plan-card" id="card-starter">
-                  <div class="plan-name" data-i18n="pricing.starter.name">Starter</div>
-                  <div class="plan-price">
-                    <span id="price-starter-symbol">€</span><span id="price-starter-val">9.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
-                    <span class="plan-discount-badge" id="off-starter" style="display:none">20% OFF</span>
-                    <div id="price-starter-total" class="price-total-hint" style="display:none">Total: € 118.80/ano</div>
+                  <div class="plan-header">
+                    <div class="plan-name" data-i18n="pricing.starter.name">Starter</div>
+                    <div class="plan-price">
+                      <span class="symbol" id="price-starter-symbol">€</span>
+                      <span class="amount" id="price-starter-val">9.90</span>
+                      <span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    </div>
+                    <div id="price-starter-total" class="price-total-hint"></div>
                   </div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Filamentos</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.starter.features.2">Catálogo</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.starter.features.0">Calculadora Completa</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.starter.features.1">Stock de Materiais</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.starter.features.2">Catálogo de Impressoras</span></li>
+                    <li class="plan-feature locked"><i class="ph-bold ph-lock"></i> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos</span></li>
                   </ul>
-                  <button class="btn btn-ghost btn-sm" onclick="window.open('https://wa.me/351938925645?text=Interesse%20no%20Plano%20Starter')" data-i18n="settings.sub.btn_choose">Escolher</button>
+                  <button class="btn btn-ghost" onclick="startCheckout('starter')" data-i18n="settings.sub.btn_choose">Escolher Starter</button>
                 </div>
+
                 <!-- PRO -->
-                <div class="plan-card" id="card-pro">
-                  <div class="plan-name" data-i18n="pricing.pro.name">Pro</div>
-                  <div class="plan-price">
-                    <span id="price-pro-symbol">€</span><span id="price-pro-val">19.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
-                    <span class="plan-discount-badge" id="off-pro" style="display:none">20% OFF</span>
-                    <div id="price-pro-total" class="price-total-hint" style="display:none">Total: € 238.80/ano</div>
+                <div class="plan-card featured" id="card-pro">
+                  <div class="plan-tag-featured">Popular</div>
+                  <div class="plan-header">
+                    <div class="plan-name" data-i18n="pricing.pro.name">Pro</div>
+                    <div class="plan-price">
+                      <span class="symbol" id="price-pro-symbol">€</span>
+                      <span class="amount" id="price-pro-val">19.90</span>
+                      <span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    </div>
+                    <div id="price-pro-total" class="price-total-hint"></div>
                   </div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.3">Recibos / OS</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.pro.features.4">Fotos</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.pro.features.1">Gestão de Pedidos & CRM</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.pro.features.3">Recibos e Orçamentos</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.pro.features.4">Galeria de Fotos</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.pro.features.5">Link de Seguimento</span></li>
                   </ul>
-                  <button class="btn btn-ghost btn-sm" onclick="window.open('https://wa.me/351938925645?text=Interesse%20no%20Plano%20Pro')" data-i18n="settings.sub.btn_choose">Escolher</button>
+                  <button class="btn btn-primary" onclick="startCheckout('pro')" data-i18n="settings.sub.btn_choose">Começar agora</button>
                 </div>
+
                 <!-- BUSINESS -->
                 <div class="plan-card" id="card-business">
-                  <div class="plan-name" data-i18n="pricing.business.name">Business</div>
-                  <div class="plan-price">
-                    <span id="price-business-symbol">€</span><span id="price-business-val">39.90</span><span class="unit" data-i18n="pricing.per_month">/mês</span>
-                    <span class="plan-discount-badge" id="off-business" style="display:none">20% OFF</span>
-                    <div id="price-business-total" class="price-total-hint" style="display:none">Total: € 478.80/ano</div>
+                  <div class="plan-header">
+                    <div class="plan-name" data-i18n="pricing.business.name">Business</div>
+                    <div class="plan-price">
+                      <span class="symbol" id="price-business-symbol">€</span>
+                      <span class="amount" id="price-business-val">39.90</span>
+                      <span class="unit" data-i18n="pricing.per_month">/mês</span>
+                    </div>
+                    <div id="price-business-total" class="price-total-hint"></div>
                   </div>
                   <ul class="plan-features">
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.1">Módulo Financeiro</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.2">Branding</span></li>
-                    <li class="plan-feature"><span>✓</span> <span data-i18n="pricing.business.features.3">Equipa</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.business.features.1">Módulo Financeiro</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.business.features.2">Marca Própria (White Label)</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.business.features.3">Gestão de Equipa</span></li>
+                    <li class="plan-feature"><i class="ph-bold ph-check"></i> <span data-i18n="pricing.business.features.4">Suporte Prioritário</span></li>
                   </ul>
-                  <button class="btn btn-primary btn-sm" onclick="window.open('https://wa.me/351938925645?text=Duvida%20Plano%20Business')" data-i18n="settings.sub.btn_contact">Vendas</button>
+                  <button class="btn btn-ghost" onclick="startCheckout('business')" data-i18n="settings.sub.btn_choose">Escolher Business</button>
                 </div>
               </div>
             </div>
@@ -814,9 +964,6 @@ function loadData() {
   if (_session.logo_url) showLogoPreview(_session.logo_url);
   if (_session.signature) showSigPreview(_session.signature);
   
-  // Custom WhatsApp Context
-  updateWhatsAppLinks();
-
   updateSubTab();
   loadTeam();
   renderPricing();
@@ -824,7 +971,6 @@ function loadData() {
   // Language Change Listener for Dynamic Prices
   window.addEventListener('languageChanged', (e) => {
     renderPricing(e.detail.locale);
-    updateWhatsAppLinks();
   });
 
   // Deep-linking: ?tab=name&reason=trial_expired
@@ -846,26 +992,6 @@ function loadData() {
   }, 50);
 }
 
-function updateWhatsAppLinks() {
-  const email = _session.user_email || _session.email || '';
-  const company = _session.companyName || '';
-  const lang = window.i18n ? window.i18n.currentLocale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
-  
-  const baseMsg = {
-    'pt-PT': `Olá! Sou o ${company} (${email}) e quero ativar o plano `,
-    'pt-BR': `Olá! Sou o ${company} (${email}) e quero ativar o plano `,
-    'en': `Hi! I'm from ${company} (${email}) and I want to activate the `,
-    'es': `¡Hola! Soy de ${company} (${email}) y quiero activar el plan `
-  }[lang] || `Olá! Sou o ${company} (${email}) e quero ativar o plano `;
-
-  const starterBtn = document.querySelector('#card-starter .btn');
-  const proBtn = document.querySelector('#card-pro .btn');
-  const businessBtn = document.querySelector('#card-business .btn');
-
-  if (starterBtn) starterBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Starter')}')`);
-  if (proBtn) proBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Pro')}')`);
-  if (businessBtn) businessBtn.setAttribute('onclick', `window.open('https://wa.me/351938925645?text=${encodeURIComponent(baseMsg + 'Business')}')`);
-}
 
 function showLogoPreview(src) {
   document.getElementById('logoPreview').innerHTML = `<img src="${src}" style="max-width:100%; max-height:100%">`;
@@ -1225,6 +1351,67 @@ function renderPricing(locale) {
     starterHint.style.display = 'none';
     proHint.style.display = 'none';
     businessHint.style.display = 'none';
+  }
+  
+  // Highlight active plan
+  const currPlan = (_session.plan || 'trial').replace('_ano', '');
+  document.querySelectorAll('.plan-card').forEach(card => {
+    card.classList.remove('active');
+    const badge = card.querySelector('.plan-badge-curr');
+    if (badge) badge.remove();
+  });
+  
+  const activeCard = document.getElementById('card-' + currPlan);
+  if (activeCard) {
+    activeCard.classList.add('active');
+    const badge = document.createElement('div');
+    badge.className = 'plan-badge-curr';
+    badge.textContent = 'Plano Atual';
+    activeCard.appendChild(badge);
+    
+    // Change button text if it's the current plan
+    const btn = activeCard.querySelector('.btn');
+    if (btn) {
+      btn.textContent = 'Plano Ativo';
+      btn.disabled = true;
+      btn.classList.add('btn-ghost');
+      btn.classList.remove('btn-primary');
+    }
+  }
+}
+
+async function startCheckout(planId) {
+  const planSuffix = _billingCycle === 'annual' ? '_ano' : '';
+  const fullPlanId = planId + planSuffix;
+  
+  // 1. Mostrar loading no botão
+  const btn = event.currentTarget;
+  const oldText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-circle-notch ph-spin"></i> A processar...';
+  
+  try {
+    showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe segura...', 'ok');
+    
+    // TODO: Implementar chamada à Edge Function do Supabase
+    // const { data, error } = await _sb.functions.invoke('create-checkout-session', {
+    //   body: { plan: fullPlanId, companyId: _session.companyId }
+    // });
+    
+    // if (error) throw error;
+    // window.location.href = data.url;
+
+    // Placeholder para o dia 15/05 (Amanhã)
+    setTimeout(() => {
+      showToast('Em breve: Irá redirecionar para o Stripe Checkout.', 'info');
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+    }, 1500);
+
+  } catch (err) {
+    showToast('Erro ao iniciar checkout: ' + err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = oldText;
   }
 }
 
