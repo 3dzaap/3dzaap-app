@@ -137,7 +137,86 @@
 
 .glass-card .form-sections{flex:1}
 
-.glass-card .results-panel{flex:1}
+/* ── LAYOUT DASHBOARD (Exclusivo Avançado) ── */
+.calc-layout.is-advanced {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 30px;
+}
+
+.calc-layout.is-advanced .results-col {
+  width: 100%;
+  position: sticky;
+  top: 70px;
+  z-index: 100;
+  margin-bottom: 0;
+  box-shadow: var(--sh-float);
+  border-radius: var(--rm);
+}
+
+.calc-layout.is-advanced .results-panel {
+  padding: 12px 24px !important;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  min-height: 90px;
+}
+
+/* Visibilidade Condicional de Elementos */
+.calc-layout:not(.is-advanced) .res-hero-mini,
+.calc-layout:not(.is-advanced) .profit-hour-mini,
+.calc-layout:not(.is-advanced) .mini-actions,
+.calc-layout.is-advanced #priceHeroCard,
+.calc-layout.is-advanced .finance-panel,
+.calc-layout.is-advanced .breakdown-list,
+.calc-layout.is-advanced .results-actions {
+  display: none !important;
+}
+
+.calc-layout.is-advanced .res-hero-mini,
+.calc-layout.is-advanced .profit-hour-mini,
+.calc-layout.is-advanced .mini-actions {
+  display: flex !important;
+}
+
+/* Estilos Mini Barra */
+.res-hero-mini { align-items: center; gap: 24px; flex: 1; }
+.hero-main-price .price-lbl { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--blue); letter-spacing: 0.05em; }
+.hero-main-price .price-val { font-family: var(--mono); font-size: 2rem; font-weight: 900; color: var(--dark); line-height: 1; }
+.hero-split-stats { display: flex; gap: 20px; padding-left: 20px; border-left: 1.5px solid var(--border); }
+.stat-item-mini { display: flex; flex-direction: column; }
+.stat-item-mini .stat-lbl { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.stat-item-mini .stat-val { font-family: var(--mono); font-size: 0.95rem; font-weight: 800; }
+.stat-item-mini .stat-val.margin { color: #a855f7; }
+.stat-item-mini .stat-val.cost { color: var(--success); }
+.profit-hour-mini { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: var(--bg-card-s); border-radius: 12px; border: 1px solid var(--border); }
+.ph-mini-val { font-family: var(--mono); font-size: 1.2rem; font-weight: 900; }
+
+.mini-actions { display: flex; gap: 8px; align-items: center; }
+.btn-mini-tool {
+  background: var(--bg-card-s); border: 1.5px solid var(--border); color: var(--muted);
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+  font-size: 1.2rem;
+}
+.btn-mini-tool:hover { background: var(--blue-g); color: var(--blue); border-color: var(--blue); transform: translateY(-2px); }
+
+.btn-main-action {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d)); color: white; border: none;
+  padding: 10px 20px; border-radius: 10px; font-weight: 800; font-size: 0.85rem;
+  cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59,143,212,0.2); transition: all 0.2s;
+}
+.btn-main-action:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,143,212,0.3); }
+
+@media(max-width: 1100px) {
+  .calc-layout.is-advanced .results-panel { flex-direction: column; height: auto; padding: 20px !important; align-items: stretch; }
+  .res-hero-mini { flex-direction: column; gap: 15px; }
+  .hero-split-stats { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 15px; width: 100%; justify-content: space-around; }
+}
 
 /* ── FINANCE PANEL (CHART & METRICS) ── */
 .finance-panel {
@@ -1313,9 +1392,81 @@
                   </div>
                 </div>
 
+                <!-- ── NOVO DASHBOARD MINI (Modo Avançado) ── -->
+                <div class="res-hero-mini">
+                  <div class="hero-main-price">
+                    <div class="price-lbl" data-i18n="calc.results.final_price">Preço Sugerido</div>
+                    <div class="price-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
+                  </div>
+                  <div class="hero-split-stats">
+                    <div class="stat-item-mini">
+                      <span class="stat-lbl" data-i18n="calc.results.margin">Lucro</span>
+                      <span class="stat-val margin" id="hMarginMini">0,00 <span class="curr-sym">€</span></span>
+                    </div>
+                    <div class="stat-item-mini">
+                      <span class="stat-lbl">Custo</span>
+                      <span class="stat-val cost" id="hProdCostMini">0,00 <span class="curr-sym">€</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="profit-hour-mini">
+                  <div class="stat-item-mini">
+                    <span class="stat-lbl" data-i18n="calc.results.profit_hour">Lucro / Hora</span>
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <span class="ph-mini-val" id="profitPerHourMini">0,00 <span class="curr-sym">€</span></span>
+                      <span id="profitHourBadgeMini" class="profit-hour-badge" style="font-size:0.6rem; padding:2px 8px">--</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mini-actions">
+                  <button class="btn-main-action" onclick="criarPedido()">
+                    <i class="ph-bold ph-shopping-cart"></i>
+                    <span data-i18n="calc.buttons.create_order">Pedido</span>
+                  </button>
+                  <button class="btn-mini-tool" onclick="toggleFullBreakdown()" title="Ver Detalhes">
+                    <i class="ph-bold ph-chart-bar"></i>
+                  </button>
+                  <button class="btn-mini-tool" onclick="copyResults()" title="Copiar">
+                    <i class="ph-bold ph-copy"></i>
+                  </button>
+                </div>
+
+                <!-- Painel de Detalhes Expansível (Modo Avançado) -->
+                <div id="fullBreakdownPanel" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1.5px solid var(--border); border-top:none; border-radius:0 0 16px 16px; padding:20px; box-shadow:var(--sh-float); z-index:99;">
+                   <div class="breakdown-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-top:0">
+                      <div class="res-line">
+                        <div class="res-label"><i class="ph-bold ph-sketch-logo"></i> <span data-i18n="calc.results.material">Material</span></div>
+                        <div class="res-value" id="resFilCostAdv">0,00 <span class="curr-sym">€</span></div>
+                      </div>
+                      <div class="res-line">
+                        <div class="res-label"><i class="ph-bold ph-printer"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
+                        <div class="res-value" id="resMchCostAdv">0,00 <span class="curr-sym">€</span></div>
+                      </div>
+                      <div class="res-line">
+                        <div class="res-label"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc.results.energy">Energia</span></div>
+                        <div class="res-value" id="resElecCostAdv">0,00 <span class="curr-sym">€</span></div>
+                      </div>
+                      <div class="res-line">
+                        <div class="res-label"><i class="ph-bold ph-warning-octagon"></i> <span data-i18n="calc.results.failure">Falhas</span></div>
+                        <div class="res-value" id="resFailCostAdv">0,00 <span class="curr-sym">€</span></div>
+                      </div>
+                      <div class="res-line">
+                        <div class="res-label"><i class="ph-bold ph-gear"></i> <span data-i18n="calc.results.indirect">Indiretos</span></div>
+                        <div class="res-value" id="resIndCostAdv">0,00 <span class="curr-sym">€</span></div>
+                      </div>
+                   </div>
+                   <div style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
+                      <button class="btn-action" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i> WhatsApp</button>
+                      <button class="btn-action" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> Salvar</button>
+                   </div>
+                </div>
+
+                <!-- ── LAYOUT CLÁSSICO (Modo Simples) ── -->
                 <div class="res-hero" id="priceHeroCard">
                   <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                    <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-hero-val" id="rFinalClassic">0,00 <span class="curr-sym">€</span></div>
                   
                   <div class="hero-sub-stats">
                     <div class="hero-stat-line">
@@ -1327,25 +1478,12 @@
                       <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
                     </div>
                   </div>
-
                   <div class="card-watermark"><i class="ph-bold ph-tag"></i></div>
                 </div>
 
-                <!-- Painel Inteligência Financeira -->
                 <div class="finance-panel">
                   <div class="profit-hour-card">
-                    <div class="profit-hour-label">
-                      <span data-i18n="calc.results.profit_hour">Lucro / Hora</span>
-                      <span class="tip-icon">
-                        <i class="ph-bold ph-question"></i>
-                        <div class="tip-bubble" data-i18n="calc.results.profit_hour_tip">
-                          Níveis de rentabilidade por hora:<br>
-                          <b>BAIXO:</b> < 0.50 <span class="curr-sym">€</span>/h<br>
-                          <b>MÉDIO:</b> 0.50 - 1.50 <span class="curr-sym">€</span>/h<br>
-                          <b>ÓTIMO:</b> > 1.50 <span class="curr-sym">€</span>/h
-                        </div>
-                      </span>
-                    </div>
+                    <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
                     <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
                     <div class="profit-hour-badge" id="profitHourBadge">--</div>
                   </div>
@@ -1354,10 +1492,7 @@
                   </div>
                 </div>
 
-                <!-- Container para cards de Marketplaces (Ordem 2) -->
-                <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;">
-                  <!-- JS will render mp cards here -->
-                </div>
+                <div id="mpResultsContainer" class="mp-results-container" style="margin-bottom:20px;"></div>
 
                 <div class="breakdown-list" style="margin-top:0">
                   <div class="res-line">
@@ -1365,7 +1500,7 @@
                     <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span> <i class="ph-bold ph-question tip" title="Amortização da impressora baseada no custo de aquisição e vida útil (horas)."></i></div>
+                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
                     <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
@@ -1373,45 +1508,28 @@
                     <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%) <i class="ph-bold ph-question tip" title="Margem de segurança para cobrir impressões falhadas, suportes e desperdício de material."></i></div>
+                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
                     <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line" style="margin-bottom:15px">
-                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%) <i class="ph-bold ph-question tip" title="Custos que não são material ou máquina diretamente, como embalagem, marketing, manutenção e software."></i></div>
+                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
                     <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                 </div>
               </div>
 
             <div class="results-actions">
-              <!-- AÇÃO PRIMÁRIA: Criar Pedido -->
               <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
                 <i class="ph-bold ph-shopping-cart"></i>
                 <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
               </button>
-
-              <!-- AÇÕES DE FLUXO: WhatsApp e Guardar -->
               <div class="results-actions-row">
-                <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 1.8;">
-                  <i class="ph-bold ph-whatsapp-logo"></i>
-                  <span data-i18n="calc.buttons.whatsapp">WhatsApp</span>
-                </button>
-                <button class="btn-action" style="flex: 1.2; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()">
-                  <i class="ph-bold ph-floppy-disk"></i>
-                  <span data-i18n="calc.buttons.save">Guardar</span>
-                </button>
+                <button class="btn-wa" onclick="sendWhatsApp()" style="flex: 1.8;"><i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="calc.buttons.whatsapp">WhatsApp</span></button>
+                <button class="btn-action" style="flex: 1.2; background:rgba(34,197,94,.08);color:var(--success);border-color:rgba(34,197,94,.2)" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> <span data-i18n="calc.buttons.save">Guardar</span></button>
               </div>
-
-              <!-- UTILITÁRIOS: Copiar e Configurações -->
               <div class="results-actions-row">
-                <button class="btn-action" onclick="copyResults()">
-                  <i class="ph-bold ph-copy"></i>
-                  <span data-i18n="calc.buttons.copy">Copiar</span>
-                </button>
-                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()" style="background: var(--bg-card-s);">
-                   <i class="ph-bold ph-gear"></i>
-                   <span data-i18n="calc.buttons.adjust" style="font-size: 0.72rem; font-weight: 600;">Ajustar %</span>
-                </button>
+                <button class="btn-action" onclick="copyResults()" style="flex:1"><i class="ph-bold ph-copy"></i> <span data-i18n="calc.buttons.copy">Copiar</span></button>
+                <button class="btn-action" id="advBtn" onclick="toggleAdvPanel()" style="background: var(--bg-card-s); flex:1"><i class="ph-bold ph-gear"></i> <span data-i18n="calc.buttons.adjust" style="font-size: 0.72rem; font-weight: 600;">Ajustar %</span></button>
               </div>
             </div>
           </div>
@@ -1727,6 +1845,9 @@ function setCalcMode(mode) {
   }
 
   _calcMode = mode;
+  const layout = document.querySelector('.calc-layout');
+  if (layout) layout.classList.toggle('is-advanced', mode === 'advanced');
+
   document.getElementById('modeBtnSimple').classList.toggle('active', mode === 'simple');
   document.getElementById('modeBtnAdvanced').classList.toggle('active', mode === 'advanced');
   
@@ -2570,7 +2691,42 @@ function _render() {
   const i = getInputs();
   const r = computeResults(i);
   
-  // Educational State Logic
+  // ── Atualizar DASHBOARD (Mini) ──
+  const elRF = document.getElementById('rFinal');
+  if (elRF) elRF.innerHTML = `${formatCurr(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elHM = document.getElementById('hMarginMini');
+  if (elHM) elHM.innerHTML = `${formatCurr(r.marginCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elPC = document.getElementById('hProdCostMini');
+  if (elPC) elPC.innerHTML = `${formatCurr(r.productionCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elPH = document.getElementById('profitPerHourMini');
+  if (elPH) elPH.innerHTML = `${formatCurr(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  updateProfitBadge('profitHourBadgeMini', r.profitPerHour);
+  
+  // Breakdown Avançado
+  setT('resFilCostAdv', formatCurr(r.materialCost));
+  setT('resMchCostAdv', formatCurr(r.amortizationCost));
+  setT('resElecCostAdv', formatCurr(r.electricityCost));
+  setT('resFailCostAdv', formatCurr(r.failureCost));
+  setT('resIndCostAdv', formatCurr(r.indirectCost));
+
+  // ── Atualizar CLÁSSICO ──
+  const elRFC = document.getElementById('rFinalClassic');
+  if (elRFC) elRFC.innerHTML = `${formatCurr(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  setT('hMargin', formatCurr(r.marginCost));
+  setT('hProdCost', formatCurr(r.productionCost));
+  setT('profitPerHour', formatCurr(r.profitPerHour));
+  updateProfitBadge('profitHourBadge', r.profitPerHour);
+  
+  setT('resFilCost', formatCurr(r.materialCost));
+  setT('resMchCost', formatCurr(r.amortizationCost));
+  setT('resElecCost', formatCurr(r.electricityCost));
+  setT('resFailCost', formatCurr(r.failureCost));
+  setT('resIndCost', formatCurr(r.indirectCost));
   const eduState = document.getElementById('calcEduState');
   const heroCard = document.getElementById('priceHeroCard');
   const finPanel = document.querySelector('.finance-panel');
@@ -3400,7 +3556,7 @@ function copyResults(){
     row('Custo eletricidade:',   r.electricityCost.toFixed(2)),
     row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
     row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
-    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCosts.toFixed(2)),
+    row(`+ Indiretos (${i.indirectCosts}%):`, r.indirectCost.toFixed(2)),
     row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
     '─'.repeat(42),
     row('Preço unitário:',       r.unitPrice.toFixed(2)),
@@ -3410,6 +3566,22 @@ function copyResults(){
   if(navigator.clipboard&&window.isSecureContext){
     navigator.clipboard.writeText(txt).then(()=>{showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
   }else{fbCopy(txt);}
+}
+
+function toggleFullBreakdown() {
+  const el = document.getElementById('fullBreakdownPanel');
+  if (!el) return;
+  const isVisible = el.style.display === 'block';
+  el.style.display = isVisible ? 'none' : 'block';
+}
+
+function updateProfitBadge(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let label = 'ÓTIMO'; let cls = 'profit-hour-badge high';
+  if (val < 0.5) { label = 'BAIXO'; cls = 'profit-hour-badge low'; }
+  else if (val < 1.5) { label = 'MÉDIO'; cls = 'profit-hour-badge med'; }
+  el.textContent = label; el.className = cls;
 }
 function _buildClientMsg(){
   const i=getInputs(); const r=computeResults(i);
