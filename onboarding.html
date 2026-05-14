@@ -267,6 +267,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderPlans();
     }
 
+    const params = new URLSearchParams(window.location.search);
+    const planFromUrl = params.get('plan');
+    if (planFromUrl) STATE.plan = planFromUrl;
+
     document.getElementById('bootOverlay').style.display = 'none';
   } catch(e) { window.location.href = 'auth.html'; }
 });

@@ -319,6 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 1500);
 
   const params = new URLSearchParams(window.location.search);
+  const plan = params.get('plan');
   if (params.get('mode') === 'signup') switchTab('signup');
 
   document.getElementById('loginBtn').addEventListener('click', doLogin);
@@ -386,7 +387,9 @@ async function doRegister() {
     if (res.error) throw res.error;
     
     if (res.data.session) {
-      window.location.href = 'onboarding.html';
+      const params = new URLSearchParams(window.location.search);
+      const plan = params.get('plan') || '';
+      window.location.href = 'onboarding.html' + (plan ? '?plan=' + plan : '');
     } else {
       toast('Verifica o teu email para confirmar a conta.', 'ok');
       STATE.signupBusy = false;
