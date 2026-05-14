@@ -139,14 +139,14 @@
 
 .glass-card .results-panel{flex:1}
 
-/* ── NOVO LAYOUT DASHBOARD (V2) ── */
-.calc-layout {
+/* ── LAYOUT DASHBOARD (Exclusivo Avançado) ── */
+.calc-layout.is-advanced {
   display: flex;
   flex-direction: column-reverse;
   gap: 30px;
 }
 
-.results-col {
+.calc-layout.is-advanced .results-col {
   width: 100%;
   position: sticky;
   top: 70px;
@@ -154,7 +154,7 @@
   margin-bottom: 0;
 }
 
-.results-panel {
+.calc-layout.is-advanced .results-panel {
   padding: 12px 24px !important;
   background: var(--bg-card);
   backdrop-filter: blur(20px);
@@ -164,6 +164,18 @@
   justify-content: space-between;
   gap: 30px;
   min-height: 90px;
+}
+
+/* No modo SIMPLES, mantemos o grid original */
+.calc-layout:not(.is-advanced) .results-col {
+  width: auto;
+  position: static;
+}
+.calc-layout:not(.is-advanced) .results-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px !important;
 }
 
 .res-hero-mini {
@@ -196,6 +208,55 @@
   gap: 20px;
   padding-left: 20px;
   border-left: 1.5px solid var(--border);
+}
+
+/* Escondido no modo Simples por defeito, pois o Simples usa o Hero clássico */
+.calc-layout:not(.is-advanced) .res-hero-mini,
+.calc-layout:not(.is-advanced) .profit-hour-mini,
+.calc-layout:not(.is-advanced) .mini-actions {
+  display: none;
+}
+
+/* No modo Simples, mostramos os elementos clássicos que o script injeta */
+.calc-layout:not(.is-advanced) #priceHeroCard,
+.calc-layout:not(.is-advanced) .finance-panel,
+.calc-layout:not(.is-advanced) .breakdown-list,
+.calc-layout:not(.is-advanced) .results-actions {
+  display: flex !important;
+}
+
+.calc-layout.is-advanced #priceHeroCard,
+.calc-layout.is-advanced .finance-panel,
+.calc-layout.is-advanced .breakdown-list,
+.calc-layout.is-advanced .results-actions {
+  display: none !important;
+}
+
+/* Botões da Mini Barra */
+.mini-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-mini-tool {
+  background: var(--bg-card-s);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+}
+.btn-mini-tool:hover {
+  background: var(--blue-g);
+  color: var(--blue);
+  border-color: var(--blue);
+  transform: translateY(-2px);
 }
 
 .stat-item-mini {
@@ -2686,7 +2747,33 @@ function _render() {
   const i = getInputs();
   const r = computeResults(i);
   
-  // Educational State Logic
+  // Atualizar Mini Barra (Modo Avançado)
+  const elRF = document.getElementById('rFinal');
+  if (elRF) elRF.innerHTML = `${formatCurr(r.finalPrice)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elHM = document.getElementById('hMargin');
+  if (elHM) elHM.innerHTML = `${formatCurr(r.marginCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elPC = document.getElementById('hProdCost');
+  if (elPC) elPC.innerHTML = `${formatCurr(r.productionCost)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  const elPH = document.getElementById('profitPerHour');
+  if (elPH) elPH.innerHTML = `${formatCurr(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+
+  // Atualizar Clássico (Modo Simples)
+  const elPHC = document.getElementById('profitPerHourClassic');
+  if (elPHC) elPHC.innerHTML = `${formatCurr(r.profitPerHour)} <span class="curr-sym">${getCurrencySymbol()}</span>`;
+  
+  // Atualizar Badges
+  updateProfitBadge('profitHourBadge', r.profitPerHour);
+  updateProfitBadge('profitHourBadgeClassic', r.profitPerHour);
+  
+  // Breakdown Detalhado (Dinamismo nos IDs)
+  setT('resFilCost', formatCurr(r.materialCost));
+  setT('resMchCost', formatCurr(r.amortizationCost));
+  setT('resElecCost', formatCurr(r.electricityCost));
+  setT('resFailCost', formatCurr(r.failureCost));
+  setT('resIndCost', formatCurr(r.indirectCost));
   const eduState = document.getElementById('calcEduState');
   const heroCard = document.getElementById('priceHeroCard');
   const finPanel = document.querySelector('.finance-panel');
@@ -3516,7 +3603,7 @@ function copyResults(){
     row('Custo eletricidade:',   r.electricityCost.toFixed(2)),
     row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
     row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
-    row(`+ Indiretos (${i.indirectCosts}%):`,r.indirectCosts.toFixed(2)),
+    row(`+ Indiretos (${i.indirectCosts}%):`, r.indirectCost.toFixed(2)),
     row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
     '─'.repeat(42),
     row('Preço unitário:',       r.unitPrice.toFixed(2)),
@@ -3526,6 +3613,21 @@ function copyResults(){
   if(navigator.clipboard&&window.isSecureContext){
     navigator.clipboard.writeText(txt).then(()=>{showToast(i18n.getNestedTranslation('calc.toasts.saved') || '<i class="ph-bold ph-copy"></i> Copiado!','ok');flash();}).catch(()=>fbCopy(txt));
   }else{fbCopy(txt);}
+}
+function toggleFullBreakdown() {
+  const el = document.getElementById('fullBreakdownPanel');
+  if (!el) return;
+  const isVisible = el.style.display === 'block';
+  el.style.display = isVisible ? 'none' : 'block';
+}
+
+function updateProfitBadge(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let label = 'ÓTIMO'; let cls = 'profit-hour-badge high';
+  if (val < 0.5) { label = 'BAIXO'; cls = 'profit-hour-badge low'; }
+  else if (val < 1.5) { label = 'MÉDIO'; cls = 'profit-hour-badge med'; }
+  el.textContent = label; el.className = cls;
 }
 function _buildClientMsg(){
   const i=getInputs(); const r=computeResults(i);
