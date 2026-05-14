@@ -2613,26 +2613,27 @@ function getInputs() {
   } else {
     // Advanced mode: array of mesas > array of parts
     let partsTotalWeight = 0;
+    let partsTotalTime = 0;
     let advancedPartsInfo = [];
     _mesas.forEach(mesa => {
       mesa.parts.forEach(p => {
-        partsTotalWeight += (p.weight * (p.qty || 1));
+        const qty = p.qty || 1;
+        partsTotalWeight += (p.weight * qty);
+        partsTotalTime += (p.time * qty);
         const mat = _filaments.find(f => String(f.id) === String(p.materialId));
         advancedPartsInfo.push({ ...p, price: mat ? mat.price : 25, mesaId: mesa.id });
       });
     });
-    
-    const totalTimeValue = parseTime(pv('totalProjectTime'));
     
     return {
       ...common,
       mode: 'advanced',
       tech: _activeTech,
       weight: partsTotalWeight,
-      time: totalTimeValue,
+      time: partsTotalTime,
       parts: advancedPartsInfo,
       mesas: _mesas,
-      totalTime: totalTimeValue
+      totalTime: partsTotalTime
     };
   }
 }
@@ -2762,6 +2763,12 @@ function _render() {
   const finPanel = document.querySelector('.finance-panel');
   const breakdown = document.querySelector('.breakdown-list');
   const mpResults = document.getElementById('mpResultsContainer');
+  
+  // ── Atualizar Sumário Superior (Peso e Tempo) ──
+  const weightDisplay = document.getElementById('displayTotalWeight');
+  const timeDisplay = document.getElementById('displayTotalTime');
+  if (weightDisplay) weightDisplay.textContent = i.weight.toFixed(1);
+  if (timeDisplay) timeDisplay.textContent = formatTime(i.time);
 
   if (r.finalPrice === 0) {
     if (eduState) eduState.style.display = 'flex';
@@ -2808,7 +2815,6 @@ function _render() {
   setLineVal('resIndCost', r.indirectCost);
 
   // Labels
-  const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   setT('labFailPct', i.failureRate);
   setT('labIndPct', i.indirectCosts);
 
@@ -3928,12 +3934,36 @@ function finishImport() {
 
 function findBestMaterialMatch(type, colorHex) {
   if (typeof _filaments === 'undefined' || !_filaments || _filaments.length === 0) return null;
+  const t = type.toLowerCase();
+  const hex = (colorHex || '').toLowerCase().replace('#','');
+  
+  // 1. Exact Match (Type + Hex)
   const exact = _filaments.find(f => 
-    f.type?.toLowerCase() === type.toLowerCase() && 
-    ((f.colorHex || '').toLowerCase() === colorHex.toLowerCase())
+    f.type?.toLowerCase() === t && 
+    (f.colorHex || '').toLowerCase().replace('#','') === hex
   );
   if (exact) return exact;
-  return _filaments.find(f => f.type?.toLowerCase() === type.toLowerCase()) || null;
+
+  // 2. Try to match by name keywords if hex is common
+  const isBlack = hex === '000000' || hex === '010101';
+  const isWhite = hex === 'ffffff' || hex === 'fffffe';
+  
+  if (isBlack || isWhite) {
+    const nameMatch = _filaments.find(f => {
+      const n = f.name.toLowerCase();
+      if (f.type?.toLowerCase() !== t) return false;
+      if (isBlack && (n.includes('preto') || n.includes('black') || n.includes('dark'))) return true;
+      if (isWhite && (n.includes('branco') || n.includes('white'))) return true;
+      return false;
+    });
+    if (nameMatch) return nameMatch;
+  }
+
+  // 3. Fallback to same type but ONLY if there's only one filament of that type
+  const sameType = _filaments.filter(f => f.type?.toLowerCase() === t);
+  if (sameType.length === 1) return sameType[0];
+
+  return null; 
 }
 
 function findBestPrinterMatch(modelName) {
