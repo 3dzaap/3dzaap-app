@@ -139,11 +139,11 @@
 
 .glass-card .results-panel{flex:1}
 
-/* ── LAYOUT VERTICAL UNIFICADO ── */
+/* ── NOVO LAYOUT DASHBOARD (V2) ── */
 .calc-layout {
   display: flex;
   flex-direction: column-reverse;
-  gap: 24px;
+  gap: 30px;
 }
 
 .results-col {
@@ -151,101 +151,128 @@
   position: sticky;
   top: 70px;
   z-index: 100;
-  box-shadow: var(--sh-float);
-  border-radius: var(--rm);
-  overflow: visible;
-}
-
-.calc-layout .results-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 20px;
-}
-
-/* Fila Superior: Hero e Lucro/Hora */
-.results-top-row {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 20px;
-  align-items: stretch;
-}
-
-.calc-layout .res-hero {
   margin-bottom: 0;
-  padding: 20px;
+}
+
+.results-panel {
+  padding: 12px 24px !important;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.calc-layout .res-hero-val {
-  font-size: 2.2rem;
-  margin-bottom: 10px;
-}
-
-.calc-layout .hero-sub-stats {
-  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 30px;
-  justify-content: center;
-  border-top: 1px solid var(--border);
-  margin-top: 10px;
-  padding-top: 12px;
+  min-height: 90px;
 }
 
-.calc-layout .finance-panel {
-  margin-bottom: 0;
-  height: 100%;
-  padding: 15px;
+.res-hero-mini {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
 }
 
-/* Breakdown em Grelha para poupar espaço */
-.calc-layout .breakdown-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.hero-main-price {
+  text-align: left;
+}
+.hero-main-price .price-lbl {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  letter-spacing: 0.05em;
+}
+.hero-main-price .price-val {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1;
+}
+
+.hero-split-stats {
+  display: flex;
+  gap: 20px;
+  padding-left: 20px;
+  border-left: 1.5px solid var(--border);
+}
+
+.stat-item-mini {
+  display: flex;
+  flex-direction: column;
+}
+.stat-item-mini .stat-lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.stat-item-mini .stat-val {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+.stat-item-mini .stat-val.margin { color: #a855f7; }
+.stat-item-mini .stat-val.cost { color: var(--success); }
+
+.profit-hour-mini {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 0;
-  padding: 12px;
+  padding: 8px 16px;
   background: var(--bg-card-s);
-  border-radius: var(--rm);
+  border-radius: 12px;
   border: 1px solid var(--border);
 }
-
-.calc-layout .res-line {
-  padding: 6px 0;
-  border-bottom: none;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+.ph-mini-val {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  font-weight: 900;
 }
 
-.calc-layout .res-value {
+.mini-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-main-action {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 800;
   font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(59,143,212,0.2);
+  transition: all 0.2s;
 }
+.btn-main-action:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,143,212,0.3); }
 
-.calc-layout .results-actions {
-  flex-direction: row;
-  gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
+/* Esconder o breakdown detalhado por defeito na barra ou usar um dropdown */
+.mini-breakdown-btn {
+  background: var(--bg-card-s);
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+.mini-breakdown-btn:hover { background: var(--bg-hover-s); color: var(--dark); }
 
-.calc-layout .btn-criar-pedido {
-  flex: 1;
-  padding: 12px;
-}
-
-.calc-layout .results-actions-row {
-  flex: 1.5;
-}
-
-@media(max-width: 1000px) {
-  .results-top-row { grid-template-columns: 1fr; }
-  .calc-layout .breakdown-list { grid-template-columns: 1fr 1fr; }
-}
-@media(max-width: 600px) {
-  .calc-layout .breakdown-list { grid-template-columns: 1fr; }
-  .calc-layout .results-actions { flex-direction: column; }
+@media(max-width: 1100px) {
+  .results-panel { flex-direction: column; height: auto; padding: 20px !important; align-items: stretch; }
+  .res-hero-mini { flex-direction: column; gap: 15px; border-left: none; padding-left: 0; }
+  .hero-split-stats { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 15px; width: 100%; justify-content: space-around; }
 }
 
 @media(max-width: 1100px) {
@@ -1423,85 +1450,83 @@
           </div>
         </div>
 
-        <!-- ── RIGHT: RESULTS (FIXED TOP) ── -->
+        <!-- ── RESULTS PANEL (TOP STICKY BAR) ── -->
         <div class="glass-card results-col">
           <div class="results-panel">
-                <div id="calcEduState" class="educational-state" style="display:none; margin-bottom: 20px;">
-                  <div class="edu-icon"><i class="ph-bold ph-lightning"></i></div>
-                  <h2 data-i18n="calc.edu.title">Pronto para Calcular?</h2>
-                  <div style="text-align:left; width:100%; margin-top:10px; font-size:0.85rem; display:flex; flex-direction:column; gap:8px; color:var(--muted)">
-                    <div data-i18n="calc.edu.step1">1. Seleciona o material e tempo</div>
-                    <div data-i18n="calc.edu.step2">2. Vê o lucro real (não apenas o custo)</div>
-                    <div data-i18n="calc.edu.step3">3. Cria o pedido em 1 clique</div>
-                  </div>
+            
+            <div class="res-hero-mini">
+              <div class="hero-main-price">
+                <div class="price-lbl" data-i18n="calc.results.final_price">Preço Sugerido</div>
+                <div class="price-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
+              </div>
+
+              <div class="hero-split-stats">
+                <div class="stat-item-mini">
+                  <span class="stat-lbl" data-i18n="calc.results.margin">Lucro</span>
+                  <span class="stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
                 </div>
-
-                <!-- Top Row: Hero and Finance -->
-                <div class="results-top-row">
-                  <div class="res-hero" id="priceHeroCard">
-                    <div class="price-hero-label" data-i18n="calc.results.final_price">Preço Final Sugerido</div>
-                      <div class="res-hero-val" id="rFinal">0,00 <span class="curr-sym">€</span></div>
-                    
-                    <div class="hero-sub-stats">
-                      <div class="hero-stat-line">
-                        <span class="hero-stat-label" data-i18n="calc.results.margin">Lucro</span>
-                        <span class="hero-stat-val margin" id="hMargin">0,00 <span class="curr-sym">€</span></span>
-                      </div>
-                      <div class="hero-stat-line">
-                        <span class="hero-stat-label">Custo</span>
-                        <span class="hero-stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="finance-panel">
-                    <div class="profit-hour-card">
-                      <div class="profit-hour-label" data-i18n="calc.results.profit_hour">Lucro / Hora</div>
-                      <div class="profit-hour-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></div>
-                      <div class="profit-hour-badge" id="profitHourBadge">--</div>
-                    </div>
-                    <div class="chart-container">
-                      <canvas id="costChart"></canvas>
-                    </div>
-                  </div>
+                <div class="stat-item-mini">
+                  <span class="stat-lbl">Custo</span>
+                  <span class="stat-val cost" id="hProdCost">0,00 <span class="curr-sym">€</span></span>
                 </div>
+              </div>
+            </div>
 
-                <div id="mpResultsContainer" class="mp-results-container"></div>
+            <div class="profit-hour-mini">
+              <div class="stat-item-mini">
+                <span class="stat-lbl" data-i18n="calc.results.profit_hour">Lucro / Hora</span>
+                <div style="display:flex; align-items:center; gap:8px">
+                  <span class="ph-mini-val" id="profitPerHour">0,00 <span class="curr-sym">€</span></span>
+                  <span id="profitHourBadge" class="profit-hour-badge" style="font-size:0.6rem; padding:2px 8px">--</span>
+                </div>
+              </div>
+            </div>
 
-                <div class="breakdown-list">
+            <div class="mini-actions">
+              <button class="btn-main-action visible" id="btnCriarPedido" onclick="criarPedido()">
+                <i class="ph-bold ph-shopping-cart"></i>
+                <span data-i18n="calc.buttons.create_order">Pedido</span>
+              </button>
+              
+              <button class="mini-breakdown-btn" onclick="toggleFullBreakdown()" title="Ver Detalhes">
+                <i class="ph-bold ph-chart-bar"></i>
+              </button>
+              
+              <button class="mini-breakdown-btn" onclick="copyResults()" title="Copiar">
+                <i class="ph-bold ph-copy"></i>
+              </button>
+            </div>
+
+            <!-- Painel de Detalhes (Oculto por defeito) -->
+            <div id="fullBreakdownPanel" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1.5px solid var(--border); border-top:none; border-radius:0 0 16px 16px; padding:20px; box-shadow:var(--sh-float); z-index:99;">
+               <div class="breakdown-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-sketch-logo" style="color:var(--blue); font-size: 0.85rem;"></i> <span data-i18n="calc.results.material">Material</span></div>
+                    <div class="res-label"><i class="ph-bold ph-sketch-logo"></i> <span data-i18n="calc.results.material">Material</span></div>
                     <div class="res-value" id="resFilCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-printer" style="color:var(--blue-lt); font-size: 0.85rem;"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
+                    <div class="res-label"><i class="ph-bold ph-printer"></i> <span data-i18n="calc.results.machine">Máquina</span></div>
                     <div class="res-value" id="resMchCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-lightning" style="color:var(--subtle); font-size: 0.85rem;"></i> <span data-i18n="calc.results.energy">Energia</span></div>
+                    <div class="res-label"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc.results.energy">Energia</span></div>
                     <div class="res-value" id="resElecCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
+                    <div class="res-label"><i class="ph-bold ph-warning-octagon"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
                     <div class="res-value" id="resFailCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
                   <div class="res-line">
-                    <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
+                    <div class="res-label"><i class="ph-bold ph-gear"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
                     <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
                   </div>
-                </div>
+               </div>
+               <div style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
+                  <button class="btn-action" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i> WhatsApp</button>
+                  <button class="btn-action" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i> Salvar</button>
+               </div>
+            </div>
 
-                <div class="results-actions">
-                  <button class="btn-criar-pedido visible" id="btnCriarPedido" onclick="criarPedido()">
-                    <i class="ph-bold ph-shopping-cart"></i>
-                    <span data-i18n="calc.buttons.create_order">Criar Pedido</span>
-                  </button>
-                  <div class="results-actions-row">
-                    <button class="btn-wa" onclick="sendWhatsApp()"><i class="ph-bold ph-whatsapp-logo"></i></button>
-                    <button class="btn-action" onclick="saveToHistory()"><i class="ph-bold ph-floppy-disk"></i></button>
-                    <button class="btn-action" onclick="copyResults()"><i class="ph-bold ph-copy"></i></button>
-                  </div>
-                </div>
           </div>
         </div>
       </div>
