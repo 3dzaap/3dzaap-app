@@ -155,15 +155,15 @@
 }
 
 .calc-layout.is-advanced .results-panel {
-  padding: 12px 24px !important;
+  padding: 10px 20px !important;
   background: var(--bg-card);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 30px;
-  min-height: 90px;
+  gap: 15px;
+  min-height: 80px;
 }
 
 /* Visibilidade Condicional de Elementos */
@@ -184,29 +184,29 @@
 }
 
 .calc-layout.is-advanced .mini-actions {
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .calc-layout.is-advanced .mini-actions .btn-criar-pedido {
   margin-bottom: 0 !important;
-  padding: 8px 16px !important;
-  font-size: 0.8rem !important;
-  min-width: 140px;
+  padding: 8px 14px !important;
+  font-size: 0.75rem !important;
+  min-width: 120px;
 }
 
 .calc-layout.is-advanced .mini-actions .btn-wa,
 .calc-layout.is-advanced .mini-actions .btn-action {
-  padding: 8px 12px !important;
-  font-size: 0.75rem !important;
+  padding: 8px 10px !important;
+  font-size: 0.72rem !important;
   white-space: nowrap;
 }
 
 /* Estilos Mini Barra */
-.res-hero-mini { align-items: center; gap: 24px; flex: 1; }
-.hero-main-price .price-lbl { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--blue); letter-spacing: 0.05em; }
-.hero-main-price .price-val { font-family: var(--mono); font-size: 2rem; font-weight: 900; color: var(--dark); line-height: 1; }
-.hero-split-stats { display: flex; gap: 20px; padding-left: 20px; border-left: 1.5px solid var(--border); }
+.res-hero-mini { align-items: center; gap: 15px; flex: 1; min-width: 0; }
+.hero-main-price .price-lbl { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--blue); letter-spacing: 0.05em; white-space: nowrap; }
+.hero-main-price .price-val { font-family: var(--mono); font-size: 1.8rem; font-weight: 900; color: var(--dark); line-height: 1; }
+.hero-split-stats { display: flex; gap: 15px; padding-left: 15px; border-left: 1.5px solid var(--border); }
 .stat-item-mini { display: flex; flex-direction: column; }
 .stat-item-mini .stat-lbl { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
 .stat-item-mini .stat-val { font-family: var(--mono); font-size: 0.95rem; font-weight: 800; }
@@ -1864,8 +1864,22 @@ let _selectedPrinter = null;
 
 function setCalcMode(mode) {
   if (mode === 'advanced') {
-    const plan = (_sessionData?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
-    if (!['pro', 'business'].includes(plan)) {
+    // Robust session check with fallback
+    const rawSession = localStorage.getItem('3dzaap_session');
+    let session = _sessionData;
+    if (!session && rawSession) {
+      try { session = JSON.parse(rawSession); } catch(e){}
+    }
+    
+    const userPlan = (session?.plan_type || session?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '').toLowerCase();
+    const isPro = ['pro', 'business', 'enterprise'].includes(userPlan);
+    
+    if (!isPro) {
+      // Se a sessão ainda estiver a carregar, esperamos um pouco antes de mostrar o gate
+      if (!_sessionData && rawSession) {
+         setTimeout(() => setCalcMode('advanced'), 500);
+         return;
+      }
       UI.showFeatureGate('calculator_advanced');
       return;
     }
@@ -3207,23 +3221,14 @@ function renderMarketplaceCards(baseResult) {
 function sendWhatsApp() {
   const i = getInputs();
   const r = computeResults(i);
-  if (r.finalPrice <= 0) {
-    showToast('<i class="ph-bold ph-warning-octagon"></i> Calcula um valor primeiro', 'err');
-    return;
-  }
-
-  let msg = `*Orçamento de Impressão 3D*\n\n`;
-  if (i.mode === 'simple') {
-    msg += `*Item:* ${document.getElementById('printName')?.value || 'Impressão'}\n`;
-  } else {
-    msg += `*Projeto Multi-Peças*\n`;
-    i.parts.forEach(p => {
-      msg += `• ${p.qty}x ${p.name || 'Peça'}\n`;
-    });
-  }
+  const pName = document.getElementById('printName')?.value.trim() || 'Projeto 3D';
   
+  let msg = `*Orçamento de Impressão 3D* 🚀\n\n`;
+  msg += `*Projeto:* ${pName}\n`;
+  msg += `*Peso:* ${i.weightG}g\n`;
+  msg += `*Tempo:* ${formatTime(i.time)}h\n`;
   msg += `\n*Total:* ${fmtCurrency(r.finalPrice)}\n`;
-  msg += `*Obrigado pela preferência!*\n\nGerado via *3DZAAP*`;
+  msg += `\n_Obrigado pela preferência!_\nGerado via *3DZAAP*`;
 
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 }
