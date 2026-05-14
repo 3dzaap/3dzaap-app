@@ -1669,8 +1669,9 @@ function setCalcMode(mode) {
   
   document.getElementById('sectionSimple').style.display = mode === 'simple' ? 'block' : 'none';
   document.getElementById('sectionAdvanced').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalTime').style.display = mode === 'advanced' ? 'block' : 'none';
-  document.getElementById('fieldTotalWeight').style.display = mode === 'advanced' ? 'block' : 'none';
+  
+  const projSummary = document.getElementById('projectSummary');
+  if (projSummary) projSummary.style.display = mode === 'advanced' ? 'flex' : 'none';
   
   const fGlobal = document.getElementById('fieldGlobalPrinter');
   if (fGlobal) fGlobal.style.display = mode === 'simple' ? 'block' : 'none';
