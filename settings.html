@@ -147,6 +147,22 @@
   box-shadow: var(--sh-xl);
   border-color: var(--blue);
 }
+/* Estilo dinâmico para os botões dentro dos cards */
+.plan-card .btn {
+  width: 100%;
+  justify-content: center;
+  background: var(--bg-lite);
+  color: var(--dark);
+  border: 1.5px solid var(--border);
+  transition: all 0.3s ease;
+}
+.plan-card:hover .btn, 
+.plan-card.featured .btn {
+  background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 6px 15px rgba(59, 143, 212, 0.3);
+}
 .plan-card.featured {
   border: 2px solid var(--blue);
   background: linear-gradient(135deg, var(--bg-card-s), var(--blue-g));
