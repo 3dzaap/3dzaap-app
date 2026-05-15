@@ -2776,18 +2776,32 @@ function _render() {
   if (weightDisplay) weightDisplay.textContent = i.weight.toFixed(1);
   if (timeDisplay) timeDisplay.textContent = formatTime(i.time);
 
+  const heroMini = document.querySelector('.res-hero-mini');
+  const phMini = document.querySelector('.profit-hour-mini');
+  const actionsMini = document.querySelector('.mini-actions');
+
   if (r.finalPrice === 0) {
     if (eduState) eduState.style.display = 'flex';
     if (heroCard) heroCard.style.display = 'none';
     if (finPanel) finPanel.style.display = 'none';
     if (breakdown) breakdown.style.display = 'none';
     if (mpResults) mpResults.style.display = 'none';
+    
+    // Advanced mini elements
+    if (heroMini) heroMini.style.display = 'none';
+    if (phMini) phMini.style.display = 'none';
+    if (actionsMini) actionsMini.style.display = 'none';
   } else {
     if (eduState) eduState.style.display = 'none';
     if (heroCard) heroCard.style.display = 'block';
     if (finPanel) finPanel.style.display = 'flex';
     if (breakdown) breakdown.style.display = 'flex';
     if (mpResults) mpResults.style.display = 'grid';
+
+    // Advanced mini elements
+    if (heroMini) heroMini.style.display = 'flex';
+    if (phMini) phMini.style.display = 'flex';
+    if (actionsMini) actionsMini.style.display = 'flex';
   }
 
   // 1. Hero Card (3 values)
