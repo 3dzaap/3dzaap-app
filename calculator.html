@@ -3964,17 +3964,35 @@ function findBestMaterialMatch(type, colorHex) {
   );
   if (exact) return exact;
 
-  // 2. Try to match by name keywords if hex is common
-  const isBlack = hex === '000000' || hex === '010101';
-  const isWhite = hex === 'ffffff' || hex === 'fffffe';
-  
-  if (isBlack || isWhite) {
+  // 2. Try to match by name keywords
+  const colorMap = {
+    'black':  ['preto', 'black', 'dark', 'charcoal', '000000', '010101'],
+    'white':  ['branco', 'white', 'snow', 'ivory', 'ffffff', 'fffffe'],
+    'red':    ['vermelho', 'red', 'scarlet', 'crimson', 'ff0000'],
+    'blue':   ['azul', 'blue', 'navy', 'cyan', '0000ff'],
+    'green':  ['verde', 'green', 'lime', 'olive', '00ff00'],
+    'yellow': ['amarelo', 'yellow', 'gold', 'ffff00'],
+    'grey':   ['cinza', 'grey', 'gray', 'silver', '808080'],
+    'orange': ['laranja', 'orange', 'ffa500'],
+    'purple': ['roxo', 'purple', 'violet', 'magenta', '800080'],
+    'pink':   ['rosa', 'pink', 'ffc0cb']
+  };
+
+  // Find which group this hex belongs to (approximate)
+  let detectedColor = null;
+  for (const [color, keywords] of Object.entries(colorMap)) {
+    if (keywords.includes(hex)) {
+      detectedColor = color;
+      break;
+    }
+  }
+
+  if (detectedColor) {
+    const keywords = colorMap[detectedColor];
     const nameMatch = _filaments.find(f => {
       if (!f || f.type?.toLowerCase() !== t) return false;
       const n = (f.name || '').toLowerCase();
-      if (isBlack && (n.includes('preto') || n.includes('black') || n.includes('dark'))) return true;
-      if (isWhite && (n.includes('branco') || n.includes('white'))) return true;
-      return false;
+      return keywords.some(k => n.includes(k));
     });
     if (nameMatch) return nameMatch;
   }
