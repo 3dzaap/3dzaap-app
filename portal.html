@@ -14,7 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="utils.js"></script>
-  <script src="i18n.js"></script>
+  <script src="i18n.js?v=2"></script>
   <!-- Theme Init -->
   <script>
     (function () {
@@ -1016,7 +1016,11 @@
 
         // Herança de idioma: se a empresa tem um idioma definido, forçar o i18n a carregar esse idioma
         if (_company && _company.companyConfig && _company.companyConfig.language) {
-          const makerLang = _company.companyConfig.language;
+          let makerLang = _company.companyConfig.language;
+          if (makerLang === 'pt') makerLang = 'pt-PT';
+          if (makerLang === 'br') makerLang = 'pt-BR';
+          if (makerLang === 'en') makerLang = 'en-US';
+          
           if (window.i18n && window.i18n.currentLocale !== makerLang) {
             await window.i18n.loadTranslations(makerLang);
           }
