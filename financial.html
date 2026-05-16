@@ -627,6 +627,7 @@
 <script>
 const t = (k) => window.i18n ? (window.i18n.getNestedTranslation(k) || k) : k;
 
+let userSession = null;
 let orders = [];
 let expenses = [];
 let printers = [];
@@ -719,6 +720,7 @@ async function loadUserData() {
   if (!ok) return;
   const session = await Auth.getSession();
   if (!session) return;
+  userSession = session;
   loadCfg(session);
   // Update currency headers
   ['finThTotal','finThTotal2'].forEach(function(id){
@@ -773,7 +775,7 @@ function setToday() {
 let forecastChart = null;
 
 function renderBI(periodOrders) {
-  const plan = (Sidebar.getSession()?.plan || 'trial').replace('_ano','');
+  const plan = (userSession?.plan || 'trial').replace('_ano','');
   if (!ADVANCED_FIN_PLANS.includes(plan) && plan !== 'trial') return;
 
   // 1. CÁLCULO DE MARGENS E LUCRO OPERACIONAL
