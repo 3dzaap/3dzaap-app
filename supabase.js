@@ -400,32 +400,41 @@ const DB = {
   async getOrders(filter = 'active') {
     await _ensureCompany();
 
+    if (filter === 'active') {
+      // Duas queries simples em paralelo — filtradas no servidor
+      // Q1: todos os pedidos que NÃO estão em estado final
+      // Q2: pedidos finalizados/enviados COM pagamento pendente
+      const [q1, q2] = await Promise.all([
+        _sb.from('orders').select('*')
+          .eq('company_id', _companyId)
+          .not('status', 'in', '(done,enviado)')
+          .order('order_numeric', { ascending: false }),
+        _sb.from('orders').select('*')
+          .eq('company_id', _companyId)
+          .in('status', ['done', 'enviado'])
+          .eq('payment_status', 'pendente')
+          .order('order_numeric', { ascending: false }),
+      ]);
+      if (q1.error) throw q1.error;
+      if (q2.error) throw q2.error;
+      // Fundir e reordenar por order_numeric descendente
+      const merged = [...(q1.data || []), ...(q2.data || [])];
+      merged.sort((a, b) => (b.order_numeric || 0) - (a.order_numeric || 0));
+      return merged.map(_mapOrderFromDB);
+    }
+
     let query = _sb.from('orders').select('*').eq('company_id', _companyId);
 
     if (filter === 'month') {
-      // Apenas os criados desde o dia 1 do mês corrente
       const date = new Date();
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
       query = query.gte('created_at', firstDay);
     }
-    // filter === 'all' e 'active' buscam tudo — 'active' filtra no cliente
+    // filter === 'all' sem restrições
 
     const { data, error } = await query.order('order_numeric', { ascending: false });
     if (error) throw error;
-
-    const all = data.map(_mapOrderFromDB);
-
-    if (filter === 'active') {
-      // Regra: estado diferente de concluído/enviado/expirado
-      // OU estado concluído/enviado mas pagamento ainda pendente
-      const finalStates = ['done', 'enviado'];
-      return all.filter(o =>
-        !finalStates.includes(o.status) ||
-        (finalStates.includes(o.status) && o.paymentStatus === 'pendente')
-      );
-    }
-
-    return all;
+    return data.map(_mapOrderFromDB);
   },
 
   async getLastOrderNumber() {

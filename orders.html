@@ -1597,25 +1597,37 @@
     }
 
     // ── LOAD / SAVE DATA ───────────────────
+    let _secondaryLoaded = false;
+
     async function loadData() {
       try {
-        const results = await Promise.allSettled([
-          DB.getOrders(currentOrderFilter),
-          DB.getFilaments(),
-          DB.getLastOrderNumber(),
-          DB.getPrinters(),
-          DB.getClients(),
-          DB.getProducts(),
+        // ── Fase 1: Crítica — renderiza imediatamente ──
+        const [ordersResult, lastNumResult] = await Promise.all([
+          DB.getOrders(currentOrderFilter).catch(() => []),
+          DB.getLastOrderNumber().catch(() => 0),
         ]);
 
-        orders = results[0].status === 'fulfilled' ? results[0].value : [];
-        filaments = results[1].status === 'fulfilled' ? results[1].value : [];
-        lastOrderNumber = results[2].status === 'fulfilled' ? results[2].value : 0;
-        printers = results[3].status === 'fulfilled' ? results[3].value : [];
-        _dbClients = results[4].status === 'fulfilled' ? results[4].value : [];
-        _dbProducts = results[5].status === 'fulfilled' ? results[5].value : [];
+        orders = ordersResult;
+        lastOrderNumber = lastNumResult;
 
-        if (results[1].status === 'rejected') console.warn('[3DZAAP] Erro ao carregar materiais:', results[1].reason);
+        renderOrders();
+        updateStats();
+
+        // ── Fase 2: Lazy — em segundo plano (só carrega uma vez) ──
+        if (!_secondaryLoaded) {
+          _secondaryLoaded = true;
+          Promise.allSettled([
+            DB.getFilaments(),
+            DB.getPrinters(),
+            DB.getClients(),
+            DB.getProducts(),
+          ]).then(results => {
+            filaments    = results[0].status === 'fulfilled' ? results[0].value : filaments;
+            printers     = results[1].status === 'fulfilled' ? results[1].value : printers;
+            _dbClients   = results[2].status === 'fulfilled' ? results[2].value : _dbClients;
+            _dbProducts  = results[3].status === 'fulfilled' ? results[3].value : _dbProducts;
+          });
+        }
       } catch (e) {
         console.error('Erro ao carregar dados:', e);
       }
