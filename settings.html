@@ -1452,7 +1452,7 @@ async function startCheckout(planId) {
   btn.innerHTML = '<i class="ph-bold ph-circle-notch ph-spin"></i> A processar...';
   
   try {
-    showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe segura...', 'ok');
+    showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe de forma segura...', 'ok');
     
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
@@ -1461,7 +1461,14 @@ async function startCheckout(planId) {
       }
     });
     
-    if (error) throw error;
+    if (error) {
+      if (error.context && typeof error.context.json === 'function') {
+        const errBody = await error.context.json();
+        throw new Error(errBody.error || error.message);
+      }
+      throw error;
+    }
+
     if (data?.url) {
       window.location.href = data.url; // Redireciona para o checkout do Stripe
     } else {
