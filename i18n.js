@@ -29,7 +29,8 @@ const i18n = {
 
     async loadTranslations(locale) {
         try {
-            const response = await fetch(`./locales/${locale}.json`);
+            const cacheBuster = new Date().getTime();
+            const response = await fetch(`./locales/${locale}.json?v=${cacheBuster}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             this.translations = await response.json();
             this.currentLocale = locale;
