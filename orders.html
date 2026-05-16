@@ -929,6 +929,14 @@
             </div>
           </div>
         </div>
+        
+        <!-- Database Load Filters -->
+        <div class="db-filter-tabs" style="display:flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+          <button class="btn btn-primary" id="btnFilterActive" onclick="changeOrderFilter('active')"><i class="ph-bold ph-activity"></i> Em andamento</button>
+          <button class="btn btn-ghost" id="btnFilterMonth" onclick="changeOrderFilter('month')"><i class="ph-bold ph-calendar-blank"></i> Deste mês</button>
+          <button class="btn btn-ghost" id="btnFilterAll" onclick="changeOrderFilter('all')"><i class="ph-bold ph-stack"></i> Todos</button>
+        </div>
+
         <!-- Filters -->
         <div class="filters-bar">
           <div class="filter-search-wrap">
@@ -1570,11 +1578,29 @@
       } catch (e) { }
     }
 
+    let currentOrderFilter = 'active';
+
+    async function changeOrderFilter(filter) {
+      if (currentOrderFilter === filter) return;
+      currentOrderFilter = filter;
+      
+      // Update UI buttons
+      document.getElementById('btnFilterActive').className = filter === 'active' ? 'btn btn-primary' : 'btn btn-ghost';
+      document.getElementById('btnFilterMonth').className = filter === 'month' ? 'btn btn-primary' : 'btn btn-ghost';
+      document.getElementById('btnFilterAll').className = filter === 'all' ? 'btn btn-primary' : 'btn btn-ghost';
+
+      // Show loading state
+      const list = document.getElementById('ordersList');
+      if (list) list.innerHTML = `<div style="padding:40px; text-align:center; color:var(--subtle);"><i class="ph-bold ph-spinner ph-spin" style="font-size:24px;"></i><div style="margin-top:8px;">A carregar pedidos...</div></div>`;
+      
+      await loadData();
+    }
+
     // ── LOAD / SAVE DATA ───────────────────
     async function loadData() {
       try {
         const results = await Promise.allSettled([
-          DB.getOrders(),
+          DB.getOrders(currentOrderFilter),
           DB.getFilaments(),
           DB.getLastOrderNumber(),
           DB.getPrinters(),

@@ -397,12 +397,23 @@ const DB = {
 
   // ── ORDERS ──────────────────────────────────────────────────
 
-  async getOrders() {
+  async getOrders(filter = 'active') {
     await _ensureCompany();
-    const { data, error } = await _sb
-      .from('orders').select('*')
-      .eq('company_id', _companyId)
-      .order('order_numeric', { ascending: false });
+    let query = _sb.from('orders').select('*').eq('company_id', _companyId);
+
+    if (filter === 'active') {
+      // Exclui pedidos que estão num estado final
+      query = query.neq('status', 'done').neq('status', 'enviado').neq('status', 'expirada');
+    } else if (filter === 'month') {
+      // Apenas os criados desde o dia 1 do mês corrente
+      const date = new Date();
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
+      query = query.gte('created_at', firstDay);
+    }
+    // filter === 'all' não adiciona restrições
+
+    const { data, error } = await query.order('order_numeric', { ascending: false });
+    
     if (error) throw error;
     return data.map(_mapOrderFromDB);
   },
