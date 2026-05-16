@@ -29,6 +29,17 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   }
 });
 
+// Listener global para UX: Se a sessão expirar ou for inválida, força o logout suave
+_sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+    // Redireciona para o login apenas se não estiver já na página de login
+    if (!window.location.pathname.includes('auth.html') && !window.location.pathname.includes('index.html')) {
+      alert("A tua sessão expirou por motivos de segurança. Por favor, faz login novamente.");
+      window.location.href = 'auth.html';
+    }
+  }
+});
+
 let _companyId    = null;   // UUID da empresa
 let _companyCache = null;   // objecto completo — evita queries repetidas
 
