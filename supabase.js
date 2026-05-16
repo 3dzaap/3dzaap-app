@@ -402,8 +402,8 @@ const DB = {
     let query = _sb.from('orders').select('*').eq('company_id', _companyId);
 
     if (filter === 'active') {
-      // Exclui pedidos que estão num estado final
-      query = query.not('status', 'in', '("done","enviado","expirada")');
+      // Exclui pedidos num estado final, EXCETO se estiverem com pagamento pendente
+      query = query.or('status.not.in.(done,enviado,expirada),and(status.in.(done,enviado),payment_status.eq.pendente)');
     } else if (filter === 'month') {
       // Apenas os criados desde o dia 1 do mês corrente
       const date = new Date();
