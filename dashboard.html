@@ -165,8 +165,8 @@
 .hb-dots { display: flex; gap: 4px; }
 .hb-dot { height: 4px; flex: 1; border-radius: 2px; background: var(--border); transition: all 0.3s ease; }
 .hb-dot.active-green { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
-.hb-dot.active-orange { background: #f59e0b; }
-.hb-dot.active-red { background: #ef4444; }
+.hb-dot.active-orange { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.4); }
+.hb-dot.active-red { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.4); }
 
 /* Custom Premium Tooltip */
 .hb-item { position: relative; cursor: help; }
@@ -1288,8 +1288,8 @@ function calcHealthScore() {
     if (!el) return;
     const pct = pts / max;
     let cls = 'active-green';
-    if (pct < 0.4) cls = 'active-red';
-    else if (pct < 0.7) cls = 'active-orange';
+    if (pct < 0.55) cls = 'active-red';
+    else if (pct < 0.80) cls = 'active-orange';
     el.innerHTML = [0,1,2,3,4].map(i => `<div class="hb-dot ${i < Math.round(pct*5) ? cls : ''}"></div>`).join('');
   };
 
