@@ -82,7 +82,7 @@
     }
 
     .unified-hero {
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      background: linear-gradient(180deg, #1e293b 0%, var(--bg-card-s) 100%);
       padding: 32px 24px;
       color: #fff;
       text-align: center;
@@ -90,7 +90,7 @@
     }
 
     [data-theme="dark"] .unified-hero {
-      background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
+      background: linear-gradient(180deg, #0f172a 0%, var(--bg-card-s) 100%);
     }
 
     .unified-hero .hero-badge {
@@ -1067,16 +1067,16 @@
 
       const isBusiness = _company && (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano');
       const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
-      
+      const companyName = _company.companyName || '3DZAAP';
       const clientFirstName = (_order.clientName || '').split(' ')[0];
 
       let html = `
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 32px;">
-          <div class="portal-header-area">
-            <h1 class="greeting-text">Olá, ${escH(clientFirstName)}! 👋</h1>
-            <p class="sub-greeting">Acompanhe o estado do seu pedido em tempo real.</p>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom: 32px; animation: fadeUp .6s var(--ease) both;">
+          <img src="${topLogo}" style="height:64px; width:64px; border-radius:18px; box-shadow: 0 8px 16px rgba(0,0,0,0.08); object-fit: cover;" onerror="this.onerror=null; this.src='logo.jpg';">
+          <div class="portal-header-area" style="margin-bottom:0">
+            <div style="font-size:0.75rem; font-weight:800; color:var(--blue); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px; opacity:0.8">${escH(companyName)}</div>
+            <h1 class="greeting-text" style="margin-bottom:0; font-size: 1.6rem; letter-spacing: -0.5px">Olá, ${escH(clientFirstName)}! 👋</h1>
           </div>
-          <img src="${topLogo}" style="height:52px; width:auto; border-radius:14px; box-shadow: var(--sh);" onerror="this.onerror=null; this.src='logo.jpg';">
         </div>
       `;
 
@@ -1163,7 +1163,7 @@
             
             ${_order.trackingCode ? `
               <div class="tracking-action" style="margin-top:20px">
-                <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:var(--blue); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 10px 20px rgba(59,143,212,0.2)">
+                <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #3b8fd4, #2a72b0); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 8px 16px rgba(59,143,212,0.3)">
                   <i class="ph-bold ph-truck"></i> ${t('portal.btn_track', 'Rastrear Encomenda')}
                 </a>
               </div>
@@ -1178,6 +1178,136 @@
           </div>
         </div>
       `;
+    }
+
+    function toggleDetails() {
+      const modal = document.getElementById('detailsModal');
+      modal.classList.toggle('open');
+      document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : '';
+    }
+
+    function updateReceiptModal() {
+      const rcptContainer = document.getElementById('printableReceipt');
+      if (!_order) return;
+      const isPaid = _order.paymentStatus === 'pago';
+      const its = (_order.items && _order.items.length) ? _order.items : [{ description: _order.description || '', quantity: _order.quantity || 1, unitPrice: _order.unitPrice || 0 }];
+      const grand = its.reduce((s, i) => s + (i.quantity || 0) * (i.unitPrice || 0), 0);
+      const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
+
+      const statusLabels = {
+        orcamento: t('status.orcamento', 'Orçamento'),
+        modelagem: t('status.modelagem', 'Modelagem'),
+        validacao: t('status.validacao', 'Aprovação'),
+        aprovado: t('status.aprovado', 'Confirmado'),
+        fila: t('status.fila', 'Em Fila'),
+        printing: t('status.printing', 'Produção'),
+        enviado: t('status.enviado', 'Enviado'),
+        done: t('status.done', 'Concluído')
+      };
+
+      const today = new Date().toLocaleDateString('pt-PT');
+      const signature = _company.signature || null;
+      const companyName = _company.companyName || '3DZAAP';
+      const city = (_company.companyConfig && _company.companyConfig.city) || 'Portugal';
+
+      const itemRows = its.map((it, i) => `
+    <tr>
+      <td><strong>${i + 1}. ${escH(it.description || '—')}</strong></td>
+      <td class="r">${it.quantity || 1}</td>
+      <td class="r">${fmtCurrency(it.unitPrice || 0)}</td>
+      <td class="r bold">${fmtCurrency((it.quantity || 1) * (it.unitPrice || 0))}</td>
+    </tr>`).join('');
+
+      const sigRow = `
+    <div class="rcpt-sig-row">
+      <div></div>
+      <div class="rcpt-sig-block">
+        ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
+        <div class="rcpt-sig-line"></div>
+        <div class="rcpt-sig-name">${escH(companyName)}</div>
+        <div class="rcpt-sig-location">${escH(city)}</div>
+      </div>
+    </div>`;
+
+      const companyLogoStr = (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano') && _company.logoUrl
+        ? `<img src="${_company.logoUrl}" style="height:44px; width:auto; border-radius:12%; margin-left:12px; border:1px solid rgba(255,255,255,0.1)">`
+        : '';
+
+      rcptContainer.innerHTML = `
+    <div class="rcpt-header">
+      <div style="display:flex; align-items:center; gap:12px">
+        <div style="display:flex; align-items:center;">
+          <img src="logo.jpg" style="height:44px; width:auto; border-radius:18%" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22150%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E3D%3C%2Ftext%3E%3C%2Fsvg%3E';">
+          <div class="rcpt-brand" style="margin-left:12px">
+            <span class="b3d">3D</span><span class="bzp">ZAAP</span>
+          </div>
+          ${companyLogoStr ? `<span style="color:rgba(255,255,255,0.2); font-weight:100; font-size:1.5rem; margin-left:12px">|</span>${companyLogoStr}` : ''}
+        </div>
+      </div>
+      <div class="rcpt-header-right">
+        <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid', 'RECIBO DE PAGAMENTO') : t('portal.rcpt_title_os', 'ORDEM DE SERVIÇO')}</div>
+        <div class="rcpt-number">${escH(_order.orderNumber)}</div>
+        <div class="rcpt-date">${today}</div>
+      </div>
+    </div>
+    
+    <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
+       <div style="display:flex; align-items:center; gap:8px">
+         <span class="rcpt-dot"></span>
+         <span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
+       </div>
+       <div style="font-weight:800; opacity:0.9">
+         ${t('portal.order_status', 'ESTADO')}: ${(statusLabels[_order.status] || _order.status).toUpperCase()}
+       </div>
+    </div>
+
+    <div class="rcpt-body">
+      <div class="rcpt-section-label">${t('orders.rcpt.client_data', 'Dados do Cliente')}</div>
+      <div class="rcpt-client-grid">
+        <div><div class="rcpt-field-label">${t('orders.rcpt.name_label', 'Nome')}</div><div class="rcpt-field-value">${escH(_order.clientName)}</div></div>
+        <div><div class="rcpt-field-label">${t('orders.rcpt.date_label', 'Data do Pedido')}</div><div class="rcpt-field-value">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
+      </div>
+      
+      <div class="rcpt-section-label">${t('orders.rcpt.items_label', 'Itens do Pedido')}</div>
+      <div class="rcpt-table-wrap">
+        <table class="rcpt-table">
+          <thead>
+            <tr>
+              <th>${t('orders.rcpt.desc_col', 'Descrição')}</th>
+              <th class="r">${t('orders.rcpt.qty_col', 'Qtd')}</th>
+              <th class="r">${t('orders.rcpt.price_col', 'Preço Unit.')}</th>
+              <th class="r">${t('orders.rcpt.total_col', 'Total')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemRows}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rcpt-grand">
+        <span class="rcpt-grand-label">${t('orders.rcpt.total_col', 'TOTAL DESTE PEDIDO')}</span>
+        <span class="rcpt-grand-value">${fmtCurrency(grand)}</span>
+      </div>
+
+      <div class="rcpt-meta">
+        <div><div class="rcpt-field-label">${t('orders.rcpt.created_label', 'Criado em')}</div><div class="rcpt-field-value">${_order.createdAt ? fmtDate(_order.createdAt) : '—'}</div></div>
+        ${_order.dueDate ? `<div><div class="rcpt-field-label">${t('orders.rcpt.due_label', 'Prazo')}</div><div class="rcpt-field-value">${fmtDate(_order.dueDate)}</div></div>` : ''}
+      </div>
+
+      ${_order.notes ? `
+        <div class="rcpt-section-label">${t('orders.rcpt.notes_label', 'Observações')}</div>
+        <div class="rcpt-notes">${escH(_order.notes)}</div>
+      `: ''}
+    </div>
+
+    ${sigRow}
+
+    <div class="rcpt-footer">
+      <div class="rcpt-brand"><span class="b3d" style="color:#3b8fd4">3D</span><span class="bzp" style="color:#F5943A">ZAAP</span> <span style="font-size:.6rem; opacity:.5">PRINT MANAGER</span></div>
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 4px;">${t('orders.rcpt.no_fiscal_value', 'Este documento não tem valor fiscal, serve apenas de comprovativo.')}</div>
+      <div style="font-weight:800; color:#3b8fd4">Documento gerado digitalmente.</div>
+    </div>`;
     }
 
     function getTrackingUrl(service, code) {
