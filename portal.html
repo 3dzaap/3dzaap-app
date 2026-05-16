@@ -49,8 +49,76 @@
       }
     }
 
+    /* ── Portal Header Area ── */
+    .portal-header-area {
+      text-align: left;
+      margin-bottom: 24px;
+      animation: fadeUp .6s var(--ease) both;
+    }
+
+    .greeting-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--black);
+      margin-bottom: 4px;
+    }
+
+    .sub-greeting {
+      font-size: 0.9rem;
+      color: var(--subtle);
+      font-weight: 500;
+    }
+
+    /* ── Unified Main Card ── */
+    .unified-card {
+      background: var(--bg-card-s);
+      border: 1.5px solid var(--border-input);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: var(--sh-float);
+      margin-bottom: 24px;
+      animation: fadeUp .7s var(--ease) both;
+    }
+
+    .unified-hero {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      padding: 32px 24px;
+      color: #fff;
+      text-align: center;
+      position: relative;
+    }
+
+    [data-theme="dark"] .unified-hero {
+      background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
+    }
+
+    .unified-hero .hero-badge {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .unified-hero .hero-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin: 8px 0;
+    }
+
+    .unified-tracker-area {
+      padding: 32px 24px 24px;
+    }
+
+    .tracker-divider {
+      height: 1px;
+      background: var(--border-input);
+      margin: 0 24px;
+      opacity: 0.5;
+    }
+
     /* ── Hero Status ─────────────────────────────── */
     .hero-status {
+      display: none; /* Retired in favor of unified-card */
       background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
       border-radius: var(--rl);
       padding: 32px 24px;
@@ -999,39 +1067,43 @@
 
       const isBusiness = _company && (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano');
       const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
+      
+      const clientFirstName = (_order.clientName || '').split(' ')[0];
 
       let html = `
-    <div style="text-align:center; margin-bottom: 24px;">
-      <img src="${topLogo}" style="height:56px; width:auto; border-radius:16px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);" onerror="this.onerror=null; this.src='logo.jpg';">
-    </div>
-  `;
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 32px;">
+          <div class="portal-header-area">
+            <h1 class="greeting-text">Olá, ${escH(clientFirstName)}! 👋</h1>
+            <p class="sub-greeting">Acompanhe o estado do seu pedido em tempo real.</p>
+          </div>
+          <img src="${topLogo}" style="height:52px; width:auto; border-radius:14px; box-shadow: var(--sh);" onerror="this.onerror=null; this.src='logo.jpg';">
+        </div>
+      `;
 
-      html += renderHeroStatus();
-      if (_order.status !== 'declined') {
-        html += renderTracker();
-        if (_order.status === 'printing') {
-          html += renderPrintingTracker();
-        }
+      html += renderUnifiedStatus();
+      
+      if (_order.status === 'printing') {
+        html += renderPrintingTracker();
       }
 
       // "View Details" trigger
       html += `
-    <div style="text-align:center; padding: 18px 20px 24px; display:flex; flex-wrap:wrap; justify-content:center; gap:12px">
-      <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px; border-radius:12px">
-        <i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes do Pedido')}
-      </button>
-      <button class="btn btn-primary" onclick="notifyOwner()" style="font-weight:800; gap:8px; background:#25D366; color:#fff; border:none; padding: 10px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(37,211,102,0.2)">
-        <i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp', 'Falar no WhatsApp')}
-      </button>
-    </div>
-    
-    <!-- Powered by Footer -->
-    <div style="text-align:center; margin-top:16px; padding-bottom:8px;">
-      <a href="https://3dzaap.com" target="_blank" style="display:inline-flex; align-items:center; gap:4px; text-decoration:none; color:var(--subtle); font-size:0.7rem; font-weight:800; letter-spacing:0.5px; opacity:0.6; transition:opacity 0.2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
-         <i class="ph-bold ph-lightning" style="color:var(--orange)"></i> Sistema operado por <span style="font-weight:900"><span style="color:var(--blue)">3D</span><span style="color:var(--orange)">ZAAP</span></span>
-      </a>
-    </div>
-  `;
+        <div style="text-align:center; padding: 18px 20px 24px; display:flex; flex-wrap:wrap; justify-content:center; gap:12px">
+          <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px; border-radius:12px">
+            <i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes do Pedido')}
+          </button>
+          <button class="btn btn-primary" onclick="notifyOwner()" style="font-weight:800; gap:8px; background:#25D366; color:#fff; border:none; padding: 10px 20px; border-radius:12px; box-shadow:0 4px 12px rgba(37,211,102,0.2)">
+            <i class="ph-bold ph-whatsapp-logo"></i> ${t('portal.btn_whatsapp', 'Falar no WhatsApp')}
+          </button>
+        </div>
+        
+        <!-- Powered by Footer -->
+        <div style="text-align:center; margin-top:16px; padding-bottom:8px;">
+          <a href="https://3dzaap.com" target="_blank" style="display:inline-flex; align-items:center; gap:4px; text-decoration:none; color:var(--subtle); font-size:0.7rem; font-weight:800; letter-spacing:0.5px; opacity:0.6; transition:opacity 0.2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+             <i class="ph-bold ph-lightning" style="color:var(--orange)"></i> Sistema operado por <span style="font-weight:900"><span style="color:var(--blue)">3D</span><span style="color:var(--orange)">ZAAP</span></span>
+          </a>
+        </div>
+      `;
 
       container.innerHTML = html;
       updateReceiptModal();
@@ -1039,7 +1111,7 @@
       actions.style.display = 'flex';
     }
 
-    function renderHeroStatus() {
+    function renderUnifiedStatus() {
       const s = _order.status;
       let title = t('status.' + s, s);
       let desc = t('portal.desc_' + s, '');
@@ -1058,199 +1130,6 @@
         desc = t('portal.hero_desc_done', 'O seu pedido já está pronto e finalizado.');
       }
 
-      return `
-    <div class="hero-status">
-      <div class="hero-badge"><i class="ph-bold ph-info"></i> ${t('portal.badge_status', 'ESTADO')}</div>
-      <div class="hero-title">${title}</div>
-      <div class="hero-desc">${desc}</div>
-      ${_order.trackingCode ? `
-        <div class="tracking-action" style="margin-top:20px">
-          <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:var(--blue); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 10px 20px rgba(59,143,212,0.2)">
-            <i class="ph-bold ph-truck"></i> ${t('portal.btn_track', 'Rastrear Encomenda')}
-          </a>
-          ${!getTrackingUrl(_order.shippingService, _order.trackingCode) ? `
-            <div style="margin-top:8px; font-size:0.85rem; opacity:0.8">
-              ${t('portal.lbl_tracking_code', 'Código')}: <strong>${_order.trackingCode}</strong>
-              ${_order.shippingService ? ` (${t('shipping.' + _order.shippingService, _order.shippingService)})` : ''}
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
-    </div>
-  `;
-    }
-
-    function getTrackingUrl(service, code) {
-      if (!code) return null;
-      const urls = {
-        // Portugal
-        ctt: `https://www.ctt.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
-        ctt_expresso: `https://www.cttexpresso.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
-        
-        // Brasil
-        correios_br: `https://www.linkcorreios.com.br/${code}`,
-        jadlog: `https://www.jadlog.com.br/siteInstitucional/tracking.jad?tracking=${code}`,
-        loggi: `https://www.loggi.com/rastreio/${code}`,
-        azul_cargo: `https://www.azulcargo.com.br/Rastreio/Rastrear?n=${code}`,
-
-        // Espanha
-        correos: `https://www.correos.es/es/es/herramientas/localizador/detalles?codigo=${code}`,
-        correos_express: `https://www.correosexpress.com/web/correosexpress/consultar-envio?codigo=${code}`,
-        seur: `https://www.seur.com/seguimiento-online.do?procedencia=externo&numExpedicion=${code}`,
-        nacex: `https://www.nacex.es/seguimientoDetalle.do?irnacex=S&numExp=${code}`,
-
-        // UK
-        royal_mail: `https://www.royalmail.com/track-your-item#/tracking-results/${code}`,
-        parcelforce: `https://www.parcelforce.com/track-trace?trackNumber=${code}`,
-        evri: `https://www.evri.com/track-a-parcel/${code}/details`,
-        yodel: `https://www.yodel.co.uk/tracking/${code}`,
-
-        // US
-        usps: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${code}`,
-        amazon: `https://track.amazon.com/tracking/${code}`,
-
-        // Global
-        dhl: `https://www.dhl.com/pt-pt/home/tracking/tracking-express.html?submit=1&tracking-id=${code}`,
-        fedex: `https://www.fedex.com/fedextrack/?trknbr=${code}`,
-        ups: `https://www.ups.com/track?HTMLVersion=5.0&loc=pt_PT&trackNums=${code}`,
-        dpd: `https://tracking.dpd.pt/search/${code}`,
-        gls: `https://gls-group.eu/PT/pt/seguimento-encomendas?match=${code}`,
-        mrw: `https://www.mrw.pt/tracking/?numero=${code}`
-      };
-      return urls[service] || null;
-    }
-
-    function toggleDetails() {
-      const modal = document.getElementById('detailsModal');
-      modal.classList.toggle('open');
-      document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : '';
-    }
-
-    function updateReceiptModal() {
-      const rcptContainer = document.getElementById('printableReceipt');
-      if (!_order) return;
-      const isPaid = _order.paymentStatus === 'pago';
-      const its = (_order.items && _order.items.length) ? _order.items : [{ description: _order.description || '', quantity: _order.quantity || 1, unitPrice: _order.unitPrice || 0 }];
-      const grand = its.reduce((s, i) => s + (i.quantity || 0) * (i.unitPrice || 0), 0);
-      const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
-
-      const statusLabels = {
-        orcamento: t('status.orcamento', 'Orçamento'),
-        modelagem: t('status.modelagem', 'Modelagem'),
-        validacao: t('status.validacao', 'Aprovação'),
-        aprovado: t('status.aprovado', 'Confirmado'),
-        fila: t('status.fila', 'Em Fila'),
-        printing: t('status.printing', 'Produção'),
-        enviado: t('status.enviado', 'Enviado'),
-        done: t('status.done', 'Concluído')
-      };
-
-      const today = new Date().toLocaleDateString('pt-PT');
-      const signature = _company.signature || null;
-      const companyName = _company.companyName || '3DZAAP';
-      const city = (_company.companyConfig && _company.companyConfig.city) || 'Portugal';
-
-      const itemRows = its.map((it, i) => `
-    <tr>
-      <td><strong>${i + 1}. ${escH(it.description || '—')}</strong></td>
-      <td class="r">${it.quantity || 1}</td>
-      <td class="r">${fmtCurrency(it.unitPrice || 0)}</td>
-      <td class="r bold">${fmtCurrency((it.quantity || 1) * (it.unitPrice || 0))}</td>
-    </tr>`).join('');
-
-      const sigRow = `
-    <div class="rcpt-sig-row">
-      <div></div>
-      <div class="rcpt-sig-block">
-        ${signature ? `<img class="rcpt-sig-img" src="${signature}" alt="Assinatura">` : ''}
-        <div class="rcpt-sig-line"></div>
-        <div class="rcpt-sig-name">${escH(companyName)}</div>
-        <div class="rcpt-sig-location">${escH(city)}</div>
-      </div>
-    </div>`;
-
-      const companyLogoStr = (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano') && _company.logoUrl
-        ? `<img src="${_company.logoUrl}" style="height:44px; width:auto; border-radius:12%; margin-left:12px; border:1px solid rgba(255,255,255,0.1)">`
-        : '';
-
-      rcptContainer.innerHTML = `
-    <div class="rcpt-header">
-      <div style="display:flex; align-items:center; gap:12px">
-        <div style="display:flex; align-items:center;">
-          <img src="logo.jpg" style="height:44px; width:auto; border-radius:18%" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22150%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E3D%3C%2Ftext%3E%3C%2Fsvg%3E';">
-          <div class="rcpt-brand" style="margin-left:12px">
-            <span class="b3d">3D</span><span class="bzp">ZAAP</span>
-          </div>
-          ${companyLogoStr ? `<span style="color:rgba(255,255,255,0.2); font-weight:100; font-size:1.5rem; margin-left:12px">|</span>${companyLogoStr}` : ''}
-        </div>
-      </div>
-      <div class="rcpt-header-right">
-        <div class="rcpt-title">${isPaid ? t('portal.rcpt_title_paid', 'RECIBO DE PAGAMENTO') : t('portal.rcpt_title_os', 'ORDEM DE SERVIÇO')}</div>
-        <div class="rcpt-number">${escH(_order.orderNumber)}</div>
-        <div class="rcpt-date">${today}</div>
-      </div>
-    </div>
-    
-    <div class="rcpt-status-bar ${isPaid ? 'paid' : 'pending'}">
-       <div style="display:flex; align-items:center; gap:8px">
-         <span class="rcpt-dot"></span>
-         <span>${isPaid ? t('portal.status_paid', 'PAGO') : t('portal.status_awaiting', 'PENDENTE')}</span>
-       </div>
-       <div style="font-weight:800; opacity:0.9">
-         ${t('portal.order_status', 'ESTADO')}: ${(statusLabels[_order.status] || _order.status).toUpperCase()}
-       </div>
-    </div>
-
-    <div class="rcpt-body">
-      <div class="rcpt-section-label">${t('orders.rcpt.client_data', 'Dados do Cliente')}</div>
-      <div class="rcpt-client-grid">
-        <div><div class="rcpt-field-label">${t('orders.rcpt.name_label', 'Nome')}</div><div class="rcpt-field-value">${escH(_order.clientName)}</div></div>
-        <div><div class="rcpt-field-label">${t('orders.rcpt.date_label', 'Data do Pedido')}</div><div class="rcpt-field-value">${new Date(_order.createdAt).toLocaleDateString('pt-PT')}</div></div>
-      </div>
-      
-      <div class="rcpt-section-label">${t('orders.rcpt.items_label', 'Itens do Pedido')}</div>
-      <div class="rcpt-table-wrap">
-        <table class="rcpt-table">
-          <thead>
-            <tr>
-              <th>${t('orders.rcpt.desc_col', 'Descrição')}</th>
-              <th class="r">${t('orders.rcpt.qty_col', 'Qtd')}</th>
-              <th class="r">${t('orders.rcpt.price_col', 'Preço Unit.')}</th>
-              <th class="r">${t('orders.rcpt.total_col', 'Total')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemRows}
-          </tbody>
-        </table>
-      </div>
-
-      <div class="rcpt-grand">
-        <span class="rcpt-grand-label">${t('orders.rcpt.total_col', 'TOTAL DESTE PEDIDO')}</span>
-        <span class="rcpt-grand-value">${fmtCurrency(grand)}</span>
-      </div>
-
-      <div class="rcpt-meta">
-        <div><div class="rcpt-field-label">${t('orders.rcpt.created_label', 'Criado em')}</div><div class="rcpt-field-value">${_order.createdAt ? fmtDate(_order.createdAt) : '—'}</div></div>
-        ${_order.dueDate ? `<div><div class="rcpt-field-label">${t('orders.rcpt.due_label', 'Prazo')}</div><div class="rcpt-field-value">${fmtDate(_order.dueDate)}</div></div>` : ''}
-      </div>
-
-      ${_order.notes ? `
-        <div class="rcpt-section-label">${t('orders.rcpt.notes_label', 'Observações')}</div>
-        <div class="rcpt-notes">${escH(_order.notes)}</div>
-      `: ''}
-    </div>
-
-    ${sigRow}
-
-    <div class="rcpt-footer">
-      <div class="rcpt-brand"><span class="b3d" style="color:#3b8fd4">3D</span><span class="bzp" style="color:#F5943A">ZAAP</span> <span style="font-size:.6rem; opacity:.5">PRINT MANAGER</span></div>
-      <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 4px;">${t('orders.rcpt.no_fiscal_value', 'Este documento não tem valor fiscal, serve apenas de comprovativo.')}</div>
-      <div style="font-weight:800; color:#3b8fd4">Documento gerado digitalmente.</div>
-    </div>`;
-    }
-
-    function renderTracker() {
       const steps = [
         { k: 'orcamento', l: t('portal.tracker_step_1', 'Orçamento'), i: '<i class="ph-bold ph-hourglass"></i>' },
         { k: 'modelagem', l: t('portal.tracker_step_2', 'Modelagem'), i: '<i class="ph-bold ph-ruler"></i>' },
@@ -1261,7 +1140,6 @@
         { k: 'done', l: t('portal.tracker_step_7', 'Concluído'), i: '<i class="ph-bold ph-flag-checkered"></i>' }
       ];
 
-      const s = _order.status;
       let stepIdx = 0;
       if (s === 'modelagem') stepIdx = 1;
       else if (s === 'validacao') stepIdx = 2;
@@ -1277,16 +1155,29 @@
       }).join('');
 
       return `
-    <div class="tracker-card">
-      <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title', 'ESTADO DA PRODUÇÃO')}</div>
-      <div class="steps-container">
-        <div class="steps"><div class="step-line-active"><div class="step-line-inner" style="width: ${stepPercent}%"></div></div>${stepsHtml}</div>
-      </div>
-      <div style="text-align:center;font-size:.85rem;color:var(--subtle);margin-top:24px;font-weight:700">
-        ${t('portal.curr_status', 'STATUS ATUAL')}: <strong style="color:var(--blue)">${(steps[stepIdx].l).toUpperCase()}</strong>
-      </div>
-    </div>
-  `;
+        <div class="unified-card">
+          <div class="unified-hero">
+            <div class="hero-badge"><i class="ph-bold ph-info"></i> ${t('portal.badge_status', 'ESTADO ATUAL')}</div>
+            <div class="hero-title">${title}</div>
+            <div class="hero-desc">${desc}</div>
+            
+            ${_order.trackingCode ? `
+              <div class="tracking-action" style="margin-top:20px">
+                <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:var(--blue); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 10px 20px rgba(59,143,212,0.2)">
+                  <i class="ph-bold ph-truck"></i> ${t('portal.btn_track', 'Rastrear Encomenda')}
+                </a>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="unified-tracker-area">
+            <div class="tracker-title" style="margin-bottom:32px"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title', 'ACOMPANHAMENTO DO PEDIDO')}</div>
+            <div class="steps-container">
+              <div class="steps"><div class="step-line-active"><div class="step-line-inner" style="width: ${stepPercent}%"></div></div>${stepsHtml}</div>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function renderPrintingTracker() {
