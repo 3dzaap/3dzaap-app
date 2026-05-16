@@ -403,7 +403,7 @@ const DB = {
 
     if (filter === 'active') {
       // Exclui pedidos que estão num estado final
-      query = query.neq('status', 'done').neq('status', 'enviado').neq('status', 'expirada');
+      query = query.not('status', 'in', '("done","enviado","expirada")');
     } else if (filter === 'month') {
       // Apenas os criados desde o dia 1 do mês corrente
       const date = new Date();
