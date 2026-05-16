@@ -984,30 +984,39 @@ function calcHealthScore() {
 
     if (o.hasUnreadClientUpdate || o.has_unread_client_update) unreadUpdatesCount++;
 
-    if (isD) {
-      doneCount++;
-      if (date.startsWith(todayStr)) {
-        salesThis += total;
-        if (o.paymentStatus === 'pago') revThis += total;
-        
-        const its = o.items || [{ weightG: o.weightG || 0, quantity: o.quantity || 1 }];
-        its.forEach(it => {
-          weightThis += (parseFloat(it.weightG) || 0) * (parseInt(it.quantity||it.qty) || 1);
-        });
+    if (!isC) {
+      // ── CASHFLOW ANALYSIS ──────────────────
+      // Se não está pago, conta como capital retido (independentemente do status)
+      if (o.paymentStatus !== 'pago') {
+        unpaidValue += total;
       }
-      if (date.startsWith(prevStr) && o.paymentStatus === 'pago') revPrev += total;
-      
-    } else if (!isC) {
-      openCount++;
-      totalPipelineValue += total;
-      if (o.paymentStatus !== 'pago') unpaidValue += total;
-      
-      const dueDate = o.dueDate || o.due_date;
-      if (!dueDate) {
-        ordersWithoutDue.push(o);
+      // Valor total "em jogo" (ou está em aberto, ou está concluído mas não pago)
+      if (!isD || o.paymentStatus !== 'pago') {
+        totalPipelineValue += total;
+      }
+
+      if (isD) {
+        doneCount++;
+        if (date.startsWith(todayStr)) {
+          salesThis += total;
+          if (o.paymentStatus === 'pago') revThis += total;
+          
+          const its = o.items || [{ weightG: o.weightG || 0, quantity: o.quantity || 1 }];
+          its.forEach(it => {
+            weightThis += (parseFloat(it.weightG) || 0) * (parseInt(it.quantity||it.qty) || 1);
+          });
+        }
+        if (date.startsWith(prevStr) && o.paymentStatus === 'pago') revPrev += total;
+        
       } else {
-        const dd = new Date(dueDate);
-        if (!isNaN(dd) && dd < now) lateCount++;
+        openCount++;
+        const dueDate = o.dueDate || o.due_date;
+        if (!dueDate) {
+          ordersWithoutDue.push(o);
+        } else {
+          const dd = new Date(dueDate);
+          if (!isNaN(dd) && dd < now) lateCount++;
+        }
       }
     }
   });
