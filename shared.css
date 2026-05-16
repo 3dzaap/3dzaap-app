@@ -130,7 +130,7 @@
   --muted:  #cbd5e1;
   --subtle: #94a3b8;
 
-  --border:  rgba(59,143,212,0.22);
+  --border:  rgba(255,255,255,0.06);
   --bdark:   rgba(0,0,0,0.45);
   --glass:   rgba(15,35,70,0.30);
   --glass-s: rgba(10,25,50,0.98);
@@ -258,7 +258,7 @@ body {
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
   background: var(--bg-sidebar);
-  border-right: none;
+  border-right: 1.5px solid var(--border);
   display: flex; flex-direction: column;
   position: fixed; top: 0; left: 0;
   height: 100vh; height: 100dvh;
@@ -316,7 +316,7 @@ body {
   position: sticky; top: 0; z-index: 50;
   background: var(--bg-topbar);
   /* sem backdrop-filter — background sempre sólido, sem transparência */
-  border-bottom: none;
+  border-bottom: 1.5px solid var(--border);
   padding: 0 28px; height: 60px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
