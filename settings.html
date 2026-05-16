@@ -1455,7 +1455,7 @@ async function startCheckout(planId) {
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
         plan: fullPlanId, 
-        companyId: _session.id // Usar o ID da sessão atual
+        companyId: _session.companyId 
       }
     });
     
