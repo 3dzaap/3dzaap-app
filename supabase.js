@@ -1,9 +1,8 @@
-// ============================================================
-// supabase.js — Camada de dados 3DZAAP  v2.2.1-fix-onboarding
-// Correcções: Suporte a Impressoras, Filamentos (packId/kg),
+// supabase.js — Camada de dados 3DZAAP  v2.3.0-shipping
+// Correcções: Suporte a Expedição (Transportadora/Rastreio),
 // Mappers alinhados e Activity Log completo.
 // ============================================================
-console.info('[3DZAAP] supabase.js v2.2.1-fix-onboarding inicializado.');
+console.info('[3DZAAP] supabase.js v2.3.0-shipping inicializado (Tracking Support ACTIVE).');
 
 const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqZ2dzbmR4YXRlemdxbGpsaHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjE0MTgsImV4cCI6MjA4OTA5NzQxOH0.zVzA2siKsix8tOK44H5U-cZK1Wdd_4u_sY1g2JgGYUA';
@@ -425,19 +424,21 @@ const DB = {
     const isNew = !order.id || _isLocalId(order.id);
 
     const row   = _mapOrderToDB(order);
+    console.log('[3DZAAP] A gravar pedido. Payload:', row);
+    
     if (!isNew) {
       const { data, error } = await _sb
         .from('orders').update(row)
         .eq('id', order.id).eq('company_id', _companyId)
         .select().single();
       if (error) {
-        // Fallback se a coluna não existir
-        if (error.message && (error.message.includes('has_unread_client_update') || error.message.includes('shipping_service') || error.message.includes('tracking_code')) || error.code === 'PGRST204') {
-          console.warn('[3DZAAP] Coluna(s) de shipping ou unread não existem. Removendo do payload.');
-          delete row.has_unread_client_update;
-          delete row.shipping_service;
-          delete row.tracking_code;
-          const retry = await _sb.from('orders').update(row).eq('id', order.id).eq('company_id', _companyId).select().single();
+        console.error('[3DZAAP] Erro ao actualizar pedido:', error);
+        if (error.code === 'PGRST204' || (error.message && (error.message.includes('shipping_service') || error.message.includes('tracking_code')))) {
+          console.warn('[3DZAAP] Colunas de shipping em falta no DB. A tentar gravar sem elas...');
+          const rowRetry = { ...row };
+          delete rowRetry.shipping_service;
+          delete rowRetry.tracking_code;
+          const retry = await _sb.from('orders').update(rowRetry).eq('id', order.id).eq('company_id', _companyId).select().single();
           if (retry.error) throw retry.error;
           return _mapOrderFromDB(retry.data);
         }
@@ -455,12 +456,13 @@ const DB = {
         .from('orders').insert({ ...row, company_id: _companyId })
         .select().single();
       if (error) {
-        if (error.message && (error.message.includes('has_unread_client_update') || error.message.includes('shipping_service') || error.message.includes('tracking_code')) || error.code === 'PGRST204') {
-          console.warn('[3DZAAP] Coluna(s) de shipping ou unread não existem. Removendo do payload.');
-          delete row.has_unread_client_update;
-          delete row.shipping_service;
-          delete row.tracking_code;
-          const retry = await _sb.from('orders').insert({ ...row, company_id: _companyId }).select().single();
+        console.error('[3DZAAP] Erro ao inserir pedido:', error);
+        if (error.code === 'PGRST204' || (error.message && (error.message.includes('shipping_service') || error.message.includes('tracking_code')))) {
+          console.warn('[3DZAAP] Colunas de shipping em falta no insert. A tentar sem elas...');
+          const rowRetry = { ...row };
+          delete rowRetry.shipping_service;
+          delete rowRetry.tracking_code;
+          const retry = await _sb.from('orders').insert({ ...rowRetry, company_id: _companyId }).select().single();
           if (retry.error) throw retry.error;
           return _mapOrderFromDB(retry.data);
         }
