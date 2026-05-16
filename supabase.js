@@ -418,10 +418,10 @@ const DB = {
     if (filter === 'active') {
       // Regra: estado diferente de concluído/enviado/expirado
       // OU estado concluído/enviado mas pagamento ainda pendente
-      const finalStates = ['done', 'enviado', 'expirada'];
+      const finalStates = ['done', 'enviado'];
       return all.filter(o =>
         !finalStates.includes(o.status) ||
-        (finalStates.slice(0, 2).includes(o.status) && o.paymentStatus === 'pendente')
+        (finalStates.includes(o.status) && o.paymentStatus === 'pendente')
       );
     }
 

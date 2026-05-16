@@ -2124,7 +2124,11 @@
     // ── STATS ──────────────────────────────
     function updateStats() {
       const total = orders.length;
-      const progress = orders.filter(o => !['done', 'orcamento'].includes(o.status || 'orcamento')).length;
+      const finalStates = ['done', 'enviado'];
+      const progress = orders.filter(o =>
+        !finalStates.includes(o.status) ||
+        (finalStates.includes(o.status) && o.paymentStatus === 'pendente')
+      ).length;
       const pending = orders.filter(o => (o.paymentStatus || 'pendente') === 'pendente');
       const paid = orders.filter(o => o.paymentStatus === 'pago');
       const pendingVal = pending.reduce((s, o) => s + (o.total || 0), 0);
