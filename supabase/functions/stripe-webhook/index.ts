@@ -37,16 +37,29 @@ serve(async (req) => {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           const priceId = subscription.items.data[0].price.id;
           
-          // Mapeamento inverso (Price ID -> Nome do Plano)
-          // O ideal é usar metadata no Stripe para isto, mas aqui usamos uma lógica simples
-          const planMap: Record<string, string> = {
-            'price_starter_eur_monthly': 'starter',
-            'price_pro_eur_monthly': 'pro',
-            'price_biz_eur_monthly': 'business',
-            // ... adicione todos os IDs aqui
+          // Mapeamento inverso: deduzir o plano a partir do produto do preço
+          const price = await stripe.prices.retrieve(priceId, { expand: ['product'] });
+          const productId = typeof price.product === 'string' ? price.product : price.product?.id;
+
+          const PRODUCT_TO_PLAN: Record<string, string> = {
+            // STARTER
+            'prod_UVxAt7FogW6RA0': 'starter', 'prod_UVxGynxFksQyD5': 'starter',
+            'prod_UWAyAOg7lnr8e5': 'starter', 'prod_UWB0bv2BaVqUGj': 'starter',
+            'prod_UWHrhBo9fm9WOt': 'starter_ano', 'prod_UWHrTLfPmC4xmj': 'starter_ano',
+            'prod_UWHp0pL2xZ6nkU': 'starter_ano', 'prod_UWHsitmrkwvLYd': 'starter_ano',
+            // PRO
+            'prod_UWB5xLJbtUcGq6': 'pro', 'prod_UWB6Gy2pGMBBVf': 'pro',
+            'prod_UWB5pHonKEMbk0': 'pro', 'prod_UWB3njOYnLFsDy': 'pro',
+            'prod_UWBIseo3U18k1M': 'pro_ano', 'prod_UWBHK2waPP1VyZ': 'pro_ano',
+            'prod_UWBJPD40pzYf1H': 'pro_ano', 'prod_UWBGDHItXw0xzl': 'pro_ano',
+            // BUSINESS
+            'prod_UWB8tiyOu5arwA': 'business', 'prod_UWB8PByy9wuiYt': 'business',
+            'prod_UWB9XbirsqnTtp': 'business', 'prod_UWBACQwxj7cjAz': 'business',
+            'prod_UWBEAbilzBxkBe': 'business_ano', 'prod_UWBC21gfNc8A2D': 'business_ano',
+            'prod_UWBDTCsfQ33Xeu': 'business_ano', 'prod_UWBFpUFpaHCRXb': 'business_ano',
           };
 
-          const planName = planMap[priceId] || 'pro'; // Default pro caso não mapeie
+          const planName = PRODUCT_TO_PLAN[productId || ''] || 'starter';
 
           await supabaseAdmin
             .from('companies')
