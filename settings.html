@@ -491,6 +491,7 @@
               <option value="pt-BR">🇧🇷 pt BR</option>
               <option value="en-US">🇺🇸 en US</option>
               <option value="en-GB">🇬🇧 en UK</option>
+              <option value="en-EU">🇪🇺 en EU</option>
               <option value="es">🇪🇸 es ES</option>
             </select>
 
@@ -687,6 +688,7 @@
                     <option value="pt-BR">🇧🇷 pt BR</option>
                     <option value="en-US">🇺🇸 en US</option>
                     <option value="en-GB">🇬🇧 en UK</option>
+              <option value="en-EU">🇪🇺 en EU</option>
                     <option value="es">🇪🇸 es ES</option>
                   </select>
                 </div>
@@ -1401,11 +1403,11 @@ function renderPricing(locale) {
   
   if (isAnnual) {
     starterHint.style.display = 'block';
-    starterHint.textContent = `Total: ${symbol} ${starterTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+    starterHint.textContent = `Total: ${symbol} ${starterTotal}${lang.startsWith('en') ? '/yr' : '/ano'}`;
     proHint.style.display = 'block';
-    proHint.textContent = `Total: ${symbol} ${proTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+    proHint.textContent = `Total: ${symbol} ${proTotal}${lang.startsWith('en') ? '/yr' : '/ano'}`;
     businessHint.style.display = 'block';
-    businessHint.textContent = `Total: ${symbol} ${businessTotal}${lang === 'en-GB' || lang === 'en' ? '/yr' : '/ano'}`;
+    businessHint.textContent = `Total: ${symbol} ${businessTotal}${lang.startsWith('en') ? '/yr' : '/ano'}`;
   } else {
     starterHint.style.display = 'none';
     proHint.style.display = 'none';

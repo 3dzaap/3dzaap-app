@@ -14,7 +14,7 @@ const i18n = {
         catch (e) { return 'pt-PT'; }
     })(),
     translations: {},
-    supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB'],
+    supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU'],
 
     async init() {
         // Fallback for old 'pt' or 'br' codes

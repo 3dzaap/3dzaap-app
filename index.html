@@ -423,6 +423,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
         <option value="pt-BR">🇧🇷 pt BR</option>
         <option value="en-US">🇺🇸 en US</option>
         <option value="en-GB">🇬🇧 en UK</option>
+              <option value="en-EU">🇪🇺 en EU</option>
         <option value="es">🇪🇸 es ES</option>
       </select>
       <a href="auth.html" class="btn btn-g" data-i18n="nav.login">Entrar</a>
@@ -904,7 +905,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
 <script src="i18n.js"></script>
 <script>
 const PRICES={monthly:{starter:9.90,pro:19.90,business:39.90},annual:{starter:7.90,pro:15.90,business:31.90}};
-const LOCALE_FMT={'pt-PT':{sym:'€',mult:1,locale:'pt-PT'},'es':{sym:'€',mult:1,locale:'es-ES'},'en-US':{sym:'$',mult:1,locale:'en-US'},'en':{sym:'$',mult:1,locale:'en-US'},'pt-BR':{sym:'R$',mult:5,locale:'pt-BR'},'en-GB':{sym:'£',mult:1,locale:'en-GB'}};
+const LOCALE_FMT={'pt-PT':{sym:'€',mult:1,locale:'pt-PT'},'es':{sym:'€',mult:1,locale:'es-ES'},'en-US':{sym:'$',mult:1,locale:'en-US'},'en':{sym:'$',mult:1,locale:'en-US'},'pt-BR':{sym:'R$',mult:5,locale:'pt-BR'},'en-GB':{sym:'£',mult:1,locale:'en-GB'},'en-EU':{sym:'€',mult:1,locale:'en-EU'}};
 
 function _updatePricingDisplay(){
   const isAnn=document.getElementById('btog')?.checked;
@@ -923,7 +924,7 @@ function _updatePricingDisplay(){
   if(isAnn){_setTH(sc,`${fmt.sym} ${(p.starter*fmt.mult*12).toFixed(2)}`);_setTH(pc,`${fmt.sym} ${(p.pro*fmt.mult*12).toFixed(2)}`);_setTH(bc,`${fmt.sym} ${(p.business*fmt.mult*12).toFixed(2)}`);}
   else{[sc,pc,bc].forEach(c=>{if(c){const h=c.querySelector('.annual-total-hint');if(h)h.remove();}});}
 }
-function _setTH(card,text){if(!card)return;let h=card.querySelector('.annual-total-hint');if(!h){h=document.createElement('div');h.className='annual-total-hint';h.style.cssText='font-size:.75rem;color:var(--subtle);margin-top:4px;font-weight:600';card.querySelector('.pamt-wrap').after(h);}const lang=localStorage.getItem('3dzaap_lang')||'pt-PT';h.textContent=`Total: ${text}${lang==='en'||lang==='en-GB'?'/yr':'/ano'}`;}
+function _setTH(card,text){if(!card)return;let h=card.querySelector('.annual-total-hint');if(!h){h=document.createElement('div');h.className='annual-total-hint';h.style.cssText='font-size:.75rem;color:var(--subtle);margin-top:4px;font-weight:600';card.querySelector('.pamt-wrap').after(h);}const lang=localStorage.getItem('3dzaap_lang')||'pt-PT';h.textContent=`Total: ${text}${lang.startsWith('en')?'/yr':'/ano'}`;}
 function tbill(){_updatePricingDisplay();}
 window.addEventListener('languageChanged',()=>_updatePricingDisplay());
 document.addEventListener('DOMContentLoaded',()=>_updatePricingDisplay());

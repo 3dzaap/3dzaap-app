@@ -67,7 +67,8 @@ function getCurrencyConfig() {
     'pt-PT': { symbol: '€',  code: 'EUR', locale: 'pt-PT' },
     'es':    { symbol: '€',  code: 'EUR', locale: 'es-ES' },
     'pt-BR': { symbol: 'R$', code: 'BRL', locale: 'pt-BR' },
-    'en-GB': { symbol: '£',  code: 'GBP', locale: 'en-GB' }
+    'en-GB': { symbol: '£',  code: 'GBP', locale: 'en-GB' },
+    'en-EU': { symbol: '€',  code: 'EUR', locale: 'en-EU' }
   };
   
   if (map[lang]) return map[lang];
