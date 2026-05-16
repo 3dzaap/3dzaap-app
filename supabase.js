@@ -400,25 +400,6 @@ const DB = {
   async getOrders(filter = 'active') {
     await _ensureCompany();
 
-    if (filter === 'active') {
-      // Usa REST API diretamente — o SDK JS não gera corretamente or/and aninhados
-      // Regra: pedidos não finalizados OU (finalizados + pagamento pendente)
-      const session = await _sb.auth.getSession();
-      const token = session?.data?.session?.access_token || SUPABASE_ANON;
-      const orFilter = 'status.not.in.(done,enviado,expirada),and(status.in.(done,enviado),payment_status.eq.pendente)';
-      const url = `${SUPABASE_URL}/rest/v1/orders?select=*&company_id=eq.${_companyId}&or=(${orFilter})&order=order_numeric.desc`;
-      const res = await fetch(url, {
-        headers: {
-          'apikey': SUPABASE_ANON,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!res.ok) throw new Error(`getOrders active: ${res.status}`);
-      const data = await res.json();
-      return data.map(_mapOrderFromDB);
-    }
-
     let query = _sb.from('orders').select('*').eq('company_id', _companyId);
 
     if (filter === 'month') {
@@ -427,11 +408,24 @@ const DB = {
       const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
       query = query.gte('created_at', firstDay);
     }
-    // filter === 'all' não adiciona restrições
+    // filter === 'all' e 'active' buscam tudo — 'active' filtra no cliente
 
     const { data, error } = await query.order('order_numeric', { ascending: false });
     if (error) throw error;
-    return data.map(_mapOrderFromDB);
+
+    const all = data.map(_mapOrderFromDB);
+
+    if (filter === 'active') {
+      // Regra: estado diferente de concluído/enviado/expirado
+      // OU estado concluído/enviado mas pagamento ainda pendente
+      const finalStates = ['done', 'enviado', 'expirada'];
+      return all.filter(o =>
+        !finalStates.includes(o.status) ||
+        (finalStates.slice(0, 2).includes(o.status) && o.paymentStatus === 'pendente')
+      );
+    }
+
+    return all;
   },
 
   async getLastOrderNumber() {
