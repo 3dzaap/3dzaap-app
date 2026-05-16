@@ -1454,10 +1454,18 @@ async function startCheckout(planId) {
   try {
     showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe de forma segura...', 'ok');
     
+    // Determinar moeda pelo locale atual da UI
+    const locale = window.i18n ? i18n.currentLocale : 'pt-PT';
+    let forcedCurrency = 'eur';
+    if (locale === 'pt-BR') forcedCurrency = 'brl';
+    else if (locale === 'en-US') forcedCurrency = 'usd';
+    else if (locale === 'en-GB') forcedCurrency = 'gbp';
+    
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
         plan: fullPlanId, 
-        companyId: _session.companyId 
+        companyId: _session.companyId,
+        currency: forcedCurrency
       }
     });
     
