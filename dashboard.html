@@ -159,6 +159,16 @@
 .farm-mini-label { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
 .farm-mini-value { font-size: 1.1rem; font-weight: 800; font-family: var(--mono); }
 
+.health-breakdown { display: flex; gap: 24px; margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.03); border-radius: 12px; }
+.hb-item { flex: 1; display: flex; flex-direction: column; gap: 4px; cursor: help; }
+.hb-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.hb-dots { display: flex; gap: 4px; }
+.hb-dot { height: 4px; flex: 1; border-radius: 2px; background: var(--border); transition: all 0.3s ease; }
+.hb-dot.active-green { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+.hb-dot.active-orange { background: #f59e0b; }
+.hb-dot.active-red { background: #ef4444; }
+
+[data-theme="dark"] .health-breakdown { background: rgba(255,255,255,0.03); }
 [data-theme="dark"] .stat-card-v2 { background: #1e293b; }
 [data-theme="dark"] .farm-mini-card { background: rgba(0,0,0,0.2); }
 [data-theme="dark"] .stat-v2-value { background: linear-gradient(135deg, #fff, #94a3b8); -webkit-background-clip: text; background-clip: text; }
@@ -589,6 +599,22 @@
           </div>
           <div class="health-label" id="healthLabel" data-i18n="dash.health.calculating">A calcular...</div>
           <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
+          
+          <div class="health-breakdown">
+            <div class="hb-item" title="Mede a rentabilidade (€/g), despesas vs receitas e risco de concentração de clientes.">
+              <span class="hb-label">Financeiro</span>
+              <div class="hb-dots" id="hbDotsFin"></div>
+            </div>
+            <div class="hb-item" title="Mede a velocidade de produção (Lead Time), atrasos e saúde da frota.">
+              <span class="hb-label">Operacional</span>
+              <div class="hb-dots" id="hbDotsOps"></div>
+            </div>
+            <div class="hb-item" title="Verifica se tens impressoras, materiais e logótipo configurados.">
+              <span class="hb-label">Setup</span>
+              <div class="hb-dots" id="hbDotsSetup"></div>
+            </div>
+          </div>
+
           <div class="health-insights" id="healthInsights"></div>
           <div class="health-due-tip" id="healthDueTip" style="display:none">
             <span><i class="ph-bold ph-lightbulb"></i></span>
@@ -833,14 +859,16 @@ async function loadState() {
 
   // Load data from Supabase in parallel for speed
   try {
-    const [fils, ords, prnts] = await Promise.all([
+    const [fils, ords, prnts, exps] = await Promise.all([
       DB.getFilaments().catch(() => []),
       DB.getOrders().catch(() => []),
-      DB.getPrinters().catch(() => [])
+      DB.getPrinters().catch(() => []),
+      DB.getExpenses().catch(() => [])
     ]);
     state.filaments = fils;
     state.orders    = ords;
     state.printers  = prnts;
+    state.expenses  = exps;
   } catch(e) {
     console.error('[3DZAAP] Error loading parallel state:', e);
   }
@@ -974,6 +1002,13 @@ function calcHealthScore() {
   let totalPipelineValue = 0;
   let ordersWithoutDue = [];
   let unreadUpdatesCount = 0;
+  
+  // BI Counter 3.0
+  const revPerClient = {};
+  let totalSalesAllTime = 0;
+  let leadTimeAcc = 0;
+  let leadTimeCount = 0;
+  let dormantQuotes = 0;
 
   orders.forEach(o => {
     const s    = (o.status || '').toLowerCase();
@@ -1008,8 +1043,23 @@ function calcHealthScore() {
         }
         if (date.startsWith(prevStr) && o.paymentStatus === 'pago') revPrev += total;
         
+        // Lead Time Calculation (3.0)
+        if (o.createdAt && o.updatedAt) {
+          const start = new Date(o.createdAt);
+          const end   = new Date(o.updatedAt);
+          const diffDays = (end - start) / (1000 * 60 * 60 * 24);
+          if (diffDays > 0) {
+            leadTimeAcc += diffDays;
+            leadTimeCount++;
+          }
+        }
       } else {
         openCount++;
+        if (s === 'orcamento') {
+          const start = new Date(o.createdAt);
+          if ((now - start) > (5 * 24 * 60 * 60 * 1000)) dormantQuotes++;
+        }
+        
         const dueDate = o.dueDate || o.due_date;
         if (!dueDate) {
           ordersWithoutDue.push(o);
@@ -1018,6 +1068,11 @@ function calcHealthScore() {
           if (!isNaN(dd) && dd < now) lateCount++;
         }
       }
+
+      // Customer Tracking (3.0)
+      const cName = o.clientName || 'Consumidor Final';
+      revPerClient[cName] = (revPerClient[cName] || 0) + total;
+      totalSalesAllTime += total;
     }
   });
 
@@ -1121,8 +1176,81 @@ function calcHealthScore() {
     else if (change < 0) trendScore = 5;
   }
   score += trendScore;
+
+  // ── BI 3.0: NOVAS CAMADAS DE INTELIGÊNCIA ──────────────────
   
-  // Penas por atualizações não lidas
+  // 6. Risco de Concentração de Clientes (10 pts)
+  let concentrationScore = 10;
+  let maxClientShare = 0;
+  let topClientName = '';
+  Object.entries(revPerClient).forEach(([name, rev]) => {
+    const share = totalSalesAllTime > 0 ? (rev / totalSalesAllTime) : 0;
+    if (share > maxClientShare) {
+      maxClientShare = share;
+      topClientName = name;
+    }
+  });
+  
+  if (maxClientShare > 0.60 && totalSalesAllTime > 500) {
+    concentrationScore = 0;
+    insights.push({t:'bad', icon:'<i class="ph-bold ph-users-three"></i>', key:'health_concentration', msg:`Risco de Dependência: ${Math.round(maxClientShare*100)}% da receita vem de "${topClientName}".`});
+  } else if (maxClientShare > 0.40) {
+    concentrationScore = 5;
+  }
+  score += concentrationScore;
+
+  // 7. Velocidade Operacional (Lead Time) (10 pts)
+  let speedScore = 10;
+  if (leadTimeCount > 0) {
+    const avgLeadTime = leadTimeAcc / leadTimeCount;
+    if (avgLeadTime > 7) speedScore = 0; // Mais de uma semana para entregar
+    else if (avgLeadTime > 4) speedScore = 5;
+    
+    if (avgLeadTime > 7) insights.push({t:'warn', icon:'<i class="ph-bold ph-lightning"></i>', key:'health_velocity', msg:`Operação Lenta: Os teus pedidos demoram ${avgLeadTime.toFixed(1)} dias a concluir.`});
+  }
+  score += speedScore;
+
+  // 8. Resiliência Financeira (Margem vs Despesas) (10 pts)
+  let resilienceScore = 10;
+  const expenses = state.expenses || [];
+  const expThis = expenses
+    .filter(e => (e.date || '').startsWith(todayStr))
+    .reduce((acc, e) => acc + parseFloat(e.amount || 0), 0);
+  
+  if (expThis > 0 && revThis > 0) {
+    const burnRate = expThis / revThis;
+    if (burnRate > 0.80) resilienceScore = 0; // Despesas ocupam quase tudo
+    else if (burnRate > 0.50) resilienceScore = 5;
+    
+    if (burnRate > 0.80) insights.push({t:'bad', icon:'<i class="ph-bold ph-chart-line-down"></i>', key:'health_burn', msg:'Alerta de Margem: As tuas despesas estão a consumir a receita deste mês.'});
+  }
+  score += resilienceScore;
+
+  // 9. Orçamentos Esquecidos (Dormant Leads)
+  if (dormantQuotes > 0) {
+    score -= (dormantQuotes * 2);
+    insights.push({t:'warn', icon:'<i class="ph-bold ph-hourglass-high"></i>', key:'health_dormant', msg:`${dormantQuotes} orçamento(s) sem resposta há mais de 5 dias.`, page:'orders.html'});
+  }
+
+  // Ajuste final de escala para 100 pts (base de 130 pts agora)
+  score = Math.min(100, Math.max(0, Math.round((score / 130) * 100)));
+
+  // ── RENDER BREAKDOWN DOTS (3.0) ───────────
+  const renderDots = (id, pts, max) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const pct = pts / max;
+    let cls = 'active-green';
+    if (pct < 0.4) cls = 'active-red';
+    else if (pct < 0.7) cls = 'active-orange';
+    el.innerHTML = [0,1,2,3,4].map(i => `<div class="hb-dot ${i < Math.round(pct*5) ? cls : ''}"></div>`).join('');
+  };
+
+  renderDots('hbDotsFin', (marginScore + cashScore + resilienceScore + trendScore + concentrationScore), 70);
+  renderDots('hbDotsOps', (effScore + speedScore + scScore), 40);
+  renderDots('hbDotsSetup', setupScore, 20);
+
+  // Penas por atualizações não lidas (aplicado após a escala)
   if (unreadUpdatesCount > 0) {
     score -= (unreadUpdatesCount * 2);
     if (score < 0) score = 0;
