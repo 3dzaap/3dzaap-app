@@ -1,374 +1,420 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3DZAAP — Portal do Cliente</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
-<script src="utils.js"></script>
-<script src="i18n.js"></script>
-<!-- Theme Init -->
-<script>
-  (function(){
-    var t = localStorage.getItem('3dzaap_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', t);
-  })();
-</script>
-<link rel="stylesheet" href="shared.css">
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
-<style>
-/* ── Portal Specific Styles ─────────────────────────────── */
-body { 
-  background: var(--bg-page); 
-  color: var(--black); 
-  min-height: 100dvh; 
-  display: flex; 
-  flex-direction: column;
-  -webkit-text-size-adjust: 100%;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3DZAAP — Portal do Cliente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="utils.js"></script>
+  <script src="i18n.js"></script>
+  <!-- Theme Init -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('3dzaap_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <style>
+    /* ── Portal Specific Styles ─────────────────────────────── */
+    body {
+      background: var(--bg-page);
+      color: var(--black);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      -webkit-text-size-adjust: 100%;
+    }
 
-.portal-container {
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 12px 140px;
-  flex: 1;
-}
+    .portal-container {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 12px 140px;
+      flex: 1;
+    }
 
-@media (max-width: 480px) {
-  .portal-container { padding: 16px 8px 140px; }
-}
+    @media (max-width: 480px) {
+      .portal-container {
+        padding: 16px 8px 140px;
+      }
+    }
 
-/* ── Hero Status ─────────────────────────────── */
-.hero-status {
-  background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
-  border-radius: var(--rl);
-  padding: 32px 24px;
-  margin-bottom: 24px;
-  text-align: center;
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--sh-float);
-  animation: fadeUp .6s var(--ease) both;
-}
-[data-theme="light"] .hero-status {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-}
-.hero-status::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(59,143,212,0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.1);
-  padding: 6px 14px;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.hero-title {
-  font-size: 1.6rem;
-  font-weight: 900;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
-}
-.hero-desc {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  max-width: 480px;
-  margin: 0 auto;
-  line-height: 1.5;
-}
+    /* ── Hero Status ─────────────────────────────── */
+    .hero-status {
+      background: linear-gradient(135deg, var(--black) 0%, #1e293b 100%);
+      border-radius: var(--rl);
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      text-align: center;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--sh-float);
+      animation: fadeUp .6s var(--ease) both;
+    }
 
-/* ── Progress Tracker ─────────────────────────────── */
-.tracker-card {
-  background: var(--bg-card-s);
-  border: 1.5px solid var(--border-input);
-  border-radius: var(--rl);
-  padding: 28px 24px;
-  margin-bottom: 24px;
-  box-shadow: var(--sh-float);
-  text-align: center;
-}
+    [data-theme="light"] .hero-status {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
 
-.tracker-title { 
-  font-size: 0.85rem; 
-  font-weight: 800; 
-  color: var(--subtle); 
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 24px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 12px; 
-}
+    .hero-status::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59, 143, 212, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-@media (max-width: 480px) {
-  .tracker-title { font-size: 0.75rem; margin-bottom: 20px; }
-}
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-.steps-container {
-  padding: 0 10px;
-  margin-bottom: 10px;
-}
+    .hero-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
 
-.steps { 
-  display: flex; 
-  justify-content: space-between; 
-  position: relative; 
-  width: 100%;
-  padding: 10px 0;
-}
+    .hero-desc {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
 
-.steps::before {
-  content: "";
-  position: absolute;
-  top: 25px;
-  left: 20px;
-  right: 20px;
-  height: 4px;
-  background: var(--bg-input);
-  z-index: 1;
-  border-radius: 4px;
-}
+    /* ── Progress Tracker ─────────────────────────────── */
+    .tracker-card {
+      background: var(--bg-card-s);
+      border: 1.5px solid var(--border-input);
+      border-radius: var(--rl);
+      padding: 28px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--sh-float);
+      text-align: center;
+    }
 
-.step-line-active {
-  position: absolute;
-  top: 25px;
-  left: 20px;
-  right: 20px;
-  width: auto;
-  height: 4px;
-  background: transparent;
-  z-index: 2;
-  transition: none;
-}
+    .tracker-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
 
-.step-line-inner {
-  height: 100%;
-  background: var(--blue);
-  width: 0%;
-  border-radius: 4px;
-  transition: width .8s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+    @media (max-width: 480px) {
+      .tracker-title {
+        font-size: 0.75rem;
+        margin-bottom: 20px;
+      }
+    }
 
-.step { 
-  position: relative; 
-  z-index: 3; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  gap: 10px; 
-  flex: 1;
-  min-width: 0;
-}
+    .steps-container {
+      padding: 0 10px;
+      margin-bottom: 10px;
+    }
 
-@media (max-width: 580px) {
-  .steps-container { padding: 0; }
-  .steps { 
-    flex-direction: column; 
-    gap: 0; 
-    align-items: flex-start; 
-    padding: 10px 0 10px 20px;
-  }
-  .steps::before {
-    top: 5px;
-    bottom: 5px;
-    left: 15px;
-    width: 4px;
-    height: auto;
-    right: auto;
-    margin: 0;
-  }
-  .step-line-active {
-    top: 5px;
-    bottom: 5px;
-    left: 15px;
-    width: 4px;
-    height: auto;
-    right: auto;
-    margin: 0;
-  }
-  .step-line-inner {
-    width: 100% !important;
-    height: 0%;
-    transition: height .8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .step {
-    flex-direction: row;
-    gap: 16px;
-    padding: 15px 0;
-    align-items: center;
-    width: 100%;
-    justify-content: flex-start;
-  }
-  .step-dot {
-    flex-shrink: 0;
-    width: 32px !important;
-    height: 32px !important;
-    z-index: 5;
-  }
-  .step-lbl {
-    text-align: left !important;
-    font-size: 0.85rem !important;
-  }
-}
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      width: 100%;
+      padding: 10px 0;
+    }
 
-.step-dot {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bg-card-s);
-  border: 3px solid var(--bg-input);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  transition: all .4s var(--ease);
-  box-shadow: var(--sh);
-}
+    .steps::before {
+      content: "";
+      position: absolute;
+      top: 25px;
+      left: 20px;
+      right: 20px;
+      height: 4px;
+      background: var(--bg-input);
+      z-index: 1;
+      border-radius: 4px;
+    }
 
-.step.active .step-dot { 
-  border-color: var(--blue); 
-  background: var(--blue); 
-  color: #fff; 
-  box-shadow: 0 0 15px rgba(59,143,212,.4);
-  transform: scale(1.1);
-}
+    .step-line-active {
+      position: absolute;
+      top: 25px;
+      left: 20px;
+      right: 20px;
+      width: auto;
+      height: 4px;
+      background: transparent;
+      z-index: 2;
+      transition: none;
+    }
 
-.step.done .step-dot { 
-  border-color: var(--blue); 
-  background: var(--bg-card-s); 
-  color: var(--blue); 
-}
+    .step-line-inner {
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      border-radius: 4px;
+      transition: width .8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
-.step-lbl { 
-  font-size: .58rem; 
-  font-weight: 800; 
-  color: var(--subtle); 
-  text-transform: uppercase; 
-  letter-spacing: .4px; 
-  text-align: center;
-  transition: color .3s;
-  line-height: 1.2;
-}
+    .step {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
 
-.step.active .step-lbl { color: var(--blue); }
-.step.done .step-lbl { color: var(--dark); }
+    @media (max-width: 580px) {
+      .steps-container {
+        padding: 0;
+      }
 
-/* ── Modal Details ─────────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(13, 17, 23, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 1000;
-  display: none;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 24px 16px;
-  overflow-y: auto;
-}
-.modal-overlay.open { display: flex; }
-.modal-content {
-  width: 100%;
-  max-width: 700px;
-  animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-top: 20px;
-}
-  from { opacity: 0; transform: translateY(40px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
+      .steps {
+        flex-direction: column;
+        gap: 0;
+        align-items: flex-start;
+        padding: 10px 0 10px 20px;
+      }
 
-.modal-content {
-  background: var(--bg-card);
-  width: 100%;
-  max-width: 680px;
-  border-radius: 28px;
-  max-height: 92vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-  animation: modalIn .4s var(--ease);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid var(--border-input);
-}
+      .steps::before {
+        top: 5px;
+        bottom: 5px;
+        left: 15px;
+        width: 4px;
+        height: auto;
+        right: auto;
+        margin: 0;
+      }
 
-.modal-header {
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-card-s);
-  border-bottom: 1.5px solid var(--border-input);
-  z-index: 10;
-}
+      .step-line-active {
+        top: 5px;
+        bottom: 5px;
+        left: 15px;
+        width: 4px;
+        height: auto;
+        right: auto;
+        margin: 0;
+      }
 
-.modal-close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--bg-input);
-  border: 1.5px solid var(--border-input);
-  color: var(--black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.2s var(--ease);
-}
-.modal-close-btn:hover { background: var(--bg-card-s); transform: scale(1.1); }
-.modal-close-btn:active { transform: scale(0.9); }
+      .step-line-inner {
+        width: 100% !important;
+        height: 0%;
+        transition: height .8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
 
-.modal-body {
-  padding: 20px;
-  overflow-y: auto;
-  flex: 1;
-  -webkit-overflow-scrolling: touch;
-}
+      .step {
+        flex-direction: row;
+        gap: 16px;
+        padding: 15px 0;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-start;
+      }
 
-.modal-footer {
-  padding: 16px 20px;
-  background: var(--bg-card-s);
-  border-top: 1.5px solid var(--border-input);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+      .step-dot {
+        flex-shrink: 0;
+        width: 32px !important;
+        height: 32px !important;
+        z-index: 5;
+      }
 
-/* ── Receipt Card Styles (In-Modal) ── */
-.rcpt-card {
-  background: var(--bg-card-s);
-  border-radius: var(--rl);
-  width: 100%;
-  box-shadow: var(--sh-float);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1.5px solid var(--border-input);
-}
+      .step-lbl {
+        text-align: left !important;
+        font-size: 0.85rem !important;
+      }
+    }
+
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-card-s);
+      border: 3px solid var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all .4s var(--ease);
+      box-shadow: var(--sh);
+    }
+
+    .step.active .step-dot {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(59, 143, 212, .4);
+      transform: scale(1.1);
+    }
+
+    .step.done .step-dot {
+      border-color: var(--blue);
+      background: var(--bg-card-s);
+      color: var(--blue);
+    }
+
+    .step-lbl {
+      font-size: .58rem;
+      font-weight: 800;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      text-align: center;
+      transition: color .3s;
+      line-height: 1.2;
+    }
+
+    .step.active .step-lbl {
+      color: var(--blue);
+    }
+
+    .step.done .step-lbl {
+      color: var(--dark);
+    }
+
+    /* ── Modal Details ─────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 700px;
+      animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-top: 20px;
+    }
+
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 680px;
+      border-radius: 28px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      animation: modalIn .4s var(--ease);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-input);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card-s);
+      border-bottom: 1.5px solid var(--border-input);
+      z-index: 10;
+    }
+
+    .modal-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-input);
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s var(--ease);
+    }
+
+    .modal-close-btn:hover {
+      background: var(--bg-card-s);
+      transform: scale(1.1);
+    }
+
+    .modal-close-btn:active {
+      transform: scale(0.9);
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      background: var(--bg-card-s);
+      border-top: 1.5px solid var(--border-input);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Receipt Card Styles (In-Modal) ── */
+    .rcpt-card {
+      background: var(--bg-card-s);
+      border-radius: var(--rl);
+      width: 100%;
+      box-shadow: var(--sh-float);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1.5px solid var(--border-input);
+    }
 
     .rcpt-header {
       background: #0D1117;
@@ -662,224 +708,314 @@ body {
       color: #F5943A
     }
 
-/* ── Actions Bar ─────────────────────────────── */
-.portal-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-card-s);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1.5px solid var(--border-input);
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  gap: 12px;
-  justify-content: stretch;
-  z-index: 100;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.08);
-}
+    /* ── Actions Bar ─────────────────────────────── */
+    .portal-actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-card-s);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1.5px solid var(--border-input);
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      gap: 12px;
+      justify-content: stretch;
+      z-index: 100;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
+    }
 
-.btn-portal {
-  flex: 1;
-  height: 50px;
-  border-radius: 14px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all .2s var(--ease);
-  border: none;
-  -webkit-appearance: none;
-}
-.btn-approve { background: var(--success); color: #fff; box-shadow: 0 6px 16px rgba(34,197,94,.3); }
-.btn-decline { background: var(--bg-input); border: 1.5px solid var(--border-input); color: var(--danger); }
-.btn-print { background: var(--bg-btn-ghost); border: 1.5px solid var(--border-input); color: var(--black); }
+    .btn-portal {
+      flex: 1;
+      height: 50px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all .2s var(--ease);
+      border: none;
+      -webkit-appearance: none;
+    }
 
-/* ── PIN Entry Screen ─────────────────────────────── */
-.pin-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1001;
-  background: var(--bg-page);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.pin-card {
-  background: var(--bg-card-s);
-  border: 1.5px solid var(--border-input);
-  border-radius: var(--rx);
-  padding: 40px 24px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: var(--sh-float);
-}
+    .btn-approve {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(34, 197, 94, .3);
+    }
 
-.pin-input-group { display: flex; justify-content: center; gap: 14px; margin-bottom: 32px; }
-.pin-field {
-  width: 50px; height: 64px; background: var(--bg-input);
-  border: 2px solid rgba(148, 163, 184, 0.4);
-  border-radius: var(--r); font-size: 1.6rem; font-weight: 800;
-  text-align: center; color: var(--black); -webkit-appearance: none;
-}
-.pin-field:focus { border-color: var(--blue); background: var(--bg-card-s); outline: none; transform: translateY(-2px); }
+    .btn-decline {
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-input);
+      color: var(--danger);
+    }
 
-/* ── Loading, Errors & Animations ─────────────────────────────── */
-.portal-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70vh; gap: 20px; color: var(--subtle); }
-.spinner { width: 40px; height: 40px; border: 4px solid var(--bg-input); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
-.animate { animation: fadeUp .6s var(--ease) forwards; }
-@keyframes shake { 0%, 100% { transform: translateX(0); } 75% { transform: translateX(8px); } }
-.shake { animation: shake .4s var(--ease); }
+    .btn-print {
+      background: var(--bg-btn-ghost);
+      border: 1.5px solid var(--border-input);
+      color: var(--black);
+    }
 
-</style>
+    /* ── PIN Entry Screen ─────────────────────────────── */
+    .pin-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1001;
+      background: var(--bg-page);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .pin-card {
+      background: var(--bg-card-s);
+      border: 1.5px solid var(--border-input);
+      border-radius: var(--rx);
+      padding: 40px 24px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--sh-float);
+    }
+
+    .pin-input-group {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .pin-field {
+      width: 50px;
+      height: 64px;
+      background: var(--bg-input);
+      border: 2px solid rgba(148, 163, 184, 0.4);
+      border-radius: var(--r);
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-align: center;
+      color: var(--black);
+      -webkit-appearance: none;
+    }
+
+    .pin-field:focus {
+      border-color: var(--blue);
+      background: var(--bg-card-s);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    /* ── Loading, Errors & Animations ─────────────────────────────── */
+    .portal-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 70vh;
+      gap: 20px;
+      color: var(--subtle);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--bg-input);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .animate {
+      animation: fadeUp .6s var(--ease) forwards;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      75% {
+        transform: translateX(8px);
+      }
+    }
+
+    .shake {
+      animation: shake .4s var(--ease);
+    }
+  </style>
 </head>
+
 <body class="animate">
 
-<div class="portal-container" id="portalContent">
-  <div class="portal-loading" id="loadingState">
-    <div class="spinner"></div>
-    <p data-i18n="portal.loading">A carregar o seu pedido...</p>
-  </div>
-</div>
-
-<div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)toggleDetails()">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div style="color:var(--black);font-weight:900;font-size:1.1rem;letter-spacing:-0.5px" data-i18n="portal.rcpt_title_os">Ordem de Serviço</div>
-      <button class="modal-close-btn" onclick="toggleDetails()"><i class="ph-bold ph-x"></i></button>
+  <div class="portal-container" id="portalContent">
+    <div class="portal-loading" id="loadingState">
+      <div class="spinner"></div>
+      <p data-i18n="portal.loading">A carregar o seu pedido...</p>
     </div>
-    
-    <div class="modal-body">
-      <div class="rcpt-card" id="printableReceipt">
-        <!-- Populated dynamically -->
+  </div>
+
+  <div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)toggleDetails()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="color:var(--black);font-weight:900;font-size:1.1rem;letter-spacing:-0.5px"
+          data-i18n="portal.rcpt_title_os">Ordem de Serviço</div>
+        <button class="modal-close-btn" onclick="toggleDetails()"><i class="ph-bold ph-x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="rcpt-card" id="printableReceipt">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="printPortalReceipt()"
+          style="width:100%; height:52px; border-radius:14px; font-weight:800; font-size:1rem">
+          <i class="ph-bold ph-download-simple"></i> <span data-i18n="portal.btn_download_pdf">Descarregar PDF</span>
+        </button>
+        <button class="btn-portal btn-print" onclick="toggleDetails()"
+          style="height:48px; border:none; background:transparent; font-size:0.85rem; font-weight:700; color:var(--subtle)">
+          <span data-i18n="portal.btn_close">Fechar</span>
+        </button>
       </div>
     </div>
+  </div>
 
-    <div class="modal-footer">
-       <button class="btn btn-primary" onclick="printPortalReceipt()" style="width:100%; height:52px; border-radius:14px; font-weight:800; font-size:1rem">
-         <i class="ph-bold ph-download-simple"></i> <span data-i18n="portal.btn_download_pdf">Descarregar PDF</span>
-       </button>
-       <button class="btn-portal btn-print" onclick="toggleDetails()" style="height:48px; border:none; background:transparent; font-size:0.85rem; font-weight:700; color:var(--subtle)">
-         <span data-i18n="portal.btn_close">Fechar</span>
-       </button>
+  <!-- PIN Overlay -->
+  <div class="pin-overlay" id="pinOverlay" style="display:none">
+    <div class="pin-card" id="pinCard">
+      <div class="pin-icon" style="font-size:3.5rem;margin-bottom:24px"><i class="ph-bold ph-lock-key"></i></div>
+      <div class="pin-title" style="font-size:1.4rem;font-weight:900;margin-bottom:12px" data-i18n="portal.pin_title">
+        Acesso Restrito</div>
+      <div class="pin-desc" style="font-size:.9rem;color:var(--subtle);margin-bottom:32px;line-height:1.6"
+        data-i18n="portal.pin_desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
+      <div class="pin-input-group">
+        <input type="password" maxlength="1" class="pin-field" id="p1" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-field" id="p2" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-field" id="p3" inputmode="numeric">
+        <input type="password" maxlength="1" class="pin-field" id="p4" inputmode="numeric">
+      </div>
+      <p id="pinError"
+        style="color:var(--danger);font-size:.8rem;font-weight:600;display:none;margin-top:-10px;margin-bottom:10px"
+        data-i18n="portal.pin_err">Código incorreto. Tente novamente.</p>
     </div>
   </div>
-</div>
 
-<!-- PIN Overlay -->
-<div class="pin-overlay" id="pinOverlay" style="display:none">
-  <div class="pin-card" id="pinCard">
-    <div class="pin-icon" style="font-size:3.5rem;margin-bottom:24px"><i class="ph-bold ph-lock-key"></i></div>
-    <div class="pin-title" style="font-size:1.4rem;font-weight:900;margin-bottom:12px" data-i18n="portal.pin_title">Acesso Restrito</div>
-    <div class="pin-desc" style="font-size:.9rem;color:var(--subtle);margin-bottom:32px;line-height:1.6" data-i18n="portal.pin_desc">Insira o código de 4 dígitos enviado pelo WhatsApp para ver os detalhes.</div>
-    <div class="pin-input-group">
-      <input type="password" maxlength="1" class="pin-field" id="p1" inputmode="numeric">
-      <input type="password" maxlength="1" class="pin-field" id="p2" inputmode="numeric">
-      <input type="password" maxlength="1" class="pin-field" id="p3" inputmode="numeric">
-      <input type="password" maxlength="1" class="pin-field" id="p4" inputmode="numeric">
-    </div>
-    <p id="pinError" style="color:var(--danger);font-size:.8rem;font-weight:600;display:none;margin-top:-10px;margin-bottom:10px" data-i18n="portal.pin_err">Código incorreto. Tente novamente.</p>
-  </div>
-</div>
+  <!-- Actions Bar -->
+  <div class="portal-actions" id="actionsBar" style="display:none"></div>
 
-<!-- Actions Bar -->
-<div class="portal-actions" id="actionsBar" style="display:none"></div>
+  <script>
+    const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
+    let _order = null;
+    let _company = null;
+    const _token = new URLSearchParams(window.location.search).get('t');
 
-<script>
-const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
-let _order = null;
-let _company = null;
-const _token = new URLSearchParams(window.location.search).get('t');
-
-async function init() {
-  if (window.i18n) await window.i18n.init();
-  if (!_token) {
-    renderError(t('portal.err_secure_title'), t('portal.err_token_desc'), '<i class="ph-bold ph-magnifying-glass"></i>');
-    return;
-  }
-  try {
-    const data = await DB.getTrackingInfo(_token);
-    _order = data.order;
-    _company = data;
-    const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
-    if (_order.passphrase && _order.passphrase !== storedPin) {
-      showPinScreen();
-    } else if (!_order.passphrase) {
-      renderError(t('portal.err_secure_title', 'Acesso Restrito'), t('portal.err_secure_desc', 'Por favor, use o link oficial enviado pela loja.'), '<i class="ph-bold ph-lock"></i>');
-    } else {
-      renderPortal();
+    async function init() {
+      if (window.i18n) await window.i18n.init();
+      if (!_token) {
+        renderError(t('portal.err_secure_title'), t('portal.err_token_desc'), '<i class="ph-bold ph-magnifying-glass"></i>');
+        return;
+      }
+      try {
+        const data = await DB.getTrackingInfo(_token);
+        _order = data.order;
+        _company = data;
+        const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
+        if (_order.passphrase && _order.passphrase !== storedPin) {
+          showPinScreen();
+        } else if (!_order.passphrase) {
+          renderError(t('portal.err_secure_title', 'Acesso Restrito'), t('portal.err_secure_desc', 'Por favor, use o link oficial enviado pela loja.'), '<i class="ph-bold ph-lock"></i>');
+        } else {
+          renderPortal();
+        }
+      } catch (err) {
+        renderError('Erro', err.message, '<i class="ph-bold ph-x-circle"></i>');
+      }
     }
-  } catch (err) {
-    renderError('Erro', err.message, '<i class="ph-bold ph-x-circle"></i>');
-  }
-}
 
-function showPinScreen() {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('pinOverlay').style.display = 'flex';
-  const inputs = document.querySelectorAll('.pin-field');
-  inputs.forEach((input, idx) => {
-    input.addEventListener('input', (e) => {
-      if (e.target.value.length === 1 && idx < inputs.length - 1) inputs[idx + 1].focus();
-      checkFullPin();
-    });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && idx > 0) inputs[idx - 1].focus();
-    });
-  });
-  inputs[0].focus();
-}
-
-function checkFullPin() {
-  const inputs = document.querySelectorAll('.pin-field');
-  const pin = Array.from(inputs).map(i => i.value).join('');
-  if (pin.length === 4) {
-    if (pin === _order.passphrase) {
-      sessionStorage.setItem('3dzaap_portal_pin_' + _token, pin);
-      document.getElementById('pinOverlay').style.display = 'none';
-      renderPortal();
-    } else {
-      const card = document.getElementById('pinCard');
-      card.classList.add('shake');
-      document.getElementById('pinError').style.display = 'block';
-      inputs.forEach(i => i.value = '');
+    function showPinScreen() {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('pinOverlay').style.display = 'flex';
+      const inputs = document.querySelectorAll('.pin-field');
+      inputs.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1 && idx < inputs.length - 1) inputs[idx + 1].focus();
+          checkFullPin();
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && idx > 0) inputs[idx - 1].focus();
+        });
+      });
       inputs[0].focus();
-      setTimeout(() => card.classList.remove('shake'), 400);
     }
-  }
-}
 
-function renderPortal() {
-  const container = document.getElementById('portalContent');
-  const actions = document.getElementById('actionsBar');
-  
-  const isBusiness = _company && (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano');
-  const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
+    function checkFullPin() {
+      const inputs = document.querySelectorAll('.pin-field');
+      const pin = Array.from(inputs).map(i => i.value).join('');
+      if (pin.length === 4) {
+        if (pin === _order.passphrase) {
+          sessionStorage.setItem('3dzaap_portal_pin_' + _token, pin);
+          document.getElementById('pinOverlay').style.display = 'none';
+          renderPortal();
+        } else {
+          const card = document.getElementById('pinCard');
+          card.classList.add('shake');
+          document.getElementById('pinError').style.display = 'block';
+          inputs.forEach(i => i.value = '');
+          inputs[0].focus();
+          setTimeout(() => card.classList.remove('shake'), 400);
+        }
+      }
+    }
 
-  let html = `
+    function renderPortal() {
+      const container = document.getElementById('portalContent');
+      const actions = document.getElementById('actionsBar');
+
+      const isBusiness = _company && (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano');
+      const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
+
+      let html = `
     <div style="text-align:center; margin-bottom: 24px;">
       <img src="${topLogo}" style="height:56px; width:auto; border-radius:16px; box-shadow: 0 4px 14px rgba(0,0,0,0.08);" onerror="this.onerror=null; this.src='logo.jpg';">
     </div>
   `;
 
-  html += renderHeroStatus();
-  if (_order.status !== 'declined') {
-    html += renderTracker();
-    if (_order.status === 'printing') {
-      html += renderPrintingTracker();
-    }
-  }
+      html += renderHeroStatus();
+      if (_order.status !== 'declined') {
+        html += renderTracker();
+        if (_order.status === 'printing') {
+          html += renderPrintingTracker();
+        }
+      }
 
-  // "View Details" trigger
-  html += `
+      // "View Details" trigger
+      html += `
     <div style="text-align:center; padding: 18px 20px 24px; display:flex; flex-wrap:wrap; justify-content:center; gap:12px">
       <button class="btn btn-ghost" onclick="toggleDetails()" style="font-weight:700; gap:8px; border:1.5px solid var(--border-input); background:var(--bg-card-s); padding: 10px 20px; border-radius:12px">
         <i class="ph-bold ph-receipt"></i> ${t('portal.btn_view_details', 'Ver Detalhes do Pedido')}
@@ -897,71 +1033,124 @@ function renderPortal() {
     </div>
   `;
 
-  container.innerHTML = html;
-  updateReceiptModal();
-  renderButtons();
-  actions.style.display = 'flex';
-}
+      container.innerHTML = html;
+      updateReceiptModal();
+      renderButtons();
+      actions.style.display = 'flex';
+    }
 
-function renderHeroStatus() {
-  const s = _order.status;
-  let title = t('status.' + s, s);
-  let desc = t('portal.desc_' + s, '');
+    function renderHeroStatus() {
+      const s = _order.status;
+      let title = t('status.' + s, s);
+      let desc = t('portal.desc_' + s, '');
 
-  if (s === 'orcamento') {
-    title = t('portal.hero_title_quote', 'Pedido Recebido');
-    desc = t('portal.hero_desc_quote', 'A sua solicitação foi recebida e está a ser analisada.');
-  } else if (s === 'modelagem') {
-    title = t('portal.hero_title_modelagem', 'Design e Preparação');
-    desc = t('portal.hero_desc_modelagem', 'Estamos a preparar os seus ficheiros para impressão.');
-  } else if (s === 'validacao') {
-    title = t('portal.hero_title_validation', 'Aguardando Aprovação');
-    desc = t('portal.hero_desc_validation', 'O orçamento/modelo está pronto. Por favor, valide para continuarmos.');
-  } else if (s === 'aprovado' || s === 'fila') {
-    title = t('portal.hero_title_approved', 'Pedido Confirmado');
-    desc = t('portal.hero_desc_done', 'O seu pedido já está pronto e finalizado.');
-  }
+      if (s === 'orcamento') {
+        title = t('portal.hero_title_quote', 'Pedido Recebido');
+        desc = t('portal.hero_desc_quote', 'A sua solicitação foi recebida e está a ser analisada.');
+      } else if (s === 'modelagem') {
+        title = t('portal.hero_title_modelagem', 'Design e Preparação');
+        desc = t('portal.hero_desc_modelagem', 'Estamos a preparar os seus ficheiros para impressão.');
+      } else if (s === 'validacao') {
+        title = t('portal.hero_title_validation', 'Aguardando Aprovação');
+        desc = t('portal.hero_desc_validation', 'O orçamento/modelo está pronto. Por favor, valide para continuarmos.');
+      } else if (s === 'aprovado' || s === 'fila') {
+        title = t('portal.hero_title_approved', 'Pedido Confirmado');
+        desc = t('portal.hero_desc_done', 'O seu pedido já está pronto e finalizado.');
+      }
 
-  return `
+      return `
     <div class="hero-status">
       <div class="hero-badge"><i class="ph-bold ph-info"></i> ${t('portal.badge_status', 'ESTADO')}</div>
       <div class="hero-title">${title}</div>
       <div class="hero-desc">${desc}</div>
+      ${_order.trackingCode ? `
+        <div class="tracking-action" style="margin-top:20px">
+          <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:var(--blue); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 10px 20px rgba(59,143,212,0.2)">
+            <i class="ph-bold ph-truck"></i> ${t('portal.btn_track', 'Rastrear Encomenda')}
+          </a>
+          ${!getTrackingUrl(_order.shippingService, _order.trackingCode) ? `
+            <div style="margin-top:8px; font-size:0.85rem; opacity:0.8">
+              ${t('portal.lbl_tracking_code', 'Código')}: <strong>${_order.trackingCode}</strong>
+              ${_order.shippingService ? ` (${t('shipping.' + _order.shippingService, _order.shippingService)})` : ''}
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
     </div>
   `;
-}
+    }
 
-function toggleDetails() {
-  const modal = document.getElementById('detailsModal');
-  modal.classList.toggle('open');
-  document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : '';
-}
+    function getTrackingUrl(service, code) {
+      if (!code) return null;
+      const urls = {
+        // Portugal
+        ctt: `https://www.ctt.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
+        ctt_expresso: `https://www.cttexpresso.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
+        
+        // Brasil
+        correios_br: `https://www.linkcorreios.com.br/${code}`,
+        jadlog: `https://www.jadlog.com.br/siteInstitucional/tracking.jad?tracking=${code}`,
+        loggi: `https://www.loggi.com/rastreio/${code}`,
+        azul_cargo: `https://www.azulcargo.com.br/Rastreio/Rastrear?n=${code}`,
 
-function updateReceiptModal() {
-  const rcptContainer = document.getElementById('printableReceipt');
-  if (!_order) return;
-  const isPaid = _order.paymentStatus === 'pago';
-  const its = (_order.items && _order.items.length) ? _order.items : [{ description: _order.description || '', quantity: _order.quantity || 1, unitPrice: _order.unitPrice || 0 }];
-  const grand = its.reduce((s, i) => s + (i.quantity || 0) * (i.unitPrice || 0), 0);
-  const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
+        // Espanha
+        correos: `https://www.correos.es/es/es/herramientas/localizador/detalles?codigo=${code}`,
+        correos_express: `https://www.correosexpress.com/web/correosexpress/consultar-envio?codigo=${code}`,
+        seur: `https://www.seur.com/seguimiento-online.do?procedencia=externo&numExpedicion=${code}`,
+        nacex: `https://www.nacex.es/seguimientoDetalle.do?irnacex=S&numExp=${code}`,
 
-  const statusLabels = {
-    orcamento: t('status.orcamento', 'Orçamento'),
-    modelagem: t('status.modelagem', 'Modelagem'),
-    validacao: t('status.validacao', 'Aprovação'),
-    aprovado: t('status.aprovado', 'Confirmado'),
-    fila: t('status.fila', 'Em Fila'),
-    printing: t('status.printing', 'Produção'),
-    enviado: t('status.enviado', 'Enviado'),
-    done: t('status.done', 'Concluído')
-  };
+        // UK
+        royal_mail: `https://www.royalmail.com/track-your-item#/tracking-results/${code}`,
+        parcelforce: `https://www.parcelforce.com/track-trace?trackNumber=${code}`,
+        evri: `https://www.evri.com/track-a-parcel/${code}/details`,
+        yodel: `https://www.yodel.co.uk/tracking/${code}`,
 
-  const today = new Date().toLocaleDateString('pt-PT');
-  const signature = _company.signature || null;
-  const companyName = _company.companyName || '3DZAAP';
-  const city = (_company.companyConfig && _company.companyConfig.city) || 'Portugal';
+        // US
+        usps: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${code}`,
+        amazon: `https://track.amazon.com/tracking/${code}`,
 
-  const itemRows = its.map((it, i) => `
+        // Global
+        dhl: `https://www.dhl.com/pt-pt/home/tracking/tracking-express.html?submit=1&tracking-id=${code}`,
+        fedex: `https://www.fedex.com/fedextrack/?trknbr=${code}`,
+        ups: `https://www.ups.com/track?HTMLVersion=5.0&loc=pt_PT&trackNums=${code}`,
+        dpd: `https://tracking.dpd.pt/search/${code}`,
+        gls: `https://gls-group.eu/PT/pt/seguimento-encomendas?match=${code}`,
+        mrw: `https://www.mrw.pt/tracking/?numero=${code}`
+      };
+      return urls[service] || null;
+    }
+
+    function toggleDetails() {
+      const modal = document.getElementById('detailsModal');
+      modal.classList.toggle('open');
+      document.body.style.overflow = modal.classList.contains('open') ? 'hidden' : '';
+    }
+
+    function updateReceiptModal() {
+      const rcptContainer = document.getElementById('printableReceipt');
+      if (!_order) return;
+      const isPaid = _order.paymentStatus === 'pago';
+      const its = (_order.items && _order.items.length) ? _order.items : [{ description: _order.description || '', quantity: _order.quantity || 1, unitPrice: _order.unitPrice || 0 }];
+      const grand = its.reduce((s, i) => s + (i.quantity || 0) * (i.unitPrice || 0), 0);
+      const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
+
+      const statusLabels = {
+        orcamento: t('status.orcamento', 'Orçamento'),
+        modelagem: t('status.modelagem', 'Modelagem'),
+        validacao: t('status.validacao', 'Aprovação'),
+        aprovado: t('status.aprovado', 'Confirmado'),
+        fila: t('status.fila', 'Em Fila'),
+        printing: t('status.printing', 'Produção'),
+        enviado: t('status.enviado', 'Enviado'),
+        done: t('status.done', 'Concluído')
+      };
+
+      const today = new Date().toLocaleDateString('pt-PT');
+      const signature = _company.signature || null;
+      const companyName = _company.companyName || '3DZAAP';
+      const city = (_company.companyConfig && _company.companyConfig.city) || 'Portugal';
+
+      const itemRows = its.map((it, i) => `
     <tr>
       <td><strong>${i + 1}. ${escH(it.description || '—')}</strong></td>
       <td class="r">${it.quantity || 1}</td>
@@ -969,7 +1158,7 @@ function updateReceiptModal() {
       <td class="r bold">${fmtCurrency((it.quantity || 1) * (it.unitPrice || 0))}</td>
     </tr>`).join('');
 
-  const sigRow = `
+      const sigRow = `
     <div class="rcpt-sig-row">
       <div></div>
       <div class="rcpt-sig-block">
@@ -980,11 +1169,11 @@ function updateReceiptModal() {
       </div>
     </div>`;
 
-  const companyLogoStr = (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano') && _company.logoUrl 
-    ? `<img src="${_company.logoUrl}" style="height:44px; width:auto; border-radius:12%; margin-left:12px; border:1px solid rgba(255,255,255,0.1)">`
-    : '';
+      const companyLogoStr = (_company.companyPlan === 'business' || _company.companyPlan === 'business_ano') && _company.logoUrl
+        ? `<img src="${_company.logoUrl}" style="height:44px; width:auto; border-radius:12%; margin-left:12px; border:1px solid rgba(255,255,255,0.1)">`
+        : '';
 
-  rcptContainer.innerHTML = `
+      rcptContainer.innerHTML = `
     <div class="rcpt-header">
       <div style="display:flex; align-items:center; gap:12px">
         <div style="display:flex; align-items:center;">
@@ -1059,35 +1248,35 @@ function updateReceiptModal() {
       <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 4px;">${t('orders.rcpt.no_fiscal_value', 'Este documento não tem valor fiscal, serve apenas de comprovativo.')}</div>
       <div style="font-weight:800; color:#3b8fd4">Documento gerado digitalmente.</div>
     </div>`;
-}
+    }
 
-function renderTracker() {
-  const steps = [
-    { k: 'orcamento',  l: t('portal.tracker_step_1', 'Orçamento'), i: '<i class="ph-bold ph-hourglass"></i>' },
-    { k: 'modelagem',  l: t('portal.tracker_step_2', 'Modelagem'), i: '<i class="ph-bold ph-ruler"></i>' },
-    { k: 'validacao',  l: t('portal.tracker_step_3', 'Aprovação'), i: '<i class="ph-bold ph-check-circle"></i>' },
-    { k: 'fila',       l: t('portal.tracker_step_4', 'Em Fila'), i: '<i class="ph-bold ph-package"></i>' },
-    { k: 'printing',   l: t('portal.tracker_step_5', 'Produção'), i: '<i class="ph-bold ph-printer"></i>' },
-    { k: 'enviado',    l: t('portal.tracker_step_6', 'Enviado'), i: '<i class="ph-bold ph-rocket-launch"></i>' },
-    { k: 'done',       l: t('portal.tracker_step_7', 'Concluído'), i: '<i class="ph-bold ph-flag-checkered"></i>' }
-  ];
-  
-  const s = _order.status;
-  let stepIdx = 0;
-  if (s === 'modelagem') stepIdx = 1;
-  else if (s === 'validacao') stepIdx = 2;
-  else if (s === 'aprovado' || s === 'fila') stepIdx = 3;
-  else if (s === 'printing') stepIdx = 4;
-  else if (s === 'enviado') stepIdx = 5;
-  else if (s === 'done') stepIdx = 6;
-  
-  const stepPercent = (stepIdx / (steps.length - 1)) * 100;
-  let stepsHtml = steps.map((st, i) => {
-    let cls = i === stepIdx ? 'active' : (i < stepIdx ? 'done' : '');
-    return `<div class="step ${cls}"><div class="step-dot">${st.i}</div><div class="step-lbl">${st.l}</div></div>`;
-  }).join('');
+    function renderTracker() {
+      const steps = [
+        { k: 'orcamento', l: t('portal.tracker_step_1', 'Orçamento'), i: '<i class="ph-bold ph-hourglass"></i>' },
+        { k: 'modelagem', l: t('portal.tracker_step_2', 'Modelagem'), i: '<i class="ph-bold ph-ruler"></i>' },
+        { k: 'validacao', l: t('portal.tracker_step_3', 'Aprovação'), i: '<i class="ph-bold ph-check-circle"></i>' },
+        { k: 'fila', l: t('portal.tracker_step_4', 'Em Fila'), i: '<i class="ph-bold ph-package"></i>' },
+        { k: 'printing', l: t('portal.tracker_step_5', 'Produção'), i: '<i class="ph-bold ph-printer"></i>' },
+        { k: 'enviado', l: t('portal.tracker_step_6', 'Enviado'), i: '<i class="ph-bold ph-rocket-launch"></i>' },
+        { k: 'done', l: t('portal.tracker_step_7', 'Concluído'), i: '<i class="ph-bold ph-flag-checkered"></i>' }
+      ];
 
-  return `
+      const s = _order.status;
+      let stepIdx = 0;
+      if (s === 'modelagem') stepIdx = 1;
+      else if (s === 'validacao') stepIdx = 2;
+      else if (s === 'aprovado' || s === 'fila') stepIdx = 3;
+      else if (s === 'printing') stepIdx = 4;
+      else if (s === 'enviado') stepIdx = 5;
+      else if (s === 'done') stepIdx = 6;
+
+      const stepPercent = (stepIdx / (steps.length - 1)) * 100;
+      let stepsHtml = steps.map((st, i) => {
+        let cls = i === stepIdx ? 'active' : (i < stepIdx ? 'done' : '');
+        return `<div class="step ${cls}"><div class="step-dot">${st.i}</div><div class="step-lbl">${st.l}</div></div>`;
+      }).join('');
+
+      return `
     <div class="tracker-card">
       <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> ${t('portal.tracker_title', 'ESTADO DA PRODUÇÃO')}</div>
       <div class="steps-container">
@@ -1098,37 +1287,37 @@ function renderTracker() {
       </div>
     </div>
   `;
-}
+    }
 
-function renderPrintingTracker() {
-  const its = _order.items || [];
-  if (!its.length) return '';
+    function renderPrintingTracker() {
+      const its = _order.items || [];
+      if (!its.length) return '';
 
-  const sessions = _order.printSessions || [];
-  const _inPrintingNow = (idx) => sessions.find(s => !s.completedAt && s.items && s.items.some(si => si.itemIndex === idx));
+      const sessions = _order.printSessions || [];
+      const _inPrintingNow = (idx) => sessions.find(s => !s.completedAt && s.items && s.items.some(si => si.itemIndex === idx));
 
-  const itemsHtml = its.map((it, idx) => {
-    const qty = parseInt(it.quantity) || 1;
-    const printed = Math.min(parseInt(it.printedQty)||0, qty);
-    const session = _inPrintingNow(idx);
-    const isDone = printed >= qty;
+      const itemsHtml = its.map((it, idx) => {
+        const qty = parseInt(it.quantity) || 1;
+        const printed = Math.min(parseInt(it.printedQty) || 0, qty);
+        const session = _inPrintingNow(idx);
+        const isDone = printed >= qty;
 
-    let prig = '';
-    if (isDone) prig = `<span style="color:var(--success); font-weight:800; font-size:.8rem"><i class="ph-bold ph-check-circle"></i> Concluído (${qty}/${qty})</span>`;
-    else if (session) prig = `<span style="color:var(--blue); font-weight:800; font-size:.8rem"><i class="ph-bold ph-spinner spinner" style="display:inline-block; border:none; width:auto; height:auto; animation: spin 1.5s linear infinite"></i> A imprimir ${session.printerLabel ? `(${session.printerLabel})` : ''}</span>`;
-    else prig = `<span style="color:var(--muted); font-weight:700; font-size:.8rem"><i class="ph-bold ph-dots-three"></i> Aguarda (${printed}/${qty})</span>`;
+        let prig = '';
+        if (isDone) prig = `<span style="color:var(--success); font-weight:800; font-size:.8rem"><i class="ph-bold ph-check-circle"></i> Concluído (${qty}/${qty})</span>`;
+        else if (session) prig = `<span style="color:var(--blue); font-weight:800; font-size:.8rem"><i class="ph-bold ph-spinner spinner" style="display:inline-block; border:none; width:auto; height:auto; animation: spin 1.5s linear infinite"></i> A imprimir ${session.printerLabel ? `(${session.printerLabel})` : ''}</span>`;
+        else prig = `<span style="color:var(--muted); font-weight:700; font-size:.8rem"><i class="ph-bold ph-dots-three"></i> Aguarda (${printed}/${qty})</span>`;
 
-    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--bg-card); border-radius:8px; margin-bottom:8px; border:1px solid var(--border-input)">
-      <div style="font-weight:700; font-size:.9rem">${qty > 1 ? `<span style="color:var(--blue)">${qty}x</span> ` : ''}${escH(it.description || 'Item '+(idx+1))}</div>
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--bg-card); border-radius:8px; margin-bottom:8px; border:1px solid var(--border-input)">
+      <div style="font-weight:700; font-size:.9rem">${qty > 1 ? `<span style="color:var(--blue)">${qty}x</span> ` : ''}${escH(it.description || 'Item ' + (idx + 1))}</div>
       <div>${prig}</div>
     </div>`;
-  }).join('');
+      }).join('');
 
-  const total = its.reduce((s, it) => s + (parseInt(it.quantity) || 1), 0);
-  const printed = its.reduce((s, it) => s + Math.min(parseInt(it.printedQty)||0, parseInt(it.quantity)||1), 0);
-  const p = total ? Math.round((printed/total)*100) : 0;
+      const total = its.reduce((s, it) => s + (parseInt(it.quantity) || 1), 0);
+      const printed = its.reduce((s, it) => s + Math.min(parseInt(it.printedQty) || 0, parseInt(it.quantity) || 1), 0);
+      const p = total ? Math.round((printed / total) * 100) : 0;
 
-  return `
+      return `
     <div class="tracker-card" style="text-align:left">
       <div class="tracker-title" style="justify-content:flex-start; margin-bottom:16px"><i class="ph-bold ph-printer"></i> PEÇAS EM PRODUÇÃO</div>
       ${itemsHtml}
@@ -1143,75 +1332,76 @@ function renderPrintingTracker() {
       </div>
     </div>
   `;
-}
+    }
 
-function renderButtons() {
-  const bar = document.getElementById('actionsBar');
-  let html = '';
-  const s = _order.status;
-  
-  if (s === 'orcamento') {
-    html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_decline', 'Recusar')}</button>
+    function renderButtons() {
+      const bar = document.getElementById('actionsBar');
+      let html = '';
+      const s = _order.status;
+
+      if (s === 'orcamento') {
+        html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_decline', 'Recusar')}</button>
              <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_budget', 'Aprovar Orçamento')}</button>`;
-  } else if (s === 'validacao') {
-    html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_reject_model', 'Alterações')}</button>
+      } else if (s === 'validacao') {
+        html += `<button class="btn-portal btn-decline" onclick="handleAction('decline')"><i class="ph-bold ph-x-circle"></i> ${t('portal.btn_reject_model', 'Alterações')}</button>
              <button class="btn-portal btn-approve" onclick="handleAction('approve')"><i class="ph-bold ph-check-circle"></i> ${t('portal.btn_approve_final', 'Confirmar Produção')}</button>`;
-  } else if (s === 'declined') {
-    html += `<div style="color:var(--danger);font-weight:700;width:100%;text-align:center">${t('portal.status_declined_msg', 'Pedido Cancelado')}</div>`;
-  } else {
-    bar.style.display = 'none';
-    return;
-  }
-  bar.innerHTML = html;
-  bar.style.display = 'flex';
-}
+      } else if (s === 'declined') {
+        html += `<div style="color:var(--danger);font-weight:700;width:100%;text-align:center">${t('portal.status_declined_msg', 'Pedido Cancelado')}</div>`;
+      } else {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.innerHTML = html;
+      bar.style.display = 'flex';
+    }
 
-async function handleAction(action) {
-  if (action === 'approve' && !window.confirm(t('portal.confirm_approve', 'Deseja confirmar esta ação?'))) return;
-  try {
-    const btn = document.querySelector('.btn-approve');
-    if (btn) { btn.disabled = true; btn.innerHTML = '...'; }
-    await DB.respondToQuote(_token, action);
-    window.location.reload();
-  } catch (err) { alert('Erro: ' + err.message); }
-}
+    async function handleAction(action) {
+      if (action === 'approve' && !window.confirm(t('portal.confirm_approve', 'Deseja confirmar esta ação?'))) return;
+      try {
+        const btn = document.querySelector('.btn-approve');
+        if (btn) { btn.disabled = true; btn.innerHTML = '...'; }
+        await DB.respondToQuote(_token, action);
+        window.location.reload();
+      } catch (err) { alert('Erro: ' + err.message); }
+    }
 
-function notifyOwner() {
-  const cfg = _company.companyConfig || {};
-  const phone = (cfg.whatsapp || cfg.phone || cfg.cPhone || '').replace(/\D/g, '');
-  const msg = encodeURIComponent(`Olá! Vi o estado do meu pedido ${_order.orderNumber} no portal e gostaria de falar consigo.`);
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-}
+    function notifyOwner() {
+      const cfg = _company.companyConfig || {};
+      const phone = (cfg.whatsapp || cfg.phone || cfg.cPhone || '').replace(/\D/g, '');
+      const msg = encodeURIComponent(`Olá! Vi o estado do meu pedido ${_order.orderNumber} no portal e gostaria de falar consigo.`);
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    }
 
-async function printPortalReceipt() {
-  if (!_order) return;
-  try {
-    const num = _order.orderNumber || 'recibo';
-    const filename = `3DZAAP-${num}.pdf`;
-    
-    // Sincronizado 100% com o módulo de pedidos para garantir paridade total
-    await downloadPDF('printableReceipt', filename, {
-      margin: [10, 10],
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    });
-  } catch (err) { 
-    console.error('Erro ao gerar PDF:', err);
-    alert(t('portal.err_pdf', 'Erro ao gerar PDF.')); 
-  }
-}
+    async function printPortalReceipt() {
+      if (!_order) return;
+      try {
+        const num = _order.orderNumber || 'recibo';
+        const filename = `3DZAAP-${num}.pdf`;
 
-function renderError(title, msg, icon) {
-  document.getElementById('portalContent').innerHTML = `
+        // Sincronizado 100% com o módulo de pedidos para garantir paridade total
+        await downloadPDF('printableReceipt', filename, {
+          margin: [10, 10],
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        });
+      } catch (err) {
+        console.error('Erro ao gerar PDF:', err);
+        alert(t('portal.err_pdf', 'Erro ao gerar PDF.'));
+      }
+    }
+
+    function renderError(title, msg, icon) {
+      document.getElementById('portalContent').innerHTML = `
     <div class="portal-error" style="text-align:center;padding:60px 24px">
       <div style="font-size:4rem;margin-bottom:24px">${icon}</div>
       <h1>${title}</h1>
       <p style="color:var(--muted);margin:10px 0">${msg}</p>
       <a href="index.html" class="btn btn-primary" style="margin-top:24px;display:inline-flex">${t('portal.btn_back', 'Voltar')}</a>
     </div>`;
-}
+    }
 
-init();
-</script>
+    init();
+  </script>
 </body>
+
 </html>

@@ -1099,6 +1099,21 @@
             <input type="date" id="oExpiresAt" class="form-input">
           </div>
         </div>
+
+        <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_shipping"><i
+            class="ph-bold ph-truck"></i> Expedição e Entrega</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" data-i18n="orders.modal.lbl_shipping_service">Transportadora</label>
+            <select id="oShippingService" class="form-select">
+              <!-- Dynamically populated by renderShippingOptions() -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="orders.modal.lbl_tracking_code">Código de Rastreio</label>
+            <input type="text" id="oTrackingCode" class="form-input" placeholder="Insira o código..." data-i18n="[placeholder]orders.modal.shipping_placeholder">
+          </div>
+        </div>
         <div class="form-row full" style="margin-bottom:0">
           <div class="form-group">
             <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Observações</span> <span
@@ -2621,11 +2636,44 @@
     }
 
     // ── MODAL ──────────────────────────────
+    }
+    
+    function renderShippingOptions() {
+      const select = document.getElementById('oShippingService');
+      if (!select) return;
+      
+      const t = (k, v, vars) => window.i18n ? window.i18n.getNestedTranslation(k, vars, v) : v;
+      const lang = i18n.currentLocale || 'pt-PT';
+      
+      const regional = {
+        'pt-PT': ['ctt', 'ctt_expresso', 'dpd', 'gls', 'mrw'],
+        'pt-BR': ['correios_br', 'jadlog', 'loggi', 'azul_cargo'],
+        'es':    ['correos', 'correos_express', 'seur', 'nacex', 'mrw'],
+        'en-GB': ['royal_mail', 'parcelforce', 'evri', 'yodel', 'dpd'],
+        'en-US': ['usps', 'amazon']
+      };
+      
+      // Apenas serviços verdadeiramente globais em qualquer região
+      const global = ['dhl', 'fedex', 'ups', 'other'];
+      const relevant = regional[lang] || [];
+      
+      const list = [...relevant, ...global.filter(g => !relevant.includes(g))];
+      
+      let html = `<option value="" data-i18n="shipping.none">${t('shipping.none', '— Sem rastreio —')}</option>`;
+      list.forEach(key => {
+        html += `<option value="${key}" data-i18n="shipping.${key}">${t('shipping.' + key, key)}</option>`;
+      });
+      
+      select.innerHTML = html;
+    }
+
     function openModal(id = null) {
       if (id) clearUnread(id);
       editingId = id;
       _items = [];
       document.getElementById('orderItemsList').innerHTML = '';
+      
+      renderShippingOptions();
       // reset weight unit header
       const _lbl = document.getElementById('weightUnitLabel');
       if (_lbl) _lbl.textContent = 'g/ml';
@@ -2649,6 +2697,8 @@
         document.getElementById('oDueDate').value = _toDateStr(o.dueDate);
         document.getElementById('oNotes').value = o.notes || '';
         document.getElementById('oExpiresAt').value = o.expiresAt ? o.expiresAt.split('T')[0] : '';
+        document.getElementById('oShippingService').value = o.shippingService || '';
+        document.getElementById('oTrackingCode').value = o.trackingCode || '';
         const its = (o.items?.length) ? o.items : [{ description: o.description || '', quantity: o.quantity || 1, unitPrice: o.unitPrice || 0, filamentId: '', weightG: '' }];
         // Normalize items: support old calculator format (qty/weight/total → quantity/weightG/unitPrice)
         its.forEach(it => addOrderItem(_normalizeItem(it)));
@@ -2668,6 +2718,8 @@
         const defExp = new Date();
         defExp.setDate(defExp.getDate() + 7);
         document.getElementById('oExpiresAt').value = defExp.toISOString().split('T')[0];
+        document.getElementById('oShippingService').value = '';
+        document.getElementById('oTrackingCode').value = '';
 
         addOrderItem();
       }
@@ -3124,6 +3176,8 @@
         dueDate: document.getElementById('oDueDate').value,
         notes: document.getElementById('oNotes').value.trim(),
         expiresAt: document.getElementById('oExpiresAt').value ? new Date(document.getElementById('oExpiresAt').value).toISOString() : null,
+        shippingService: document.getElementById('oShippingService').value,
+        trackingCode: document.getElementById('oTrackingCode').value.trim(),
         updatedAt: new Date().toISOString(),
       };
 
