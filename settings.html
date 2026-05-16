@@ -1479,6 +1479,11 @@ async function startCheckout(planId) {
 
     if (data?.url) {
       window.location.href = data.url; // Redireciona para o checkout do Stripe
+      // Restaura o botão após o redirecionamento para o caso de o utilizador usar o botão "Voltar" do navegador
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = oldText;
+      }, 1000);
     } else {
       throw new Error("Não foi possível gerar o link de pagamento.");
     }
