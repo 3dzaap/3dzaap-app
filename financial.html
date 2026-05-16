@@ -215,11 +215,29 @@
 .chart-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 .chart-card-title { font-size: 0.72rem; font-weight: 800; color: var(--subtle); letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 
-.int-grid { display:grid; grid-template-columns: 140px 1fr; gap:20px; align-items:center }
-@media(max-width:680px){
   .int-grid { grid-template-columns:1fr; justify-items:center; text-align:center }
 }
 
+/* ── BI SECTION STYLES ── */
+.bi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
+@media(max-width:900px) { .bi-grid { grid-template-columns: 1fr; } }
+
+.bi-subcard { background: var(--bg-card-s); border: 1.5px solid var(--border); border-radius: var(--rm); padding: 18px; position: relative; }
+.bi-subcard-title { font-size: 0.72rem; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.05em; }
+
+#biLockOverlay {
+  position: absolute; inset: 0; 
+  background: rgba(255,255,255,0.02); 
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+  z-index: 100; display: none; align-items: center; justify-content: center; border-radius: var(--rl);
+  animation: fadeIn 0.3s ease;
+}
+[data-theme="dark"] #biLockOverlay { background: rgba(0,0,0,0.2); }
+
+.bi-lock-card {
+  text-align: center; background: var(--bg-card); padding: 32px; border-radius: 20px; 
+  border: 1.5px solid var(--border); box-shadow: var(--sh-float); max-width: 380px;
+}
 </style>
 
 <style>
@@ -381,6 +399,71 @@
         </div>
         <div style="height:280px; position:relative; width:100%">
           <canvas id="yearlyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- ── SECTION BI (EXCLUSIVO BUSINESS) ── -->
+      <div id="biSection" class="fin-card" style="margin-bottom: 20px; position: relative; display: none;">
+        <div class="fin-card-title" style="justify-content: space-between;">
+          <span><i class="ph-bold ph-briefcase"></i> Inteligência de Negócio (BI)</span>
+          <span id="biBadge" style="background: rgba(168,85,247,0.1); color: #a855f7; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 800;">EXCLUSIVO BUSINESS</span>
+        </div>
+        
+        <div class="bi-grid">
+          <!-- Projeção de Caixa -->
+          <div class="bi-subcard">
+            <div class="bi-subcard-title">
+              <i class="ph-bold ph-chart-line"></i> Fluxo de Caixa Projetado (30 dias)
+            </div>
+            <div style="height: 180px; position: relative; width: 100%">
+              <canvas id="cashForecastChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Break-even e Margens -->
+          <div class="bi-subcard" style="display: flex; flex-direction: column; gap: 18px;">
+            <div>
+              <div class="bi-subcard-title">
+                <i class="ph-bold ph-target"></i> Ponto de Equilíbrio (Break-even)
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px;">
+                <span id="beLabel">Cobertura de Custos Fixos</span>
+                <span id="beValue">0€ / 0€</span>
+              </div>
+              <div style="height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05);">
+                <div id="beBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #4ade80); transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+              </div>
+              <p id="beInsight" style="font-size: 0.72rem; color: var(--muted); margin-top: 6px; font-style: italic;">A calcular...</p>
+            </div>
+
+            <div style="border-top: 1.5px dashed var(--border); padding-top: 14px;">
+              <div class="bi-subcard-title">
+                <i class="ph-bold ph-scales"></i> Margem de Contribuição Real
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="text-align: center; background: var(--bg-card); padding: 10px; border-radius: 12px; border: 1.5px solid var(--border);">
+                  <div style="font-size: 0.62rem; font-weight: 800; color: var(--subtle); text-transform: uppercase;">Margem Média</div>
+                  <div style="font-size: 1.3rem; font-weight: 900; color: #a855f7; font-family: var(--mono);" id="valAvgMargin">0%</div>
+                </div>
+                <div style="text-align: center; background: var(--bg-card); padding: 10px; border-radius: 12px; border: 1.5px solid var(--border);">
+                  <div style="font-size: 0.62rem; font-weight: 800; color: var(--subtle); text-transform: uppercase;">Lucro Operacional</div>
+                  <div style="font-size: 1.3rem; font-weight: 900; color: #22c55e; font-family: var(--mono);" id="valOpProfit">0.00€</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lock Overlay -->
+        <div id="biLockOverlay">
+          <div class="bi-lock-card">
+            <i class="ph-bold ph-lock-laminated" style="font-size: 2.8rem; color: #a855f7; margin-bottom: 14px; filter: drop-shadow(0 4px 10px rgba(168,85,247,0.3));"></i>
+            <h3 style="font-size: 1.15rem; font-weight: 900; margin-bottom: 8px; color: var(--dark);">Inteligência Estratégica</h3>
+            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">Desbloqueia a projeção de caixa, cálculo automático de margem real e o ponto de equilíbrio no plano Business.</p>
+            <button class="btn btn-primary" onclick="window.location.href='settings.html?tab=assinatura'" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: none; box-shadow: 0 6px 20px rgba(124,58,237,0.3); width: 100%; justify-content: center; padding: 12px;">
+              <i class="ph-bold ph-rocket-launch"></i> Fazer Upgrade para Business
+            </button>
+          </div>
         </div>
       </div>
 
@@ -651,18 +734,31 @@ async function loadUserData() {
   return session;
 }
 
+const ADVANCED_FIN_PLANS = ['business'];
+
 async function applyFeatureGating() {
   try {
     const session = await Auth.getSession();
     const plan = (session?.plan || 'trial').replace('_ano', '');
-    // Gate: only trial and business can access financial
-    const FIN_PLANS = ['trial','business'];
+    
+    // Agora Pro e Business têm acesso ao Financeiro
+    const FIN_PLANS = ['trial', 'pro', 'business'];
     if (!FIN_PLANS.includes(plan)) {
       UI.showFeatureGate('financial');
       return;
     }
-    // Os badges de lock no sidebar são geridos pelo sidebar.js via PLAN_FEATURES —
-    // não é necessário manipulá-los aqui.
+
+    // Gerir visibilidade do BI Section
+    const biSection = document.getElementById('biSection');
+    const biLock = document.getElementById('biLockOverlay');
+    if (biSection) {
+      biSection.style.display = 'block';
+      if (ADVANCED_FIN_PLANS.includes(plan) || plan === 'trial') {
+        biLock.style.display = 'none';
+      } else {
+        biLock.style.display = 'flex';
+      }
+    }
   } catch(e) {}
 }
 
@@ -671,6 +767,134 @@ function setToday() {
   _periodo = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   document.getElementById('periodoInput').value = _periodo;
   renderAll();
+}
+
+// ── BI LOGIC (Finance 3.0) ──────────────────────────────────
+let forecastChart = null;
+
+function renderBI(periodOrders) {
+  const plan = (Sidebar.getSession()?.plan || 'trial').replace('_ano','');
+  if (!ADVANCED_FIN_PLANS.includes(plan) && plan !== 'trial') return;
+
+  // 1. CÁLCULO DE MARGENS E LUCRO OPERACIONAL
+  let totalRevenue = 0;
+  let totalProdCost = 0;
+
+  periodOrders.forEach(o => {
+    totalRevenue += (o.total || 0);
+    totalProdCost += calculateOrderProductionCost(o);
+  });
+
+  const opProfit = totalRevenue - totalProdCost;
+  const avgMargin = totalRevenue > 0 ? (opProfit / totalRevenue) * 100 : 0;
+
+  animateValue('valOpProfit', 0, opProfit, 800);
+  document.getElementById('valAvgMargin').textContent = avgMargin.toFixed(1) + '%';
+
+  // 2. BREAK-EVEN POINT
+  const periodExps = expenses.filter(e => (e.date || '').slice(0, 7) === _periodo);
+  const fixedCosts = periodExps.reduce((s,e) => s + (e.value || 0), 0);
+  const currentRevenue = totalRevenue; 
+  
+  const bePct = fixedCosts > 0 ? Math.min(100, (currentRevenue / fixedCosts) * 100) : 100;
+  document.getElementById('beValue').textContent = `${fmtCurrency(currentRevenue)} / ${fmtCurrency(fixedCosts)}`;
+  document.getElementById('beBar').style.width = bePct + '%';
+  
+  const beInsight = document.getElementById('beInsight');
+  if (currentRevenue >= fixedCosts) {
+    beInsight.textContent = "Parabéns! Já cobriste os teus custos fixos este mês. 🎉";
+    beInsight.style.color = "#16a34a";
+  } else {
+    const missing = fixedCosts - currentRevenue;
+    beInsight.textContent = `Faltam ${fmtCurrency(missing)} para atingir o Ponto de Equilíbrio.`;
+    beInsight.style.color = "var(--muted)";
+  }
+
+  // 3. PROJEÇÃO DE CAIXA (CASH FORECAST)
+  renderCashForecast();
+}
+
+function calculateOrderProductionCost(o) {
+  // Se temos os inputs originais da calculadora, usamos a fórmula exata
+  if (o.config && o.config._orig_inputs) {
+    const i = o.config._orig_inputs;
+    let materialCost = 0;
+    let machineTime = 0;
+    
+    if (i.mode === 'simple') {
+      materialCost = ((i.materialPrice || 25) / 1000) * (i.weight || 0);
+      machineTime = i.time || 0;
+    } else if (i.mesas) {
+      i.mesas.forEach(m => {
+        m.parts.forEach(p => {
+          materialCost += ((p.price || 25) / 1000) * (p.weight || 0) * (p.qty || 1);
+          machineTime += (p.time || 0) * (p.qty || 1);
+        });
+      });
+    }
+    // Simplificação para BI: Amortização + Energia (Fallback 0.25€/h se não houver configs)
+    const overhead = machineTime * 0.25; 
+    return materialCost + overhead;
+  }
+  
+  // Fallback se não houver metadados: 30% do valor do pedido como custo (estimativa conservadora)
+  return (o.total || 0) * 0.35;
+}
+
+function renderCashForecast() {
+  const ctx = document.getElementById('cashForecastChart');
+  if (!ctx) return;
+
+  // Gerar datas para os próximos 30 dias
+  const labels = [];
+  const forecastData = [];
+  let cumulative = parseFloat(document.getElementById('kpiPago').textContent.replace(/[^0-9.-]/g,'')) || 0;
+
+  // Adicionar o saldo atual como ponto inicial
+  const now = new Date();
+  
+  for (let d = 0; d <= 30; d += 5) {
+    const targetDate = new Date();
+    targetDate.setDate(now.getDate() + d);
+    const dateStr = targetDate.toISOString().split('T')[0];
+    
+    // Somar pedidos que vencem até esta data e não estão pagos
+    const expected = orders.filter(o => 
+      o.paymentStatus === 'pendente' && 
+      o.dueDate && o.dueDate <= dateStr && 
+      o.dueDate >= now.toISOString().split('T')[0]
+    ).reduce((s, o) => s + (o.total || 0), 0);
+
+    labels.push(d === 0 ? 'Hoje' : `D+${d}`);
+    forecastData.push(cumulative + expected);
+  }
+
+  if (forecastChart) forecastChart.destroy();
+  forecastChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Saldo Projetado',
+        data: forecastData,
+        borderColor: '#a855f7',
+        backgroundColor: 'rgba(168,85,247,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#a855f7'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { display: false },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
 }
 
 async function loadOrders() {
@@ -753,6 +977,7 @@ function renderAll() {
   renderStatusDistribution(periodOrders);
   renderDoneStats(periodOrders);
   renderPrinterEfficiency(periodOrders);
+  renderBI(periodOrders);
   
   // Educational State Logic
   const eduState = document.getElementById('finEduState');

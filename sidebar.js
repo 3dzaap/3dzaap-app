@@ -237,8 +237,8 @@ const Sidebar = (() => {
     trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
     starter:      { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
     starter_ano:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
-    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:false, backoffice:true,  settings:false },
-    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:false, backoffice:true,  settings:false },
+    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
+    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
     business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
     business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
   };
