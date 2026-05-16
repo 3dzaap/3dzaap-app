@@ -556,7 +556,9 @@ const STATUS_LABELS = {
   modelagem:  () => i18n.getNestedTranslation('status.modelagem'),
   validacao:  () => i18n.getNestedTranslation('status.validacao'),
   aprovado:   () => i18n.getNestedTranslation('status.aprovado'),
+  fila:       () => i18n.getNestedTranslation('status.fila'),
   printing:   () => i18n.getNestedTranslation('status.printing'),
+  enviado:    () => i18n.getNestedTranslation('status.enviado'),
   done:       () => i18n.getNestedTranslation('status.done')
 };
 
@@ -598,7 +600,7 @@ function renderStatusDistribution(periodOrders) {
     statusGroups[k].count++;
     statusGroups[k].total += o.total||0;
   });
-  const statusOrder = ['orcamento','modelagem','validacao','aprovado','printing','done'];
+  const statusOrder = ['orcamento','modelagem','validacao','aprovado','fila','printing','enviado','done'];
   const tbody = document.getElementById('statusTableBody');
   if (!periodOrders.length) {
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--subtle);padding:16px">${t('financial.empty_period')}</td></tr>`;
@@ -869,7 +871,7 @@ function renderAll() {
 }
 
 function renderStatusBadge(s) {
-  const cls = {orcamento:'bs-orcamento',modelagem:'bs-modelagem',validacao:'bs-validacao',aprovado:'bs-aprovado',printing:'bs-printing',done:'bs-done'};
+  const cls = {orcamento:'bs-orcamento',modelagem:'bs-modelagem',validacao:'bs-validacao',aprovado:'bs-aprovado',fila:'bs-fila',printing:'bs-printing',enviado:'bs-enviado',done:'bs-done'};
   const label = typeof STATUS_LABELS[s] === 'function' ? STATUS_LABELS[s]() : (STATUS_LABELS[s]||s);
   return `<span class="badge ${cls[s]||'bs-orcamento'}"><span class="badge-dot"></span>${label}</span>`;
 }

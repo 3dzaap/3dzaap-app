@@ -944,7 +944,8 @@
             <option value="orcamento" data-i18n="status.orcamento">Orçamento</option>
             <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
             <option value="validacao" data-i18n="status.validacao">Validação</option>
-            <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
+            <option value="aprovado" data-i18n="status.aprovado">Confirmado</option>
+            <option value="fila" data-i18n="status.fila">Em Fila</option>
             <option value="printing" data-i18n="status.printing">Em Produção</option>
             <option value="enviado" data-i18n="status.enviado">Enviado</option>
             <option value="done" data-i18n="status.done">Concluído</option>
@@ -1065,7 +1066,8 @@
               <option value="orcamento" data-i18n="status.orcamento">Orçamento</option>
               <option value="modelagem" data-i18n="status.modelagem">Modelagem</option>
               <option value="validacao" data-i18n="status.validacao">Validação</option>
-              <option value="aprovado" data-i18n="status.aprovado">Aprovado</option>
+              <option value="aprovado" data-i18n="status.aprovado">Confirmado</option>
+              <option value="fila" data-i18n="status.fila">Em Fila</option>
               <option value="printing" data-i18n="status.printing">Em Produção</option>
               <option value="enviado" data-i18n="status.enviado">Enviado</option>
               <option value="done" data-i18n="status.done">Concluído</option>
@@ -1241,15 +1243,15 @@
       orcamento:   () => i18n.getNestedTranslation('status.orcamento')   || 'Orçamento',
       modelagem:   () => i18n.getNestedTranslation('status.modelagem')   || 'Modelagem',
       validacao:   () => i18n.getNestedTranslation('status.validacao')   || 'Validação',
-      aprovado:    () => i18n.getNestedTranslation('status.aprovado')    || 'Aprovado',
+      aprovado:    () => i18n.getNestedTranslation('status.aprovado')    || 'Confirmado',
       printing:    () => i18n.getNestedTranslation('status.printing')    || 'Em Produção',
       enviado:     () => i18n.getNestedTranslation('status.enviado')     || 'Enviado',
       done:        () => i18n.getNestedTranslation('status.done')        || 'Concluído',
       pendente:    () => i18n.getNestedTranslation('status.pendente')    || 'Pendente',
       pago:        () => i18n.getNestedTranslation('status.pago')        || 'Pago',
-      fila:        () => i18n.getNestedTranslation('status.aprovado')    || 'Na Fila',
+      fila:        () => i18n.getNestedTranslation('status.fila')        || 'Em Fila',
     };
-    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'printing', printing: 'enviado', enviado: 'done', done: null };
+    const STATUS_NEXT = { orcamento: 'modelagem', modelagem: 'validacao', validacao: 'aprovado', aprovado: 'fila', fila: 'printing', printing: 'enviado', enviado: 'done', done: null };
 
     // ── HELPERS ────────────────────────────
     function renderStatusBadge(status) {

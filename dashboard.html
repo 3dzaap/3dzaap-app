@@ -298,7 +298,8 @@
 .s-validacao{background:rgba(37,99,235,.1);color:#2563EB;border:1px solid rgba(37,99,235,.28)}
 
 .s-aprovado{background:rgba(2, 132, 199, 0.1);color:#0284c7;border:1px solid rgba(2, 132, 199, 0.28)}
-
+.s-fila{background:rgba(71,85,105,.12);color:#475569;border:1px solid rgba(71,85,105,.3)}
+.s-enviado{background:rgba(124,58,237,.12);color:#7c3aed;border:1px solid rgba(124,58,237,.3)}
 .s-printing{background:rgba(239,68,68,.1);color:#DC2626;border:1px solid rgba(239,68,68,.28)}
 
 .s-done{background:rgba(34,197,94,.12);color:var(--success);border:1px solid rgba(34,197,94,.28)}
@@ -1254,8 +1255,9 @@ function renderStats() {
     revBadge.className = 'stat-v2-badge badge-neu';
   }
 
+  const statusOrder = ['orcamento','modelagem','validacao','aprovado','fila','printing','enviado','done'];
   const pipeBudget = (state.orders || []).filter(o => ['orcamento','validacao'].includes(o.status)).length;
-  const pipeProd   = (state.orders || []).filter(o => ['modelagem','aprovado','printing'].includes(o.status)).length;
+  const pipeProd   = (state.orders || []).filter(o => ['modelagem','aprovado','fila','printing'].includes(o.status)).length;
   const pipeDone   = (state.orders || []).filter(o => ['done','concluido','entregue'].includes(o.status)).length;
   
   const totalFunnel = pipeBudget + pipeProd + pipeDone;
@@ -1330,8 +1332,9 @@ function renderRecentOrders() {
       orcamento: t('status.orcamento','Orçamento'), 
       modelagem: t('status.modelagem','Modelagem'), 
       validacao: t('status.validacao','Validação'), 
-      aprovado:  t('status.aprovado','Aprovado'), 
-      printing:  t('status.printing','Imprimindo'), 
+      aprovado:  t('status.aprovado','Confirmado'), 
+      fila:      t('status.fila','Em Fila'),
+      printing:  t('status.printing','Produção'), 
       enviado:   t('status.enviado','Enviado'),
       done:      t('status.done','Concluído') 
     }[status] || status;
