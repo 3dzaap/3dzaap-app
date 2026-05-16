@@ -1013,6 +1013,15 @@
         const data = await DB.getTrackingInfo(_token);
         _order = data.order;
         _company = data;
+
+        // Herança de idioma: se a empresa tem um idioma definido, forçar o i18n a carregar esse idioma
+        if (_company && _company.companyConfig && _company.companyConfig.language) {
+          const makerLang = _company.companyConfig.language;
+          if (window.i18n && window.i18n.currentLocale !== makerLang) {
+            await window.i18n.loadTranslations(makerLang);
+          }
+        }
+
         const storedPin = sessionStorage.getItem('3dzaap_portal_pin_' + _token);
         if (_order.passphrase && _order.passphrase !== storedPin) {
           showPinScreen();
@@ -1069,13 +1078,14 @@
       const topLogo = (isBusiness && _company.logoUrl) ? _company.logoUrl : 'logo.jpg';
       const companyName = _company.companyName || '3DZAAP';
       const clientFirstName = (_order.clientName || '').split(' ')[0];
+      const greeting = t('portal.greeting', `Olá, ${escH(clientFirstName)}! 👋`, { name: clientFirstName });
 
       let html = `
         <div style="display:flex; align-items:center; gap:16px; margin-bottom: 32px; animation: fadeUp .6s var(--ease) both;">
           <img src="${topLogo}" style="height:64px; width:64px; border-radius:18px; box-shadow: 0 8px 16px rgba(0,0,0,0.08); object-fit: cover;" onerror="this.onerror=null; this.src='logo.jpg';">
           <div class="portal-header-area" style="margin-bottom:0">
             <div style="font-size:0.75rem; font-weight:800; color:var(--blue); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px; opacity:0.8">${escH(companyName)}</div>
-            <h1 class="greeting-text" style="margin-bottom:0; font-size: 1.6rem; letter-spacing: -0.5px">Olá, ${escH(clientFirstName)}! 👋</h1>
+            <h1 class="greeting-text" style="margin-bottom:0; font-size: 1.6rem; letter-spacing: -0.5px">${greeting}</h1>
           </div>
         </div>
       `;
