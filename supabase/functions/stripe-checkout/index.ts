@@ -121,6 +121,10 @@ serve(async (req) => {
       mode: 'subscription',
       allow_promotion_codes: true,
       tax_id_collection: { enabled: true },
+      customer_update: {
+        name: 'auto',
+        address: 'auto'
+      },
       success_url: `${origin}/settings.html?tab=assinatura&status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/settings.html?tab=assinatura&status=cancel`,
       subscription_data: {
