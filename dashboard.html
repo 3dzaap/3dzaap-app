@@ -689,7 +689,7 @@
       </div>
 
       <!-- Content Grid (v2.0) -->
-      <div class="content-grid" style="grid-template-columns: 2fr 1fr;gap:24px">
+      <div class="content-grid" id="mainContentGrid" style="grid-template-columns: 2fr 1fr;gap:24px">
 
         <!-- To-Do Hub / Recent Orders -->
         <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
@@ -706,7 +706,7 @@
         </div>
 
         <!-- Exception Alerts Stack -->
-        <div style="display:flex;flex-direction:column;gap:24px">
+        <div id="exceptionStack" style="display:flex;flex-direction:column;gap:24px">
           <!-- Filament Alerts -->
           <div class="card" id="filamentAlertsCard">
             <div class="card-header" style="padding-bottom:12px;border-bottom:1px solid var(--border)">
@@ -777,6 +777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderRecentOrders();
   renderFilamentAlerts();
   renderPrinterAlerts();
+  updateDashboardLayout();
   applyFeatureGating();
   setDate();
   loadBroadcasts();  // async — não bloqueia o render principal
@@ -965,6 +966,7 @@ function calcHealthScore() {
   let openCount = 0;
   
   let revThis = 0;
+  let salesThis = 0;
   let revPrev = 0;
   
   let weightThis = 0;
@@ -985,6 +987,7 @@ function calcHealthScore() {
     if (isD) {
       doneCount++;
       if (date.startsWith(todayStr)) {
+        salesThis += total;
         if (o.paymentStatus === 'pago') revThis += total;
         
         const its = o.items || [{ weightG: o.weightG || 0, quantity: o.quantity || 1 }];
@@ -1043,7 +1046,7 @@ function calcHealthScore() {
   // 1. Rentabilidade Real (20 pts)
   let marginScore = 0;
   if (weightThis > 0) {
-    const ticketG = revThis / weightThis;
+    const ticketG = salesThis / weightThis;
     if (ticketG >= 0.10) marginScore = 20;
     else if (ticketG >= 0.07) marginScore = 15;
     else if (ticketG >= 0.04) marginScore = 8;
@@ -1227,18 +1230,30 @@ function getFilamentStatus(f) {
 
 function renderStats() {
   if (!state.orders) return;
+  const now = new Date();
+  const thisMonthStr = now.toISOString().slice(0, 7);
   
-  const totalRevenue = (state.orders || []).reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
-  const paidRevenue  = (state.orders || []).filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const thisMonthOrders = (state.orders || []).filter(o => 
+    (o.createdAt || o.created_at || '').startsWith(thisMonthStr) && 
+    (o.status || '').toLowerCase() !== 'cancelado'
+  );
+
+  const totalRevenue = thisMonthOrders.reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const paidRevenue  = thisMonthOrders.filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
   const pendingRevenue = totalRevenue - paidRevenue;
-  const activeOrders = (state.orders || []).filter(o => !['concluido', 'done', 'entregue', 'cancelado'].includes(o.status)).length;
+  
+  // As encomendas ativas (pipeline) independem do mês, são apenas as que não estão fechadas
+  const activeOrders = (state.orders || []).filter(o => !['concluido', 'done', 'entregue', 'cancelado', 'enviado', 'expedido'].includes((o.status || '').toLowerCase())).length;
   const alertFils = (state.filaments || []).filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
   const now = new Date();
   const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
   const prevTotalRevenue = state.orders
-    .filter(o => (o.createdAt || o.created_at || '').startsWith(prevMonthStr))
+    .filter(o => 
+      (o.createdAt || o.created_at || '').startsWith(prevMonthStr) && 
+      (o.status || '').toLowerCase() !== 'cancelado'
+    )
     .reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
 
   animateValue('statRevenue', 0, totalRevenue, 1000);
@@ -1259,14 +1274,14 @@ function renderStats() {
   const statusOrder = ['orcamento','modelagem','validacao','aprovado','fila','printing','enviado','done'];
   const pipeBudget = (state.orders || []).filter(o => ['orcamento','validacao'].includes(o.status)).length;
   const pipeProd   = (state.orders || []).filter(o => ['modelagem','aprovado','fila','printing'].includes(o.status)).length;
-  const pipeDone   = (state.orders || []).filter(o => ['done','concluido','entregue'].includes(o.status)).length;
+  const pipeDone   = (state.orders || []).filter(o => ['done','concluido','pronto'].includes(o.status)).length;
   
   const totalFunnel = pipeBudget + pipeProd + pipeDone;
   const pctBudget = totalFunnel > 0 ? (pipeBudget / totalFunnel)*100 : 33.3;
   const pctProd   = totalFunnel > 0 ? (pipeProd / totalFunnel)*100 : 33.3;
   const pctDone   = totalFunnel > 0 ? (pipeDone / totalFunnel)*100 : 33.4;
 
-  document.getElementById('statOrders').textContent = activeOrders;
+  document.getElementById('statOrders').textContent = totalFunnel;
   document.getElementById('pipeValBudget').textContent = pipeBudget;
   document.getElementById('pipeValProd').textContent = pipeProd;
   document.getElementById('pipeValDone').textContent = pipeDone;
@@ -1454,6 +1469,27 @@ function renderFilamentAlerts() {
       <span class="fil-status ${statusClass[status]||'fil-low'}">${statusLabel[status]||status}</span>
     </div>`;
   }).join('');
+}
+
+// ── LAYOUT HELPER ──────────────────────
+function updateDashboardLayout() {
+  const filCard = document.getElementById('filamentAlertsCard');
+  const printCard = document.getElementById('printerAlertsCard');
+  const grid = document.getElementById('mainContentGrid');
+  const stack = document.getElementById('exceptionStack');
+
+  if (!filCard || !printCard || !grid || !stack) return;
+
+  const hasFil = filCard.style.display !== 'none';
+  const hasPrint = printCard.style.display !== 'none';
+
+  if (!hasFil && !hasPrint) {
+    stack.style.display = 'none';
+    grid.style.gridTemplateColumns = '1fr';
+  } else {
+    stack.style.display = 'flex';
+    grid.style.gridTemplateColumns = '2fr 1fr';
+  }
 }
 
 // ── FEATURE GATING ─────────────────────
