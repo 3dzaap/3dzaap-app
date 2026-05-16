@@ -1180,6 +1180,46 @@
       `;
     }
 
+    function getTrackingUrl(service, code) {
+      if (!code) return null;
+      const urls = {
+        // Portugal
+        ctt: `https://www.ctt.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
+        ctt_expresso: `https://www.cttexpresso.pt/feapl_2/app/open/objectSearch/objectSearch.jspx?lang=def&objects=${code}`,
+        
+        // Brasil
+        correios_br: `https://www.linkcorreios.com.br/${code}`,
+        jadlog: `https://www.jadlog.com.br/siteInstitucional/tracking.jad?tracking=${code}`,
+        loggi: `https://www.loggi.com/rastreio/${code}`,
+        azul_cargo: `https://www.azulcargo.com.br/Rastreio/Rastrear?n=${code}`,
+
+        // Espanha
+        correos: `https://www.correos.es/es/es/herramientas/localizador/detalles?codigo=${code}`,
+        correos_express: `https://www.correosexpress.com/web/correosexpress/consultar-envio?codigo=${code}`,
+        seur: `https://www.seur.com/seguimiento-online.do?procedencia=externo&numExpedicion=${code}`,
+        nacex: `https://www.nacex.es/seguimientoDetalle.do?irnacex=S&numExp=${code}`,
+
+        // UK
+        royal_mail: `https://www.royalmail.com/track-your-item#/tracking-results/${code}`,
+        parcelforce: `https://www.parcelforce.com/track-trace?trackNumber=${code}`,
+        evri: `https://www.evri.com/track-a-parcel/${code}/details`,
+        yodel: `https://www.yodel.co.uk/tracking/${code}`,
+
+        // US
+        usps: `https://tools.usps.com/go/TrackConfirmAction?tLabels=${code}`,
+        amazon: `https://track.amazon.com/tracking/${code}`,
+
+        // Global
+        dhl: `https://www.dhl.com/pt-pt/home/tracking/tracking-express.html?submit=1&tracking-id=${code}`,
+        fedex: `https://www.fedex.com/fedextrack/?trknbr=${code}`,
+        ups: `https://www.ups.com/track?HTMLVersion=5.0&loc=pt_PT&trackNums=${code}`,
+        dpd: `https://tracking.dpd.pt/search/${code}`,
+        gls: `https://gls-group.eu/PT/pt/seguimento-encomendas?match=${code}`,
+        mrw: `https://www.mrw.pt/tracking/?numero=${code}`
+      };
+      return urls[service] || null;
+    }
+
     function renderPrintingTracker() {
       const its = _order.items || [];
       if (!its.length) return '';
