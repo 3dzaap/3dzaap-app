@@ -1247,7 +1247,6 @@ function renderStats() {
   const alertFils = (state.filaments || []).filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 
-  const now = new Date();
   const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
   const prevTotalRevenue = state.orders
     .filter(o => 
