@@ -431,10 +431,12 @@ const DB = {
         .eq('id', order.id).eq('company_id', _companyId)
         .select().single();
       if (error) {
-        // Fallback se a coluna não existir (ex: erro PGRST204 ou status 400 por coluna não encontrada)
-        if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
-          console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Removendo do payload.');
+        // Fallback se a coluna não existir
+        if (error.message && (error.message.includes('has_unread_client_update') || error.message.includes('shipping_service') || error.message.includes('tracking_code')) || error.code === 'PGRST204') {
+          console.warn('[3DZAAP] Coluna(s) de shipping ou unread não existem. Removendo do payload.');
           delete row.has_unread_client_update;
+          delete row.shipping_service;
+          delete row.tracking_code;
           const retry = await _sb.from('orders').update(row).eq('id', order.id).eq('company_id', _companyId).select().single();
           if (retry.error) throw retry.error;
           return _mapOrderFromDB(retry.data);
@@ -453,9 +455,11 @@ const DB = {
         .from('orders').insert({ ...row, company_id: _companyId })
         .select().single();
       if (error) {
-        if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
-          console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Removendo do payload no insert.');
+        if (error.message && (error.message.includes('has_unread_client_update') || error.message.includes('shipping_service') || error.message.includes('tracking_code')) || error.code === 'PGRST204') {
+          console.warn('[3DZAAP] Coluna(s) de shipping ou unread não existem. Removendo do payload.');
           delete row.has_unread_client_update;
+          delete row.shipping_service;
+          delete row.tracking_code;
           const retry = await _sb.from('orders').insert({ ...row, company_id: _companyId }).select().single();
           if (retry.error) throw retry.error;
           return _mapOrderFromDB(retry.data);
@@ -994,6 +998,8 @@ function _mapOrderFromDB(row) {
     expiresAt:     row.expires_at,
     isQuote:       row.is_quote || false,
     hasUnreadClientUpdate: row.has_unread_client_update || false,
+    shippingService: row.shipping_service || '',
+    trackingCode:  row.tracking_code || '',
     updatedAt:     row.updated_at,
   };
 }
@@ -1020,6 +1026,8 @@ function _mapOrderToDB(o) {
     passphrase:      o.passphrase   || null,
     expires_at:      o.expiresAt    || null,
     is_quote:        o.isQuote      || false,
+    shipping_service: o.shippingService || null,
+    tracking_code:   o.trackingCode    || null,
   };
   
   // Optional columns (Let DB triggers/defaults handle these if new)
