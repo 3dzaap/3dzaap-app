@@ -423,9 +423,15 @@ const DB = {
     // Check if it's a new order without a number (e.g. from Calculator)
     const isNew = !order.id || _isLocalId(order.id);
 
-    const row   = _mapOrderToDB(order);
-    console.log('[3DZAAP] A gravar pedido. Payload:', row);
+    const row = _mapOrderToDB(order);
     
+    console.group('[3DZAAP] Diagnóstico de Gravação');
+    console.log('ID do Pedido:', order.id || 'Novo Pedido');
+    console.log('Transportadora (Input):', order.shippingService);
+    console.log('Código Rastreio (Input):', order.trackingCode);
+    console.log('Payload Final (DB):', row);
+    console.groupEnd();
+
     if (!isNew) {
       const { data, error } = await _sb
         .from('orders').update(row)
