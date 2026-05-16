@@ -168,6 +168,53 @@
 .hb-dot.active-orange { background: #f59e0b; }
 .hb-dot.active-red { background: #ef4444; }
 
+/* Custom Premium Tooltip */
+.hb-item { position: relative; cursor: help; }
+.hb-item::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  font-weight: 500;
+  white-space: normal;
+  width: 200px;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.hb-item:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+/* Seta do tooltip */
+.hb-item::before {
+  content: '';
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  border: 6px solid transparent;
+  border-top-color: #1e293b;
+  opacity: 0;
+  z-index: 1000;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hb-item:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 [data-theme="dark"] .health-breakdown { background: rgba(255,255,255,0.03); }
 [data-theme="dark"] .stat-card-v2 { background: #1e293b; }
 [data-theme="dark"] .farm-mini-card { background: rgba(0,0,0,0.2); }
@@ -601,15 +648,15 @@
           <div class="health-bar-track"><div class="health-bar-fill" id="healthBar"></div></div>
           
           <div class="health-breakdown">
-            <div class="hb-item" title="Mede a rentabilidade (€/g), despesas vs receitas e risco de concentração de clientes.">
+            <div class="hb-item" data-tip="Mede a rentabilidade (€/g), despesas vs receitas e risco de concentração de clientes.">
               <span class="hb-label">Financeiro</span>
               <div class="hb-dots" id="hbDotsFin"></div>
             </div>
-            <div class="hb-item" title="Mede a velocidade de produção (Lead Time), atrasos e saúde da frota.">
+            <div class="hb-item" data-tip="Mede a velocidade de produção (Lead Time), atrasos e saúde da frota.">
               <span class="hb-label">Operacional</span>
               <div class="hb-dots" id="hbDotsOps"></div>
             </div>
-            <div class="hb-item" title="Verifica se tens impressoras, materiais e logótipo configurados.">
+            <div class="hb-item" data-tip="Verifica se tens impressoras, materiais e logótipo configurados.">
               <span class="hb-label">Setup</span>
               <div class="hb-dots" id="hbDotsSetup"></div>
             </div>
