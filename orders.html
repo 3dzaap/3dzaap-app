@@ -1449,6 +1449,19 @@
     function renderLibraryItems() {
       const q = (document.getElementById('libSearch').value || '').toLowerCase();
       const box = document.getElementById('libList');
+
+      if (!_dbProducts || _dbProducts.length === 0) {
+        box.innerHTML = `
+          <div style="text-align:center; padding:32px 16px; color:var(--muted)">
+            <div style="font-size:2.2rem; margin-bottom:12px; color:var(--blue); opacity:0.8"><i class="ph-bold ph-folder-open"></i></div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--dark); margin-bottom:6px">Biblioteca de produtos vazia</div>
+            <div style="font-size:0.78rem; max-width:260px; margin:0 auto 16px; line-height:1.4">Cadastre os seus produtos em <strong>Gestão > Produtos</strong> para poder adicioná-los rapidamente aos seus pedidos.</div>
+            <a href="products.html" class="btn btn-blue btn-sm" style="display:inline-flex; align-items:center; gap:6px; font-size:0.78rem; padding:8px 16px; text-decoration:none; font-weight:700; border-radius:6px; background:var(--blue); color:white; border:none; box-shadow:0 4px 12px rgba(59,143,212,0.2)"><i class="ph-bold ph-plus"></i> Criar Primeiro Produto</a>
+          </div>
+        `;
+        return;
+      }
+
       const filtered = _dbProducts.filter(p => p.name.toLowerCase().includes(q));
 
       if (!filtered.length) {
@@ -2768,14 +2781,13 @@
       }
       document.getElementById('clientSugs').style.display = 'none';
       
-      // Control library button visibility/state
+      // Control library button visibility/state — always enabled for superior UX
       const libBtn = document.getElementById('btnOpenLibrary');
       if (libBtn) {
-        const hasProducts = (_dbProducts && _dbProducts.length > 0);
-        libBtn.disabled = !hasProducts;
-        libBtn.style.opacity = hasProducts ? '1' : '0.5';
-        libBtn.style.cursor = hasProducts ? 'pointer' : 'not-allowed';
-        libBtn.title = hasProducts ? '' : (i18n.getNestedTranslation('orders.modal.lib_empty') || 'A biblioteca de produtos está vazia.');
+        libBtn.disabled = false;
+        libBtn.style.opacity = '1';
+        libBtn.style.cursor = 'pointer';
+        libBtn.title = '';
       }
 
       document.getElementById('modalOverlay').classList.add('open');
