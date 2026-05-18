@@ -935,6 +935,24 @@
     .shake {
       animation: shake .4s var(--ease);
     }
+
+    /* ── Mobile Modal Scroll Override ── */
+    @media (max-width: 680px) {
+      .modal-overlay {
+        padding: 12px 8px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+      }
+      .modal-content {
+        max-height: none !important;
+        border-radius: 20px !important;
+        overflow: visible !important;
+      }
+      .modal-body {
+        overflow-y: visible !important;
+        flex: none !important;
+      }
+    }
   </style>
 </head>
 

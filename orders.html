@@ -3539,11 +3539,19 @@
         const base = window.location.origin.includes('file://') ? 'https://app.3dzaap.com' : window.location.origin;
         const portalUrl = base + '/portal.html?t=' + token;
 
-        let msg = t('orders.wa_msg_track', '*Olá {name}!* Aqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:').replace('{name}', o.clientName) + `\n\n${portalUrl}`;
+        const statusMsgs = {
+          orcamento: t('orders.wa_msg.orcamento', '*Olá {name}!*\nSegue o orçamento profissional para o seu projeto de impressão 3D.\nPode consultar e aprovar diretamente no link:'),
+          modelagem: t('orders.wa_msg.modelagem', '*Olá {name}!*\nO seu projeto entrou na fase de *Modelagem 3D*.\nAcompanhe o progresso em tempo real pelo portal:'),
+          validacao: t('orders.wa_msg.validacao', '*Olá {name}!*\nA modelagem 3D do seu projeto está concluída e aguarda a sua *Aprovação*.\nVeja os detalhes e aprove diretamente no link:'),
+          aprovado:  t('orders.wa_msg.aprovado',  '*Olá {name}!*\nO seu pedido foi *Confirmado*.\nEstamos a preparar tudo para iniciar a produção.\nAcompanhe em tempo real pelo link:'),
+          fila:      t('orders.wa_msg.fila',      '*Olá {name}!*\nO seu projeto já está na *Fila de Impressão* e iniciará muito em breve.\nAcompanhe a sua posição pelo link:'),
+          printing:  t('orders.wa_msg.printing',  '*Olá {name}!*\nExcelentes notícias!\nO seu projeto já está em *Produção/Impressão 3D*.\nAcompanhe a produção em tempo real no link:'),
+          enviado:   t('orders.wa_msg.enviado',   '*Olá {name}!*\nO seu pedido de impressão 3D foi *Enviado*!\nSegue o link com os detalhes do envio e rastreio da transportadora:'),
+          done:      t('orders.wa_msg.done',      '*Olá {name}!*\nO seu pedido está *Concluído e Pronto*!\nAgradecemos a sua preferência.\nVeja os detalhes finais no link:')
+        };
 
-        if (o.status === 'orcamento') {
-          msg = t('orders.wa_msg_quote', '*Olá {name}!* Segue o orçamento profissional para a sua impressão 3D. Pode aprovar ou declinar diretamente no link:').replace('{name}', o.clientName) + `\n\n${portalUrl}`;
-        }
+        const template = statusMsgs[o.status] || t('orders.wa_msg.default', '*Olá {name}!*\nAqui está o link para acompanhar o seu pedido de impressão 3D em tempo real:');
+        let msg = template.replace('{name}', o.clientName) + `\n\n${portalUrl}`;
 
         if (passphrase) {
           msg += `\n\n*${t('orders.wa_msg_pin', 'Código de acesso:')}* ${passphrase}`;
