@@ -1427,6 +1427,18 @@
     function confirmLibSelection() {
       if (_libSelectedIds.length === 0) return;
       
+      // Se há exatamente 1 item por defeito na lista e está totalmente vazio, removemo-lo
+      if (_items.length === 1) {
+        const first = _items[0];
+        const isEmpty = !first.description.trim() && 
+                        (parseFloat(first.unitPrice) || 0) === 0 && 
+                        (parseFloat(first.printTime) || 0) === 0 && 
+                        (!first.materials || first.materials.length === 0);
+        if (isEmpty) {
+          removeItem(first._id);
+        }
+      }
+
       _libSelectedIds.forEach(id => {
         const p = _dbProducts.find(x => x.id === id);
         if (!p) return;
