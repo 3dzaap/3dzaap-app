@@ -264,38 +264,92 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
     return;
   }
 
-  // Carregar biblioteca via CDN se não estiver carregada
-  if (typeof html2pdf === 'undefined') {
+  // Carrega jsPDF via CDN se necessário
+  if (typeof window.jspdf === 'undefined') {
     await new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.crossOrigin = 'anonymous';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       script.onload = resolve;
-      script.onerror = () => reject(new Error('Falha ao carregar biblioteca PDF'));
+      script.onerror = () => reject(new Error('Falha ao carregar biblioteca jsPDF'));
       document.head.appendChild(script);
     });
   }
 
-  const opt = {
-    margin: customOpts.margin || [10, 5, 10, 5], 
-    filename: customOpts.filename || filename || 'documento.pdf',
-    image: { type: 'jpeg', quality: 0.98, ...(customOpts.image || {}) },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
-      letterRendering: true,
-      logging: false,
-      scrollY: 0,
-      windowWidth: Math.max(element.scrollWidth || 0, 800),
-      windowHeight: Math.max(element.scrollHeight || 0, 1000),
-      ...(customOpts.html2canvas || {})
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', ...(customOpts.jsPDF || {}) },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'], ...(customOpts.pagebreak || {}) }
-  };
+  // Carrega html2canvas via CDN se necessário
+  if (typeof window.html2canvas === 'undefined') {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Falha ao carregar biblioteca html2canvas'));
+      document.head.appendChild(script);
+    });
+  }
 
   try {
-    await html2pdf().set(opt).from(element).save();
+    const canvas = await window.html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById(elementId);
+        if (clonedElement) {
+          // Remove do fluxo para evitar destruição de conteúdo ao limpar o body
+          clonedElement.remove();
+
+          const body = clonedDoc.body;
+          body.innerHTML = '';
+          body.style.margin = '0';
+          body.style.padding = '20px';
+          body.style.background = '#ffffff';
+          body.style.color = '#1e293b';
+          body.style.width = '700px';
+          body.appendChild(clonedElement);
+
+          clonedElement.style.width = '100%';
+          clonedElement.style.position = 'relative';
+          clonedElement.style.background = '#ffffff';
+          clonedElement.style.color = '#1e293b';
+          clonedElement.style.boxShadow = 'none';
+          clonedElement.style.display = 'block';
+
+          // Garante que containers internos usem o tema claro correto
+          clonedElement.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
+            el.style.background = '#ffffff';
+            el.style.color = '#1e293b';
+            el.style.flex = 'unset';
+          });
+        }
+      },
+      ...(customOpts.html2canvas || {})
+    });
+
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      ...(customOpts.jsPDF || {})
+    });
+
+    const imgWidth = 210; // Largura da folha A4 em mm
+    const pageHeight = 295; // Altura da folha A4 em mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(filename || 'documento.pdf');
   } catch (err) {
     console.error('[3DZAAP] Erro ao gerar PDF:', err);
     throw err;
