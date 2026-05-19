@@ -996,6 +996,7 @@ async function checkAdminAccess() {
   Sidebar.setSession(session);
   document.getElementById('adminContent').style.display = 'block';
   await refreshAll();
+  localStorage.setItem('3dzaap_last_admin_view', new Date().toISOString());
 }
 
 async function refreshAll() {

@@ -68,7 +68,11 @@ const Sidebar = (() => {
         const onclickAttr = item.onclick      ? ` onclick="${item.onclick}"` : '';
         const superAttr   = item.superAdmin   ? ' data-superadmin="1" style="display:none"' : '';
         const targetAttr  = item.external     ? ' target="_blank" rel="noopener noreferrer"' : '';
-        const unreadBadge = item.id === 'orders' ? `<span id="sidebarUnreadOrdersBadge" style="display:none;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-left:8px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)"></span>` : '';
+        const unreadBadge = item.id === 'orders' 
+          ? `<span id="sidebarUnreadOrdersBadge" style="display:none;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-left:8px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)"></span>` 
+          : item.id === 'admin'
+            ? `<span id="sidebarUnreadAdminBadge" style="display:none;padding:2px 6px;font-size:0.65rem;font-weight:800;color:#ffffff;background:var(--success);border-radius:10px;margin-left:8px;box-shadow:0 0 0 2px rgba(34,197,94,0.2)"></span>`
+            : '';
         return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${unreadBadge}${lockSpan}</a>`;
       }).join('\n        ');
 
@@ -219,17 +223,42 @@ const Sidebar = (() => {
       el.style.display = session.isSuperAdmin ? '' : 'none';
     });
     
-    _checkUnreadNotifications();
+    _checkUnreadNotifications(session);
   }
 
-  async function _checkUnreadNotifications() {
+  async function _checkUnreadNotifications(session) {
     try {
       if (typeof DB !== 'undefined' && DB.hasUnreadOrders) {
         const hasUnread = await DB.hasUnreadOrders();
         const badge = document.getElementById('sidebarUnreadOrdersBadge');
         if (badge) badge.style.display = hasUnread ? 'inline-block' : 'none';
       }
-    } catch (e) {}
+
+      if (session && session.isSuperAdmin) {
+        const lastViewStr = localStorage.getItem('3dzaap_last_admin_view');
+        // Default to last 7 days to avoid showing a massive initial count on first load
+        const lastView = lastViewStr ? new Date(lastViewStr) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+        if (typeof _sb !== 'undefined' && _sb) {
+          const { count, error } = await _sb
+            .from('companies')
+            .select('*', { count: 'exact', head: true })
+            .gt('created_at', lastView.toISOString());
+
+          const adminBadge = document.getElementById('sidebarUnreadAdminBadge');
+          if (adminBadge) {
+            if (!error && count > 0) {
+              adminBadge.textContent = count;
+              adminBadge.style.display = 'inline-block';
+            } else {
+              adminBadge.style.display = 'none';
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[3DZAAP] Erro ao verificar notificações de admin:', e);
+    }
   }
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
