@@ -286,7 +286,8 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       letterRendering: true,
       logging: false,
       scrollY: 0,
-      windowWidth: 800,
+      windowWidth: Math.max(element.scrollWidth || 0, 800),
+      windowHeight: Math.max(element.scrollHeight || 0, 1000),
       ...(customOpts.html2canvas || {})
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', ...(customOpts.jsPDF || {}) },
