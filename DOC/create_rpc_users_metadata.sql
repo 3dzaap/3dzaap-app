@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS public.get_users_metadata();
+
 CREATE OR REPLACE FUNCTION public.get_users_metadata()
 RETURNS TABLE (
     id uuid,
