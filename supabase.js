@@ -148,6 +148,26 @@ const Auth = {
     return company;
   },
 
+  async checkSlugAvailability(slug) {
+    if (!slug || slug.length < 2) return false;
+    try {
+      const { data, error } = await _sb
+        .from('companies')
+        .select('id')
+        .eq('slug', slug)
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        console.warn('[3DZAAP] Falha ao verificar slug:', error.message);
+        return true; // Graceful fallback
+      }
+      return !data; // Se data existe, o slug está ocupado (not available)
+    } catch(e) {
+      console.warn('[3DZAAP] Erro ao verificar slug:', e);
+      return true;
+    }
+  },
+
   async login(email, pass) {
     const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;

@@ -267,11 +267,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch(e) { window.location.href = 'auth.html'; }
 });
 
-function goStep(n) {
+async function goStep(n) {
   const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   if (n === 2) {
     const name = document.getElementById('companyName').value.trim();
     if (name.length < 2) { toast(t('onboarding.err_name_short') || 'Nome da empresa é muito curto', 'err'); return; }
+
+    const slug = document.getElementById('companySlug').value.trim();
+    if (slug.length < 2) { toast(t('onboarding.err_slug_short') || 'O URL da empresa deve ter pelo menos 2 caracteres.', 'err'); return; }
+
+    setBusy('step1Btn', true);
+    toast(t('onboarding.checking_slug') || 'A verificar disponibilidade do URL...', 'ok');
+    const available = await Auth.checkSlugAvailability(slug);
+    setBusy('step1Btn', false);
+
+    if (!available) {
+      toast(t('onboarding.err_slug_in_use') || 'Este URL de empresa já está em uso. Por favor escolha outro.', 'err');
+      document.getElementById('companySlug').classList.add('error');
+      return;
+    }
+
+    document.getElementById('companySlug').classList.remove('error');
     document.getElementById('dot1').classList.add('done');
     document.getElementById('dot1').textContent = '✓';
     document.getElementById('line1').classList.add('done');
