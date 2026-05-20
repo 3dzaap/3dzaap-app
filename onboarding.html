@@ -341,19 +341,61 @@ async function finishOnboarding() {
   STATE.busy = true; setBusy('finishBtn', true);
   try {
     const config = { filamentPrice:25, printerPrice:600, printerLife:5000, electricityPrice:0.22, profitMargin:30, failureRate:5 };
-    await Auth.completeOnboarding({
+    
+    // 1. Cria a empresa sempre como 'trial' na DB para evitar bypass de pagamento
+    const company = await Auth.completeOnboarding({
       userId: STATE.user.id,
       companyName: document.getElementById('companyName').value.trim(),
       slug: document.getElementById('companySlug').value.trim(),
       country: document.getElementById('companyCountry').value,
-      plan: STATE.plan,
+      plan: 'trial',
       config
     });
-    document.getElementById('onboardingPanel').style.display = 'none';
-    document.getElementById('successPanel').style.display = 'block';
-    document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
+
+    // 2. Se escolheu o plano trial gratuito, segue o fluxo normal
+    if (STATE.plan === 'trial') {
+      document.getElementById('onboardingPanel').style.display = 'none';
+      document.getElementById('successPanel').style.display = 'block';
+      document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
+      return;
+    }
+
+    // 3. Se escolheu um plano pago, redireciona para o Stripe Checkout
+    toast('Configuração guardada. A redirecionar para o pagamento...', 'ok');
+    
+    const planSuffix = STATE.billing === 'yearly' ? '_ano' : '';
+    const fullPlanId = STATE.plan + planSuffix;
+
+    const locale = window.i18n ? i18n.currentLocale : 'pt-PT';
+    let forcedCurrency = 'eur';
+    if (locale === 'pt-BR') forcedCurrency = 'brl';
+    else if (locale === 'en-US') forcedCurrency = 'usd';
+    else if (locale === 'en-GB') forcedCurrency = 'gbp';
+
+    const { data, error } = await _sb.functions.invoke('stripe-checkout', {
+      body: { 
+        plan: fullPlanId, 
+        companyId: company.id,
+        currency: forcedCurrency
+      }
+    });
+
+    if (error) throw error;
+
+    if (data?.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error("Não foi possível gerar o link de pagamento.");
+    }
   } catch(e) {
-    toast('Erro: ' + e.message, 'err');
+    toast('Erro: ' + e.message + '. Pode subscrever mais tarde nas Definições.', 'err');
+    // Em caso de erro com o Stripe, deixa-o ir para o dashboard no plano trial para não estragar a experiência
+    setTimeout(() => {
+      document.getElementById('onboardingPanel').style.display = 'none';
+      document.getElementById('successPanel').style.display = 'block';
+      document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
+    }, 3000);
+  } finally {
     STATE.busy = false; setBusy('finishBtn', false);
   }
 }
