@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post 14h - Lançamento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <style>
+    :root {
+      --blue: #3B8FD4;
+      --blue-d: #1d4ed8;
+      --orange: #F5943A;
+      --black: #020617;
+      --dark: #1e293b;
+      --white: #ffffff;
+      --muted: #64748b;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f1f5f9;
+      display: flex;
+      gap: 40px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Container para simular formato Instagram Square */
+    .ig-post-wrapper {
+      width: 1080px;
+      height: 1080px;
+      flex-shrink: 0;
+      transform: scale(0.75);
+      transform-origin: top center;
+      margin-bottom: -270px;
+      /* Compensa o espaço vazio do scale */
+      background: radial-gradient(circle at 50% 0%, #1e293b, #020617);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border-radius: 20px;
+    }
+
+    /* Efeitos de fundo */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.5;
+      z-index: 0;
+    }
+
+    .o1 {
+      width: 600px;
+      height: 600px;
+      background: var(--blue);
+      top: -200px;
+      left: -200px;
+    }
+
+    .o2 {
+      width: 500px;
+      height: 500px;
+      background: var(--orange);
+      bottom: -100px;
+      right: -100px;
+      opacity: 0.3;
+    }
+
+    /* Conteúdo */
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      color: white;
+      width: 80%;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .logo-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 22%;
+      background: white;
+      padding: 10px;
+    }
+
+    .logo-text {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .b3d {
+      color: var(--blue);
+    }
+
+    .bzp {
+      color: var(--orange);
+    }
+
+    .pm-text {
+      font-weight: 400;
+      font-size: 2rem;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 12px 30px;
+      background: rgba(59, 143, 212, 0.15);
+      border: 2px solid var(--blue);
+      color: var(--blue);
+      border-radius: 100px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 5.5rem;
+      font-weight: 900;
+      line-height: 1;
+      margin: 0 0 30px 0;
+      letter-spacing: -2px;
+    }
+
+    h1 span.hl {
+      background: linear-gradient(135deg, var(--blue), #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 2rem;
+      font-weight: 400;
+      color: #94a3b8;
+      max-width: 800px;
+      margin: 0 auto 60px auto;
+      line-height: 1.4;
+    }
+
+    .floating-cards {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+    }
+
+    .fcard {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px 32px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .fc-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .fc-info {
+      text-align: left;
+    }
+
+    .fc-lbl {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .fc-val {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: white;
+      margin-top: 5px;
+    }
+
+    /* Caption Container */
+    .caption-container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      flex-grow: 1;
+    }
+
+    .caption-container h2 {
+      margin-top: 0;
+      color: var(--dark);
+      font-size: 1.5rem;
+    }
+
+    .copy-btn {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-family: inherit;
+    }
+
+    .copy-btn:hover {
+      background: var(--blue-d);
+    }
+
+    textarea {
+      width: 100%;
+      height: 600px;
+      padding: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: none;
+    }
+
+    .instruction {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- CARROSSEL DE IMAGENS -->
+  <div style="width: 100%;">
+    <h2 style="color: var(--dark); margin-top:0;">1. Faz Screenshot destes 7 Slides para o Carrossel (Recorta como
+      Quadrado)</h2>
+    <div
+      style="display: flex; flex-direction: column; gap: 40px; padding-bottom: 20px; width: 100%; align-items: center;">
+
+      <!-- Slide 1 -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="content" style="text-align: center;">
+          <h1 style="font-size: 6rem; margin: 0;">Hoje é <span class="hl">diferente.</span></h1>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="ig-post-wrapper">
+        <div class="content" style="text-align: center;">
+          <p class="subtitle" style="font-size: 3rem; color: white;">Passaste meses a calcular preços numa folha de
+            <span class="b3d" style="font-weight:900;">Excel.</span></p>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="ig-post-wrapper">
+        <div class="content" style="text-align: center;">
+          <p class="subtitle" style="font-size: 3rem; color: white;">A ficar sem <span class="bzp"
+              style="font-weight:900;">filamento</span> a meio de uma impressão de 30h.</p>
+        </div>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="ig-post-wrapper">
+        <div class="content" style="text-align: center;">
+          <p class="subtitle" style="font-size: 3rem; color: white;">A falhar <span class="hl"
+              style="font-weight:900; background: linear-gradient(135deg, var(--blue), #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">prazos
+              de entrega</span> porque a produção estava um caos.</p>
+        </div>
+      </div>
+
+      <!-- Slide 5 -->
+      <div class="ig-post-wrapper">
+        <div class="content" style="text-align: center;">
+          <h1 style="font-size: 7rem;">Isso <span class="hl">acabou.</span></h1>
+        </div>
+      </div>
+
+      <!-- Slide 6 -->
+      <div class="ig-post-wrapper">
+        <div class="content" style="text-align: center; padding: 0 40px;">
+          <h2 style="font-size: 4rem; color: white; line-height: 1.3;">Transforme seu trabalho em lucro <span class="hl"
+              style="font-weight:900; background: linear-gradient(135deg, var(--orange), #f56565); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">profissional.</span>
+          </h2>
+        </div>
+      </div>
+
+      <!-- Slide 7 (Post Final) -->
+      <div class="ig-post-wrapper" id="postImage">
+        <div class="orb o1"></div>
+        <div class="orb o2"></div>
+
+        <div class="content">
+          <div class="logo-wrap" style="margin-bottom: 30px;">
+            <img src="logo.jpg" class="logo-img" alt="3DZAAP Logo" style="width: 120px; height: 120px; padding: 15px; border-radius: 25%;">
+          </div>
+
+          <div class="badge">Lançamento Oficial</div>
+
+          <h1 style="line-height: 1.1;"><span class="b3d" style="color: var(--blue); font-size: 4.5rem;">3D</span><span class="bzp" style="color: var(--orange); font-size: 4.5rem;">ZAAP</span><br><span class="hl">Print Manager</span><br><span style="font-size: 3.5rem; font-weight: 600; color: #cbd5e1; letter-spacing: -1px; line-height: 1.2; display: inline-block; margin-top: 20px;">O Sistema Operativo do teu<br>Estúdio 3D.</span></h1>
+
+          <div
+            style="margin-top: 60px; background: rgba(245,148,58,0.15); border: 2px solid var(--orange); padding: 32px 60px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; box-shadow: 0 10px 40px rgba(245,148,58,0.2); width: 80%;">
+            <i class="ph-bold ph-clock"
+              style="color: var(--orange); font-size: 3.5rem; animation: pulse 2s infinite;"></i>
+            <div style="text-align: center;">
+              <div
+                style="color: var(--orange); font-weight: 900; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px;">
+                Prepara-te</div>
+              <div style="color: white; font-weight: 700; font-size: 2.6rem; letter-spacing: -1px;">Hoje, às 16:00.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- A LEGENDA DO POST -->
+  <div class="caption-container">
+    <h2>2. Copia a Legenda</h2>
+    <p class="instruction">Texto preparado com emojis, formatação e hashtags.</p>
+    <button class="copy-btn" onclick="copyCaption()">Copiar Legenda</button>
+    <textarea id="captionText"
+      readonly>Arrasta para o lado 👉
+
+Hoje é o dia que tudo muda para o teu estúdio de impressão 3D. 🖨️
+
+🔵 Apresentamos o 3DZAAP Print Manager.
+O primeiro sistema operativo feito exclusivamente para estúdios de impressão 3D.
+
+Criámos o que nós próprios precisávamos para gerir as nossas impressoras e acabar com o caos.
+
+→ Calculadora de margem real (com energia, falhas e amortização)
+→ Gestão de stock preditiva (FDM e Resina)
+→ Pipeline de pedidos completo
+→ Link de tracking para os teus clientes
+→ Dashboard financeiro em tempo real
+
+🎁 7 dias grátis. Sem cartão de crédito. Setup em 1 minuto.
+
+🔗 Link na bio para começares agora.
+
+#3DZAAP #3DZAAPPrintManager #ImpressãO3D #3DPrinting #3DPrint #FDM #Resina #SLA #3DPrinter #Maker #MakerCommunity #MakerPortugal #Filamento #3DFilament #PLA #NegócioDigital #Empreendedorismo #SaaS</textarea>
+  </div>
+
+  <script>
+    function copyCaption() {
+      var copyText = document.getElementById("captionText");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(copyText.value);
+
+      var btn = document.querySelector('.copy-btn');
+      btn.innerText = "Copiado! ✓";
+      btn.style.background = "#22c55e";
+      setTimeout(function () {
+        btn.innerText = "Copiar Legenda";
+        btn.style.background = "#3B8FD4";
+      }, 2000);
+    }
+  </script>
+
+</body>
+
+</html>
