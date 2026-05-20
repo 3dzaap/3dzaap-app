@@ -653,7 +653,7 @@
       </div>
       <div class="form-row" style="margin-top:12px;">
         <div class="form-group">
-          <label class="form-label" data-i18n="printers.card.hours_used">Horas usadas (estimativa/manual)</label>
+          <label class="form-label" data-i18n="printers.modal.lbl_hours_used">Horas usadas (estimativa/manual)</label>
           <input type="text" id="pHoursUsed" class="form-input" placeholder="Ex: 1000:00">
         </div>
       </div>
@@ -840,11 +840,30 @@ async function loadData() {
 function _initBrandSelect() {
   const pBrand = document.getElementById('pBrand');
   if (!pBrand) return;
-  const brands = [...new Set(printerModels.map(m => m.brand))].sort();
-  const options = [`<option value="" data-i18n="printers.modal.lbl_brand_placeholder">— ${i18n.getNestedTranslation('printers.modal.lbl_brand_placeholder')} —</option>`]
+
+  // Deduplicate and trim case-insensitively
+  const brandsMap = {};
+  printerModels.forEach(m => {
+    if (!m.brand) return;
+    const trimmed = m.brand.trim();
+    const key = trimmed.toLowerCase();
+    if (!brandsMap[key]) {
+      brandsMap[key] = trimmed;
+    }
+  });
+  const brands = Object.values(brandsMap).sort((a, b) => a.localeCompare(b));
+
+  const placeholderText = (window.i18n && i18n.getNestedTranslation('printers.modal.lbl_brand_placeholder')) || 'Selecionar fabricante';
+  const customText = (window.i18n && i18n.getNestedTranslation('printers.modal.lbl_custom_model')) || 'Outro';
+
+  const options = [`<option value="" data-i18n="printers.modal.lbl_brand_placeholder">— ${placeholderText} —</option>`]
                 .concat(brands.map(b => `<option value="${b}">${b}</option>`))
-                .concat([`<option value="Outro" data-i18n="printers.modal.lbl_custom_model">${i18n.getNestedTranslation('printers.modal.lbl_custom_model')}…</option>`]);
+                .concat([`<option value="Outro" data-i18n="printers.modal.lbl_custom_model">${customText}…</option>`]);
   pBrand.innerHTML = options.join('');
+
+  if (window.i18n && typeof i18n.translatePage === 'function') {
+    i18n.translatePage(pBrand);
+  }
 }
 
 // ── RENDER ─────────────────────────────
