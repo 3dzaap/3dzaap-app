@@ -382,7 +382,10 @@ async function doRegister() {
   try {
     const res = await _sb.auth.signUp({
       email, password: pass,
-      options: { data: { fname, lname } }
+      options: { 
+        data: { fname, lname },
+        redirectTo: window.location.origin + '/auth.html'
+      }
     });
     if (res.error) throw res.error;
     
