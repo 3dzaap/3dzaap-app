@@ -353,7 +353,7 @@
         </div>
 
         <!-- IMPORT -->
-        <div class="bo-card">
+        <div class="bo-card" id="importCard" style="display:none">
           <div class="bo-card-header"><div class="bo-card-title"><i class="ph-bold ph-import"></i> Importar / Restaurar</div></div>
           <div class="bo-card-body">
             <div class="action-row">
@@ -526,6 +526,11 @@ async function loadUserData() {
     // Hide parts of the page for visual consistency
     document.querySelector('.page').style.opacity = '0.3';
     document.querySelector('.page').style.pointerEvents = 'none';
+  }
+
+  if (session.isSuperAdmin) {
+    const impCard = document.getElementById('importCard');
+    if (impCard) impCard.style.display = 'block';
   }
 
   Sidebar.setSession(session);
