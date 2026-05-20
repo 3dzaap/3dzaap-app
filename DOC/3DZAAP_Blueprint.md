@@ -928,3 +928,67 @@ Para evitar regressões futuras, os seguintes padrões foram estabelecidos como 
 ---
 
 *3DZAAP Print Manager — SaaS Blueprint v1.4 · Abril 2026 · © 2025 · Documento Confidencial*
+
+---
+
+## 24. Tarefas Prioritárias Pós-Lançamento (a partir de 26/05/2026)
+
+> [!IMPORTANT]
+> As tarefas abaixo foram projetadas e estão prontas para implementação imediata após o lançamento de 25 de maio de 2026. Devem ser a **primeira prioridade** da próxima sessão de desenvolvimento.
+
+### 24.1 — Sistema de Convites de Equipa via Resend (E-mail)
+
+**Contexto:** Atualmente, ao convidar um novo membro da equipa nas "Definições", o sistema insere um registo na tabela `invites` mas não envia nenhum e-mail. O utilizador convidado não recebe qualquer notificação.
+
+**O que foi projetado:**
+- Uma **Supabase Edge Function** (`supabase/functions/send-email/index.ts`) que comunica com a API do Resend.
+- Um **Database Webhook** no Supabase que deteta inserções na tabela `invites` e dispara automaticamente a Edge Function.
+- O convite chega ao e-mail do utilizador com um **link mágico** do tipo `https://app.3dzaap.com/register.html?invite_token=XXX`.
+
+**Passos de Implementação:**
+1. **Verificar o domínio `3dzaap.com`** no painel do Resend (essencial para envio).
+2. **Restaurar o código** da Edge Function (já estava criado em `supabase/functions/send-email/index.ts`, foi descartado intencionalmente antes do lançamento):
+   - Recebe o payload do webhook do Supabase
+   - Constrói o HTML do e-mail de convite
+   - Chama a API `https://api.resend.com/emails`
+3. **Deploy da função:**
+   ```bash
+   npx supabase secrets set RESEND_API_KEY=re_TACHAVE_AQUI
+   npx supabase functions deploy send-email --no-verify-jwt
+   ```
+4. **Criar o Webhook no Supabase Dashboard:**
+   - Menu: Database → Webhooks → Create Webhook
+   - Table: `invites` | Event: `INSERT` | Type: Edge Function → `send-email`
+5. **Testar** enviando um convite a partir das Definições.
+
+**Ficheiros de referência criados:**
+- `DOC/fix_memberships_and_invites.sql` — Trigger SQL para preencher automaticamente a tabela `memberships` quando uma empresa é criada, e a função RPC `accept_invite(uuid)`.
+- `DOC/setup_resend_emails.sql` — Documentação dos passos do Webhook no Supabase.
+
+---
+
+### 24.2 — Relatórios Semanais por E-mail
+
+**Contexto:** Cada empresa-cliente do SaaS deve receber um resumo semanal automático com as suas métricas (pedidos, faturação, utilizações).
+
+**Arquitetura proposta (a implementar depois dos convites):**
+- Reutilizar a mesma Edge Function `send-email` com `type: 'weekly_report'`.
+- Usar o `pg_cron` (disponível no Supabase) para agendar uma função SQL todas as segundas-feiras de manhã.
+- A função SQL recolhe métricas de cada empresa e chama a Edge Function com os dados.
+
+---
+
+### 24.3 — Tabela `memberships` e Administração Global
+
+**Contexto:** A tabela `memberships` não estava a ser preenchida aquando da criação de novas empresas durante o onboarding.
+
+**Solução pronta:** Executar o script `DOC/fix_memberships_and_invites.sql` no SQL Editor do Supabase. Este script cria:
+- Um **Trigger** `on_company_created` que insere automaticamente o dono (`owner`) na tabela `memberships` sempre que uma empresa é criada.
+- A função RPC `accept_invite(uuid)` necessária para que os utilizadores convidados possam aceitar o convite e entrar na empresa.
+
+**Permissões Admin (RLS):** Executar também `DOC/admin_rls_policies.sql` para garantir que os Super Admins conseguem ver todos os utilizadores e empresas no painel de Administração.
+
+---
+
+*Pós-Lançamento v1.5 · Planeado para 26/05/2026 em diante*
+
