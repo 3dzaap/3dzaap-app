@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post Dia 1 — Portal do Cliente | 4 Idiomas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <style>
+    :root {
+      --blue: #3B8FD4;
+      --orange: #F5943A;
+      --green: #22c55e;
+      --dark: #1e293b;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px 30px 30px;
+      background: #f1f5f9;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .lang-switcher span { font-weight: 700; color: var(--dark); font-size: 1rem; margin-right: 5px; }
+    .lang-btn {
+      padding: 10px 24px;
+      border-radius: 100px;
+      border: 2px solid #cbd5e1;
+      background: white;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--dark);
+    }
+    .lang-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .lang-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+    .page-wrapper {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    /* Slides */
+    .ig-post-wrapper {
+      width: 1080px;
+      height: 1080px;
+      flex-shrink: 0;
+      transform: scale(0.72);
+      transform-origin: top center;
+      margin-bottom: -290px;
+      background: radial-gradient(circle at 30% 0%, #1e293b, #020617);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      border-radius: 20px;
+    }
+
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); z-index: 0; }
+    .o1 { width: 700px; height: 700px; background: var(--blue); opacity: 0.25; top: -250px; left: -200px; }
+    .o2 { width: 500px; height: 500px; background: var(--orange); opacity: 0.2; bottom: -150px; right: -100px; }
+    .og { width: 400px; height: 400px; background: var(--green); opacity: 0.15; bottom: -100px; left: 100px; }
+
+    .content { position: relative; z-index: 10; color: white; width: 88%; text-align: center; }
+
+    h1 { font-size: 5.5rem; font-weight: 900; line-height: 1.1; margin: 0 0 30px 0; letter-spacing: -2px; }
+    .hl { background: linear-gradient(135deg, #3B8FD4, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hl-green { background: linear-gradient(135deg, #22c55e, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    p.sub { font-size: 2.2rem; font-weight: 400; color: #cbd5e1; line-height: 1.5; margin: 0 auto 40px auto; max-width: 900px; }
+
+    .badge { display: inline-block; background: rgba(59,143,212,0.15); border: 1px solid rgba(59,143,212,0.4); color: var(--blue); font-size: 1.6rem; font-weight: 700; padding: 10px 35px; border-radius: 100px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+
+
+
+
+    .benefit-card { display: flex; align-items: center; gap: 25px; border-radius: 20px; padding: 28px 35px; }
+    .bc-green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
+    .bc-blue { background: rgba(59,143,212,0.08); border: 1px solid rgba(59,143,212,0.2); }
+    .bc-orange { background: rgba(245,148,58,0.08); border: 1px solid rgba(245,148,58,0.2); }
+
+    .btn-cta { display: inline-block; padding: 22px 60px; background: linear-gradient(135deg, var(--green), #10b981); color: white; border-radius: 100px; font-size: 2.0rem; font-weight: 900; text-transform: none; letter-spacing: 1px; margin-top: 30px; box-shadow: 0 15px 40px rgba(34,197,94,0.4); }
+
+    /* Portal Mockup Styles */
+    .portal-mock {
+      width: 760px;
+      margin: 0 auto;
+      padding: 24px;
+      background: #e2edf7;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      text-align: left;
+      color: #1e293b;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .portal-logo {
+      height: 54px;
+      width: 54px;
+      border-radius: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      object-fit: cover;
+    }
+
+    .company-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 2px;
+      opacity: 0.8;
+    }
+
+    .greeting-text {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .unified-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(30, 60, 120, 0.1);
+      margin-top: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .unified-hero {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      padding: 24px 20px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-title {
+      font-size: 1.7rem;
+      font-weight: 900;
+      margin: 0 0 6px 0;
+      color: white;
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.4;
+      color: #e2e8f0;
+    }
+
+    .unified-tracker-area {
+      padding: 24px 20px;
+    }
+
+    .tracker-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .steps-container {
+      padding: 0 10px;
+      margin-bottom: 10px;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      width: 100%;
+      padding: 10px 0;
+    }
+
+    .steps::before {
+      content: "";
+      position: absolute;
+      top: 25px;
+      left: 20px;
+      right: 20px;
+      height: 4px;
+      background: #e2e8f0;
+      z-index: 1;
+      border-radius: 4px;
+    }
+
+    .step-line-active {
+      position: absolute;
+      top: 25px;
+      left: 20px;
+      right: 20px;
+      height: 4px;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .step-line-inner {
+      height: 100%;
+      background: var(--blue);
+      width: 66.67%;
+      border-radius: 4px;
+    }
+
+    .step {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      transition: all 0.3s;
+    }
+
+    .step.active .step-dot {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(59, 143, 212, 0.4);
+      transform: scale(1.1);
+    }
+
+    .step.done .step-dot {
+      border-color: var(--blue);
+      background: white;
+      color: var(--blue);
+    }
+
+    .step-lbl {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      text-align: center;
+      line-height: 1.2;
+      word-wrap: break-word;
+      width: 80px;
+    }
+
+    .step.active .step-lbl {
+      color: var(--blue);
+    }
+
+    .step.done .step-lbl {
+      color: var(--dark);
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 0 20px 20px 20px;
+    }
+
+    .btn-ghost {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: white;
+      padding: 10px 18px;
+      border-radius: 12px;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(37,211,102,0.2);
+      cursor: pointer;
+    }
+
+    .link-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1.25rem;
+      background: rgba(59, 143, 212, 0.08);
+      padding: 12px 24px;
+      border-radius: 100px;
+      border: 1.5px dashed rgba(59, 143, 212, 0.35);
+      color: #1e293b;
+      margin-top: 15px;
+    }
+
+    .link-bar i {
+      color: var(--blue);
+    }
+
+    .link-bar span {
+      color: #64748b;
+    }
+
+    .link-bar strong {
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+
+    .slides-container { display: flex; flex-direction: column; gap: 40px; align-items: center; width: 100%; }
+
+    /* Caption box */
+    .caption-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 520px; flex-shrink: 0; align-self: flex-start; position: sticky; top: 20px; }
+    .caption-box h2 { margin-top: 0; color: var(--dark); font-size: 1.2rem; }
+    .copy-btn { background: var(--blue); color: white; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 14px; font-family: inherit; font-size: 0.9rem; }
+    .copy-btn:hover { background: #1d4ed8; }
+    textarea { width: 100%; height: 500px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.88rem; line-height: 1.7; resize: none; box-sizing: border-box; color: #334155; }
+
+    /* Language content - hidden by default, shown via JS */
+    [data-lang] { display: none; }
+    [data-lang].active { display: block; }
+  </style>
+</head>
+
+<body>
+
+<!-- Language Switcher -->
+<div class="lang-switcher">
+  <span>🌍 Idioma:</span>
+  <button class="lang-btn active" onclick="setLang('br', this)">🇧🇷 PT-BR</button>
+  <button class="lang-btn" onclick="setLang('pt', this)">🇵🇹 PT-PT</button>
+  <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 EN</button>
+  <button class="lang-btn" onclick="setLang('es', this)">🇪🇸 ES</button>
+</div>
+
+<div class="page-wrapper">
+
+  <!-- SLIDES -->
+  <div style="width: 100%;">
+    <div class="slides-container">
+
+      <!-- ===== SLIDE 1: HOOK ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb og"></div>
+        <div class="content">
+          <div class="badge" data-key="badge">Funcionalidade #1</div>
+
+          <div data-lang="br" class="active">
+            <h1>"O meu pedido já<br>está <span class="hl-green">pronto?</span>" 😅</h1>
+            <p class="sub">Se você recebe essa mensagem de clientes todo dia,<br>precisa ver o que vamos mostrar a seguir.</p>
+          </div>
+          <div data-lang="pt">
+            <h1>"A minha peça já<br>está <span class="hl-green">pronta?</span>" 😅</h1>
+            <p class="sub">Se recebes esta mensagem de clientes todos os dias,<br>tens de ver o que vamos mostrar a seguir.</p>
+          </div>
+          <div data-lang="en">
+            <h1>"Is my order<br><span class="hl-green">ready yet?</span>" 😅</h1>
+            <p class="sub">If you get this message from clients every single day,<br>you need to see what we're about to show you.</p>
+          </div>
+          <div data-lang="es">
+            <h1>"¿Mi pedido ya<br>está <span class="hl-green">listo?</span>" 😅</h1>
+            <p class="sub">Si recibes este mensaje de tus clientes cada día,<br>necesitas ver lo que vamos a mostrarte.</p>
+          </div>
+
+          <p style="font-size: 1.8rem; color: #64748b; margin: 0;">👉 <span data-key="swipe"></span></p>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 2: PROBLEMA ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="content">
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 5rem;">O cliente não tem culpa<br>de <span class="hl">não saber</span><br>o que acontece.</h1>
+            <p class="sub">Enquanto o seu celular está cheio de mensagens repetidas, as suas impressoras trabalham em silêncio. Ninguém tem acesso ao estado real do pedido.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 5rem;">O cliente não tem culpa<br>de <span class="hl">não saber</span><br>o que se passa.</h1>
+            <p class="sub">Enquanto tens o teu telemóvel cheio de mensagens repetidas, as tuas impressoras estão em silêncio a trabalhar. Ninguém tem acesso ao estado real do pedido.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 5rem;">The client isn't<br><span class="hl">to blame.</span><br>They just don't know.</h1>
+            <p class="sub">While your phone fills up with repeated messages, your printers are silently doing their job. No one has real-time access to the order status.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 5rem;">El cliente no tiene<br>la culpa de <span class="hl">no saber</span><br>lo que pasa.</h1>
+            <p class="sub">Mientras tu teléfono se llena de mensajes repetidos, tus impresoras trabajan en silencio. Nadie tiene acceso al estado real del pedido.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 3: SOLUÇÃO ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o2"></div>
+        <div class="content">
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 5rem;">Apresentamos o<br><span class="hl-green">Link Mágico.</span> 🔗</h1>
+            <p class="sub">O 3DZAAP gera automaticamente um link único para cada pedido. Seu cliente abre no celular e vê o estado da impressão em tempo real — sem precisar te mandar mensagem.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 5rem;">Apresentamos o<br><span class="hl-green">Link Mágico.</span> 🔗</h1>
+            <p class="sub">O 3DZAAP gera automaticamente um link único para cada pedido. O teu cliente abre no telemóvel e vê o estado em tempo real — sem precisar de te enviar uma mensagem.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 5rem;">Introducing the<br><span class="hl-green">Magic Link.</span> 🔗</h1>
+            <p class="sub">3DZAAP automatically generates a unique tracking link for every order. Your client opens it on their phone and sees the real-time status — no messages needed.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 5rem;">Presentamos el<br><span class="hl-green">Link Mágico.</span> 🔗</h1>
+            <p class="sub">3DZAAP genera automáticamente un link único por cada pedido. Tu cliente lo abre en el móvil y ve el estado en tiempo real — sin necesidad de enviarte un mensaje.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 4: MOCK PORTAL ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1" style="opacity: 0.15;"></div>
+        <div class="content">
+          <div data-lang="br" class="active"><h1 style="font-size: 4rem; margin-bottom: 50px;">O cliente vê <span class="hl-green">isso:</span></h1></div>
+          <div data-lang="pt"><h1 style="font-size: 4rem; margin-bottom: 50px;">O cliente vê <span class="hl-green">isto:</span></h1></div>
+          <div data-lang="en"><h1 style="font-size: 4rem; margin-bottom: 50px;">The client sees <span class="hl-green">this:</span></h1></div>
+          <div data-lang="es"><h1 style="font-size: 4rem; margin-bottom: 50px;">El cliente ve <span class="hl-green">esto:</span></h1></div>
+
+          <div class="portal-mock">
+            <!-- Portal Header -->
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px;">
+              <img src="logo.jpg" class="portal-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22150%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2224%22%20font-weight%3D%22bold%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3E3D%3C%2Ftext%3E%3C%2Fsvg%3E';">
+              <div style="text-align:left;">
+                <div class="company-title">3DZAAP</div>
+                <h1 class="greeting-text"><span data-key="greeting">Olá, Makers! 👋</span></h1>
+              </div>
+            </div>
+
+            <!-- Unified Card -->
+            <div class="unified-card">
+              <div class="unified-hero">
+                <div class="hero-badge"><i class="ph-bold ph-info"></i> <span data-key="badge_status">ESTADO</span></div>
+                <div class="hero-title" data-key="hero_title">Em Produção</div>
+                <div class="hero-desc" data-key="hero_desc">Nossas máquinas estão trabalhando no seu projeto. Em breve estará pronto!</div>
+              </div>
+              
+              <div class="unified-tracker-area">
+                <div class="tracker-title"><i class="ph-bold ph-rocket-launch"></i> <span data-key="tracker_title">ESTADO DA PRODUÇÃO</span></div>
+                <div class="steps-container">
+                  <div class="steps">
+                    <div class="step-line-active">
+                      <div class="step-line-inner"></div>
+                    </div>
+                    
+                    <div class="step done">
+                      <div class="step-dot"><i class="ph-bold ph-hourglass"></i></div>
+                      <div class="step-lbl" data-key="status1">Orçamento</div>
+                    </div>
+                    <div class="step done">
+                      <div class="step-dot"><i class="ph-bold ph-ruler"></i></div>
+                      <div class="step-lbl" data-key="status2">Modelagem</div>
+                    </div>
+                    <div class="step done">
+                      <div class="step-dot"><i class="ph-bold ph-check-circle"></i></div>
+                      <div class="step-lbl" data-key="status3">Aprovação</div>
+                    </div>
+                    <div class="step done">
+                      <div class="step-dot"><i class="ph-bold ph-package"></i></div>
+                      <div class="step-lbl" data-key="status4">Em Fila</div>
+                    </div>
+                    <div class="step active">
+                      <div class="step-dot"><i class="ph-bold ph-printer"></i></div>
+                      <div class="step-lbl" data-key="status5">Produção</div>
+                    </div>
+                    <div class="step">
+                      <div class="step-dot"><i class="ph-bold ph-rocket-launch"></i></div>
+                      <div class="step-lbl" data-key="status6">Enviado</div>
+                    </div>
+                    <div class="step">
+                      <div class="step-dot"><i class="ph-bold ph-flag-checkered"></i></div>
+                      <div class="step-lbl" data-key="status7">Concluído</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="btn-group">
+                <button class="btn-ghost" onclick="event.preventDefault()">
+                  <i class="ph-bold ph-receipt"></i> <span data-key="btn_details">Ver Detalhes do Pedido</span>
+                </button>
+                <button class="btn-primary" onclick="event.preventDefault()">
+                  <i class="ph-bold ph-whatsapp-logo"></i> <span data-key="btn_whatsapp">WhatsApp</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Link Bar -->
+            <div class="link-bar">
+              <i class="ph-bold ph-link"></i>
+              <span>https://portal.3dzaap.com/pedido/</span><strong>pm047-xyz</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 5: BENEFÍCIOS ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb og" style="right: -100px; left: auto; top: -100px; bottom: auto;"></div>
+        <div class="content">
+          <div data-lang="br" class="active"><h1 style="font-size: 4.5rem;">O resultado<br>para o seu negócio:</h1></div>
+          <div data-lang="pt"><h1 style="font-size: 4.5rem;">O resultado<br>para o teu negócio:</h1></div>
+          <div data-lang="en"><h1 style="font-size: 4.5rem;">The result<br>for your business:</h1></div>
+          <div data-lang="es"><h1 style="font-size: 4.5rem;">El resultado<br>para tu negocio:</h1></div>
+
+          <div style="display: flex; flex-direction: column; gap: 25px; margin-top: 40px; text-align: left;">
+            <div class="benefit-card bc-green">
+              <i class="ph-bold ph-chat-slash" style="font-size: 3rem; color: var(--green); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b1_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b1_desc"></p>
+              </div>
+            </div>
+            <div class="benefit-card bc-blue">
+              <i class="ph-bold ph-star" style="font-size: 3rem; color: var(--blue); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b2_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b2_desc"></p>
+              </div>
+            </div>
+            <div class="benefit-card bc-orange">
+              <i class="ph-bold ph-clock" style="font-size: 3rem; color: var(--orange); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b3_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b3_desc"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 6: CTA ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb o2"></div>
+        <div class="content">
+          <div style="margin-bottom: 30px;">
+            <span style="color: var(--blue); font-size: 3rem; font-weight: 900;">3D</span><span style="color: var(--orange); font-size: 3rem; font-weight: 900;">ZAAP</span><br>
+            <span style="font-size: 2rem; font-weight: 600; color: white;">Print Manager</span>
+          </div>
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Experimente<br><span class="hl-green">7 Dias Grátis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Portal do Cliente incluído desde o primeiro dia.<br>Sem cartão de crédito.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Experimenta<br><span class="hl-green">7 Dias Grátis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Portal do Cliente incluído desde o primeiro dia.<br>Sem cartão de crédito.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Try it<br><span class="hl-green">Free for 7 Days.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Client Portal included from day one.<br>No credit card required.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Pruébalo<br><span class="hl-green">7 Días Gratis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Portal del Cliente incluido desde el primer día.<br>Sin tarjeta de crédito.</p>
+          </div>
+          <div class="btn-cta">https://app.3dzaap.com</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CAPTION BOX -->
+  <div class="caption-box">
+    <h2>📋 <span data-key="caption_title">Legenda — Copia e Cola</span></h2>
+    <button class="copy-btn" onclick="copyCaption()"><span data-key="copy_btn">Copiar Legenda</span></button>
+    <textarea id="captionText" readonly></textarea>
+  </div>
+
+</div>
+
+<script>
+  const translations = {
+    br: {
+      badge: "Funcionalidade #1",
+      swipe: "Arrasta para o lado",
+      greeting: "Olá, Makers! 👋",
+      badge_status: "ESTADO",
+      hero_title: "Em Produção",
+      hero_desc: "Nossas máquinas estão trabalhando no seu projeto. Em breve estará pronto!",
+      tracker_title: "ESTADO DA PRODUÇÃO",
+      status1: "Orçamento",
+      status2: "Modelagem",
+      status3: "Aprovação",
+      status4: "Em Fila",
+      status5: "Produção",
+      status6: "Enviado",
+      status7: "Concluído",
+      btn_details: "Ver Detalhes do Pedido",
+      btn_whatsapp: "WhatsApp",
+      b1_title: "Zero mensagens de \"tá pronto?\"", b1_desc: "O cliente acompanha tudo em tempo real, por conta própria.",
+      b2_title: "Imagem profissional", b2_desc: "O cliente sente que está lidando com uma empresa de verdade.",
+      b3_title: "Mais tempo para produzir", b3_desc: "Menos tempo respondendo mensagens. Mais tempo imprimindo.",
+      caption_title: "Legenda BR — Copia e Cola", copy_btn: "Copiar Legenda",
+      caption: `"O meu pedido já está pronto?" 😅
+
+Se você recebe essa mensagem de clientes todo dia, tenho uma solução pra você.
+
+O 3DZAAP Print Manager gera automaticamente um 🔗 Link de Tracking único para cada pedido.
+
+Seu cliente clica no link, abre no celular e vê exatamente em que fase está a impressão — em tempo real. Sem precisar te mandar uma única mensagem.
+
+O resultado pro seu negócio?
+✅ Zero interrupções durante a produção
+✅ Clientes mais satisfeitos e confiantes
+✅ Imagem profissional que justifica preços mais altos
+
+E o melhor: está incluído desde o primeiro dia no plano gratuito de 7 dias.
+
+👉 Experimente agora em https://app.3dzaap.com (link na bio)
+
+#3DZAAP #PrintManager #Impressão3D #Maker3D #PrintFarm #3DPrinting #GestãoDeClientes #Tracking #NegócioMaker #Empreendedorismo #3DPrinter #Automação`
+    },
+    pt: {
+      badge: "Funcionalidade #1",
+      swipe: "Arrasta para o lado",
+      greeting: "Olá, Makers! 👋",
+      badge_status: "ESTADO",
+      hero_title: "Em Produção",
+      hero_desc: "As nossas máquinas estão a trabalhar no seu projeto. Em breve estará pronto!",
+      tracker_title: "ESTADO DA PRODUÇÃO",
+      status1: "Orçamento",
+      status2: "Modelagem",
+      status3: "Aprovação",
+      status4: "Em Fila",
+      status5: "Produção",
+      status6: "Enviado",
+      status7: "Concluído",
+      btn_details: "Ver Detalhes do Pedido",
+      btn_whatsapp: "WhatsApp",
+      b1_title: "Zero mensagens de \"está pronto?\"", b1_desc: "O cliente vê tudo em tempo real, por conta própria.",
+      b2_title: "Experiência profissional", b2_desc: "O cliente sente que está a lidar com uma empresa a sério.",
+      b3_title: "Mais tempo para produzir", b3_desc: "Menos tempo a gerir mensagens. Mais tempo a imprimir.",
+      caption_title: "Legenda PT-PT — Copia e Cola", copy_btn: "Copiar Legenda",
+      caption: `"A minha peça já está pronta?" 😅
+
+Se recebes esta mensagem de clientes todos os dias, tenho uma solução para ti.
+
+O 3DZAAP Print Manager gera automaticamente um 🔗 Link de Tracking único para cada pedido.
+
+O teu cliente clica no link, abre no telemóvel e vê exatamente em que fase está a impressão — em tempo real. Sem precisar de te enviar uma única mensagem.
+
+O resultado para o teu negócio?
+✅ Zero interrupções durante a produção
+✅ Clientes mais satisfefeitos e confiantes
+✅ Imagem profissional que justifica preços mais altos
+
+E o melhor de tudo: está incluído desde o primeiro dia no plano gratuito de 7 dias.
+
+👉 Experimenta agora em https://app.3dzaap.com (link na bio)
+
+#3DZAAP #PrintManager #ImpressãO3D #Maker3D #PrintFarm #3DPrinting #GestãoDeClientes #Tracking #NegócioMaker #Empreendedorismo #3DPrinter #Automação`
+    },
+    en: {
+      badge: "Feature #1",
+      swipe: "Swipe to see more",
+      greeting: "Hello, Makers! 👋",
+      badge_status: "STATUS",
+      hero_title: "In Production",
+      hero_desc: "Our machines are working on your project. It will be ready soon!",
+      tracker_title: "PRODUCTION STATUS",
+      status1: "Quote",
+      status2: "Modeling",
+      status3: "Approval",
+      status4: "In Queue",
+      status5: "Printing",
+      status6: "Shipped",
+      status7: "Completed",
+      btn_details: "View Order Details",
+      btn_whatsapp: "WhatsApp",
+      b1_title: "Zero \"is it ready?\" messages", b1_desc: "The client tracks everything in real time, on their own.",
+      b2_title: "Professional image", b2_desc: "Clients feel they're dealing with a serious, organized business.",
+      b3_title: "More time to produce", b3_desc: "Less time answering DMs. More time running your printers.",
+      caption_title: "Caption EN — Copy & Paste", copy_btn: "Copy Caption",
+      caption: `"Is my order ready yet?" 😅
+
+If you get this message from clients every single day, I have a solution for you.
+
+3DZAAP Print Manager automatically generates a unique 🔗 Tracking Link for every order.
+
+Your client clicks the link, opens it on their phone and sees exactly what stage their print is at — in real time. No messages needed.
+
+The result for your business?
+✅ Zero production interruptions
+✅ Happier, more confident clients
+✅ Professional image that justifies premium pricing
+
+And the best part: it's included from day one on the free 7-day trial.
+
+👉 Try it now at https://app.3dzaap.com (link in bio)
+
+#3DZAAP #PrintManager #3DPrinting #Maker3D #PrintFarm #ClientTracking #OrderManagement #MakerBusiness #3DPrinter #Automation`
+    },
+    es: {
+      badge: "Funcionalidad #1",
+      swipe: "Desliza para ver más",
+      greeting: "¡Hola, Makers! 👋",
+      badge_status: "ESTADO",
+      hero_title: "En Producción",
+      hero_desc: "Nuestras máquinas están trabajando en su proyecto. ¡Estará listo pronto!",
+      tracker_title: "ESTADO DE PRODUCCIÓN",
+      status1: "Presupuesto",
+      status2: "Modelado",
+      status3: "Aprobación",
+      status4: "En Cola",
+      status5: "Producción",
+      status6: "Enviado",
+      status7: "Completado",
+      btn_details: "Ver Detalles del Pedido",
+      btn_whatsapp: "WhatsApp",
+      b1_title: "Cero mensajes de \"¿ya está?\"", b1_desc: "El cliente ve todo en tiempo real, por sí solo.",
+      b2_title: "Imagen profesional", b2_desc: "El cliente siente que trata con un negocio serio y organizado.",
+      b3_title: "Más tiempo para producir", b3_desc: "Menos tiempo respondiendo mensajes. Más tiempo imprimiendo.",
+      caption_title: "Copy ES — Copiar y Pegar", copy_btn: "Copiar Texto",
+      caption: `"¿Mi pedido ya está listo?" 😅
+
+Si recibes este mensaje de tus clientes cada día, tengo una solución para ti.
+
+3DZAAP Print Manager genera automáticamente un 🔗 Link de Tracking único para cada pedido.
+
+Tu cliente hace clic en el link, lo abre en su móvil y ve exactamente en qué fase está la impresión — en tiempo real. Sin necesidad de enviarte ningún mensaje.
+
+¿El resultado para tu negocio?
+✅ Cero interrupciones durante la producción
+✅ Clientes más satisfechos y confiados
+✅ Imagen profesional que justifica precios más altos
+
+Y lo mejor: está incluido desde el primer día en el plan gratuito de 7 días.
+
+👉 Pruébalo ahora en https://app.3dzaap.com (link en bio)
+
+#3DZAAP #PrintManager #Impresión3D #Maker3D #PrintFarm #3DPrinting #GestãoDeClientes #Tracking #NegocioMaker #Emprendimiento #3DPrinter #Automatización`
+    }
+  };
+
+  let currentLang = 'br';
+
+  function setLang(lang, btn) {
+    currentLang = lang;
+
+    // Update buttons
+    if (btn) {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // Update [data-lang] elements
+    document.querySelectorAll('[data-lang]').forEach(el => {
+      el.classList.remove('active');
+      if (el.getAttribute('data-lang') === lang) el.classList.add('active');
+    });
+
+    // Update [data-key] elements
+    const t = translations[lang];
+    document.querySelectorAll('[data-key]').forEach(el => {
+      const key = el.getAttribute('data-key');
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+
+    // Update caption
+    document.getElementById('captionText').value = t.caption;
+  }
+
+  function copyCaption() {
+    var el = document.getElementById("captionText");
+    el.select();
+    navigator.clipboard.writeText(el.value);
+    var btn = document.querySelector('.copy-btn');
+    btn.style.background = "#22c55e";
+    setTimeout(() => { btn.style.background = "#3B8FD4"; }, 2000);
+  }
+
+  // Init with default lang on load
+  window.addEventListener('load', () => {
+    const defaultBtn = document.querySelector('.lang-btn');
+    setLang('br', defaultBtn);
+  });
+</script>
+
+</body>
+</html>
