@@ -596,6 +596,13 @@
                 </div>
               </div>
             </div>
+
+            <!-- ── DANGER ZONE (Apagar Conta) ── -->
+            <div class="settings-card" style="border:1.5px solid var(--danger, #ef4444); background:var(--danger-g, rgba(239,68,68,0.05)); margin-top:24px;">
+               <div class="settings-card-title" style="color:var(--danger, #ef4444);"><i class="ph-bold ph-warning"></i> Zona de Perigo</div>
+               <p class="toggle-desc">Ao apagares a tua conta, todos os teus dados (pedidos, clientes, ficheiros) e login serão destruídos permanentemente. Esta ação não é reversível.</p>
+               <button class="btn" style="margin-top:16px; background:var(--danger,#ef4444); color:white; border:none" onclick="confirmDeleteSelfAccount()">Excluir Conta Definitivamente</button>
+            </div>
           </div>
 
           <!-- TAB: MARCA -->
@@ -931,6 +938,23 @@ function doLogout() {
     <div style="display:flex; justify-content:flex-end; gap:12px">
       <button class="btn btn-ghost" onclick="closeInviteModal()" data-i18n="settings.team.btn_cancel">Cancelar</button>
       <button class="btn btn-primary" onclick="sendInvite()" data-i18n="settings.team.btn_send">Convidar</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div id="deleteAccountModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center">
+  <div style="background:white; border-radius:20px; width:90%; max-width:400px; padding:24px; border:2px solid var(--danger, #ef4444)">
+    <h3 style="margin-bottom:16px; color:var(--danger, #ef4444)"><i class="ph-bold ph-warning"></i> Excluir Conta</h3>
+    <p style="font-size:0.9rem; color:var(--subtle); margin-bottom:16px;">
+      Esta ação irá <strong>apagar permanentemente</strong> todos os dados da sua empresa e remover o seu acesso. Para confirmar, escreva <strong>APAGAR</strong> abaixo.
+    </p>
+    <div class="form-group" style="margin-bottom:20px">
+      <input type="text" id="deleteAccountInput" class="form-input" placeholder="APAGAR" oninput="document.getElementById('btnConfirmDeleteAccount').disabled = (this.value !== 'APAGAR')">
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:12px">
+      <button class="btn btn-ghost" onclick="closeDeleteAccountModal()">Cancelar</button>
+      <button class="btn" id="btnConfirmDeleteAccount" disabled onclick="executeDeleteSelfAccount()" style="background:var(--danger,#ef4444); color:white; border:none">Excluir Permanentemente</button>
     </div>
   </div>
 </div>
