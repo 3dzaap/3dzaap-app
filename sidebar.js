@@ -224,6 +224,25 @@ const Sidebar = (() => {
     });
     
     _checkUnreadNotifications(session);
+
+    // ── IMPERSONATE BANNER ────────────────────────────────────
+    const adminBackup = localStorage.getItem('3dzaap_admin_backup');
+    if (adminBackup) {
+      let banner = document.getElementById('impersonateBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'impersonateBanner';
+        banner.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:var(--danger,#ef4444);color:white;text-align:center;padding:8px;font-size:0.85rem;font-weight:700;z-index:9999;display:flex;justify-content:center;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,0.2)';
+        document.body.appendChild(banner);
+        
+        const layout = document.querySelector('.layout');
+        if (layout) layout.style.paddingTop = '36px'; // Empurra a UI para baixo
+      }
+      banner.innerHTML = `
+        <span><i class="ph-bold ph-spy"></i> A atuar como <strong>${_esc(companyName)}</strong></span>
+        <button onclick="Sidebar.exitImpersonate()" style="background:white;color:var(--danger,#ef4444);border:none;padding:4px 12px;border-radius:4px;font-weight:800;font-size:0.75rem;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)">Terminar Sessão</button>
+      `;
+    }
   }
 
   async function _checkUnreadNotifications(session) {
@@ -344,6 +363,32 @@ const Sidebar = (() => {
     setTimeout(() => Auth.logout(), 1000);
   }
 
+  // ── EXIT IMPERSONATE ──────────────────────────────────────
+  async function exitImpersonate() {
+    const backupStr = localStorage.getItem('3dzaap_admin_backup');
+    if (!backupStr) return;
+    
+    // Mostra um toast rápido se a função showToast existir
+    if (typeof showToast === 'function') {
+      showToast('<i class="ph-bold ph-arrows-left-right"></i> A restaurar sessão de Admin...', '');
+    }
+
+    try {
+      const backupSession = JSON.parse(backupStr);
+      localStorage.removeItem('3dzaap_admin_backup');
+      
+      if (typeof _sb !== 'undefined') {
+         await _sb.auth.signOut();
+         await _sb.auth.setSession(backupSession);
+      }
+      
+      window.location.href = 'admin.html';
+    } catch(e) {
+      console.error('Erro ao sair do impersonate', e);
+      window.location.href = 'auth.html';
+    }
+  }
+
   // ── HELPERS ───────────────────────────────────────────────
   function _setText(id, val) {
     const el = document.getElementById(id);
@@ -355,7 +400,7 @@ const Sidebar = (() => {
   }
 
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, PLAN_FEATURES, PLAN_LIMITS };
+  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, exitImpersonate, PLAN_FEATURES, PLAN_LIMITS };
 
 })();
 

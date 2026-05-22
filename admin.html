@@ -1839,13 +1839,34 @@ async function changeCustomerPlan(companyId, newPlan) {
   });
 }
 
-function loginAsCompany(slug) {
+async function loginAsCompany(slug) {
   if (!slug) return;
-  showToast('<i class="ph-bold ph-rocket-launch"></i> A redirecionar para a empresa...', '');
-  // Impersonation strategy: we save a flag in localStorage that sidebar/dashboard can read
-  // to allow the admin to see the UI. In production, this requires an Edge Function + JWT switch.
-  localStorage.setItem('3dzaap_impersonate_slug', slug);
-  setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+  showToast('<i class="ph-bold ph-rocket-launch"></i> A preparar impersonate seguro...', '');
+  
+  try {
+    // 1. Guardar a sessão de Admin atual no backup
+    const { data: { session } } = await _adminSb().auth.getSession();
+    if (session) {
+      localStorage.setItem('3dzaap_admin_backup', JSON.stringify(session));
+    }
+
+    // 2. Chamar a Edge Function
+    const { data, error } = await _adminSb().functions.invoke('admin-impersonate', {
+      body: { companySlug: slug }
+    });
+
+    if (error) throw error;
+    if (!data || !data.action_link) throw new Error('Link de impersonate não recebido.');
+
+    await _adminAudit('impersonate_login', `slug=${slug}`);
+
+    // 3. Redirecionar para o link mágico gerado
+    window.location.href = data.action_link;
+
+  } catch (e) {
+    showToast('Erro ao iniciar impersonate: ' + (e.message || 'Desconhecido'), 'err');
+    localStorage.removeItem('3dzaap_admin_backup');
+  }
 }
 
 function confirmSuspendCustomer(id, name, currentStatus) {
@@ -2235,14 +2256,34 @@ async function impersonateUser(userId, companyName) {
   if (!userId) { showToast('ID de utilizador em falta', 'err'); return; }
   showConfirm(
     '<i class="ph-bold ph-user-focus"></i> Impersonar utilizador',
-    `Impersonar utilizador "${userId}" (${companyName})?
-
-Esta ação requer a Edge Function "admin-impersonate" com service_role em produção.`,
+    `Deseja iniciar sessão como o utilizador "${userId}" (${companyName})?`,
     async () => {
-      await _adminAudit('impersonate_attempt', `userId=${userId} company=${companyName}`);
-      showToast('<i class="ph-bold ph-warning-octagon"></i> Edge Function necessária — ação registada no audit log', '');
-      document.getElementById('opFb').innerHTML =
-        `<i class="ph-bold ph-info"></i> Impersonation de ${userId}: deploy supabase/functions/admin-impersonate com service_role.`;
+      try {
+        showToast('<i class="ph-bold ph-rocket-launch"></i> A preparar impersonate seguro...', '');
+        
+        // 1. Guardar a sessão de Admin atual no backup
+        const { data: { session } } = await _adminSb().auth.getSession();
+        if (session) {
+          localStorage.setItem('3dzaap_admin_backup', JSON.stringify(session));
+        }
+
+        // 2. Chamar a Edge Function
+        const { data, error } = await _adminSb().functions.invoke('admin-impersonate', {
+          body: { userId: userId }
+        });
+
+        if (error) throw error;
+        if (!data || !data.action_link) throw new Error('Link de impersonate não recebido.');
+
+        await _adminAudit('impersonate_login', `userId=${userId} company=${companyName}`);
+
+        // 3. Redirecionar para o link mágico gerado
+        window.location.href = data.action_link;
+
+      } catch (e) {
+        showToast('Erro ao iniciar impersonate: ' + (e.message || 'Desconhecido'), 'err');
+        localStorage.removeItem('3dzaap_admin_backup');
+      }
     }
   );
 }

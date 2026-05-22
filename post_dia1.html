@@ -382,6 +382,198 @@
     /* Language content - hidden by default, shown via JS */
     [data-lang] { display: none; }
     [data-lang].active { display: block; }
+
+    /* ─── Narrator Audio Player ─── */
+    @keyframes speakerPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.2); opacity: 0.7; }
+    }
+    @keyframes narratorSlideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .narrator-trigger {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #3B8FD4, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      padding: 13px 24px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(59,143,212,0.45);
+      transition: all 0.25s ease;
+      letter-spacing: 0.2px;
+    }
+    .narrator-trigger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(59,143,212,0.55);
+    }
+    .narrator-trigger .nt-icon { font-size: 1.15rem; }
+
+    .narrator-player {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1001;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 6px 20px rgba(59,143,212,0.1);
+      width: 330px;
+      overflow: hidden;
+      flex-direction: column;
+      border: 1.5px solid rgba(59,143,212,0.12);
+      display: none;
+    }
+    .narrator-player.open {
+      display: flex;
+      animation: narratorSlideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .narrator-header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .narrator-header-left { display: flex; align-items: center; gap: 10px; }
+    .narrator-icon {
+      font-size: 1.25rem;
+      display: inline-block;
+      line-height: 1;
+    }
+    .narrator-icon.playing { animation: speakerPulse 0.8s ease-in-out infinite; }
+    .narrator-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+    }
+    .narrator-close {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: rgba(255,255,255,0.6);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .narrator-close:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    .narrator-body { padding: 18px 18px 16px; }
+
+    .narrator-slide-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .narrator-slide-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 195px;
+    }
+    .narrator-slide-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 3px 10px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+
+    .narrator-bar {
+      width: 100%;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 100px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .narrator-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3B8FD4, #6366f1);
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      width: 0%;
+    }
+
+    .narrator-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .narrator-btn {
+      font-family: 'Outfit', sans-serif;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+    .narrator-btn:active { transform: scale(0.92); }
+    .narrator-btn-nav {
+      width: 38px;
+      height: 40px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 0.8rem;
+    }
+    .narrator-btn-nav:hover { background: #e2e8f0; color: #1e293b; }
+    .narrator-btn-play {
+      flex: 1;
+      height: 40px;
+      background: linear-gradient(135deg, #3B8FD4, #6366f1);
+      color: white;
+      font-size: 0.88rem;
+      box-shadow: 0 4px 14px rgba(59,143,212,0.35);
+    }
+    .narrator-btn-play:hover {
+      box-shadow: 0 6px 20px rgba(59,143,212,0.5);
+      transform: translateY(-1px);
+    }
+    .narrator-btn-stop {
+      width: 38px;
+      height: 40px;
+      background: #fee2e2;
+      color: #ef4444;
+      font-size: 0.8rem;
+    }
+    .narrator-btn-stop:hover { background: #fecaca; }
+
+    .narrator-hint {
+      text-align: center;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      margin-top: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
   </style>
 </head>
 
@@ -845,7 +1037,209 @@ Y lo mejor: está incluido desde el primer día en el plan gratuito de 7 días.
     const defaultBtn = document.querySelector('.lang-btn');
     setLang('br', defaultBtn);
   });
+
+  // ─── NARRATOR ───────────────────────────────────────────────
+  const narrations = {
+    br: [
+      'O meu pedido já está pronto? Se você recebe essa mensagem de clientes todo dia, precisa ver o que vamos mostrar a seguir. Arrasta para o lado!',
+      'O cliente não tem culpa de não saber o que acontece. Enquanto o seu celular está cheio de mensagens repetidas, as suas impressoras trabalham em silêncio. Ninguém tem acesso ao estado real do pedido.',
+      'Apresentamos o Link Mágico! O 3DZAAP gera automaticamente um link único para cada pedido. Seu cliente abre no celular e vê o estado da impressão em tempo real, sem precisar te mandar uma única mensagem.',
+      'O cliente vê isso: um portal completo de acompanhamento. Com todas as etapas visíveis — orçamento, modelagem, aprovação, em fila — e atualmente em produção. As etapas de envio e conclusão ainda estão por vir.',
+      'O resultado para o seu negócio: zero mensagens de tá pronto. O cliente acompanha tudo em tempo real, por conta própria. Imagem profissional que faz o cliente sentir que está lidando com uma empresa de verdade. E mais tempo para produzir, com menos interrupções.',
+      '3DZAAP Print Manager. Experimente 7 dias grátis. O portal do cliente está incluído desde o primeiro dia, sem cartão de crédito. Acesse agora em app ponto 3D zaap ponto com.'
+    ],
+    pt: [
+      'A minha peça já está pronta? Se recebes esta mensagem de clientes todos os dias, tens de ver o que vamos mostrar a seguir. Arrasta para o lado!',
+      'O cliente não tem culpa de não saber o que se passa. Enquanto tens o teu telefóvel cheio de mensagens repetidas, as tuas impressoras estão em silêncio a trabalhar. Ninguém tem acesso ao estado real do pedido.',
+      'Apresentamos o Link Mágico! O 3DZAAP gera automaticamente um link único para cada pedido. O teu cliente abre no telefóvel e vê o estado em tempo real, sem precisar de te enviar uma única mensagem.',
+      'O cliente vê isto: um portal completo de acompanhamento. Com todas as etapas visíveis — orçamento, modelagem, aprovação, em fila — e atualmente em produção. As etapas de envio e conclusão ainda estão por vir.',
+      'O resultado para o teu negócio: zero mensagens de está pronto. O cliente vê tudo em tempo real, por conta própria. Uma experiência profissional que faz o cliente sentir que está a lidar com uma empresa a sério. E mais tempo para produzir, com menos interrupções.',
+      '3DZAAP Print Manager. Experimenta 7 dias grátis. O portal do cliente está incluído desde o primeiro dia, sem cartão de crédito. Experimenta agora em app ponto 3D zaap ponto com.'
+    ],
+    en: [
+      'Is my order ready yet? If you get this message from clients every single day, you need to see what we are about to show you. Swipe to see more!',
+      'The client is not to blame. They just do not know what is happening. While your phone fills up with repeated messages, your printers are silently doing their job. No one has real-time access to the order status.',
+      'Introducing the Magic Link! 3DZAAP automatically generates a unique tracking link for every order. Your client opens it on their phone and sees exactly what stage their print is at, in real time. No messages needed.',
+      'The client sees this: a complete tracking portal. With all stages visible — quote, modeling, approval, in queue — and currently in production. Shipping and completion are still ahead.',
+      'The result for your business: zero is it ready messages, because the client tracks everything in real time on their own. A professional image that makes clients feel they are dealing with a serious, organised business. And more time to produce, with fewer interruptions.',
+      '3DZAAP Print Manager. Try it free for 7 days. The client portal is included from day one, no credit card required. Try it now at app dot 3D zaap dot com.'
+    ],
+    es: [
+      '¿Mi pedido ya está listo? Si recibes este mensaje de tus clientes cada día, necesitas ver lo que vamos a mostrarte. ¡Desliza para ver más!',
+      'El cliente no tiene la culpa de no saber lo que pasa. Mientras tu teléfono se llena de mensajes repetidos, tus impresoras trabajan en silencio. Nadie tiene acceso al estado real del pedido.',
+      '¡Presentamos el Link Mágico! 3DZAAP genera automáticamente un link único por cada pedido. Tu cliente lo abre en su móvil y ve exactamente en qué fase está la impresión, en tiempo real. Sin necesidad de enviarte ningún mensaje.',
+      'El cliente ve esto: un portal completo de seguimiento. Con todas las etapas visibles — presupuesto, modelado, aprobación, en cola — y actualmente en producción. El envío y la conclusión aún están por venir.',
+      'El resultado para tu negocio: cero mensajes de ya está. El cliente ve todo en tiempo real, por sí solo. Una imagen profesional que hace que el cliente sienta que trata con un negocio serio y organizado. Y más tiempo para producir, con menos interrupciones.',
+      '3DZAAP Print Manager. Pruébalo gratis durante 7 días. El portal del cliente está incluido desde el primer día, sin tarjeta de crédito. Pruébalo ahora en app punto 3D zaap punto com.'
+    ]
+  };
+
+  const narratorSlideNames = {
+    br: ['Hook 😅', 'O Problema', 'A Solução', 'O Portal', 'Benefícios', 'Acesso Grátis'],
+    pt: ['Hook 😅', 'O Problema', 'A Solução', 'O Portal', 'Benefícios', 'Acesso Grátis'],
+    en: ['Hook 😅', 'The Problem', 'The Solution', 'The Portal', 'Benefits', 'Free Trial'],
+    es: ['Hook 😅', 'El Problema', 'La Solución', 'El Portal', 'Beneficios', 'Prueba Gratis']
+  };
+
+  const narrator = {
+    currentSlide: 0,
+    isPlaying: false,
+    isPaused: false,
+    langMap: { br: 'pt-BR', pt: 'pt-PT', en: 'en-US', es: 'es-ES' },
+
+    speak(text) {
+      speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang  = this.langMap[currentLang] || 'pt-BR';
+      utt.rate  = 0.93;
+      utt.pitch = 1;
+      utt.onstart = () => { this.isPlaying = true; this.isPaused = false; this.updateUI(); };
+      utt.onend   = () => {
+        setTimeout(() => {
+          const slides = narrations[currentLang] || [];
+          if (this.isPlaying && this.currentSlide < slides.length - 1) {
+            this.currentSlide++;
+            this.updateUI();
+            this.speak(slides[this.currentSlide]);
+          } else {
+            this.isPlaying = false;
+            this.isPaused  = false;
+            this.updateUI();
+          }
+        }, 900);
+      };
+      utt.onerror = () => { this.isPlaying = false; this.updateUI(); };
+      speechSynthesis.speak(utt);
+    },
+
+    playPause() {
+      if (this.isPlaying && !this.isPaused) {
+        speechSynthesis.pause();
+        this.isPaused = true;
+        this.updateUI();
+      } else if (this.isPaused) {
+        speechSynthesis.resume();
+        this.isPaused = false;
+        this.updateUI();
+      } else {
+        const slides = narrations[currentLang] || [];
+        if (slides[this.currentSlide]) this.speak(slides[this.currentSlide]);
+      }
+    },
+
+    stop() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      this.currentSlide = 0;
+      this.updateUI();
+    },
+
+    prev() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      this.currentSlide = Math.max(0, this.currentSlide - 1);
+      this.updateUI();
+    },
+
+    next() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      const max = (narrations[currentLang] || []).length - 1;
+      this.currentSlide = Math.min(max, this.currentSlide + 1);
+      this.updateUI();
+    },
+
+    updateUI() {
+      const slides = narrations[currentLang] || [];
+      const total  = slides.length;
+      const idx    = this.currentSlide;
+      const names  = narratorSlideNames[currentLang] || narratorSlideNames.br;
+
+      document.getElementById('narratorSlideCount').textContent = `${idx + 1} / ${total}`;
+      document.getElementById('narratorSlideName').textContent  = names[idx] || `Slide ${idx + 1}`;
+
+      const pct = total > 1 ? (idx / (total - 1)) * 100 : 0;
+      document.getElementById('narratorBarFill').style.width = pct + '%';
+
+      const btn  = document.getElementById('narratorPlayBtn');
+      const icon = document.getElementById('narratorIcon');
+
+      if (this.isPaused) {
+        btn.textContent = '▶ Continuar';
+        icon.classList.remove('playing');
+      } else if (this.isPlaying) {
+        btn.textContent = '⏸ Pausar';
+        icon.classList.add('playing');
+      } else {
+        btn.textContent = '▶ Ouvir';
+        icon.classList.remove('playing');
+      }
+
+      const navBtns = document.querySelectorAll('.narrator-btn-nav');
+      if (navBtns[0]) navBtns[0].disabled = idx === 0;
+      if (navBtns[1]) navBtns[1].disabled = idx === total - 1;
+    }
+  };
+
+  function openNarrator() {
+    document.getElementById('narratorTrigger').style.display = 'none';
+    const p = document.getElementById('narratorPlayer');
+    p.classList.add('open');
+    narrator.isPlaying    = false;
+    narrator.isPaused     = false;
+    narrator.currentSlide = 0;
+    narrator.updateUI();
+  }
+
+  function closeNarrator() {
+    speechSynthesis.cancel();
+    narrator.isPlaying = false;
+    narrator.isPaused  = false;
+    document.getElementById('narratorPlayer').classList.remove('open');
+    document.getElementById('narratorTrigger').style.display = '';
+  }
+
+  function narratorPlayPause() { narrator.playPause(); }
+  function narratorStop()      { narrator.stop(); }
+  function narratorPrev()      { narrator.prev(); }
+  function narratorNext()      { narrator.next(); }
 </script>
+
+<!-- ─── Narrator Trigger ─── -->
+<button class="narrator-trigger" id="narratorTrigger" onclick="openNarrator()">
+  <span class="nt-icon">🔊</span>
+  <span>Narrar Post</span>
+</button>
+
+<!-- ─── Narrator Player ─── -->
+<div class="narrator-player" id="narratorPlayer">
+  <div class="narrator-header">
+    <div class="narrator-header-left">
+      <span class="narrator-icon" id="narratorIcon">🔊</span>
+      <span class="narrator-label">Narrador</span>
+    </div>
+    <button class="narrator-close" onclick="closeNarrator()">&#x2715;</button>
+  </div>
+  <div class="narrator-body">
+    <div class="narrator-slide-row">
+      <span class="narrator-slide-name" id="narratorSlideName">Slide 1</span>
+      <span class="narrator-slide-badge" id="narratorSlideCount">1 / 6</span>
+    </div>
+    <div class="narrator-bar">
+      <div class="narrator-bar-fill" id="narratorBarFill"></div>
+    </div>
+    <div class="narrator-controls">
+      <button class="narrator-btn narrator-btn-nav" onclick="narratorPrev()" title="Slide anterior">◄</button>
+      <button class="narrator-btn narrator-btn-play" id="narratorPlayBtn" onclick="narratorPlayPause()">▶ Ouvir</button>
+      <button class="narrator-btn narrator-btn-stop"  onclick="narratorStop()"  title="Parar e reiniciar">■</button>
+      <button class="narrator-btn narrator-btn-nav" onclick="narratorNext()" title="Próximo slide">►</button>
+    </div>
+    <div class="narrator-hint">Web Speech API • voz do sistema operativo</div>
+  </div>
+</div>
 
 </body>
 </html>
