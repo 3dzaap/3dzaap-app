@@ -1547,5 +1547,55 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 </script>
+
+<script>
+// ── DELETE OWN ACCOUNT ──────────────────────────────────────────────────────
+function confirmDeleteSelfAccount() {
+  const modal = document.getElementById('deleteAccountModal');
+  if (!modal) return;
+  document.getElementById('deleteAccountInput').value = '';
+  document.getElementById('btnConfirmDeleteAccount').disabled = true;
+  modal.style.display = 'flex';
+}
+
+function closeDeleteAccountModal() {
+  const modal = document.getElementById('deleteAccountModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function executeDeleteSelfAccount() {
+  const btn = document.getElementById('btnConfirmDeleteAccount');
+  btn.disabled = true;
+  btn.textContent = 'A apagar...';
+
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) throw new Error('Sessão expirada. Faz login e tenta novamente.');
+
+    const companyId = _session?.companyId;
+    if (!companyId) throw new Error('Não foi possível identificar a empresa. Recarrega a página.');
+
+    // Chama a Edge Function de eliminação segura
+    const { data, error } = await _sb.functions.invoke('delete-account', {
+      body: { companyId: companyId }
+    });
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    // Limpeza do lado do cliente
+    ['3dzaap_theme', '3dzaap_lang', '3dzaap_admin_backup', '3dzaap_impersonate_slug', '3dzaap_theme_auto'].forEach(k => localStorage.removeItem(k));
+
+    alert('A tua conta e todos os teus dados foram eliminados com sucesso. Lamentamos ver-te partir!');
+    window.location.href = 'auth.html';
+
+  } catch (e) {
+    console.error('[3DZAAP] Erro ao apagar conta:', e);
+    btn.disabled = false;
+    btn.textContent = 'Excluir Permanentemente';
+    showToast('Erro ao apagar conta: ' + (e.message || 'Erro desconhecido'), 'err');
+  }
+}
+</script>
 </body>
 </html>
