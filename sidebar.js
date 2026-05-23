@@ -292,7 +292,7 @@ const Sidebar = (() => {
   };
 
   const PLAN_LIMITS = {
-    trial:        { materials: null, printers: null },
+    trial:        { materials: 10,   printers: 1    },
     starter:      { materials: 10,   printers: 1    },
     starter_ano:  { materials: 10,   printers: 1    },
     pro:          { materials: null, printers: null },

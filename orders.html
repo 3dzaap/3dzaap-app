@@ -1321,7 +1321,8 @@
     document.addEventListener('DOMContentLoaded', async () => {
       initThemeToggle();
       await loadUserData();
-      applyFeatureGating();
+      const allowed = await applyFeatureGating();
+      if (!allowed) return;
       await loadData();
 
       // filament tooltip is handled by shared.css .tip-icon:hover
@@ -1605,11 +1606,12 @@
 
         if (!ORDERS_PLANS.includes(plan)) {
           UI.showFeatureGate('orders');
-          return;
+          return false;
         }
         if (document.getElementById('financialLock') && !['trial', 'business'].includes(plan))
           document.getElementById('financialLock').style.display = '';
-      } catch (e) { }
+        return true;
+      } catch (e) { return false; }
     }
 
     let currentOrderFilter = 'active';

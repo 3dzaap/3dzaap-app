@@ -669,12 +669,13 @@ function animateValue(id, start, end, duration) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadUserData();
+  await loadUserData();
+  const allowed = await applyFeatureGating();
+  if (!allowed) return;
   setToday();
   await loadOrders();
   await loadExpenses();
   await loadPrinters();
-  applyFeatureGating();
 });
 
 function renderStatusDistribution(periodOrders) {
@@ -747,7 +748,7 @@ async function applyFeatureGating() {
     const FIN_PLANS = ['trial', 'pro', 'business'];
     if (!FIN_PLANS.includes(plan)) {
       UI.showFeatureGate('financial');
-      return;
+      return false;
     }
 
     // Gerir visibilidade do BI Section
@@ -761,7 +762,10 @@ async function applyFeatureGating() {
         biLock.style.display = 'flex';
       }
     }
-  } catch(e) {}
+    return true;
+  } catch(e) {
+    return false;
+  }
 }
 
 function setToday() {

@@ -503,7 +503,8 @@ let _importData = null;
 // ── INIT ───────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
-    await loadUserData();
+  const session = await loadUserData();
+  if (!session) return;
   await loadData();
   await loadLog();
   refreshStats();
@@ -523,9 +524,7 @@ async function loadUserData() {
   const plan = (session.plan || 'trial').replace('_ano', '');
   if (!['trial', 'pro', 'business'].includes(plan)) {
     UI.showFeatureGate('backoffice');
-    // Hide parts of the page for visual consistency
-    document.querySelector('.page').style.opacity = '0.3';
-    document.querySelector('.page').style.pointerEvents = 'none';
+    return null;
   }
 
   if (session.isSuperAdmin) {

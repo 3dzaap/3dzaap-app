@@ -201,6 +201,11 @@ var UI = {
   showFeatureGate: function(moduleKey) {
     var cfg = this._gateConfig[moduleKey] || { icon:'<i class="ph-bold ph-lock"></i>', title:'Módulo Restrito', sub:'Este módulo requer um plano superior.', plans:['pro'] };
     
+    // Determine if this is a full-page gate (page is completely inaccessible)
+    var path = window.location.pathname;
+    var isFullPageGate = path.includes('orders.html') || path.includes('financial.html') || path.includes('backoffice.html');
+    var backBtnLabel = isFullPageGate ? '<i class="ph-bold ph-house"></i> Ir para o Dashboard' : '<i class="ph-bold ph-x"></i> Fechar';
+
     // Create overlay if not exists
     var overlay = document.getElementById('gateOverlay');
     if (!overlay) {
@@ -231,7 +236,7 @@ var UI = {
         '<div class="gate-plans">' + plansHtml + '</div>' +
         '<div class="gate-actions">' +
           '<a href="settings.html?tab=assinatura" class="btn-upgrade-premium">Fazer Upgrade Agora</a>' +
-          '<button class="btn-gate-cancel" onclick="UI.closeFeatureGate()">Voltar</button>' +
+          '<button class="btn-gate-cancel" onclick="UI.closeFeatureGate()">' + backBtnLabel + '</button>' +
         '</div>' +
       '</div>';
 
@@ -243,7 +248,7 @@ var UI = {
     var overlay = document.getElementById('gateOverlay');
     if (overlay) overlay.classList.remove('open');
     document.body.style.overflow = '';
-    // If we are in a page that REQUIRES this access, go back
+    // If on a fully-gated page, always redirect to dashboard
     var path = window.location.pathname;
     if (path.includes('orders.html') || path.includes('financial.html') || path.includes('backoffice.html')) {
       window.location.href = 'dashboard.html';
