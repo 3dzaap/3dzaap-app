@@ -1084,6 +1084,9 @@ function wireEvents() {
 
   // Input tracking
   document.querySelectorAll('.form-input, .form-select, input[type="checkbox"], input[type="radio"]').forEach(el => {
+    // Não marcar como alterado globalmente se for um input dentro de um modal (ex: renameModal, deleteAccountModal)
+    if (el.closest('[id$="Modal"]') || el.closest('.modal-overlay')) return;
+    
     el.addEventListener('change', markDirty);
     el.addEventListener('input', markDirty);
   });
