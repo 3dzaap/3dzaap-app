@@ -283,6 +283,7 @@ const Auth = {
     } catch(_) {}
 
     return {
+      user_id:     user.id,
       email:       user.email,
       fname:       user.user_metadata?.fname || '',
       lname:       user.user_metadata?.lname || '',
@@ -335,6 +336,14 @@ const Auth = {
     if (error) throw error;
     _companyCache = null;
     await Auth._loadCompany();
+  },
+
+  // ── USER PROFILE ──────────────────────────────────────────
+  async updateUserName(fname, lname) {
+    const { error } = await _sb.auth.updateUser({
+      data: { fname: fname.trim(), lname: lname.trim() }
+    });
+    if (error) throw error;
   },
 
   // ── SUPER ADMIN MANAGEMENT ───────────────────────────────

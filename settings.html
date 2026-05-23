@@ -550,7 +550,7 @@
           <button class="settings-nav-btn" data-tab="marca"><i class="ph-bold ph-palette"></i> <span data-i18n="settings.tabs.brand">Marca</span></button>
           <button class="settings-nav-btn" data-tab="preferencias"><i class="ph-bold ph-gear"></i> <span data-i18n="settings.tabs.prefs">Preferências</span></button>
           <button class="settings-nav-btn" data-tab="notificacoes"><i class="ph-bold ph-bell"></i> <span data-i18n="settings.tabs.notifs">Notificações</span></button>
-          <button class="settings-nav-btn" data-tab="equipa"><i class="ph-bold ph-users"></i> <span data-i18n="settings.tabs.team">Equipa</span></button>
+          <button class="settings-nav-btn" data-tab="equipa"><i class="ph-bold ph-user"></i> <span data-i18n="settings.tabs.team">Utilizador</span></button>
           <button class="settings-nav-btn" data-tab="assinatura"><i class="ph-bold ph-credit-card"></i> <span data-i18n="settings.tabs.sub">Assinatura</span></button>
         </nav>
 
@@ -767,21 +767,15 @@
             </div>
           </div>
 
-          <!-- TAB: EQUIPA -->
+          <!-- TAB: EQUIPA (Agora Utilizador) -->
           <div class="settings-panel" id="tab-equipa" style="display:none">
             <div class="settings-card">
-              <div class="settings-card-title" style="justify-content:space-between">
-                <span data-i18n="settings.team.active"><i class="ph-bold ph-users"></i> Membros Ativos</span>
-                <button class="btn btn-primary btn-sm" id="btnInvite" data-i18n="settings.team.invite_btn"><i class="ph-bold ph-plus"></i> Convidar</button>
+              <div class="settings-card-title">
+                <span data-i18n="settings.team.active"><i class="ph-bold ph-user"></i> O Meu Perfil</span>
               </div>
               <div id="membersList">
-                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar membros...</div>
+                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar perfil...</div>
               </div>
-            </div>
-            
-            <div class="settings-card" id="invitesCard" style="display:none; margin-top:24px">
-               <div class="settings-card-title"><span data-i18n="settings.team.pending"><i class="ph-bold ph-envelope"></i> Convites Pendentes</span></div>
-               <div id="invitesList"></div>
             </div>
           </div>
 
@@ -931,13 +925,24 @@ function doLogout() {
     <div class="form-group" style="margin-bottom:20px">
       <label class="form-label" data-i18n="settings.team.modal_role">Função</label>
       <select id="inviteRole" class="form-select">
-        <option value="member" data-i18n="settings.team.role_member">Membro</option>
-        <option value="admin" data-i18n="settings.team.role_admin">Admin</option>
-      </select>
+<!-- RENAME MODAL -->
+<div id="renameModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center">
+  <div style="background:var(--bg-card,white); border-radius:20px; width:90%; max-width:400px; padding:24px; box-shadow:0 24px 60px rgba(0,0,0,.25)">
+    <h3 style="margin-bottom:6px; display:flex; align-items:center; gap:8px"><i class="ph-bold ph-user-circle"></i> Editar Nome</h3>
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:20px">Este nome aparece no sidebar e na lista da equipa.</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px">
+      <div class="form-group">
+        <label class="form-label">Primeiro nome</label>
+        <input type="text" id="renameFirst" class="form-input" placeholder="Ex: Breno" autocomplete="given-name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apelido</label>
+        <input type="text" id="renameLast" class="form-input" placeholder="Ex: Andrade" autocomplete="family-name">
+      </div>
     </div>
     <div style="display:flex; justify-content:flex-end; gap:12px">
-      <button class="btn btn-ghost" onclick="closeInviteModal()" data-i18n="settings.team.btn_cancel">Cancelar</button>
-      <button class="btn btn-primary" onclick="sendInvite()" data-i18n="settings.team.btn_send">Convidar</button>
+      <button class="btn btn-ghost" onclick="closeRenameModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRename()"><i class="ph-bold ph-check"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -1121,9 +1126,6 @@ function wireEvents() {
     document.getElementById('btnRemoveLogo').style.display = 'none';
     markDirty();
   });
-  // Team
-  const btnInvite = document.getElementById('btnInvite');
-  if (btnInvite) btnInvite.addEventListener('click', openInviteModal);
 }
 
 function handleFile(e, type) {
@@ -1207,91 +1209,75 @@ function applyCrop() {
 }
 
 // Team / Sub Management
-function openInviteModal() {
-  document.getElementById('inviteModal').style.display = 'flex';
-  document.getElementById('inviteEmail').value = '';
-  document.getElementById('inviteEmail').focus();
-}
 
-function closeInviteModal() {
-  document.getElementById('inviteModal').style.display = 'none';
-}
 
-async function sendInvite() {
-  const email = document.getElementById('inviteEmail').value.trim();
-  const role = document.getElementById('inviteRole').value;
+async function loadTeam() {
+  const membersList = document.getElementById('membersList');
   
-  if (!email || !email.includes('@')) {
-    showToast('Por favor, insira um email válido.', 'err');
-    return;
+  try {
+    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
+    const fullName = ((_session.fname + ' ' + _session.lname).trim() || _session.email.split('@')[0]);
+    const displayEmail = _session.email;
+    const avatarChar = fullName.charAt(0).toUpperCase();
+    
+    const editBtn = `<button class="btn-icon" onclick="openRenameModal()" title="Editar nome" style="margin-left:auto"><i class="ph-bold ph-pencil-simple"></i></button>`;
+    
+    membersList.innerHTML = `
+      <div class="member-row">
+        <div class="member-avatar">${avatarChar}</div>
+        <div class="member-info">
+          <div class="member-name">${escH(fullName)}</div>
+          <div class="member-email">${escH(displayEmail)}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px">
+          <span class="role-badge role-${_session.role}">${roleMap[_session.role] || _session.role}</span>
+          ${editBtn}
+        </div>
+      </div>
+    `;
+    
+  } catch (err) {
+    console.error('[3DZAAP] team load err:', err);
+    membersList.innerHTML = `<div style="padding:20px; color:var(--danger)">Erro ao carregar perfil: ${err.message}</div>`;
   }
+}
+
+// ── RENAME MODAL ─────────────────────────────────────────
+function openRenameModal() {
+  document.getElementById('renameFirst').value = _session.fname || '';
+  document.getElementById('renameLast').value  = _session.lname || '';
+  document.getElementById('renameModal').style.display = 'flex';
+  document.getElementById('renameFirst').focus();
+}
+
+function closeRenameModal() {
+  document.getElementById('renameModal').style.display = 'none';
+}
+
+async function saveRename() {
+  const fname = document.getElementById('renameFirst').value.trim();
+  const lname = document.getElementById('renameLast').value.trim();
+  if (!fname) { showToast('O primeiro nome é obrigatório.', 'err'); return; }
   
-  const btn = document.querySelector('#inviteModal .btn-primary');
-  const oldText = btn.innerHTML;
+  const btn = document.querySelector('#renameModal .btn-primary');
+  const oldHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '⌛ ...';
   
   try {
-    await DB.createInvite(email, role);
-    showToast('<i class="ph-bold ph-paper-plane-tilt"></i> Convite enviado!', 'ok');
-    closeInviteModal();
-    loadTeam(); // Refresh
-  } catch (err) {
-    showToast('Erro ao convidar: ' + err.message, 'err');
+    await Auth.updateUserName(fname, lname);
+    _session.fname = fname;
+    _session.lname = lname;
+    // Update sidebar in real-time
+    Sidebar.setSession(_session);
+    showToast('<i class="ph-bold ph-check-circle"></i> Nome atualizado!', 'ok');
+    closeRenameModal();
+    loadTeam();
+  } catch(err) {
+    showToast('Erro: ' + err.message, 'err');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = oldText;
-  }
-}
-
-async function loadTeam() {
-  const membersList = document.getElementById('membersList');
-  const invitesCard = document.getElementById('invitesCard');
-  const invitesList = document.getElementById('invitesList');
-  
-  try {
-    const [members, invites] = await Promise.all([
-      DB.getMembers(),
-      DB.getInvites()
-    ]);
-    
-    // Render Members
-    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
-    membersList.innerHTML = members.map(m => `
-      <div class="member-row">
-        <div class="member-avatar">${(m.user_email || 'U').charAt(0).toUpperCase()}</div>
-        <div class="member-info">
-          <div class="member-name">${m.user_email || 'Utilizador'}</div>
-          <div class="member-email">${fmtDate(m.joined_at)}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px">
-          <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
-          ${(_session.role === 'owner' && m.user_id !== _session.user_id) ? 
-            `<button class="btn-icon del" onclick="confirmRemoveMember('${m.id}')" title="Remover"><i class="ph-bold ph-trash"></i></button>` : ''}
-        </div>
-      </div>
-    `).join('');
-    
-    // Render Invites
-    if (invites && invites.length > 0) {
-      invitesCard.style.display = 'block';
-      invitesList.innerHTML = invites.map(inv => `
-        <div class="member-row">
-          <div class="member-avatar" style="background:var(--bg-hover-s); color:var(--muted)"><i class="ph-bold ph-envelope"></i></div>
-          <div class="member-info">
-            <div class="member-name">${inv.email}</div>
-            <div class="member-email">Pendente • Funçaõ: ${roleMap[inv.role] || inv.role}</div>
-          </div>
-          <button class="btn-icon del" onclick="confirmCancelInvite('${inv.id}')" title="Cancelar"><i class="ph-bold ph-x-circle"></i></button>
-        </div>
-      `).join('');
-    } else {
-      invitesCard.style.display = 'none';
-    }
-    
-  } catch (err) {
-    console.error('[3DZAAP] team load err:', err);
-    membersList.innerHTML = `<div style="padding:20px; color:var(--danger)">Erro ao carregar equipa: ${err.message}</div>`;
+    btn.innerHTML = oldHtml;
   }
 }
 

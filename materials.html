@@ -1186,6 +1186,19 @@ function expiryDisplay(expiry) {
 // ══════════════════════════════════════
 //  RENDER TABLE
 // ══════════════════════════════════════
+function calculateTotalRemaining(m) {
+  const isResin = (m.materialClass || m.material_class || 'fdm') === 'resin';
+  const sizeMap = { '1kg': 1, '500g': 0.5, '300g': 0.3, '250g': 0.25, '100g': 0.1, '1L': 1, '500ml': 0.5, '250ml': 0.25 };
+  const unitSize = sizeMap[m.rollSize] || 1;
+  let kgRem = m.kgRemaining;
+  if (kgRem === undefined || kgRem === null) {
+    kgRem = (parseInt(m.inUse) || 0) * unitSize;
+  }
+  const newKg = Math.max(0, (parseInt(m.total)||0) - (parseInt(m.inUse)||0)) * unitSize;
+  const total = newKg + kgRem;
+  return { val: total, str: total.toFixed(2) + (isResin ? ' L' : ' kg') };
+}
+
 function applyFilters() {
   renderTable();
   renderStats();
@@ -1217,10 +1230,16 @@ function renderTable() {
     return true;
   });
 
+  // Calculate computedRemaining for sorting and rendering
+  filtered.forEach(m => {
+    m.computedRemainingObj = calculateTotalRemaining(m);
+    m.computedRemaining = m.computedRemainingObj.val; // for sorting
+  });
+
   // Sort
   filtered.sort((a, b) => {
     let av = a[sortField] ?? '', bv = b[sortField] ?? '';
-    if (['total','inUse','newRolls','price'].includes(sortField)) {
+    if (['total','inUse','newRolls','price','computedRemaining'].includes(sortField)) {
       av = parseFloat(av)||0; bv = parseFloat(bv)||0;
       return sortDir === 'asc' ? av - bv : bv - av;
     }
@@ -1255,7 +1274,7 @@ function renderTable() {
       <th onclick="sortBy('colorName')" id="th-colorName" data-i18n="materials.table.th_name">Nome <span class="th-sort">↕</span></th>
       <th onclick="sortBy('type')" id="th-type" data-i18n="materials.table.th_type">Tipo <span class="th-sort">↕</span></th>
       <th onclick="sortBy('brand')" id="th-brand" data-i18n="materials.table.th_brand">Marca <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('rollSize')" id="th-rollSize" data-i18n="materials.table.th_stock">Stock <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('computedRemaining')" id="th-computedRemaining" data-i18n="materials.table.th_remaining">Restante <span class="th-sort">↕</span></th>
       <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.table.th_in_use">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.table.th_new">Novas <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total" data-i18n="materials.table.th_total">Total <span class="th-sort">↕</span></th>
@@ -1267,7 +1286,7 @@ function renderTable() {
       <th onclick="sortBy('colorName')" id="th-colorName" data-i18n="materials.table.th_name">Cor <span class="th-sort">↕</span></th>
       <th onclick="sortBy('type')" id="th-type" data-i18n="materials.table.th_type">Tipo <span class="th-sort">↕</span></th>
       <th onclick="sortBy('brand')" id="th-brand" data-i18n="materials.table.th_brand">Marca <span class="th-sort">↕</span></th>
-      <th onclick="sortBy('rollSize')" id="th-rollSize" data-i18n="materials.table.th_stock">Frasco <span class="th-sort">↕</span></th>
+      <th onclick="sortBy('computedRemaining')" id="th-computedRemaining" data-i18n="materials.table.th_remaining">Restante <span class="th-sort">↕</span></th>
       <th onclick="sortBy('inUse')" id="th-inUse" data-i18n="materials.table.th_in_use">Em uso <span class="th-sort">↕</span></th>
       <th onclick="sortBy('newRolls')" id="th-newRolls" data-i18n="materials.table.th_new">Novos <span class="th-sort">↕</span></th>
       <th onclick="sortBy('total')" id="th-total" data-i18n="materials.table.th_total">Total <span class="th-sort">↕</span></th>
@@ -1291,7 +1310,7 @@ function renderTable() {
       </div></td>
       <td><span class="cell-name">${escH(m.type||'—')}</span><br><span class="cell-sub">${escH(m.variation||'')}</span></td>
       <td class="cell-mono">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))}</td>
-      <td class="cell-mono">${escH(m.rollSize||'—')}</td>
+      <td class="cell-mono">${m.computedRemainingObj.str}</td>
       <td class="cell-stepper"><div class="stepper">
         <button class="stepper-btn" onclick="stepField(event,'${m.id}','inUse',-1)">−</button>
         <span class="stepper-val" id="sv-inUse-${m.id}">${m.inUse||0}</span>
@@ -1326,7 +1345,7 @@ function renderTable() {
           <span class="mob-fil-name">${escH(m.colorName||'—')} — ${escH(m.type||'—')}${m.variation?' ('+escH(m.variation)+')':''}</span>
           ${price ? `<span class="mob-fil-price">${price}</span>` : ''}
         </div>
-        <div class="mob-fil-meta">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))} · ${escH(m.rollSize||'—')} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
+        <div class="mob-fil-meta">${escH(Array.isArray(m.brand)?m.brand.join(', '):(m.brand||'—'))} · ${m.computedRemainingObj.str} · ${newUnits} nova${newUnits!==1?'s':''} · ${renderBadge(m)}</div>
         <div class="mob-fil-steppers">
           <div class="mob-fil-step-group">
             <div class="mob-fil-step-lbl" data-i18n="materials.modal_mat.lbl_in_use">Em uso</div>
@@ -2255,8 +2274,10 @@ function showPackSiblings(event, packId) {
     </div>
   `).join('');
 
+  const totalCost = siblings.reduce((s, m) => s + (m.price || 0), 0);
+  const sym = getCurrencySymbol();
   document.getElementById('packPopoverMeta').textContent =
-    t('materials.popover.pack_meta', { count: siblings.length, total: totalCost.toFixed(2), symbol: sym });
+    (window.t || i18n.getNestedTranslation)('materials.popover.pack_meta', { count: siblings.length, total: totalCost.toFixed(2), symbol: sym });
 
   // Position near click
   const rect = event.target.getBoundingClientRect();
