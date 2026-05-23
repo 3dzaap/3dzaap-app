@@ -10,8 +10,28 @@
 
 const i18n = {
     currentLocale: (() => {
-        try { return localStorage.getItem('3dzaap_lang') || 'pt-PT'; } 
-        catch (e) { return 'pt-PT'; }
+        try { 
+            const saved = localStorage.getItem('3dzaap_lang'); 
+            if (saved) return saved;
+        } catch (e) {}
+        
+        // Auto-detect browser language
+        try {
+            const browserLangs = navigator.languages || [navigator.language || navigator.userLanguage];
+            for (let lang of browserLangs) {
+                if (!lang) continue;
+                // Exact match
+                if (['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU'].includes(lang)) return lang;
+                
+                // Base language match
+                const base = lang.split('-')[0].toLowerCase();
+                if (base === 'pt') return lang.toLowerCase() === 'pt-br' ? 'pt-BR' : 'pt-PT';
+                if (base === 'es') return 'es';
+                if (base === 'en') return lang.toLowerCase() === 'en-gb' ? 'en-GB' : 'en-US';
+            }
+        } catch(e) {}
+        
+        return 'pt-PT';
     })(),
     translations: {},
     supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU'],
