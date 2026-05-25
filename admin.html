@@ -535,6 +535,9 @@
           <button class="admin-tab" onclick="switchTab('users')" role="tab" id="tab-btn-users">
             <i class="ph-bold ph-user-circle"></i> Utilizadores
           </button>
+          <button class="admin-tab" onclick="switchTab('acordos')" role="tab" id="tab-btn-acordos">
+            <i class="ph-bold ph-handshake"></i> Acordos
+          </button>
           <button class="admin-tab" onclick="switchTab('metrics')" role="tab" id="tab-btn-metrics">
             <i class="ph-bold ph-chart-line"></i> Métricas
           </button>
@@ -638,6 +641,41 @@
                 </thead>
                 <tbody id="usersTableBody">
                   <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: ACORDOS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-acordos">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
+              <input class="admin-search form-input" id="searchAcordos" placeholder="Pesquisar acordos…" oninput="filterAcordos()">
+            </div>
+          </div>
+          <div class="ad-card">
+            <div class="ad-card-header">
+              <div class="ad-card-title"><i class="ph-bold ph-handshake"></i> Acordos de Parceria</div>
+              <span class="badge" id="acordosCount" style="background:var(--blue-g);color:var(--blue)">0</span>
+            </div>
+            <div class="ad-card-body table-wrap" style="padding:0">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Médico</th>
+                    <th>Cédula</th>
+                    <th>NIF</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="acordosAdminBody">
+                  <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">A carregar…</td></tr>
                 </tbody>
               </table>
             </div>
