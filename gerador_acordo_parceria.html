@@ -1537,8 +1537,8 @@
     try {
       const v = getFormValues();
       const coupons = [];
-      if (document.getElementById('c1Toggle').checked && document.getElementById('c1Coupon').value) coupons.push(document.getElementById('c1Coupon').value);
-      if (document.getElementById('c2Toggle').checked && document.getElementById('c2Coupon').value) coupons.push(document.getElementById('c2Coupon').value);
+      if (clauses.clause1 && document.getElementById('c1Coupon').value) coupons.push(document.getElementById('c1Coupon').value);
+      if (clauses.clause2 && document.getElementById('c2Coupon').value) coupons.push(document.getElementById('c2Coupon').value);
 
       if (typeof _sb !== 'undefined') {
         const { error } = await _sb.from('acordos').insert([{
