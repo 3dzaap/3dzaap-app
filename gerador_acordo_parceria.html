@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acordo de Parceria — 3DZAAP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset ─────────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ── 3DZAAP Design Tokens ──────────────────────── */
+  :root {
+    --blue:     #3B8FD4;
+    --blue-d:   #2a6fb0;
+    --blue-dd:  #1a4f80;
+    --blue-lt:  #72B8F0;
+    --orange:   #F5943A;
+    --orange-d: #d4762a;
+    --purple:   #8B5CF6;
+    --success:  #22c55e;
+    --danger:   #ef4444;
+    --dark:     #1a2332;
+    --muted:    #4A5568;
+    --subtle:   #94A3B8;
+    --f:        'Outfit', sans-serif;
+    --mono:     'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--f);
+    color: var(--dark);
+    background: #0D1117;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.7;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SIDEBAR EDITOR
+     ═══════════════════════════════════════════════════ */
+  .editor {
+    width: 380px;
+    min-width: 380px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #1a2332;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: linear-gradient(180deg, rgba(59,143,212,0.08) 0%, transparent 100%);
+    flex-shrink: 0;
+  }
+
+  .editor-header h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .editor-header p {
+    font-size: 0.76rem;
+    color: var(--subtle);
+    margin-top: 6px;
+  }
+
+  .editor-body {
+    padding: 20px 24px 32px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  /* ── Form Sections ─────────────────────────────── */
+  .form-section {
+    margin-bottom: 28px;
+  }
+
+  .form-section-title {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--subtle);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 5px;
+  }
+
+  .form-label span {
+    font-weight: 400;
+    color: var(--subtle);
+    font-size: 0.70rem;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: #0f172a;
+    border: 1.5px solid rgba(59,143,212,0.20);
+    font-size: 0.84rem;
+    font-family: var(--f);
+    color: #f1f5f9;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,143,212,0.15);
+  }
+
+  .form-input::placeholder { color: #475569; }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .form-hint {
+    font-size: 0.68rem;
+    color: #475569;
+    margin-top: 4px;
+  }
+
+  /* ── Clause Toggle ─────────────────────────────── */
+  .clause-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(59,143,212,0.06);
+    border: 1px solid rgba(59,143,212,0.12);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .clause-toggle:hover {
+    background: rgba(59,143,212,0.10);
+  }
+
+  .clause-toggle-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  .toggle-switch {
+    width: 40px;
+    height: 22px;
+    background: #334155;
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch.on {
+    background: var(--blue);
+  }
+
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch.on::after {
+    transform: translateX(18px);
+  }
+
+  .clause-fields {
+    padding-left: 0;
+    margin-top: 8px;
+  }
+
+  .clause-fields.hidden {
+    display: none;
+  }
+
+  /* ── Logo Upload ───────────────────────────────── */
+  .logo-upload {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #0f172a;
+    border: 1.5px dashed rgba(59,143,212,0.30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    color: #475569;
+    font-size: 1.2rem;
+  }
+
+  .logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .logo-upload-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: rgba(59,143,212,0.12);
+    border: 1px solid rgba(59,143,212,0.25);
+    color: var(--blue);
+    font-family: var(--f);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .logo-upload-btn:hover {
+    background: rgba(59,143,212,0.20);
+  }
+
+  /* ── Action Buttons ────────────────────────────── */
+  .editor-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .btn-print {
+    flex: 1;
+    padding: 11px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-d));
+    color: #fff;
+    border: none;
+    font-family: var(--f);
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-print:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(59,143,212,0.35);
+  }
+
+  .btn-reset {
+    padding: 11px 16px;
+    border-radius: 12px;
+    background: rgba(239,68,68,0.10);
+    border: 1px solid rgba(239,68,68,0.20);
+    color: var(--danger);
+    font-family: var(--f);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-reset:hover {
+    background: rgba(239,68,68,0.18);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PREVIEW AREA
+     ═══════════════════════════════════════════════════ */
+  .preview-area {
+    margin-left: 380px;
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 10%, rgba(59,143,212,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 20% 90%, rgba(245,148,58,0.04) 0%, transparent 50%),
+      #0D1117;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     THE DOCUMENT (A4 Page)
+     ═══════════════════════════════════════════════════ */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Print Mode ────────────────────────────────── */
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body { background: #fff; }
+    .editor { display: none !important; }
+    .preview-area { margin-left: 0; padding: 0; background: #fff; }
+    .page { box-shadow: none; margin: 0; width: 100%; border-radius: 0; }
+    .doc-header::before, .doc-header::after { display: none !important; }
+  }
+
+  /* ── Document Header ───────────────────────────── */
+  .doc-header {
+    background: linear-gradient(135deg, #0D1117 0%, #1a2332 50%, #0D1117 100%);
+    padding: 48px 56px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .doc-header::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(59,143,212,0.15) 0%, rgba(59,143,212,0) 70%);
+    border-radius: 50%;
+  }
+
+  .doc-header::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,148,58,0.12) 0%, rgba(245,148,58,0) 70%);
+    border-radius: 50%;
+  }
+
+  .doc-header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .logo-box {
+    width: 90px; height: 90px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.12);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .logo-box img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .logo-box-placeholder {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    padding: 8px;
+    font-weight: 600;
+  }
+
+  .logo-divider {
+    color: rgba(255,255,255,0.25);
+    font-size: 1.8rem;
+    font-weight: 300;
+  }
+
+  .doc-title {
+    text-align: center;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .doc-subtitle {
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .accent-line {
+    height: 4px;
+    background: linear-gradient(90deg, var(--blue) 0%, var(--orange) 50%, var(--purple) 100%);
+  }
+
+  /* ── Document Content ──────────────────────────── */
+  .doc-content {
+    padding: 44px 56px 40px;
+    color: var(--dark);
+  }
+
+  .intro-text {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1.5px solid #edf2f7;
+  }
+
+  .intro-text strong {
+    color: var(--dark);
+    font-weight: 700;
+  }
+
+  .section {
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .section-icon.blue   { background: linear-gradient(135deg, rgba(59,143,212,0.20), rgba(59,143,212,0.08)); border: 1.5px solid rgba(59,143,212,0.25); color: var(--blue); }
+  .section-icon.orange { background: linear-gradient(135deg, rgba(245,148,58,0.20), rgba(245,148,58,0.08)); border: 1.5px solid rgba(245,148,58,0.25); color: var(--orange); }
+  .section-icon.purple { background: linear-gradient(135deg, rgba(139,92,246,0.20), rgba(139,92,246,0.08)); border: 1.5px solid rgba(139,92,246,0.25); color: var(--purple); }
+  .section-icon.green  { background: linear-gradient(135deg, rgba(34,197,94,0.20), rgba(34,197,94,0.08)); border: 1.5px solid rgba(34,197,94,0.25); color: var(--success); }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--subtle);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .section-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--dark);
+  }
+
+  .section-body {
+    padding-left: 54px;
+  }
+
+  .section-body p {
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    line-height: 1.8;
+  }
+
+  .section-body strong {
+    color: var(--dark);
+    font-weight: 700;
+  }
+
+  .highlight {
+    background: linear-gradient(135deg, rgba(59,143,212,0.06) 0%, rgba(245,148,58,0.04) 100%);
+    border: 1.5px solid rgba(59,143,212,0.12);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+
+  .highlight p {
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 0;
+  }
+
+  .coupon-code {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--blue);
+    background: rgba(59,143,212,0.10);
+    border: 1.5px solid rgba(59,143,212,0.25);
+    border-radius: 8px;
+    padding: 3px 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .section-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+  }
+
+  .section-body ul li {
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.8;
+    padding-left: 20px;
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  .section-body ul li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--blue-d));
+  }
+
+  .divider {
+    height: 1.5px;
+    background: linear-gradient(90deg, rgba(226,232,240,0) 0%, #e2e8f0 20%, #e2e8f0 80%, rgba(226,232,240,0) 100%);
+    margin: 36px 0;
+  }
+
+  .signatures {
+    display: flex;
+    gap: 48px;
+    margin-top: 48px;
+    padding-top: 20px;
+  }
+
+  .sig-block { flex: 1; text-align: center; }
+
+  .sig-line {
+    width: 100%;
+    height: 1.5px;
+    background: var(--dark);
+    margin-bottom: 12px;
+    margin-top: 60px;
+  }
+
+  .sig-name {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+
+  .sig-role {
+    font-size: 0.76rem;
+    color: var(--subtle);
+    font-weight: 500;
+  }
+
+  .doc-footer {
+    padding: 20px 56px;
+    text-align: center;
+    border-top: 1.5px solid #edf2f7;
+    margin-top: 24px;
+  }
+
+  .doc-footer p {
+    font-size: 0.72rem;
+    color: var(--subtle);
+    font-weight: 500;
+  }
+
+  .doc-footer .brand {
+    font-weight: 800;
+    color: var(--blue);
+  }
+
+  
+  /* ── Bullets Manager ───────────────────────────── */
+  .bullets-manager {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 14px;
+  }
+  .bullets-manager-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+  }
+  .bullet-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.76rem;
+    color: var(--subtle);
+    cursor: pointer;
+  }
+  .bullet-toggle input {
+    margin-top: 2px;
+  }
+  .custom-bullets-list {
+    margin-top: 10px;
+  }
+  .custom-bullet-item {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .btn-add-bullet {
+    width: 100%;
+    padding: 6px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px dashed rgba(59,143,212,0.4);
+    color: var(--blue);
+    font-family: var(--f);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 6px;
+  }
+  .btn-add-bullet:hover {
+    background: rgba(59,143,212,0.08);
+  }
+  .btn-remove-bullet {
+    background: rgba(239,68,68,0.1);
+    color: var(--danger);
+    border: none;
+    border-radius: 6px;
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ── Custom clause styling ─────────────────────── */
+  .custom-clause-body {
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.8;
+    padding-left: 54px;
+    white-space: pre-line;
+  }
+
+  /* ── Add Clause Button ─────────────────────────── */
+  .btn-add-clause {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1.5px dashed rgba(59,143,212,0.4);
+    color: var(--blue);
+    font-family: var(--f);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+  .btn-add-clause:hover {
+    background: rgba(59,143,212,0.08);
+    border-color: var(--blue);
+  }
+
+  .extra-clause-item {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .btn-remove-clause {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(239,68,68,0.1);
+    color: var(--danger);
+    border: none;
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.2s;
+  }
+  .btn-remove-clause:hover {
+    background: rgba(239,68,68,0.2);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     SIDEBAR EDITOR
+     ═══════════════════════════════════════════════════ -->
+<div class="editor">
+  <div class="editor-header">
+    <h1>📝 Gerador de Acordo</h1>
+    <p>Preenche os campos para personalizar o documento. A pré-visualização atualiza em tempo real.</p>
+  </div>
+
+  <div class="editor-body">
+
+    <!-- ── Parceiro ───────────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-title">🤝 Dados do Parceiro</div>
+
+      <div class="form-group">
+        <label class="form-label">Idioma do Documento</label>
+        <select class="form-input" id="docLanguage">
+          <option value="pt-PT" selected>Português (Portugal)</option>
+          <option value="pt-BR">Português (Brasil)</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nome do Parceiro</label>
+        <input class="form-input" id="partnerName" type="text" value="4TreeLab" placeholder="Ex: 4TreeLab">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Representante Legal <span>(assinatura)</span></label>
+        <input class="form-input" id="partnerRep" type="text" value="Representante Legal" placeholder="Ex: João Silva">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Logo do Parceiro</label>
+        <div class="logo-upload">
+          <div class="logo-preview" id="partnerLogoPreview">📷</div>
+          <label class="logo-upload-btn" for="partnerLogoInput">Carregar Logo</label>
+          <input type="file" id="partnerLogoInput" accept="image/*" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Datas ─────────────────────────────────── -->
+    <div class="form-section">
+      <div class="form-section-title">📅 Datas e Validade</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Início do Acordo</label>
+          <input class="form-input" id="startDate" type="date" value="2026-06-01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duração <span>(meses)</span></label>
+          <input class="form-input" id="duration" type="number" value="12" min="1" max="60">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Cláusula Validade: Detalhes ──────────── -->
+    <div class="form-section">
+      <div class="form-section-title">📋 Cláusula Validade — Detalhes</div>
+      <div class="bullets-manager">
+        <div class="bullets-manager-title">Pontos da Cláusula de Validade</div>
+        <label class="bullet-toggle"><input type="checkbox" id="c4b1" checked onchange="renderDocument()"> Condições de validade e entrada em vigor</label>
+        <label class="bullet-toggle"><input type="checkbox" id="c4b2" checked onchange="renderDocument()"> Avaliação conjunta ao término</label>
+        <div id="c4-custom-bullets" class="custom-bullets-list"></div>
+        <button class="btn-add-bullet" onclick="addCustomBullet('c4')">+ Adicionar Detalhe</button>
+      </div>
+    </div>
+
+
+    <!-- ── Cláusula 1: Benefícios Diretos ────────── -->
+    <div class="form-section">
+      <div class="form-section-title">🎯 Cláusula 1 — Benefícios Diretos</div>
+
+      <div class="clause-toggle" onclick="toggleClause('clause1')">
+        <span class="clause-toggle-label">Ativar Cláusula 1</span>
+        <div class="toggle-switch on" id="toggle-clause1"></div>
+      </div>
+      <div class="clause-fields" id="fields-clause1">
+        <div class="form-group">
+          <label class="form-label">Plano com Desconto</label>
+          <select class="form-input" id="c1Plan">
+            <option value="Starter Mensal">Starter Mensal</option>
+            <option value="Pro Mensal" selected>Pro Mensal</option>
+            <option value="Business Mensal">Business Mensal</option>
+            <option value="Starter Anual">Starter Anual</option>
+            <option value="Pro Anual">Pro Anual</option>
+            <option value="Business Anual">Business Anual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código do Cupom</label>
+          <input class="form-input" id="c1Coupon" type="text" value="BEMVINDO" style="font-family: var(--mono); text-transform: uppercase;">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Desconto (%)</label>
+            <input class="form-input" id="c1Discount" type="number" value="20" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duração (meses)</label>
+            <input class="form-input" id="c1Duration" type="number" value="12" min="1" max="60">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Acesso Extra ao Plano</label>
+          <select class="form-input" id="c1ExtraPlan">
+            <option value="">Nenhum</option>
+            <option value="Starter">Starter</option>
+            <option value="Pro">Pro</option>
+            <option value="Business" selected>Business</option>
+          </select>
+          <div class="form-hint">Funcionalidades extra de um plano superior durante a vigência.</div>
+        </div>
+      </div>
+    
+      <div class="bullets-manager">
+        <div class="bullets-manager-title">Detalhes da Cláusula</div>
+        <label class="bullet-toggle"><input type="checkbox" id="c1b1" checked onchange="renderDocument()"> Descrição do desconto no plano</label>
+        <label class="bullet-toggle"><input type="checkbox" id="c1b2" checked onchange="renderDocument()"> Acesso imediato a funcionalidades extras (se selecionado)</label>
+        <div id="c1-custom-bullets" class="custom-bullets-list"></div>
+        <button class="btn-add-bullet" onclick="addCustomBullet('c1')">+ Adicionar Detalhe</button>
+      </div>
+    </div>
+
+    <!-- ── Cláusula 2: Cupão de Desconto ─────────── -->
+    <div class="form-section">
+      <div class="form-section-title">🎁 Cláusula 2 — Cupão para Seguidores</div>
+
+      <div class="clause-toggle" onclick="toggleClause('clause2')">
+        <span class="clause-toggle-label">Ativar Cláusula 2</span>
+        <div class="toggle-switch on" id="toggle-clause2"></div>
+      </div>
+      <div class="clause-fields" id="fields-clause2">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Código do Cupão</label>
+            <input class="form-input" id="c2Coupon" type="text" value="4TREELAB10" placeholder="Ex: PARCEIRO10" style="font-family: var(--mono); text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Desconto (%)</label>
+            <input class="form-input" id="c2Discount" type="number" value="10" min="1" max="100">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duração do Desconto <span>(meses)</span></label>
+          <input class="form-input" id="c2Duration" type="number" value="12" min="1" max="60">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aplica-se a</label>
+          <select class="form-input" id="c2AppliesTo">
+            <option value="qualquer plano" selected>Qualquer plano</option>
+            <option value="o Plano Starter">Plano Starter</option>
+            <option value="o Plano Pro">Plano Pro</option>
+            <option value="o Plano Business">Plano Business</option>
+          </select>
+        </div>
+      
+        <div class="bullets-manager">
+          <div class="bullets-manager-title">Detalhes da Cláusula (Bolinhas extras)</div>
+          <div id="c2-custom-bullets" class="custom-bullets-list"></div>
+          <button class="btn-add-bullet" onclick="addCustomBullet('c2')">+ Adicionar Detalhe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Cláusula 3: Milestone ─────────────────── -->
+    <div class="form-section">
+      <div class="form-section-title">🏆 Cláusula 3 — Recompensa (Milestone)</div>
+
+      <div class="clause-toggle" onclick="toggleClause('clause3')">
+        <span class="clause-toggle-label">Ativar Cláusula 3</span>
+        <div class="toggle-switch on" id="toggle-clause3"></div>
+      </div>
+      <div class="clause-fields" id="fields-clause3">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Meta de Assinaturas</label>
+            <input class="form-input" id="c3Goal" type="number" value="10" min="1" max="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Recompensa (meses)</label>
+            <input class="form-input" id="c3Reward" type="number" value="12" min="1" max="60">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plano da Recompensa</label>
+          <select class="form-input" id="c3RewardPlan">
+            <option value="Starter">Starter</option>
+            <option value="Pro">Pro</option>
+            <option value="Business" selected>Business</option>
+          </select>
+        </div>
+      
+        <div class="bullets-manager">
+          <div class="bullets-manager-title">Detalhes da Cláusula</div>
+          <label class="bullet-toggle"><input type="checkbox" id="c3b1" checked onchange="renderDocument()"> Meta de assinaturas atingida</label>
+          <label class="bullet-toggle"><input type="checkbox" id="c3b2" checked onchange="renderDocument()"> Contagem inicia-se no mês subsequente</label>
+          <label class="bullet-toggle"><input type="checkbox" id="c3b3" checked onchange="renderDocument()"> Assinatura cancelada e isenção total</label>
+          <div id="c3-custom-bullets" class="custom-bullets-list"></div>
+          <button class="btn-add-bullet" onclick="addCustomBullet('c3')">+ Adicionar Detalhe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Cláusulas Extras (Múltiplas) ──────────── -->
+    <div class="form-section">
+      <div class="form-section-title">✏️ Cláusulas Extras</div>
+
+      <div id="extra-clauses-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <button class="btn-add-clause" onclick="addExtraClause()">
+        + Adicionar Nova Cláusula
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Footer Actions ──────────────────────────── -->
+  <div class="editor-footer">
+    <button class="btn-print" onclick="saveAndPrint()" id="btnPrint">📄 Guardar como PDF</button>
+    <button class="btn-reset" onclick="resetForm()">↺</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PREVIEW AREA
+     ═══════════════════════════════════════════════════ -->
+<div class="preview-area">
+  <div class="page" id="documentPage">
+    <!-- JS renders here -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+  // ── State ─────────────────────────────────────────
+  const clauses = { clause1: true, clause2: true, clause3: true };
+  let partnerLogoDataUrl = null;
+  let extraClauses = [];
+  let customBullets = { c1: [], c2: [], c3: [], c4: [] };
+  let c1CouponEdited = false;
+  let c2CouponEdited = false;
+
+  // ── Localization ──────────────────────────────────
+  const docLocales = {
+    'pt-PT': {
+      title: "Termo de Acordo de Parceria",
+      subtitle: "{partner} &nbsp;•&nbsp; 3DZAAP Print Manager",
+      intro: "Este documento estabelece as condições, deveres e benefícios mútuos da parceria firmada entre a <strong>3DZAAP — Print Manager</strong> e a <strong>{partner}</strong>, com o objetivo de fomentar o crescimento conjunto no ecossistema de impressão 3D.",
+      clauseStr: "Cláusula",
+      c1Title: "Benefícios Diretos à {partner}",
+      c1Intro: "A 3DZAAP concede à {partner} os seguintes benefícios exclusivos:",
+      c1Discount: "<strong>Desconto de {discount}%</strong> no Plano {plan} com a duração de {duration} {months}, mediante a utilização do cupão <span class=\"coupon-code\">{coupon}</span>.",
+      c1Extra: "<strong>Acesso imediato</strong> às funcionalidades exclusivas do <strong>Plano {extra}</strong> durante a vigência desta parceria.",
+      c2Title: "Benefícios para a Comunidade",
+      c2Intro: "Para agregar valor à audiência da {partner}, a 3DZAAP compromete-se a criar e disponibilizar um cupão exclusivo:",
+      c2Coupon: "Cupão <span class=\"coupon-code\">{coupon}</span> — garante <strong>{discount}% de desconto</strong> em {applies} da plataforma 3DZAAP aos seguidores da {partner}, com validade de <strong>{duration} {months}</strong> a contar da data de subscrição.",
+      c3Title: "Sistema de Recompensa (Milestone)",
+      c3Intro: "Como forma de incentivar e reconhecer a conversão gerada pela parceria, fica estabelecido que:",
+      c3Item1: "Ao atingir a marca de <strong>{goal} assinaturas ativas</strong> geradas através do cupão <strong>{coupon}</strong>, a {partner} será recompensada com <strong>{reward} {months} de acesso 100% gratuito</strong> ao <strong>Plano {plan}</strong>.",
+      c3Item2: "A contagem inicia-se no <strong>mês subsequente</strong> àquele em que a meta de {goal} assinaturas for atingida.",
+      c3Item3: "Nesse momento, a assinatura mensal vigente da {partner} será cancelada e, a contar da data desse cancelamento, dar-se-á início imediato à isenção total da mensalidade (acesso gratuito) pelo período de <strong>{reward} meses</strong>.",
+      c4Title: "Validade e Renovação",
+      c4Item1: "As condições estipuladas neste acordo têm a validade de <strong>{duration} meses</strong>, entrando em vigor a partir de <strong>{start}</strong>.",
+      c4Item2: "Após o decurso deste prazo, ambas as partes concordam em realizar uma <strong>avaliação conjunta</strong> dos resultados obtidos. Com base nesta análise, serão definidas de mútuo acordo as ações, ajustes e possíveis renovações para o período subsequente.",
+      repLegal: "Representante Legal",
+      footerText: "O sistema operativo que profissionaliza o teu estúdio 3D",
+      footerGen: "Documento gerado em {date}",
+      monthSingular: "mês",
+      monthPlural: "meses",
+      couponRefFallback: "o cupão exclusivo"
+    },
+    'pt-BR': {
+      title: "Termo de Acordo de Parceria",
+      subtitle: "{partner} &nbsp;•&nbsp; 3DZAAP Print Manager",
+      intro: "Este documento estabelece as condições, deveres e benefícios mútuos da parceria firmada entre a <strong>3DZAAP — Print Manager</strong> e a <strong>{partner}</strong>, com o objetivo de fomentar o crescimento conjunto no ecossistema de impressão 3D.",
+      clauseStr: "Cláusula",
+      c1Title: "Benefícios Diretos à {partner}",
+      c1Intro: "A 3DZAAP concede à {partner} os seguintes benefícios exclusivos:",
+      c1Discount: "<strong>Desconto de {discount}%</strong> no Plano {plan} com a duração de {duration} {months}, mediante a utilização do cupom <span class=\"coupon-code\">{coupon}</span>.",
+      c1Extra: "<strong>Acesso imediato</strong> às funcionalidades exclusivas do <strong>Plano {extra}</strong> durante a vigência desta parceria.",
+      c2Title: "Benefícios para a Comunidade",
+      c2Intro: "Para agregar valor à audiência da {partner}, a 3DZAAP compromete-se a criar e disponibilizar um cupom exclusivo:",
+      c2Coupon: "Cupom <span class=\"coupon-code\">{coupon}</span> — garante <strong>{discount}% de desconto</strong> em {applies} da plataforma 3DZAAP aos seguidores da {partner}, com validade de <strong>{duration} {months}</strong> a contar da data de assinatura.",
+      c3Title: "Sistema de Recompensa (Milestone)",
+      c3Intro: "Como forma de incentivar e reconhecer a conversão gerada pela parceria, fica estabelecido que:",
+      c3Item1: "Ao atingir a marca de <strong>{goal} assinaturas ativas</strong> geradas através do cupom <strong>{coupon}</strong>, a {partner} será recompensada com <strong>{reward} {months} de acesso 100% gratuito</strong> ao <strong>Plano {plan}</strong>.",
+      c3Item2: "A contagem inicia-se no <strong>mês subsequente</strong> àquele em que a meta de {goal} assinaturas for atingida.",
+      c3Item3: "Nesse momento, a assinatura mensal vigente da {partner} será cancelada e, a contar da data desse cancelamento, dar-se-á início imediato à isenção total da mensalidade (acesso gratuito) pelo período de <strong>{reward} meses</strong>.",
+      c4Title: "Validade e Renovação",
+      c4Item1: "As condições estipuladas neste acordo têm a validade de <strong>{duration} meses</strong>, entrando em vigor a partir de <strong>{start}</strong>.",
+      c4Item2: "Após o fim deste prazo, ambas as partes concordam em realizar uma <strong>avaliação conjunta</strong> dos resultados obtidos. Com base nesta análise, serão definidas de mútuo acordo as ações, ajustes e possíveis renovações para o período subsequente.",
+      repLegal: "Representante Legal",
+      footerText: "O sistema operacional que profissionaliza o seu estúdio 3D",
+      footerGen: "Documento gerado em {date}",
+      monthSingular: "mês",
+      monthPlural: "meses",
+      couponRefFallback: "o cupom exclusivo"
+    },
+    en: {
+      title: "Partnership Agreement Term",
+      subtitle: "{partner} &nbsp;•&nbsp; 3DZAAP Print Manager",
+      intro: "This document establishes the conditions, duties, and mutual benefits of the partnership formed between <strong>3DZAAP — Print Manager</strong> and <strong>{partner}</strong>, aiming to foster joint growth in the 3D printing ecosystem.",
+      clauseStr: "Clause",
+      c1Title: "Direct Benefits for {partner}",
+      c1Intro: "3DZAAP grants {partner} the following exclusive benefits:",
+      c1Discount: "<strong>{discount}% Discount</strong> on the {plan} Plan for a duration of {duration} {months}, by using the coupon <span class=\"coupon-code\">{coupon}</span>.",
+      c1Extra: "<strong>Immediate access</strong> to the exclusive features of the <strong>{extra} Plan</strong> during the term of this partnership.",
+      c2Title: "Community Benefits",
+      c2Intro: "To add value to {partner}'s audience, 3DZAAP commits to creating and providing an exclusive coupon:",
+      c2Coupon: "Coupon <span class=\"coupon-code\">{coupon}</span> — grants a <strong>{discount}% discount</strong> on {applies} of the 3DZAAP platform to {partner}'s followers, valid for <strong>{duration} {months}</strong> from the subscription date.",
+      c3Title: "Reward System (Milestone)",
+      c3Intro: "To encourage and recognize the conversions generated by the partnership, it is established that:",
+      c3Item1: "Upon reaching <strong>{goal} active subscriptions</strong> generated via the coupon <strong>{coupon}</strong>, {partner} will be rewarded with <strong>{reward} {months} of 100% free access</strong> to the <strong>{plan} Plan</strong>.",
+      c3Item2: "The count starts in the <strong>month following</strong> the one in which the target of {goal} subscriptions is reached.",
+      c3Item3: "At that moment, {partner}'s current monthly subscription will be cancelled and, starting from that cancellation date, a period of <strong>{reward} months</strong> of total fee exemption (free access) will immediately begin.",
+      c4Title: "Validity and Renewal",
+      c4Item1: "The conditions stipulated in this agreement are valid for <strong>{duration} months</strong>, effective from <strong>{start}</strong>.",
+      c4Item2: "After this period, both parties agree to conduct a <strong>joint evaluation</strong> of the results achieved. Based on this analysis, actions, adjustments, and potential renewals for the subsequent period will be mutually defined.",
+      repLegal: "Legal Representative",
+      footerText: "The operating system that professionalizes your 3D studio",
+      footerGen: "Document generated on {date}",
+      monthSingular: "month",
+      monthPlural: "months",
+      couponRefFallback: "the exclusive coupon"
+    },
+    es: {
+      title: "Acuerdo de Asociación",
+      subtitle: "{partner} &nbsp;•&nbsp; 3DZAAP Print Manager",
+      intro: "Este documento establece las condiciones, deberes y beneficios mutuos de la asociación formada entre <strong>3DZAAP — Print Manager</strong> y <strong>{partner}</strong>, con el objetivo de fomentar el crecimiento conjunto en el ecosistema de la impresión 3D.",
+      clauseStr: "Cláusula",
+      c1Title: "Beneficios Directos para {partner}",
+      c1Intro: "3DZAAP concede a {partner} los siguientes beneficios exclusivos:",
+      c1Discount: "<strong>Descuento del {discount}%</strong> en el Plan {plan} con una duración de {duration} {months}, mediante el uso del cupón <span class=\"coupon-code\">{coupon}</span>.",
+      c1Extra: "<strong>Acceso inmediato</strong> a las funcionalidades exclusivas del <strong>Plan {extra}</strong> durante la vigencia de esta asociación.",
+      c2Title: "Beneficios para la Comunidad",
+      c2Intro: "Para agregar valor a la audiencia de {partner}, 3DZAAP se compromete a crear y proporcionar un cupón exclusivo:",
+      c2Coupon: "Cupón <span class=\"coupon-code\">{coupon}</span> — garantiza un <strong>{discount}% de descuento</strong> en {applies} de la plataforma 3DZAAP a los seguidores de {partner}, válido por <strong>{duration} {months}</strong> a partir de la fecha de suscripción.",
+      c3Title: "Sistema de Recompensa (Milestone)",
+      c3Intro: "Como forma de incentivar y reconocer la conversión generada por la asociación, se establece que:",
+      c3Item1: "Al alcanzar la marca de <strong>{goal} suscripciones activas</strong> generadas a través del cupón <strong>{coupon}</strong>, {partner} será recompensado con <strong>{reward} {months} de acceso 100% gratuito</strong> al <strong>Plan {plan}</strong>.",
+      c3Item2: "El recuento comienza en el <strong>mes siguiente</strong> a aquel en que se alcanza la meta de {goal} suscripciones.",
+      c3Item3: "En ese momento, la suscripción mensual vigente de {partner} será cancelada y, a partir de la fecha de dicha cancelación, se iniciará de inmediato la exención total de la tarifa (acceso gratuito) por un período de <strong>{reward} meses</strong>.",
+      c4Title: "Validez y Renovación",
+      c4Item1: "Las condiciones estipuladas en este acuerdo tienen una validez de <strong>{duration} meses</strong>, entrando en vigor a partir del <strong>{start}</strong>.",
+      c4Item2: "Tras este período, ambas partes acuerdan realizar una <strong>evaluación conjunta</strong> de los resultados obtenidos. Con base en este análisis, se definirán de mutuo acuerdo las acciones, ajustes y posibles renovaciones para el período posterior.",
+      repLegal: "Representante Legal",
+      footerText: "El sistema operativo que profesionaliza tu estudio 3D",
+      footerGen: "Documento generado el {date}",
+      monthSingular: "mes",
+      monthPlural: "meses",
+      couponRefFallback: "el cupón exclusivo"
+    }
+  };
+
+  function t(key, vars = {}) {
+    const lang = document.getElementById('docLanguage').value || 'pt-PT';
+    let str = docLocales[lang]?.[key] || docLocales['pt-PT'][key] || '';
+    for (let k in vars) {
+      str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]);
+    }
+    return str;
+  }
+
+  function translateApplies(val, lang) {
+    if (lang === 'pt-PT' || lang === 'pt-BR') return val;
+    const mapEN = { 'qualquer plano': 'any plan', 'o Plano Starter': 'the Starter Plan', 'o Plano Pro': 'the Pro Plan', 'o Plano Business': 'the Business Plan' };
+    const mapES = { 'qualquer plano': 'cualquier plan', 'o Plano Starter': 'el Plan Starter', 'o Plano Pro': 'el Plan Pro', 'o Plano Business': 'el Plan Business' };
+    if (lang === 'en') return mapEN[val] || val;
+    if (lang === 'es') return mapES[val] || val;
+    return val;
+  }
+
+  // ── Toggle Clauses ────────────────────────────────
+  function toggleClause(id) {
+    clauses[id] = !clauses[id];
+    const toggle = document.getElementById('toggle-' + id);
+    const fields = document.getElementById('fields-' + id);
+    toggle.classList.toggle('on', clauses[id]);
+    fields.classList.toggle('hidden', !clauses[id]);
+    renderDocument();
+  }
+
+  
+  // ── Custom Bullets Logic ──────────────────────────
+  function addCustomBullet(clause) {
+    customBullets[clause].push({ text: '' });
+    renderCustomBullets(clause);
+    renderDocument();
+  }
+  function removeCustomBullet(clause, index) {
+    customBullets[clause].splice(index, 1);
+    renderCustomBullets(clause);
+    renderDocument();
+  }
+  function updateCustomBullet(clause, index, val) {
+    customBullets[clause][index].text = val;
+    renderDocument();
+  }
+  function renderCustomBullets(clause) {
+    const container = document.getElementById(clause + '-custom-bullets');
+    if (!container) return;
+    container.innerHTML = '';
+    customBullets[clause].forEach((b, i) => {
+      container.innerHTML += `
+        <div class="custom-bullet-item">
+          <input type="text" class="form-input" placeholder="Detalhe personalizado..." value="${b.text}" oninput="updateCustomBullet('${clause}', ${i}, this.value)">
+          <button class="btn-remove-bullet" onclick="removeCustomBullet('${clause}', ${i})">×</button>
+        </div>
+      `;
+    });
+  }
+
+  // ── Extra Clauses Logic ───────────────────────────
+  function addExtraClause() {
+    extraClauses.push({ title: '', body: '' });
+    renderExtraClauses();
+    renderDocument();
+  }
+
+  function removeExtraClause(index) {
+    extraClauses.splice(index, 1);
+    renderExtraClauses();
+    renderDocument();
+  }
+
+  function updateExtraClause(index, field, value) {
+    extraClauses[index][field] = value;
+    renderDocument();
+  }
+
+  function renderExtraClauses() {
+    const container = document.getElementById('extra-clauses-container');
+    container.innerHTML = '';
+    extraClauses.forEach((cl, index) => {
+      container.innerHTML += `
+        <div class="extra-clause-item">
+          <button class="btn-remove-clause" onclick="removeExtraClause(${index})">×</button>
+          <div class="form-group">
+            <label class="form-label">Título da Cláusula</label>
+            <input class="form-input" type="text" placeholder="Ex: Exclusividade Regional" value="${cl.title}" oninput="updateExtraClause(${index}, 'title', this.value)">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Conteúdo</label>
+            <textarea class="form-textarea" placeholder="Descreva os termos adicionais desta cláusula..." oninput="updateExtraClause(${index}, 'body', this.value)">${cl.body}</textarea>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // ── Logo Upload ───────────────────────────────────
+  document.getElementById('partnerLogoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      partnerLogoDataUrl = ev.target.result;
+      document.getElementById('partnerLogoPreview').innerHTML = '<img src="' + partnerLogoDataUrl + '">';
+      renderDocument();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Helper: Format Date ───────────────────────────
+  function formatDateLocal(dateStr, lang) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : (lang === 'es' ? 'es-ES' : (lang === 'pt-BR' ? 'pt-BR' : 'pt-PT')), { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  function numToWord(n, lang) {
+    if (lang !== 'pt-PT' && lang !== 'pt-BR') return String(n);
+    if (lang === 'pt-BR') {
+      const wBR = ['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','catorze','quinze','dezesseis','dezessete','dezoito','dezenove','vinte'];
+      return n <= 20 ? wBR[n] : String(n);
+    }
+    const wPT = ['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','catorze','quinze','dezasseis','dezassete','dezoito','dezanove','vinte'];
+    return n <= 20 ? wPT[n] : String(n);
+  }
+
+  // ── Auto-generate Coupons ─────────────────────────
+  function updateCoupons() {
+    const partnerName = document.getElementById('partnerName').value;
+    if (!partnerName) return;
+    
+    const sanitized = partnerName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+
+    if (!c1CouponEdited) {
+      const discount1 = document.getElementById('c1Discount').value || '';
+      document.getElementById('c1Coupon').value = sanitized ? sanitized + discount1 : '';
+    }
+    if (!c2CouponEdited) {
+      const discount2 = document.getElementById('c2Discount').value || '';
+      document.getElementById('c2Coupon').value = sanitized ? sanitized + discount2 : '';
+    }
+  }
+
+  // ── Render Document ───────────────────────────────
+  function renderDocument() {
+    updateCoupons();
+    const lang = document.getElementById('docLanguage').value || 'pt-PT';
+
+    const v = {
+      name:        document.getElementById('partnerName').value || 'Parceiro',
+      rep:         document.getElementById('partnerRep').value || t('repLegal'),
+      start:       document.getElementById('startDate').value,
+      duration:    parseInt(document.getElementById('duration').value) || 12,
+      c1Plan:      document.getElementById('c1Plan').value,
+      c1Coupon:    document.getElementById('c1Coupon').value.toUpperCase() || 'BEMVINDO',
+      c1Discount:  parseInt(document.getElementById('c1Discount').value) || 20,
+      c1Duration:  parseInt(document.getElementById('c1Duration').value) || 12,
+      c1Extra:     document.getElementById('c1ExtraPlan').value,
+      c2Coupon:    document.getElementById('c2Coupon').value.toUpperCase() || 'PARCEIRO10',
+      c2Discount:  parseInt(document.getElementById('c2Discount').value) || 10,
+      c2Duration:  parseInt(document.getElementById('c2Duration').value) || 12,
+      c2Applies:   translateApplies(document.getElementById('c2AppliesTo').value, lang),
+      c3Goal:      parseInt(document.getElementById('c3Goal').value) || 10,
+      c3Reward:    parseInt(document.getElementById('c3Reward').value) || 12,
+      c3Plan:      document.getElementById('c3RewardPlan').value,
+    };
+
+    document.title = `Acordo de Parceria — 3DZAAP x ${v.name}`;
+
+    const partnerLogo = partnerLogoDataUrl
+      ? `<img src="${partnerLogoDataUrl}">`
+      : `<div class="logo-box-placeholder">${v.name}</div>`;
+
+    let clauseNum = 0;
+    let sectionsHtml = '';
+
+    // ── Clause 1 ─────────────────────────────────
+    if (clauses.clause1) {
+      clauseNum++;
+      const extraLine = v.c1Extra
+        ? `<li>${t('c1Extra', { extra: v.c1Extra })}</li>`
+        : '';
+      sectionsHtml += `
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon blue">🎯</div>
+            <div>
+              <div class="section-number">${t('clauseStr')} ${clauseNum}</div>
+              <div class="section-title">${t('c1Title', { partner: v.name })}</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <p>${t('c1Intro', { partner: v.name })}</p>
+            ${(() => {
+              let b = '';
+              if (document.getElementById('c1b1').checked) {
+                b += '<li>' + t('c1Discount', {
+                  discount: v.c1Discount,
+                  plan: v.c1Plan,
+                  duration: `${numToWord(v.c1Duration, lang)} (${v.c1Duration})`,
+                  months: v.c1Duration === 1 ? t('monthSingular') : t('monthPlural'),
+                  coupon: v.c1Coupon
+                }) + '</li>';
+              }
+              if (v.c1Extra && document.getElementById('c1b2').checked) {
+                b += '<li>' + t('c1Extra', { extra: v.c1Extra }) + '</li>';
+              }
+              customBullets.c1.forEach(cb => { if(cb.text) b += '<li>' + cb.text + '</li>'; });
+              return b ? '<ul>' + b + '</ul>' : '';
+            })()}
+          </div>
+        </div>`;
+    }
+
+    // ── Clause 2 ─────────────────────────────────
+    if (clauses.clause2) {
+      clauseNum++;
+      sectionsHtml += `
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon orange">🎁</div>
+            <div>
+              <div class="section-number">${t('clauseStr')} ${clauseNum}</div>
+              <div class="section-title">${t('c2Title')}</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <p>${t('c2Intro', { partner: v.name })}</p>
+            <div class="highlight">
+              <p>${t('c2Coupon', {
+                coupon: v.c2Coupon,
+                discount: v.c2Discount,
+                applies: v.c2Applies,
+                partner: v.name,
+                duration: `${numToWord(v.c2Duration, lang)} (${v.c2Duration})`,
+                months: v.c2Duration === 1 ? t('monthSingular') : t('monthPlural')
+              })}</p>
+            </div>
+            ${(() => {
+              let b = '';
+              customBullets.c2.forEach(cb => { if(cb.text) b += '<li>' + cb.text + '</li>'; });
+              return b ? '<ul style="margin-top: 10px;">' + b + '</ul>' : '';
+            })()}
+          </div>
+        </div>`;
+    }
+
+    // ── Clause 3 ─────────────────────────────────
+    if (clauses.clause3) {
+      clauseNum++;
+      const couponRef = clauses.clause2 ? v.c2Coupon : t('couponRefFallback');
+      sectionsHtml += `
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon purple">🏆</div>
+            <div>
+              <div class="section-number">${t('clauseStr')} ${clauseNum}</div>
+              <div class="section-title">${t('c3Title')}</div>
+            </div>
+          </div>
+          <div class="section-body">
+            <p>${t('c3Intro')}</p>
+            ${(() => {
+              let b = '';
+              if (document.getElementById('c3b1').checked) {
+                b += '<li>' + t('c3Item1', {
+                  goal: `${numToWord(v.c3Goal, lang)} (${v.c3Goal})`,
+                  coupon: couponRef,
+                  partner: v.name,
+                  reward: `${numToWord(v.c3Reward, lang)} (${v.c3Reward})`,
+                  months: v.c3Reward === 1 ? t('monthSingular') : t('monthPlural'),
+                  plan: v.c3Plan
+                }) + '</li>';
+              }
+              if (document.getElementById('c3b2').checked) b += '<li>' + t('c3Item2', { goal: v.c3Goal }) + '</li>';
+              if (document.getElementById('c3b3').checked) b += '<li>' + t('c3Item3', { partner: v.name, reward: v.c3Reward }) + '</li>';
+              customBullets.c3.forEach(cb => { if(cb.text) b += '<li>' + cb.text + '</li>'; });
+              return b ? '<ul>' + b + '</ul>' : '';
+            })()}
+          </div>
+        </div>`;
+    }
+
+    // ── Extra Clauses (Custom) ───────────────────
+    extraClauses.forEach(cl => {
+      if (cl.title) {
+        clauseNum++;
+        sectionsHtml += `
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon green">✏️</div>
+              <div>
+                <div class="section-number">${t('clauseStr')} ${clauseNum}</div>
+                <div class="section-title">${cl.title}</div>
+              </div>
+            </div>
+            <div class="custom-clause-body">${cl.body || ''}</div>
+          </div>`;
+      }
+    });
+
+    // ── Validity Clause (Always present) ─────────
+    clauseNum++;
+    sectionsHtml += `
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon green">📅</div>
+          <div>
+            <div class="section-number">${t('clauseStr')} ${clauseNum}</div>
+            <div class="section-title">${t('c4Title')}</div>
+          </div>
+        </div>
+        <div class="section-body">
+          ${(() => {
+            let b = '';
+            if (document.getElementById('c4b1') && document.getElementById('c4b1').checked) {
+              b += '<li>' + t('c4Item1', {
+                duration: `${numToWord(v.duration, lang)} (${v.duration})`,
+                start: formatDateLocal(v.start, lang)
+              }) + '</li>';
+            }
+            if (document.getElementById('c4b2') && document.getElementById('c4b2').checked) {
+              b += '<li>' + t('c4Item2') + '</li>';
+            }
+            customBullets.c4.forEach(cb => { if(cb.text) b += '<li>' + cb.text + '</li>'; });
+            return b ? '<ul>' + b + '</ul>' : '';
+          })()}
+        </div>
+      </div>`;
+
+    // ── Full Document ────────────────────────────
+    const today = new Date();
+    const todayStr = formatDateLocal(today.toISOString().split('T')[0], lang);
+
+    document.getElementById('documentPage').innerHTML = `
+      <div class="doc-header">
+        <div class="doc-header-content">
+          <div class="logos">
+            <div class="logo-box">${partnerLogo}</div>
+            <div class="logo-divider">×</div>
+            <div class="logo-box"><img src="logo.jpg" onerror="this.parentElement.innerHTML='<div class=\\'logo-box-placeholder\\'>3DZAAP</div>'"></div>
+          </div>
+          <h1 class="doc-title">${t('title')}</h1>
+          <p class="doc-subtitle">${t('subtitle', { partner: v.name })}</p>
+        </div>
+      </div>
+      <div class="accent-line"></div>
+      <div class="doc-content">
+        <p class="intro-text">
+          ${t('intro', { partner: v.name })}
+        </p>
+        ${sectionsHtml}
+        <div class="divider"></div>
+        <div class="signatures">
+          <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-name">${v.name}</div>
+            <div class="sig-role">${v.rep}</div>
+          </div>
+          <div class="sig-block">
+            <div class="sig-line"></div>
+            <div class="sig-name">3DZAAP — Print Manager</div>
+            <div class="sig-role">Breno Andrade</div>
+          </div>
+        </div>
+      </div>
+      <div class="doc-footer">
+        <p><span class="brand">3DZAAP</span> — Print Manager &nbsp;•&nbsp; ${t('footerText')}</p>
+        <p>${t('footerGen', { date: todayStr })}</p>
+      </div>`;
+  }
+
+  // ── Save and Print ────────────────────────────────
+  async function saveAndPrint() {
+    const btn = document.getElementById('btnPrint');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'A guardar...';
+    btn.disabled = true;
+
+    try {
+      const v = getFormValues();
+      const coupons = [];
+      if (document.getElementById('c1Toggle').checked && document.getElementById('c1Coupon').value) coupons.push(document.getElementById('c1Coupon').value);
+      if (document.getElementById('c2Toggle').checked && document.getElementById('c2Coupon').value) coupons.push(document.getElementById('c2Coupon').value);
+
+      if (typeof supabase !== 'undefined') {
+        const { error } = await supabase.from('acordos').insert([{
+          partner_name: v.name,
+          partner_rep: v.rep,
+          start_date: document.getElementById('startDate').value || null,
+          duration: parseInt(document.getElementById('duration').value) || 12,
+          plan: document.getElementById('c1Plan').value,
+          coupons: coupons
+        }]);
+        if (error) console.error('Erro ao guardar no Supabase:', error);
+      }
+    } catch(e) {
+      console.error('Erro geral ao guardar:', e);
+    }
+
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    
+    window.print();
+  }
+
+  // ── Reset Form ────────────────────────────────────
+  function resetForm() {
+    document.getElementById('docLanguage').value = 'pt-PT';
+    document.getElementById('partnerName').value = '';
+    document.getElementById('partnerRep').value = 'Representante Legal';
+    document.getElementById('startDate').value = '';
+    document.getElementById('duration').value = '12';
+    document.getElementById('c1Plan').value = 'Pro Mensal';
+    document.getElementById('c1Coupon').value = 'BEMVINDO';
+    document.getElementById('c1Discount').value = '20';
+    document.getElementById('c1Duration').value = '12';
+    document.getElementById('c1ExtraPlan').value = '';
+    document.getElementById('c2Coupon').value = '';
+    document.getElementById('c2Discount').value = '10';
+    document.getElementById('c2Duration').value = '12';
+    document.getElementById('c2AppliesTo').value = 'qualquer plano';
+    document.getElementById('c3Goal').value = '10';
+    document.getElementById('c3Reward').value = '12';
+    document.getElementById('c3RewardPlan').value = 'Business';
+    
+    partnerLogoDataUrl = null;
+    document.getElementById('partnerLogoPreview').innerHTML = '📷';
+    
+    extraClauses = [];
+    renderExtraClauses();
+    customBullets = { c1: [], c2: [], c3: [], c4: [] };
+    ['c1','c2','c3','c4'].forEach(renderCustomBullets);
+    document.querySelectorAll('.bullet-toggle input').forEach(el => el.checked = true);
+
+    c1CouponEdited = false;
+    c2CouponEdited = false;
+
+    renderDocument();
+  }
+
+  // ── Coupon Manual Input Listeners ─────────────────
+  document.getElementById('c1Coupon').addEventListener('input', function(e) {
+    c1CouponEdited = (e.target.value !== '');
+  });
+  document.getElementById('c2Coupon').addEventListener('input', function(e) {
+    c2CouponEdited = (e.target.value !== '');
+  });
+
+  // ── Live Update Listeners ─────────────────────────
+  document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+    el.addEventListener('input', renderDocument);
+    el.addEventListener('change', renderDocument);
+  });
+
+  // ── Initial Render ────────────────────────────────
+  renderDocument();
+</script>
+
+</body>
+</html>
