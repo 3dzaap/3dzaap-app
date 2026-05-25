@@ -1879,7 +1879,7 @@ function setCalcMode(mode) {
     }
     
     const userPlan = (session?.plan_type || session?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '').toLowerCase();
-    const isPro = ['pro', 'business', 'enterprise'].includes(userPlan);
+    const isPro = ['trial', 'pro', 'business', 'enterprise'].includes(userPlan);
     
     if (!isPro) {
       // Se a sessão ainda estiver a carregar, esperamos um pouco antes de mostrar o gate

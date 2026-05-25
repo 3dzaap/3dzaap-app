@@ -997,6 +997,7 @@
   <div class="editor-footer">
     <button class="btn-print" onclick="saveAndPrint()" id="btnPrint">📄 Guardar como PDF</button>
     <button class="btn-reset" onclick="resetForm()">↺</button>
+    <button class="btn-reset" style="background:var(--slate-800, #1e293b); color:white; margin-left: auto;" onclick="window.location.href='admin.html'">⬅ Voltar ao Admin</button>
   </div>
 </div>
 
@@ -1011,7 +1012,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="auth.js"></script>
 <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof Auth !== 'undefined') {
+      const ok = await Auth.requireAuth();
+      if (!ok) return;
+      const session = await Auth.getSession();
+      if (!session || !session.isSuperAdmin) {
+        window.location.href = 'dashboard.html';
+      }
+    }
+  });
+
   // ── State ─────────────────────────────────────────
   const clauses = { clause1: true, clause2: true, clause3: true };
   let partnerLogoDataUrl = null;
@@ -1521,8 +1535,8 @@
       if (document.getElementById('c1Toggle').checked && document.getElementById('c1Coupon').value) coupons.push(document.getElementById('c1Coupon').value);
       if (document.getElementById('c2Toggle').checked && document.getElementById('c2Coupon').value) coupons.push(document.getElementById('c2Coupon').value);
 
-      if (typeof supabase !== 'undefined') {
-        const { error } = await supabase.from('acordos').insert([{
+      if (typeof _sb !== 'undefined') {
+        const { error } = await _sb.from('acordos').insert([{
           partner_name: v.name,
           partner_rep: v.rep,
           start_date: document.getElementById('startDate').value || null,
@@ -1530,10 +1544,18 @@
           plan: document.getElementById('c1Plan').value,
           coupons: coupons
         }]);
-        if (error) console.error('Erro ao guardar no Supabase:', error);
+        if (error) {
+          console.error('Erro ao guardar no Supabase:', error);
+          if (typeof showToast === 'function') showToast('Erro ao guardar no Supabase: ' + error.message, 'err');
+          else alert('Erro ao guardar no Supabase: ' + error.message);
+        } else {
+          if (typeof showToast === 'function') showToast('Acordo gravado com sucesso!', 'ok');
+        }
       }
     } catch(e) {
       console.error('Erro geral ao guardar:', e);
+      if (typeof showToast === 'function') showToast('Erro ao guardar: ' + e.message, 'err');
+      else alert('Erro ao guardar: ' + e.message);
     }
 
     btn.innerHTML = originalText;
