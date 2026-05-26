@@ -1463,10 +1463,11 @@
     }
 
     // ── KANBAN LOGIC ──────────────────────
-    function switchView(view) {
+    async function switchView(view) {
       if (view === 'kanban') {
-        const tenant = Auth.getTenant();
-        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business' && tenant.plan !== 'trial') {
+        const session = await Auth.getSession();
+        const plan = (session?.plan || 'trial').replace('_ano', '');
+        if (plan !== 'pro' && plan !== 'business' && plan !== 'trial') {
           // Exibir um alerta (ou modal se existisse)
           const m = document.createElement('div');
           m.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--danger);color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
@@ -1674,10 +1675,12 @@ await loadUserData();
         updateStats();
 
         // Check plan for Kanban lock icon
-        const tenant = Auth.getTenant();
-        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business' && tenant.plan !== 'trial') {
-          document.getElementById('kanbanLock').style.display = 'inline-block';
-        }
+        Auth.getSession().then(session => {
+          const plan = (session?.plan || 'trial').replace('_ano', '');
+          if (plan !== 'pro' && plan !== 'business' && plan !== 'trial') {
+            document.getElementById('kanbanLock').style.display = 'inline-block';
+          }
+        });
       });
 
       // Close suggestions on click outside
