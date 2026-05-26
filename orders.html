@@ -671,7 +671,140 @@
       padding: 10px 20px 12px;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
       background: var(--bg-card-s)
+    }
+
+    /* ── View Toggle ────────────────────── */
+    .view-tabs {
+      display: flex;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border-input);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+      width: fit-content;
+      align-items: center;
+    }
+    .view-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .view-btn.active {
+      background: var(--blue);
+      color: #fff;
+    }
+    .view-btn i { font-size: 1.1em; }
+
+    /* ── Kanban View ────────────────────── */
+    .kanban-wrap {
+      display: none;
+      overflow-x: auto;
+      padding: 16px 0;
+      gap: 16px;
+      align-items: flex-start;
+      min-height: 500px;
+    }
+    .kanban-col {
+      flex: 0 0 280px;
+      background: var(--bg-page);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      max-height: 75vh;
+      border: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .kanban-col.drag-over {
+      background: var(--bg-table-row-hover);
+      border-style: dashed;
+    }
+    .kanban-col-header {
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .kanban-col-count {
+      background: var(--bg-card);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .kanban-col-body {
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-grow: 1;
+    }
+    .kanban-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: grab;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .kanban-card:hover {
+      border-color: var(--blue);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    .kanban-card:active {
+      cursor: grabbing;
+    }
+    .kanban-card.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+    .kanban-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .kanban-card-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--blue);
+    }
+    .kanban-card-val {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .kanban-card-client {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kanban-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   </style>
 
@@ -896,7 +1029,11 @@
             <h1 data-i18n="orders.title">Pedidos</h1>
             <p data-i18n="orders.subtitle">Gere o pipeline de pedidos — orçamentos, impressões e entregas</p>
           </div>
-          <div class="page-header-actions">
+          <div class="page-header-actions" style="display: flex; gap: 10px; align-items: center;">
+            <div class="view-tabs" style="margin-right: 8px;">
+              <button class="view-btn active" id="btnViewList" onclick="switchView('list')"><i class="ph-bold ph-list-dashes"></i> <span data-i18n="orders.view.list">Lista</span></button>
+              <button class="view-btn" id="btnViewKanban" onclick="switchView('kanban')"><i class="ph-bold ph-kanban"></i> <span data-i18n="orders.view.kanban">Kanban</span> <i class="ph-fill ph-lock-key" id="kanbanLock" style="display:none; color:var(--danger); margin-left:4px;"></i></button>
+            </div>
             <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="orders.btn_csv"><i
                 class="ph-bold ph-file-csv"></i> Exportar CSV</button>
             <button class="btn btn-primary" onclick="openModal()" data-i18n="orders.btn_new"><i
@@ -1000,6 +1137,7 @@
               </thead>
               <tbody id="ordTbody"></tbody>
             </table>
+            <div class="kanban-wrap" id="kanbanWrap"></div>
           </div>
           <div class="mob-card-list" id="mobCardList"></div>
         </div>
@@ -1317,6 +1455,166 @@
       }, 16);
     }
 
+    let currentView = 'list';
+
+    // ── KANBAN LOGIC ──────────────────────
+    async function switchView(view) {
+      if (view === 'kanban') {
+        const session = await Auth.getSession();
+        const plan = (session?.plan || 'trial').replace('_ano', '');
+        if (plan !== 'pro' && plan !== 'business' && plan !== 'trial') {
+          // Exibir um alerta
+          const m = document.createElement('div');
+          m.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--danger);color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+          m.innerHTML = 'A aba Kanban não está disponível no seu plano atual. Atualize o seu plano.';
+          document.body.appendChild(m);
+          setTimeout(() => m.remove(), 4000);
+          return;
+        }
+      }
+      currentView = view;
+      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+      if (view === 'list') {
+        document.getElementById('btnViewList').classList.add('active');
+      } else {
+        document.getElementById('btnViewKanban').classList.add('active');
+      }
+      renderOrders();
+    }
+
+    function renderKanban(filteredOrders) {
+      const wrap = document.getElementById('kanbanWrap');
+      wrap.innerHTML = '';
+
+      const KANBAN_COLS = [
+        { id: 'orcamento', title: 'status.orcamento' },
+        { id: 'modelagem', title: 'status.modelagem' },
+        { id: 'validacao', title: 'status.validacao' },
+        { id: 'aprovado', title: 'status.aprovado' },
+        { id: 'fila', title: 'status.fila' },
+        { id: 'printing', title: 'status.printing' },
+        { id: 'enviado', title: 'status.enviado' },
+        { id: 'done', title: 'status.done' }
+      ];
+
+      KANBAN_COLS.forEach(col => {
+        let colOrders = filteredOrders.filter(o => (o.status || 'orcamento') === col.id);
+        
+        // Os pedidos concluídos só aparecem do mês corrente para não encher o board
+        if (col.id === 'done') {
+          const _today = new Date();
+          const currM = _today.getMonth();
+          const currY = _today.getFullYear();
+          colOrders = colOrders.filter(o => {
+            const d = new Date(o.createdAt || 0);
+            return d.getMonth() === currM && d.getFullYear() === currY;
+          });
+        }
+        
+        const colEl = document.createElement('div');
+        colEl.className = 'kanban-col';
+        colEl.setAttribute('data-status', col.id);
+        colEl.addEventListener('dragover', kDragOver);
+        colEl.addEventListener('dragleave', kDragLeave);
+        colEl.addEventListener('drop', kDrop);
+
+        let html = `
+          <div class="kanban-col-header">
+            <span data-i18n="${col.title}">${i18n.getNestedTranslation(col.title) || col.title}</span>
+            <span class="kanban-col-count">${colOrders.length}</span>
+          </div>
+          <div class="kanban-col-body">
+        `;
+
+        colOrders.forEach(o => {
+          const its = (o.items?.length) ? o.items : [{ quantity: o.quantity || 1, unitPrice: o.unitPrice || 0 }];
+          const _itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity || it.qty || 1) || 1) * (parseFloat(it.unitPrice) || 0));
+          const grand = its.reduce((s, i) => s + _itTotal(i), 0) || parseFloat(o.total || 0);
+
+          html += `
+            <div class="kanban-card" draggable="true" id="kcard-${o.id}" data-id="${o.id}">
+              <div class="kanban-card-top">
+                <span class="kanban-card-num">${escH(o.orderNumber || '—')}</span>
+                <span class="kanban-card-val">${fmtCurrency(grand)}</span>
+              </div>
+              <div class="kanban-card-client">${escH(o.clientName)}</div>
+              <div class="kanban-card-meta">
+                ${renderPaymentBadge(o.paymentStatus)}
+                <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+        colEl.innerHTML = html;
+        wrap.appendChild(colEl);
+      });
+
+      // Add drag listeners to cards
+      document.querySelectorAll('.kanban-card').forEach(card => {
+        card.addEventListener('dragstart', kDragStart);
+        card.addEventListener('dragend', kDragEnd);
+      });
+      
+      i18n.translatePage(wrap);
+    }
+
+    // Drag and drop variables
+    let draggedOrderId = null;
+    let draggedCard = null;
+
+    function kDragStart(e) {
+      draggedOrderId = this.getAttribute('data-id');
+      draggedCard = this;
+      setTimeout(() => this.classList.add('dragging'), 0);
+    }
+
+    function kDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.kanban-col').forEach(col => col.classList.remove('drag-over'));
+      draggedOrderId = null;
+      draggedCard = null;
+    }
+
+    function kDragOver(e) {
+      e.preventDefault();
+      this.classList.add('drag-over');
+    }
+
+    function kDragLeave(e) {
+      if (e.target.classList && e.target.classList.contains('kanban-col')) {
+         this.classList.remove('drag-over');
+      }
+    }
+
+    async function kDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (!draggedOrderId) return;
+      
+      const newStatus = this.getAttribute('data-status');
+      const order = orders.find(o => String(o.id) === String(draggedOrderId));
+      if (!order) return;
+      
+      if (order.status !== newStatus) {
+        const oldStatus = order.status;
+        order.status = newStatus;
+        
+        // Optimistic UI update
+        renderOrders();
+
+        try {
+          await DB.saveOrder(order);
+        } catch (err) {
+          console.error(err);
+          order.status = oldStatus; // Revert
+          renderOrders();
+          alert('Erro ao mover o pedido. Tente novamente.');
+        }
+      }
+    }
+
     // ── INIT ───────────────────────────────
     document.addEventListener('DOMContentLoaded', async () => {
       initThemeToggle();
@@ -1369,6 +1667,14 @@
       window.addEventListener('languageChanged', () => {
         renderOrders();
         updateStats();
+
+        // Check plan for Kanban lock icon
+        Auth.getSession().then(session => {
+          const plan = (session?.plan || 'trial').replace('_ano', '');
+          if (plan !== 'pro' && plan !== 'business' && plan !== 'trial') {
+            document.getElementById('kanbanLock').style.display = 'inline-block';
+          }
+        });
       });
 
       // Close suggestions on click outside
@@ -1908,6 +2214,20 @@
       }
 
       emptyEl.style.display = 'none';
+      if (currentView === 'kanban') {
+        tableEl.style.display = 'none';
+        const mobileList = document.getElementById('mobileCardList');
+        if (mobileList) mobileList.style.display = 'none';
+        
+        const kanbanWrap = document.getElementById('kanbanWrap');
+        if (kanbanWrap) kanbanWrap.style.display = 'flex';
+        renderKanban(filtered);
+        return;
+      }
+      
+      const kanbanWrap = document.getElementById('kanbanWrap');
+      if (kanbanWrap) kanbanWrap.style.display = 'none';
+
       tableEl.style.display = '';
 
       const rows = [];
