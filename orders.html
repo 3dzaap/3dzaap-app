@@ -1462,23 +1462,15 @@
       }, 16);
     }
 
-    // ── INIT ───────────────────────────────
-    document.addEventListener('DOMContentLoaded', async () => {
-      initThemeToggle();
-await loadUserData();
-      const allowed = await applyFeatureGating();
-      if (!allowed) return;
-      await loadData();
-
-      // ── KANBAN LOGIC ──────────────────────
+    // ── KANBAN LOGIC ──────────────────────
     function switchView(view) {
       if (view === 'kanban') {
         const tenant = Auth.getTenant();
-        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business') {
+        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business' && tenant.plan !== 'trial') {
           // Exibir um alerta (ou modal se existisse)
           const m = document.createElement('div');
           m.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--danger);color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
-          m.innerHTML = 'A aba Kanban é exclusiva para planos Pro e Business. Atualize o seu plano.';
+          m.innerHTML = 'A aba Kanban não está disponível no seu plano atual. Atualize o seu plano.';
           document.body.appendChild(m);
           setTimeout(() => m.remove(), 4000);
           return;
@@ -1510,7 +1502,18 @@ await loadUserData();
       ];
 
       KANBAN_COLS.forEach(col => {
-        const colOrders = filteredOrders.filter(o => (o.status || 'orcamento') === col.id);
+        let colOrders = filteredOrders.filter(o => (o.status || 'orcamento') === col.id);
+        
+        // Os pedidos concluídos só aparecem do mês corrente para não encher o board
+        if (col.id === 'done') {
+          const _today = new Date();
+          const currM = _today.getMonth();
+          const currY = _today.getFullYear();
+          colOrders = colOrders.filter(o => {
+            const d = new Date(o.createdAt || 0);
+            return d.getMonth() === currM && d.getFullYear() === currY;
+          });
+        }
         
         const colEl = document.createElement('div');
         colEl.className = 'kanban-col';
@@ -1616,6 +1619,15 @@ await loadUserData();
       }
     }
 
+    // ── INIT ───────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      initThemeToggle();
+await loadUserData();
+      const allowed = await applyFeatureGating();
+      if (!allowed) return;
+      await loadData();
+
+
       // filament tooltip is handled by shared.css .tip-icon:hover
 
       // ── Pre-fill from Calculator or Product Library ──────────────────────────────
@@ -1659,11 +1671,11 @@ await loadUserData();
       // Sync on locale change directly without reloading if needed
       window.addEventListener('languageChanged', () => {
         renderOrders();
-        await updateGlobalStats();
+        updateStats();
 
         // Check plan for Kanban lock icon
         const tenant = Auth.getTenant();
-        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business') {
+        if (tenant && tenant.plan !== 'pro' && tenant.plan !== 'business' && tenant.plan !== 'trial') {
           document.getElementById('kanbanLock').style.display = 'inline-block';
         }
       });
