@@ -19,10 +19,19 @@
 
   <style>
     /* ── Kanban Board ───────────────────────── */
+
+    /* Override .main so it doesn't clip the horizontal scroll */
+    .main {
+      overflow: hidden !important;
+      display: flex;
+      flex-direction: column;
+    }
+
     .kanban-page {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 56px); /* below topbar */
+      flex: 1;
+      min-height: 0;
       overflow: hidden;
     }
 
@@ -110,12 +119,16 @@
 
     .kanban-board {
       flex: 1;
+      min-height: 0;
       display: flex;
       overflow-x: auto;
       overflow-y: hidden;
-      padding: 16px 24px;
+      padding: 16px 24px 16px 24px;
+      /* Extra right padding so last column is fully visible when scrolled */
+      padding-right: 48px;
       gap: 14px;
       align-items: flex-start;
+      scroll-padding-right: 24px;
     }
 
     .kanban-col {
