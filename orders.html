@@ -896,7 +896,8 @@
             <h1 data-i18n="orders.title">Pedidos</h1>
             <p data-i18n="orders.subtitle">Gere o pipeline de pedidos — orçamentos, impressões e entregas</p>
           </div>
-          <div class="page-header-actions">
+          <div class="page-header-actions" style="display: flex; gap: 10px; align-items: center;">
+            <a href="orders_kanban.html" class="btn btn-ghost" id="btnKanban" style="display:none;"><i class="ph-bold ph-kanban"></i> <span data-i18n="orders.view.kanban">Kanban</span> <i class="ph-fill ph-lock-key" id="kanbanLock" style="display:none; color:var(--danger); margin-left:4px;"></i></a>
             <button class="btn btn-ghost" onclick="exportCSV()" data-i18n="orders.btn_csv"><i
                 class="ph-bold ph-file-csv"></i> Exportar CSV</button>
             <button class="btn btn-primary" onclick="openModal()" data-i18n="orders.btn_new"><i
@@ -1365,10 +1366,48 @@
         }
       }, 120);
 
-      // Sync on locale change directly without reloading if needed
+      // Show Kanban button for allowed plans
+      Auth.getSession().then(session => {
+        const plan = (session?.plan || 'trial').replace('_ano', '');
+        const btn  = document.getElementById('btnKanban');
+        const lock = document.getElementById('kanbanLock');
+        const allowed = ['trial', 'pro', 'business'];
+        if (btn) btn.style.display = 'inline-flex';
+        if (!allowed.includes(plan)) {
+          if (lock) lock.style.display = 'inline-block';
+          if (btn) btn.onclick = (e) => {
+            e.preventDefault();
+            showToast('<i class="ph-bold ph-lock-key"></i> O Kanban não está disponível no seu plano.', 'err');
+          };
+        }
+      });
+
+      // Sync on locale change
       window.addEventListener('languageChanged', () => {
         renderOrders();
         updateStats();
+
+        // Check plan for Kanban
+        Auth.getSession().then(session => {
+          const plan = (session?.plan || 'trial').replace('_ano', '');
+          const btn = document.getElementById('btnKanban');
+          const lock = document.getElementById('kanbanLock');
+          if (btn) btn.style.display = 'inline-flex';
+          
+          if (plan !== 'pro' && plan !== 'business' && plan !== 'trial') {
+            if (lock) lock.style.display = 'inline-block';
+            if (btn) {
+              btn.onclick = (e) => {
+                e.preventDefault();
+                const m = document.createElement('div');
+                m.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--danger);color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+                m.innerHTML = 'O Kanban não está disponível no seu plano. Atualize o seu plano.';
+                document.body.appendChild(m);
+                setTimeout(() => m.remove(), 4000);
+              };
+            }
+          }
+        });
       });
 
       // Close suggestions on click outside
