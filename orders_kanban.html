@@ -18,9 +18,7 @@
   <link rel="stylesheet" href="shared.css">
 
   <style>
-    /* ── Kanban Board ───────────────────────── */
-
-    /* Override .main so it doesn't clip the horizontal scroll */
+    /* ── Override main to allow horizontal board scroll ── */
     .main {
       overflow: hidden !important;
       display: flex;
@@ -35,8 +33,9 @@
       overflow: hidden;
     }
 
+    /* ── Page Header ─────────────────────────────── */
     .kanban-header {
-      padding: 16px 24px 12px;
+      padding: 14px 24px 12px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -44,10 +43,9 @@
       background: var(--bg-card-s);
       flex-shrink: 0;
     }
-
     .kanban-header-text { flex: 1; }
     .kanban-header-text h1 {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text);
       margin: 0;
@@ -56,39 +54,74 @@
       gap: 8px;
     }
     .kanban-header-text p {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--muted);
       margin: 2px 0 0;
     }
 
+    /* ── Stats Row ────────────────────────────────── */
+    .kanban-stats {
+      display: flex;
+      gap: 10px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-page);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .kstat {
+      flex: 0 0 auto;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 150px;
+      transition: border-color 0.2s;
+    }
+    .kstat:hover { border-color: var(--blue); }
+    .kstat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .kstat-icon.si-blue    { background: rgba(59,143,212,.12); color: var(--blue); }
+    .kstat-icon.si-orange  { background: rgba(249,115,22,.12);  color: #F97316; }
+    .kstat-icon.si-red     { background: rgba(239,68,68,.12);   color: var(--danger); }
+    .kstat-icon.si-green   { background: rgba(34,197,94,.12);   color: #22C55E; }
+    .kstat-icon.si-yellow  { background: rgba(245,158,11,.12);  color: #F59E0B; }
+    .kstat-val {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+    .kstat-lbl {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    /* ── Filters Bar ──────────────────────────────── */
     .kanban-filters {
-      padding: 10px 24px;
+      padding: 9px 24px;
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       border-bottom: 1px solid var(--border);
       background: var(--bg-page);
       flex-shrink: 0;
     }
-
-    .kanban-filter-search {
-      padding: 7px 12px 7px 34px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg-card);
-      color: var(--text);
-      font-size: 0.85rem;
-      font-family: inherit;
-      width: 220px;
-      outline: none;
-      transition: border-color .15s;
-    }
-    .kanban-filter-search:focus { border-color: var(--blue); }
-
-    .kanban-filter-wrap {
-      position: relative;
-    }
+    .kanban-filter-wrap { position: relative; }
     .kanban-filter-wrap .filter-icon {
       position: absolute;
       left: 10px;
@@ -98,7 +131,19 @@
       font-size: 0.9rem;
       pointer-events: none;
     }
-
+    .kanban-filter-search {
+      padding: 7px 12px 7px 34px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.84rem;
+      font-family: inherit;
+      width: 210px;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .kanban-filter-search:focus { border-color: var(--blue); }
     .kanban-filter-select {
       padding: 7px 10px;
       border: 1.5px solid var(--border);
@@ -110,29 +155,72 @@
       cursor: pointer;
       outline: none;
     }
-
     .kanban-filter-tabs {
       display: flex;
       gap: 6px;
       margin-left: auto;
+      align-items: center;
     }
 
+    /* ── Tooltip on filter buttons ────────────────── */
+    .kf-tooltip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .kf-info {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      font-size: 0.65rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: help;
+      margin-left: 4px;
+      flex-shrink: 0;
+    }
+    .kf-tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 220px;
+      font-size: 0.75rem;
+      color: var(--text);
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      z-index: 999;
+      pointer-events: none;
+    }
+    .kf-info:hover + .kf-tooltip,
+    .kf-tooltip-wrap:hover .kf-tooltip { display: block; }
+    .kf-tooltip strong { display: block; margin-bottom: 6px; color: var(--blue); font-size: 0.76rem; }
+    .kf-tooltip p { margin: 4px 0; }
+
+    /* ── Kanban Board ─────────────────────────────── */
     .kanban-board {
       flex: 1;
       min-height: 0;
       display: flex;
       overflow-x: auto;
       overflow-y: hidden;
-      padding: 16px 24px 16px 24px;
-      /* Extra right padding so last column is fully visible when scrolled */
+      padding: 14px 24px 14px 24px;
       padding-right: 48px;
-      gap: 14px;
+      gap: 12px;
       align-items: flex-start;
-      scroll-padding-right: 24px;
     }
 
     .kanban-col {
-      flex: 0 0 265px;
+      flex: 0 0 260px;
       background: var(--bg-card-s);
       border-radius: 12px;
       display: flex;
@@ -141,16 +229,14 @@
       border: 1.5px solid var(--border);
       transition: background 0.2s, border-color 0.2s;
     }
-
     .kanban-col.drag-over {
       border-color: var(--blue);
       background: var(--bg-nav-active);
     }
-
     .kanban-col-header {
-      padding: 10px 14px;
+      padding: 9px 12px;
       font-weight: 800;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--muted);
@@ -160,139 +246,121 @@
       border-bottom: 1.5px solid var(--border);
       flex-shrink: 0;
     }
-
-    .kanban-col-title {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .kanban-col-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
+    .kanban-col-title { display: flex; align-items: center; gap: 6px; }
+    .kanban-col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .kanban-col-count {
       background: var(--bg-card);
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 10px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
       border: 1px solid var(--border);
       font-weight: 700;
     }
-
     .kanban-col-body {
-      padding: 10px;
+      padding: 9px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
       flex-grow: 1;
     }
-
     .kanban-col-empty {
       text-align: center;
-      padding: 20px 10px;
+      padding: 18px 10px;
       color: var(--muted);
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       border: 1.5px dashed var(--border);
       border-radius: 8px;
-      margin: 4px 0;
+      margin: 2px 0;
     }
 
+    /* ── Cards ────────────────────────────────────── */
     .kanban-card {
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: 11px 12px;
+      padding: 10px 11px;
       cursor: grab;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
       user-select: none;
+      position: relative;
     }
-
     .kanban-card:hover {
       border-color: var(--blue);
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       transform: translateY(-1px);
     }
-
     .kanban-card:active { cursor: grabbing; }
+    .kanban-card.dragging { opacity: 0.45; transform: scale(0.97); }
 
-    .kanban-card.dragging {
-      opacity: 0.45;
-      transform: scale(0.97);
+    /* ── Deadline alert left-border stripes ─────── */
+    .kanban-card.due-warning {
+      border-color: #F59E0B;
+      border-left: 3px solid #F59E0B;
+      background: linear-gradient(to right, rgba(245,158,11,0.06) 0%, var(--bg-card) 60%);
     }
+    .kanban-card.due-overdue {
+      border-color: var(--danger);
+      border-left: 3px solid var(--danger);
+      background: linear-gradient(to right, rgba(239,68,68,0.07) 0%, var(--bg-card) 60%);
+    }
+    .kanban-card.due-warning:hover { border-color: #F59E0B; }
+    .kanban-card.due-overdue:hover { border-color: var(--danger); }
 
     .kcard-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
-
     .kcard-num {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 800;
       color: var(--blue);
       font-family: var(--mono);
     }
-
     .kcard-val {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 800;
       color: var(--text);
     }
-
     .kcard-client {
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .kcard-desc {
-      font-size: 0.73rem;
+      font-size: 0.71rem;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
     .kcard-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid var(--border);
-      padding-top: 7px;
+      padding-top: 6px;
       margin-top: 2px;
     }
-
     .kcard-due {
-      font-size: 0.68rem;
+      font-size: 0.67rem;
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
-
-    .kcard-due.overdue {
-      color: var(--danger);
-      font-weight: 700;
-    }
-
-    .kcard-actions {
-      display: flex;
-      gap: 4px;
-    }
+    .kcard-due.overdue { color: var(--danger); font-weight: 700; }
+    .kcard-due.warning  { color: #F59E0B; font-weight: 700; }
 
     .kcard-btn {
       background: none;
@@ -301,27 +369,25 @@
       cursor: pointer;
       padding: 3px 5px;
       border-radius: 5px;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       transition: color 0.15s, background 0.15s;
       display: flex;
       align-items: center;
+      text-decoration: none;
     }
-    .kcard-btn:hover {
-      color: var(--blue);
-      background: var(--bg-nav-active);
-    }
+    .kcard-btn:hover { color: var(--blue); background: var(--bg-nav-active); }
 
-    /* Status dot colors */
-    .dot-orcamento  { background: #6B7280; }
-    .dot-modelagem  { background: #8B5CF6; }
-    .dot-validacao  { background: #F59E0B; }
-    .dot-aprovado   { background: #3B8FD4; }
-    .dot-fila       { background: #0EA5E9; }
-    .dot-printing   { background: #F97316; }
-    .dot-enviado    { background: #10B981; }
-    .dot-done       { background: #22C55E; }
+    /* ── Status dot colors ──────────────────────── */
+    .dot-orcamento { background: #6B7280; }
+    .dot-modelagem { background: #8B5CF6; }
+    .dot-validacao { background: #F59E0B; }
+    .dot-aprovado  { background: #3B8FD4; }
+    .dot-fila      { background: #0EA5E9; }
+    .dot-printing  { background: #F97316; }
+    .dot-enviado   { background: #10B981; }
+    .dot-done      { background: #22C55E; }
 
-    /* Locked overlay for non-allowed plans */
+    /* ── Locked plan overlay ──────────────────── */
     .kanban-lock-overlay {
       display: flex;
       flex-direction: column;
@@ -332,59 +398,15 @@
       gap: 16px;
       padding: 40px;
     }
-    .kanban-lock-icon {
-      font-size: 3rem;
-      color: var(--blue);
-      opacity: 0.5;
-    }
 
-    /* Global controls */
-    .global-ctrls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-left: auto;
-    }
-    .gc-btn {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      color: var(--dark);
-      border-radius: 8px;
-      padding: 5px 10px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
-    }
+    /* ── Global Controls ──────────────────────── */
+    .global-ctrls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .gc-btn { background: var(--bg-card); border: 1.5px solid var(--border); color: var(--dark); border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 0.9rem; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .gc-btn:hover { background: var(--bg-hover, rgba(0,0,0,.05)); }
     .gc-help-btn { border-radius: 50%; width: 32px; height: 32px; font-weight: 800; font-size: 1rem; padding: 0; }
-    .gc-select {
-      background: var(--bg-card, #fff);
-      border: 1.5px solid var(--border, rgba(0,0,0,.12));
-      color: var(--dark, #1a2332);
-      border-radius: 8px;
-      padding: 5px 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-    }
+    .gc-select { background: var(--bg-card, #fff); border: 1.5px solid var(--border, rgba(0,0,0,.12)); color: var(--dark, #1a2332); border-radius: 8px; padding: 5px 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; }
     .gc-help-wrap { position: relative; }
-    .gc-popover {
-      position: absolute;
-      right: 0;
-      top: 42px;
-      background: var(--bg-card, #fff);
-      border: 1.5px solid var(--border, rgba(0,0,0,.12));
-      border-radius: 14px;
-      padding: 10px;
-      width: 220px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.15);
-      z-index: 9999;
-    }
+    .gc-popover { position: absolute; right: 0; top: 42px; background: var(--bg-card, #fff); border: 1.5px solid var(--border, rgba(0,0,0,.12)); border-radius: 14px; padding: 10px; width: 220px; box-shadow: 0 12px 40px rgba(0,0,0,.15); z-index: 9999; }
     .gc-popover-title { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted, #4A5568); margin-bottom: 8px; }
     .gc-popover-item { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 8px; text-decoration: none; color: var(--dark, #1a2332); font-size: .85rem; font-weight: 600; transition: background .15s; }
     .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
@@ -405,7 +427,6 @@
     <script src="sidebar.js"></script>
     <script>Sidebar.init();</script>
 
-    <!-- MAIN -->
     <div class="main">
       <header class="topbar">
         <div class="topbar-breadcrumb">
@@ -413,7 +434,6 @@
           <a href="orders.html" data-i18n="orders.title">Pedidos</a><span>›</span>
           <strong>Kanban</strong>
         </div>
-        <!-- Global Controls -->
         <div class="global-ctrls" id="globalCtrls">
           <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema" class="gc-btn" aria-label="Toggle theme"><i class="ph-bold ph-moon"></i></button>
           <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)" aria-label="Language">
@@ -428,15 +448,9 @@
             <button id="topbarHelpBtn" class="gc-btn gc-help-btn" onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';" aria-label="Ajuda"><i class="ph-bold ph-question"></i></button>
             <div id="topbarHelpPopover" class="gc-popover" style="display:none">
               <div class="gc-popover-title">Contacte-nos</div>
-              <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt=""> WhatsApp
-              </a>
-              <a href="https://instagram.com/3dzaap" target="_blank" class="gc-popover-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="18" height="18" alt=""> @3dzaap
-              </a>
-              <a href="mailto:suporte@3dzaap.com" class="gc-popover-item">
-                <i class="ph-bold ph-envelope"></i> suporte@3dzaap.com
-              </a>
+              <a href="https://wa.me/351938925645" target="_blank" class="gc-popover-item"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" height="18" alt=""> WhatsApp</a>
+              <a href="https://instagram.com/3dzaap" target="_blank" class="gc-popover-item"><img src="https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg" width="18" height="18" alt=""> @3dzaap</a>
+              <a href="mailto:suporte@3dzaap.com" class="gc-popover-item"><i class="ph-bold ph-envelope"></i> suporte@3dzaap.com</a>
             </div>
           </div>
         </div>
@@ -448,11 +462,35 @@
         <div class="kanban-header">
           <div class="kanban-header-text">
             <h1><i class="ph-bold ph-kanban" style="color:var(--blue)"></i> Kanban de Pedidos</h1>
-            <p>Arraste os cartões entre colunas para atualizar o estado do pedido</p>
+            <p>Arraste os cartões entre colunas para atualizar o estado</p>
           </div>
           <a href="orders.html" class="btn btn-ghost" style="flex-shrink:0">
             <i class="ph-bold ph-arrow-left"></i> Voltar à Lista
           </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="kanban-stats" id="kanbanStats">
+          <div class="kstat">
+            <div class="kstat-icon si-blue"><i class="ph-bold ph-package"></i></div>
+            <div><div class="kstat-val" id="ksTotal">—</div><div class="kstat-lbl">Pedidos no board</div></div>
+          </div>
+          <div class="kstat">
+            <div class="kstat-icon si-green"><i class="ph-bold ph-currency-dollar"></i></div>
+            <div><div class="kstat-val" id="ksValue">—</div><div class="kstat-lbl">Valor total</div></div>
+          </div>
+          <div class="kstat">
+            <div class="kstat-icon si-orange"><i class="ph-bold ph-hourglass"></i></div>
+            <div><div class="kstat-val" id="ksPending">—</div><div class="kstat-lbl">Valor pendente</div></div>
+          </div>
+          <div class="kstat">
+            <div class="kstat-icon si-yellow"><i class="ph-bold ph-warning"></i></div>
+            <div><div class="kstat-val" id="ksWarning">0</div><div class="kstat-lbl">Prazo a esgotar (3 dias)</div></div>
+          </div>
+          <div class="kstat">
+            <div class="kstat-icon si-red"><i class="ph-bold ph-warning-circle"></i></div>
+            <div><div class="kstat-val" id="ksOverdue">0</div><div class="kstat-lbl">Prazo expirado</div></div>
+          </div>
         </div>
 
         <!-- Filters -->
@@ -466,19 +504,29 @@
             <option value="pendente">Pendente</option>
             <option value="pago">Pago</option>
           </select>
-          <div class="kanban-filter-tabs" id="filterTabsWrap">
+          <div class="kanban-filter-tabs">
             <button class="btn btn-primary btn-sm" id="btnFilterActive" onclick="changeFilter('active')"><i class="ph-bold ph-activity"></i> Em progresso</button>
             <button class="btn btn-ghost btn-sm" id="btnFilterMonth" onclick="changeFilter('month')"><i class="ph-bold ph-calendar-blank"></i> Este mês</button>
             <button class="btn btn-ghost btn-sm" id="btnFilterAll" onclick="changeFilter('all')"><i class="ph-bold ph-stack"></i> Todos</button>
+            <!-- Info tooltip -->
+            <div class="kf-tooltip-wrap">
+              <span class="kf-info">i</span>
+              <div class="kf-tooltip">
+                <strong>Filtros do Board</strong>
+                <p>⚡ <b>Em progresso</b> — pedidos activos (exclui concluídos e cancelados). Ideal para o dia-a-dia.</p>
+                <p>📅 <b>Este mês</b> — todos os pedidos criados neste mês, incluindo os concluídos.</p>
+                <p>📋 <b>Todos</b> — visão completa. A coluna Concluído mostra apenas o mês atual para não sobrecarregar o board.</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Board -->
         <div class="kanban-board" id="kanbanBoard"></div>
 
-      </div><!-- /kanban-page -->
-    </div><!-- /main -->
-  </div><!-- /layout -->
+      </div>
+    </div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -487,17 +535,18 @@
     //  STATE
     // ══════════════════════════════════════
     let orders = [];
-    let filterMode = 'active'; // active | month | all
+    let filterMode = 'active';
+    const WARN_DAYS = 3; // days before deadline to show warning
 
     const KANBAN_COLS = [
-      { id: 'orcamento', label: 'Orçamento',   dot: 'dot-orcamento',  i18n: 'status.orcamento' },
-      { id: 'modelagem', label: 'Modelação',   dot: 'dot-modelagem',  i18n: 'status.modelagem' },
-      { id: 'validacao', label: 'Validação',   dot: 'dot-validacao',  i18n: 'status.validacao' },
-      { id: 'aprovado',  label: 'Confirmado',  dot: 'dot-aprovado',   i18n: 'status.aprovado'  },
-      { id: 'fila',      label: 'Em Fila',     dot: 'dot-fila',       i18n: 'status.fila'      },
-      { id: 'printing',  label: 'A Imprimir',  dot: 'dot-printing',   i18n: 'status.printing'  },
-      { id: 'enviado',   label: 'Enviado',     dot: 'dot-enviado',    i18n: 'status.enviado'   },
-      { id: 'done',      label: 'Concluído',   dot: 'dot-done',       i18n: 'status.done'      },
+      { id: 'orcamento', label: 'Orçamento',  dot: 'dot-orcamento', i18n: 'status.orcamento' },
+      { id: 'modelagem', label: 'Modelação',  dot: 'dot-modelagem', i18n: 'status.modelagem' },
+      { id: 'validacao', label: 'Validação',  dot: 'dot-validacao', i18n: 'status.validacao' },
+      { id: 'aprovado',  label: 'Confirmado', dot: 'dot-aprovado',  i18n: 'status.aprovado'  },
+      { id: 'fila',      label: 'Em Fila',    dot: 'dot-fila',      i18n: 'status.fila'      },
+      { id: 'printing',  label: 'A Imprimir', dot: 'dot-printing',  i18n: 'status.printing'  },
+      { id: 'enviado',   label: 'Enviado',    dot: 'dot-enviado',   i18n: 'status.enviado'   },
+      { id: 'done',      label: 'Concluído',  dot: 'dot-done',      i18n: 'status.done'      },
     ];
 
     // ══════════════════════════════════════
@@ -505,43 +554,33 @@
     // ══════════════════════════════════════
     document.addEventListener('DOMContentLoaded', async () => {
       initThemeToggle();
-
-      // Auth check
       const ok = await Auth.requireAuth();
       if (!ok) return;
-
       const session = await Auth.getSession();
       if (!session) return;
       loadCfg(session);
       Sidebar.setSession(session);
 
-      // Plan gate — Trial, Pro, Business only
+      // Plan gate
       const plan = (session.plan || 'trial').replace('_ano', '');
-      const allowedPlans = ['trial', 'pro', 'business'];
-      if (!allowedPlans.includes(plan)) {
+      if (!['trial', 'pro', 'business'].includes(plan)) {
         document.getElementById('kanbanBoard').innerHTML = `
-          <div class="kanban-lock-overlay">
-            <div class="kanban-lock-icon"><i class="ph-bold ph-lock-key"></i></div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:40px;text-align:center">
+            <div style="font-size:3rem;color:var(--blue);opacity:0.5"><i class="ph-bold ph-lock-key"></i></div>
             <h2 style="font-size:1.2rem;font-weight:800;color:var(--text);margin:0">Kanban não disponível</h2>
-            <p style="color:var(--muted);max-width:320px;line-height:1.5;margin:0">O painel Kanban está disponível nos planos <strong>Pro</strong> e <strong>Business</strong>. Atualize o seu plano para ter acesso.</p>
+            <p style="color:var(--muted);max-width:320px;line-height:1.5;margin:0">Disponível nos planos <strong>Pro</strong> e <strong>Business</strong>.</p>
             <a href="billing.html" class="btn btn-primary">Ver Planos</a>
-          </div>
-        `;
+          </div>`;
         return;
       }
 
       await loadData();
 
-      // i18n ready polling
       let attempt = 0;
       const iv = setInterval(() => {
         const i18nReady = window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length;
         const cfgReady  = window._3dzaap_cfg_ready || (window._cfg && window._cfg.currency);
-        if (i18nReady && cfgReady) {
-          clearInterval(iv);
-          renderKanban();
-          syncLangSelect();
-        }
+        if (i18nReady && cfgReady) { clearInterval(iv); renderKanban(); syncLangSelect(); }
         if (++attempt > 25) { clearInterval(iv); renderKanban(); }
       }, 120);
 
@@ -559,12 +598,9 @@
     // ══════════════════════════════════════
     async function loadData() {
       try {
-        // Always load all orders — filtering is done client-side in renderKanban
         orders = await DB.getOrders('all').catch(() => []);
         renderKanban();
-      } catch(e) {
-        console.error('Erro ao carregar pedidos:', e);
-      }
+      } catch(e) { console.error('Kanban load error:', e); }
     }
 
     function changeFilter(mode) {
@@ -573,26 +609,35 @@
       document.getElementById('btnFilterActive').className = mode === 'active' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
       document.getElementById('btnFilterMonth').className  = mode === 'month'  ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
       document.getElementById('btnFilterAll').className    = mode === 'all'    ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-      // No need to re-fetch — filtering is local
       renderKanban();
+    }
+
+    // ══════════════════════════════════════
+    //  DEADLINE HELPERS
+    // ══════════════════════════════════════
+    function deadlineState(o) {
+      // Returns: 'overdue' | 'warning' | 'ok' | 'none'
+      if (!o.dueDate || ['done', 'cancelado'].includes(o.status)) return 'none';
+      const today = new Date(); today.setHours(0,0,0,0);
+      const due   = new Date(o.dueDate); due.setHours(0,0,0,0);
+      const diffDays = Math.ceil((due - today) / 86400000);
+      if (diffDays < 0) return 'overdue';
+      if (diffDays <= WARN_DAYS) return 'warning';
+      return 'ok';
     }
 
     // ══════════════════════════════════════
     //  RENDER
     // ══════════════════════════════════════
     function renderKanban() {
-      const board = document.getElementById('kanbanBoard');
+      const board     = document.getElementById('kanbanBoard');
       const search    = (document.getElementById('kSearch').value || '').toLowerCase().trim();
       const payFilter = document.getElementById('kPayFilter').value;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const currM = today.getMonth();
-      const currY = today.getFullYear();
+      const today     = new Date(); today.setHours(0, 0, 0, 0);
+      const currM     = today.getMonth();
+      const currY     = today.getFullYear();
 
-      // ── Tab filter (client-side) ───────────────────
-      //   active → exclude done/cancelado
-      //   month  → only orders created this month (all statuses)
-      //   all    → everything (done column still limited to current month)
+      // ── Tab filter (client-side) ──
       const tabFiltered = orders.filter(o => {
         if (filterMode === 'active') {
           if (['done', 'cancelado'].includes(o.status)) return false;
@@ -603,20 +648,43 @@
         return true;
       });
 
-      // ── Search / payment filters ───────────────────
+      // ── Search + payment filter ──
       const filtered = tabFiltered.filter(o => {
         if (search && !String(o.orderNumber || '').toLowerCase().includes(search) && !String(o.clientName || '').toLowerCase().includes(search)) return false;
         if (payFilter && o.paymentStatus !== payFilter) return false;
         return true;
       });
 
+      // ── Stats ──
+      let totalVal = 0, pendingVal = 0, warnCount = 0, overdueCount = 0;
+      filtered.forEach(o => {
+        const its   = (o.items?.length) ? o.items : [];
+        const itVal = (it) => parseFloat(it.total) || ((parseInt(it.quantity || it.qty || 1) || 1) * (parseFloat(it.unitPrice) || 0));
+        const grand = its.reduce((s, i) => s + itVal(i), 0) || parseFloat(o.total || 0);
+        totalVal += grand;
+        if (o.paymentStatus !== 'pago') pendingVal += grand;
+        const ds = deadlineState(o);
+        if (ds === 'overdue') overdueCount++;
+        else if (ds === 'warning') warnCount++;
+      });
+
+      document.getElementById('ksTotal').textContent   = filtered.length;
+      document.getElementById('ksValue').textContent   = fmtCurrency(totalVal);
+      document.getElementById('ksPending').textContent = fmtCurrency(pendingVal);
+      document.getElementById('ksWarning').textContent = warnCount;
+      document.getElementById('ksOverdue').textContent = overdueCount;
+
+      // Highlight stat cards when there are alerts
+      document.getElementById('ksWarning').closest('.kstat').style.borderColor = warnCount  > 0 ? '#F59E0B' : '';
+      document.getElementById('ksOverdue').closest('.kstat').style.borderColor = overdueCount > 0 ? 'var(--danger)' : '';
+
+      // ── Board columns ──
       board.innerHTML = '';
 
       KANBAN_COLS.forEach(col => {
         let colOrders = filtered.filter(o => (o.status || 'orcamento') === col.id);
 
-        // Concluído column: always cap to current month to avoid cluttering the board
-        // (only applies when filterMode is NOT 'month', which already handles it)
+        // Concluído: cap to current month unless "Este mês" already handles it
         if (col.id === 'done' && filterMode !== 'month') {
           colOrders = colOrders.filter(o => {
             const d = new Date(o.createdAt || 0);
@@ -627,8 +695,6 @@
         const colEl = document.createElement('div');
         colEl.className = 'kanban-col';
         colEl.setAttribute('data-status', col.id);
-
-        // Drag events on column
         colEl.addEventListener('dragover',  kDragOver);
         colEl.addEventListener('dragleave', kDragLeave);
         colEl.addEventListener('drop',      kDrop);
@@ -650,36 +716,44 @@
           html += `<div class="kanban-col-empty">Sem pedidos</div>`;
         } else {
           colOrders.forEach(o => {
-            const its = (o.items?.length) ? o.items : [];
-            const itTotal = (it) => parseFloat(it.total) || ((parseInt(it.quantity || it.qty || 1) || 1) * (parseFloat(it.unitPrice) || 0));
-            const grand = its.reduce((s, i) => s + itTotal(i), 0) || parseFloat(o.total || 0);
+            const its   = (o.items?.length) ? o.items : [];
+            const itVal = (it) => parseFloat(it.total) || ((parseInt(it.quantity || it.qty || 1) || 1) * (parseFloat(it.unitPrice) || 0));
+            const grand = its.reduce((s, i) => s + itVal(i), 0) || parseFloat(o.total || 0);
+            const firstDesc  = its[0]?.description || '';
+            const moreItems  = its.length > 1 ? ` <em style="color:var(--muted)">+${its.length - 1}</em>` : '';
+            const dueStr     = o.dueDate ? fmtDate(o.dueDate) : '';
+            const ds         = deadlineState(o);
 
-            const firstDesc = (its[0]?.description) || '';
-            const moreItems = its.length > 1 ? ` +${its.length - 1}` : '';
+            let cardClass = 'kanban-card';
+            if (ds === 'overdue') cardClass += ' due-overdue';
+            else if (ds === 'warning') cardClass += ' due-warning';
 
-            const isOverdue = o.dueDate && new Date(o.dueDate) < today && !['done', 'cancelado'].includes(o.status);
-            const dueStr = o.dueDate ? fmtDate(o.dueDate) : '';
+            const payBadge = o.paymentStatus === 'pago'
+              ? `<span class="badge bp-pago"    style="font-size:0.63rem"><span class="badge-dot"></span>Pago</span>`
+              : `<span class="badge bp-pendente" style="font-size:0.63rem"><span class="badge-dot"></span>Pendente</span>`;
 
-            const payLabel = o.paymentStatus === 'pago'
-              ? `<span class="badge bp-pago" style="font-size:0.65rem"><span class="badge-dot"></span>Pago</span>`
-              : `<span class="badge bp-pendente" style="font-size:0.65rem"><span class="badge-dot"></span>Pendente</span>`;
+            let dueHtml = '';
+            if (dueStr) {
+              let dueClass = 'kcard-due';
+              let dueIcon  = '<i class="ph-bold ph-calendar-blank"></i>';
+              if (ds === 'overdue') { dueClass += ' overdue'; dueIcon = '<i class="ph-bold ph-warning-circle"></i>'; }
+              else if (ds === 'warning') { dueClass += ' warning'; dueIcon = '<i class="ph-bold ph-warning"></i>'; }
+              dueHtml = `<span class="${dueClass}">${dueIcon} ${dueStr}</span>`;
+            }
 
             html += `
-              <div class="kanban-card" draggable="true" id="kcard-${o.id}" data-id="${o.id}">
+              <div class="${cardClass}" draggable="true" id="kcard-${o.id}" data-id="${o.id}">
                 <div class="kcard-top">
                   <span class="kcard-num">${escH(o.orderNumber || '—')}</span>
                   <span class="kcard-val">${fmtCurrency(grand)}</span>
                 </div>
                 <div class="kcard-client">${escH(o.clientName || '—')}</div>
-                ${firstDesc ? `<div class="kcard-desc">${escH(firstDesc)}${moreItems ? ` <em style="color:var(--muted)">${moreItems} item(s)</em>` : ''}</div>` : ''}
+                ${firstDesc ? `<div class="kcard-desc">${escH(firstDesc)}${moreItems}</div>` : ''}
                 <div class="kcard-footer">
-                  ${payLabel}
-                  <div style="display:flex;align-items:center;gap:6px">
-                    ${dueStr ? `<span class="kcard-due${isOverdue ? ' overdue' : ''}">
-                      ${isOverdue ? '<i class="ph-bold ph-warning-circle"></i>' : '<i class="ph-bold ph-calendar-blank"></i>'}
-                      ${dueStr}
-                    </span>` : ''}
-                    <a href="orders.html?open=${o.id}" class="kcard-btn" title="Editar pedido">
+                  ${payBadge}
+                  <div style="display:flex;align-items:center;gap:5px">
+                    ${dueHtml}
+                    <a href="orders.html?open=${o.id}" class="kcard-btn" title="Editar pedido" onclick="event.stopPropagation()">
                       <i class="ph-bold ph-pencil-simple"></i>
                     </a>
                   </div>
@@ -694,7 +768,7 @@
         board.appendChild(colEl);
       });
 
-      // Attach drag listeners to cards
+      // Attach drag listeners
       document.querySelectorAll('.kanban-card').forEach(card => {
         card.addEventListener('dragstart', kDragStart);
         card.addEventListener('dragend',   kDragEnd);
@@ -711,52 +785,41 @@
       setTimeout(() => this.classList.add('dragging'), 0);
       e.dataTransfer.effectAllowed = 'move';
     }
-
     function kDragEnd() {
       this.classList.remove('dragging');
       document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
       draggedId = null;
     }
-
     function kDragOver(e) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
     }
-
     function kDragLeave(e) {
-      // Only remove if leaving the column (not a child)
-      if (!this.contains(e.relatedTarget)) {
-        this.classList.remove('drag-over');
-      }
+      if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
     }
-
     async function kDrop(e) {
       e.preventDefault();
       this.classList.remove('drag-over');
       if (!draggedId) return;
-
       const newStatus = this.getAttribute('data-status');
       const order = orders.find(o => String(o.id) === String(draggedId));
       if (!order || order.status === newStatus) return;
-
       const oldStatus = order.status;
-      order.status = newStatus; // optimistic
+      order.status = newStatus;
       renderKanban();
-
       try {
         await DB.saveOrder(order);
-        showToast(`<i class="ph-bold ph-check-circle"></i> Estado atualizado.`, 'ok');
+        showToast('<i class="ph-bold ph-check-circle"></i> Estado atualizado.', 'ok');
       } catch(err) {
-        console.error(err);
         order.status = oldStatus;
         renderKanban();
-        showToast(`<i class="ph-bold ph-warning"></i> Erro ao mover pedido.`, 'err');
+        showToast('<i class="ph-bold ph-warning"></i> Erro ao mover pedido.', 'err');
       }
     }
 
     // ══════════════════════════════════════
-    //  THEME TOGGLE (topbar)
+    //  THEME TOGGLE
     // ══════════════════════════════════════
     function initThemeToggle() {
       const btn = document.getElementById('topbarThemeToggle');
@@ -766,13 +829,9 @@
         btn.innerHTML = isDark ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
       };
       update();
-      btn.addEventListener('click', () => {
-        Sidebar.toggleTheme();
-        update();
-      });
+      btn.addEventListener('click', () => { Sidebar.toggleTheme(); update(); });
     }
 
-    // Close help popover on outside click
     document.addEventListener('click', e => {
       const pop = document.getElementById('topbarHelpPopover');
       if (pop && !e.target.closest('.gc-help-wrap')) pop.style.display = 'none';
