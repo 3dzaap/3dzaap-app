@@ -655,9 +655,24 @@
         return true;
       });
 
+      // ── Visible Cards Only (Board + Stats) ──
+      const colIds = KANBAN_COLS.map(c => c.id);
+      const visibleOrders = filtered.filter(o => {
+        const s = o.status || 'orcamento';
+        // 1. Must be a valid column status (excludes 'cancelado' which has no column)
+        if (!colIds.includes(s)) return false; 
+        
+        // 2. Concluído is capped to current month unless 'Este mês' tab already handles it
+        if (s === 'done' && filterMode !== 'month') {
+          const d = new Date(o.createdAt || 0);
+          if (d.getMonth() !== currM || d.getFullYear() !== currY) return false;
+        }
+        return true;
+      });
+
       // ── Stats ──
       let totalVal = 0, pendingVal = 0, warnCount = 0, overdueCount = 0;
-      filtered.forEach(o => {
+      visibleOrders.forEach(o => {
         const its   = (o.items?.length) ? o.items : [];
         const itVal = (it) => parseFloat(it.total) || ((parseInt(it.quantity || it.qty || 1) || 1) * (parseFloat(it.unitPrice) || 0));
         const grand = its.reduce((s, i) => s + itVal(i), 0) || parseFloat(o.total || 0);
@@ -668,7 +683,7 @@
         else if (ds === 'warning') warnCount++;
       });
 
-      document.getElementById('ksTotal').textContent   = filtered.length;
+      document.getElementById('ksTotal').textContent   = visibleOrders.length;
       document.getElementById('ksValue').textContent   = fmtCurrency(totalVal);
       document.getElementById('ksPending').textContent = fmtCurrency(pendingVal);
       document.getElementById('ksWarning').textContent = warnCount;
@@ -682,15 +697,7 @@
       board.innerHTML = '';
 
       KANBAN_COLS.forEach(col => {
-        let colOrders = filtered.filter(o => (o.status || 'orcamento') === col.id);
-
-        // Concluído: cap to current month unless "Este mês" already handles it
-        if (col.id === 'done' && filterMode !== 'month') {
-          colOrders = colOrders.filter(o => {
-            const d = new Date(o.createdAt || 0);
-            return d.getMonth() === currM && d.getFullYear() === currY;
-          });
-        }
+        const colOrders = visibleOrders.filter(o => (o.status || 'orcamento') === col.id);
 
         const colEl = document.createElement('div');
         colEl.className = 'kanban-col';
