@@ -242,7 +242,20 @@ const STATE = {
   user: null,
   busy: false
 };
-const PRICES = { starter:{monthly:9.9, yearly:7.9}, pro:{monthly:19.9, yearly:15.9}, business:{monthly:39.9, yearly:31.9} };
+const PRICES_MAP = {
+  'eur': { sym: '€', starter:{monthly:9.9, yearly:7.9}, pro:{monthly:19.9, yearly:15.9}, business:{monthly:39.9, yearly:31.9} },
+  'brl': { sym: 'R$', starter:{monthly:49.9, yearly:39.9}, pro:{monthly:99.9, yearly:79.9}, business:{monthly:199.9, yearly:159.9} },
+  'usd': { sym: '$', starter:{monthly:10.9, yearly:8.9}, pro:{monthly:21.9, yearly:17.9}, business:{monthly:44.9, yearly:35.9} },
+  'gbp': { sym: '£', starter:{monthly:8.9, yearly:7.9}, pro:{monthly:17.9, yearly:14.9}, business:{monthly:34.9, yearly:27.9} }
+};
+
+function getPricingConfig() {
+  const locale = window.i18n ? window.i18n.currentLocale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
+  if (locale === 'pt-BR') return PRICES_MAP.brl;
+  if (locale === 'en-US') return PRICES_MAP.usd;
+  if (locale === 'en-GB') return PRICES_MAP.gbp;
+  return PRICES_MAP.eur;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -257,6 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await window.i18n.init();
       window.i18n.translatePage();
       renderPlans();
+      window.addEventListener('languageChanged', renderPlans);
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -321,13 +335,14 @@ function renderPlans() {
   const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   const isAnn = STATE.billing === 'yearly';
   const plans = ['trial', 'starter', 'pro', 'business'];
+  const pricing = getPricingConfig();
   
   container.innerHTML = '';
   
   plans.forEach(p => {
     const pName = t(`onboarding.plans.${p}.name`) || p.toUpperCase();
     const pDesc = t(`onboarding.plans.${p}.desc`) || '';
-    const pPrice = p === 'trial' ? (t('onboarding.plans.trial.price') || 'Grátis') : (isAnn ? PRICES[p].yearly : PRICES[p].monthly);
+    const pPrice = p === 'trial' ? (t('onboarding.plans.trial.price') || 'Grátis') : (isAnn ? pricing[p].yearly : pricing[p].monthly);
     const pSub = p === 'trial' ? (t('onboarding.days_7') || '7 dias') : (t('onboarding.per_month') || '/mês') + (isAnn ? ' ' + (t('onboarding.annually_label') || '(anual)') : '');
     const pFeatures = window.i18n ? window.i18n.getNestedTranslation(`onboarding.plans.${p}.features`) : [];
     
@@ -338,11 +353,14 @@ function renderPlans() {
     
     let html = '';
     if (p === 'pro') html += `<div class="plan-badge">${t('onboarding.popular') || 'Popular'}</div>`;
+    
+    let priceHtml = p === 'trial' ? pPrice : `<span class="curr-sym">${pricing.sym}</span>` + pPrice.toFixed(2).replace('.', ',');
+    
     html += `
       <div class="plan-check"></div>
       <div class="plan-name">${pName}</div>
       <div class="plan-desc">${pDesc}</div>
-      <div class="plan-price">${p === 'trial' ? pPrice : '<span class="curr-sym">€</span>' + pPrice.toFixed(2).replace('.', ',')}<small>${pSub}</small></div>
+      <div class="plan-price">${priceHtml}<small>${pSub}</small></div>
       <ul class="plan-features-list">
         ${(pFeatures || []).map(f => `<li class="plan-feature-item"><i class="ph-bold ph-check"></i> ${f}</li>`).join('')}
       </ul>
