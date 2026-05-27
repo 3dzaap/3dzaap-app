@@ -461,11 +461,11 @@
         <!-- Header -->
         <div class="kanban-header">
           <div class="kanban-header-text">
-            <h1><i class="ph-bold ph-kanban" style="color:var(--blue)"></i> Kanban de Pedidos</h1>
-            <p>Arraste os cartões entre colunas para atualizar o estado</p>
+            <h1><i class="ph-bold ph-kanban" style="color:var(--blue)"></i> <span data-i18n="kanban.title">Kanban de Pedidos</span></h1>
+            <p data-i18n="kanban.desc">Arraste os cartões entre colunas para atualizar o estado</p>
           </div>
           <a href="orders.html" class="btn btn-ghost" style="flex-shrink:0">
-            <i class="ph-bold ph-arrow-left"></i> Voltar à Lista
+            <i class="ph-bold ph-arrow-left"></i> <span data-i18n="kanban.back">Voltar à Lista</span>
           </a>
         </div>
 
@@ -473,23 +473,23 @@
         <div class="kanban-stats" id="kanbanStats">
           <div class="kstat">
             <div class="kstat-icon si-blue"><i class="ph-bold ph-package"></i></div>
-            <div><div class="kstat-val" id="ksTotal">—</div><div class="kstat-lbl">Pedidos no board</div></div>
+            <div><div class="kstat-val" id="ksTotal">—</div><div class="kstat-lbl" data-i18n="kanban.stat_orders">Pedidos no board</div></div>
           </div>
           <div class="kstat">
             <div class="kstat-icon si-green"><i class="ph-bold ph-currency-dollar"></i></div>
-            <div><div class="kstat-val" id="ksValue">—</div><div class="kstat-lbl">Valor total</div></div>
+            <div><div class="kstat-val" id="ksValue">—</div><div class="kstat-lbl" data-i18n="kanban.stat_value">Valor total</div></div>
           </div>
           <div class="kstat">
             <div class="kstat-icon si-orange"><i class="ph-bold ph-hourglass"></i></div>
-            <div><div class="kstat-val" id="ksPending">—</div><div class="kstat-lbl">Valor pendente</div></div>
+            <div><div class="kstat-val" id="ksPending">—</div><div class="kstat-lbl" data-i18n="kanban.stat_pending">Valor pendente</div></div>
           </div>
           <div class="kstat">
             <div class="kstat-icon si-yellow"><i class="ph-bold ph-warning"></i></div>
-            <div><div class="kstat-val" id="ksWarning">0</div><div class="kstat-lbl">Prazo a esgotar (3 dias)</div></div>
+            <div><div class="kstat-val" id="ksWarning">0</div><div class="kstat-lbl" data-i18n="kanban.stat_warn">Prazo a esgotar (3 dias)</div></div>
           </div>
           <div class="kstat">
             <div class="kstat-icon si-red"><i class="ph-bold ph-warning-circle"></i></div>
-            <div><div class="kstat-val" id="ksOverdue">0</div><div class="kstat-lbl">Prazo expirado</div></div>
+            <div><div class="kstat-val" id="ksOverdue">0</div><div class="kstat-lbl" data-i18n="kanban.stat_overdue">Prazo expirado</div></div>
           </div>
         </div>
 
@@ -497,25 +497,25 @@
         <div class="kanban-filters">
           <div class="kanban-filter-wrap">
             <i class="ph-bold ph-magnifying-glass filter-icon"></i>
-            <input type="text" id="kSearch" class="kanban-filter-search" placeholder="Pesquisar…" oninput="renderKanban()">
+            <input type="text" id="kSearch" class="kanban-filter-search" data-i18n="[placeholder]kanban.search" placeholder="Pesquisar…" oninput="renderKanban()">
           </div>
           <select id="kPayFilter" class="kanban-filter-select" onchange="renderKanban()">
-            <option value="">Todos os pagamentos</option>
-            <option value="pendente">Pendente</option>
-            <option value="pago">Pago</option>
+            <option value="" data-i18n="kanban.pay_all">Todos os pagamentos</option>
+            <option value="pendente" data-i18n="kanban.pay_pending">Pendente</option>
+            <option value="pago" data-i18n="kanban.pay_paid">Pago</option>
           </select>
           <div class="kanban-filter-tabs">
-            <button class="btn btn-primary btn-sm" id="btnFilterActive" onclick="changeFilter('active')"><i class="ph-bold ph-activity"></i> Em progresso</button>
-            <button class="btn btn-ghost btn-sm" id="btnFilterMonth" onclick="changeFilter('month')"><i class="ph-bold ph-calendar-blank"></i> Este mês</button>
-            <button class="btn btn-ghost btn-sm" id="btnFilterAll" onclick="changeFilter('all')"><i class="ph-bold ph-stack"></i> Todos</button>
+            <button class="btn btn-primary btn-sm" id="btnFilterActive" onclick="changeFilter('active')"><i class="ph-bold ph-activity"></i> <span data-i18n="kanban.filter_active">Em progresso</span></button>
+            <button class="btn btn-ghost btn-sm" id="btnFilterMonth" onclick="changeFilter('month')"><i class="ph-bold ph-calendar-blank"></i> <span data-i18n="kanban.filter_month">Este mês</span></button>
+            <button class="btn btn-ghost btn-sm" id="btnFilterAll" onclick="changeFilter('all')"><i class="ph-bold ph-stack"></i> <span data-i18n="kanban.filter_all">Todos</span></button>
             <!-- Info tooltip -->
             <div class="kf-tooltip-wrap">
               <span class="kf-info">i</span>
               <div class="kf-tooltip">
-                <strong>Filtros do Board</strong>
-                <p>⚡ <b>Em progresso</b> — pedidos activos (exclui concluídos e cancelados). Ideal para o dia-a-dia.</p>
-                <p>📅 <b>Este mês</b> — todos os pedidos criados neste mês, incluindo os concluídos.</p>
-                <p>📋 <b>Todos</b> — visão completa. A coluna Concluído mostra apenas o mês atual para não sobrecarregar o board.</p>
+                <strong data-i18n="kanban.tt_title">Filtros do Board</strong>
+                <p data-i18n="kanban.tt_active">⚡ <b>Em progresso</b> — pedidos activos (exclui concluídos e cancelados). Ideal para o dia-a-dia.</p>
+                <p data-i18n="kanban.tt_month">📅 <b>Este mês</b> — todos os pedidos criados neste mês, incluindo os concluídos.</p>
+                <p data-i18n="kanban.tt_all">📋 <b>Todos</b> — visão completa. A coluna Concluído mostra apenas o mês atual para não sobrecarregar o board.</p>
               </div>
             </div>
           </div>
@@ -564,12 +564,16 @@
       // Plan gate
       const plan = (session.plan || 'trial').replace('_ano', '');
       if (!['trial', 'pro', 'business'].includes(plan)) {
+        const tLockTitle = (window.i18n && window.i18n.getNestedTranslation('kanban.lock_title')) || 'Kanban não disponível';
+        const tLockDesc  = (window.i18n && window.i18n.getNestedTranslation('kanban.lock_desc')) || 'Disponível nos planos <strong>Pro</strong> e <strong>Business</strong>.';
+        const tLockBtn   = (window.i18n && window.i18n.getNestedTranslation('kanban.lock_btn')) || 'Ver Planos';
+        
         document.getElementById('kanbanBoard').innerHTML = `
           <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:40px;text-align:center">
             <div style="font-size:3rem;color:var(--blue);opacity:0.5"><i class="ph-bold ph-lock-key"></i></div>
-            <h2 style="font-size:1.2rem;font-weight:800;color:var(--text);margin:0">Kanban não disponível</h2>
-            <p style="color:var(--muted);max-width:320px;line-height:1.5;margin:0">Disponível nos planos <strong>Pro</strong> e <strong>Business</strong>.</p>
-            <a href="billing.html" class="btn btn-primary">Ver Planos</a>
+            <h2 style="font-size:1.2rem;font-weight:800;color:var(--text);margin:0">${tLockTitle}</h2>
+            <p style="color:var(--muted);max-width:320px;line-height:1.5;margin:0">${tLockDesc}</p>
+            <a href="billing.html" class="btn btn-primary">${tLockBtn}</a>
           </div>`;
         return;
       }
@@ -720,7 +724,8 @@
         `;
 
         if (colOrders.length === 0) {
-          html += `<div class="kanban-col-empty">Sem pedidos</div>`;
+          const tEmpty = (window.i18n && window.i18n.getNestedTranslation('kanban.empty_col')) || 'Sem pedidos';
+          html += `<div class="kanban-col-empty">${tEmpty}</div>`;
         } else {
           colOrders.forEach(o => {
             const its   = (o.items?.length) ? o.items : [];
@@ -735,9 +740,12 @@
             if (ds === 'overdue') cardClass += ' due-overdue';
             else if (ds === 'warning') cardClass += ' due-warning';
 
+            const tPaid = (window.i18n && window.i18n.getNestedTranslation('kanban.badge_paid')) || 'Pago';
+            const tPend = (window.i18n && window.i18n.getNestedTranslation('kanban.badge_pending')) || 'Pendente';
+
             const payBadge = o.paymentStatus === 'pago'
-              ? `<span class="badge bp-pago"    style="font-size:0.63rem"><span class="badge-dot"></span>Pago</span>`
-              : `<span class="badge bp-pendente" style="font-size:0.63rem"><span class="badge-dot"></span>Pendente</span>`;
+              ? `<span class="badge bp-pago"    style="font-size:0.63rem"><span class="badge-dot"></span>${tPaid}</span>`
+              : `<span class="badge bp-pendente" style="font-size:0.63rem"><span class="badge-dot"></span>${tPend}</span>`;
 
             let dueHtml = '';
             if (dueStr) {
