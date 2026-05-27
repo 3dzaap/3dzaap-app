@@ -491,7 +491,7 @@
         <div class="fin-kpi" id="kpiBalancoWrap">
           <div class="fin-kpi-lbl">Lucro Líquido (Mês)</div>
           <div class="fin-kpi-val" id="kpiBalanco">— 0,00</div>
-          <div class="fin-kpi-sub">Recebido - Despesas</div>
+          <div class="fin-kpi-sub">Recebido - Custos - Despesas</div>
         </div>
         <div class="fin-kpi blue">
           <div class="fin-kpi-lbl" data-i18n="financial.kpi_reinvestment">Fundo de Reinvestimento</div>
@@ -821,30 +821,50 @@ function renderBI(periodOrders) {
 }
 
 function calculateOrderProductionCost(o) {
-  // Se temos os inputs originais da calculadora, usamos a fórmula exata
+  const orderTotal = o.total || 0;
+  if (orderTotal <= 0) return 0;
+
+  // MÉTODO 1: Engenharia reversa usando a margem de lucro gravada na altura do cálculo.
+  // Fórmula da Calculadora: Preço Final = Custo de Produção * (1 + Margem/100)
+  // Logo: Custo de Produção = Preço Final / (1 + Margem/100)
   if (o.config && o.config._orig_inputs) {
     const i = o.config._orig_inputs;
+    const margin = parseFloat(i.profitMargin) || 0;
+    if (margin > 0) {
+      // Engenharia reversa perfeita: recupera o custo exato que a calculadora usou
+      return orderTotal / (1 + margin / 100);
+    }
+    // Fallback se margem for 0: recalcular os custos diretos
     let materialCost = 0;
     let machineTime = 0;
-    
     if (i.mode === 'simple') {
       materialCost = ((i.materialPrice || 25) / 1000) * (i.weight || 0);
       machineTime = i.time || 0;
+      const amort = (i.printerPrice || 1000) / (i.printerLife || 2500) * machineTime;
+      const elec  = ((i.powerConsumption || 250) / 1000) * machineTime * (i.electricityPrice || 0.20);
+      const base  = materialCost + amort + elec;
+      const fail  = base * ((i.failureRate || 0) / 100);
+      const indir = base * ((i.indirectCosts || 0) / 100);
+      return base + fail + indir;
     } else if (i.mesas) {
       i.mesas.forEach(m => {
         m.parts.forEach(p => {
           materialCost += ((p.price || 25) / 1000) * (p.weight || 0) * (p.qty || 1);
-          machineTime += (p.time || 0) * (p.qty || 1);
+          machineTime  += (p.time || 0) * (p.qty || 1);
         });
       });
+      const amort = (i.printerPrice || 1000) / (i.printerLife || 2500) * machineTime;
+      const elec  = ((i.powerConsumption || 250) / 1000) * machineTime * (i.electricityPrice || 0.20);
+      const base  = materialCost + amort + elec;
+      const fail  = base * ((i.failureRate || 0) / 100);
+      const indir = base * ((i.indirectCosts || 0) / 100);
+      return base + fail + indir;
     }
-    // Simplificação para BI: Amortização + Energia (Fallback 0.25€/h se não houver configs)
-    const overhead = machineTime * 0.25; 
-    return materialCost + overhead;
   }
-  
-  // Fallback se não houver metadados: 30% do valor do pedido como custo (estimativa conservadora)
-  return (o.total || 0) * 0.35;
+
+  // MÉTODO 2: Fallback para pedidos criados manualmente (sem metadados de calculadora).
+  // Estimativa conservadora: assume 65% do valor como custo de produção (margem de ~35%).
+  return orderTotal * 0.65;
 }
 
 function renderCashForecast() {
@@ -963,7 +983,12 @@ function renderAll() {
   
   const periodExps = expenses.filter(e => (e.date || '').slice(0, 7) === _periodo);
   const totalExp = periodExps.reduce((s,e) => s + (e.value || 0), 0);
-  const balanco = pago - totalExp;
+
+  // Custo real de produção: soma dos custos calculados por engenharia reversa apenas dos pedidos pagos
+  const prodCostPagos = pagos.reduce((s, o) => s + calculateOrderProductionCost(o), 0);
+
+  // Lucro Líquido Real = Faturado (Pago) - Custo de Produção Real - Despesas Manuais
+  const balanco = pago - prodCostPagos - totalExp;
 
   // CÁLCULO FUNDO REINVESTIMENTO (Amortização teórica baseada no tempo de impressão dos pedidos do mês)
   const avgAmortRate = printers.length 
