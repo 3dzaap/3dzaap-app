@@ -559,7 +559,8 @@
     // ══════════════════════════════════════
     async function loadData() {
       try {
-        orders = await DB.getOrders(filterMode).catch(() => []);
+        // Always load all orders — filtering is done client-side in renderKanban
+        orders = await DB.getOrders('all').catch(() => []);
         renderKanban();
       } catch(e) {
         console.error('Erro ao carregar pedidos:', e);
@@ -572,7 +573,8 @@
       document.getElementById('btnFilterActive').className = mode === 'active' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
       document.getElementById('btnFilterMonth').className  = mode === 'month'  ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
       document.getElementById('btnFilterAll').className    = mode === 'all'    ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-      loadData();
+      // No need to re-fetch — filtering is local
+      renderKanban();
     }
 
     // ══════════════════════════════════════
@@ -580,14 +582,29 @@
     // ══════════════════════════════════════
     function renderKanban() {
       const board = document.getElementById('kanbanBoard');
-      const search = (document.getElementById('kSearch').value || '').toLowerCase().trim();
+      const search    = (document.getElementById('kSearch').value || '').toLowerCase().trim();
       const payFilter = document.getElementById('kPayFilter').value;
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const currM = today.getMonth();
       const currY = today.getFullYear();
 
-      // Apply search/payment filters
-      const filtered = orders.filter(o => {
+      // ── Tab filter (client-side) ───────────────────
+      //   active → exclude done/cancelado
+      //   month  → only orders created this month (all statuses)
+      //   all    → everything (done column still limited to current month)
+      const tabFiltered = orders.filter(o => {
+        if (filterMode === 'active') {
+          if (['done', 'cancelado'].includes(o.status)) return false;
+        } else if (filterMode === 'month') {
+          const d = new Date(o.createdAt || 0);
+          if (d.getMonth() !== currM || d.getFullYear() !== currY) return false;
+        }
+        return true;
+      });
+
+      // ── Search / payment filters ───────────────────
+      const filtered = tabFiltered.filter(o => {
         if (search && !String(o.orderNumber || '').toLowerCase().includes(search) && !String(o.clientName || '').toLowerCase().includes(search)) return false;
         if (payFilter && o.paymentStatus !== payFilter) return false;
         return true;
@@ -598,8 +615,9 @@
       KANBAN_COLS.forEach(col => {
         let colOrders = filtered.filter(o => (o.status || 'orcamento') === col.id);
 
-        // Completed column: only show current month
-        if (col.id === 'done') {
+        // Concluído column: always cap to current month to avoid cluttering the board
+        // (only applies when filterMode is NOT 'month', which already handles it)
+        if (col.id === 'done' && filterMode !== 'month') {
           colOrders = colOrders.filter(o => {
             const d = new Date(o.createdAt || 0);
             return d.getMonth() === currM && d.getFullYear() === currY;
