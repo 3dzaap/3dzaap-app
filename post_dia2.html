@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post Dia 2 — Gestão de Pedidos | 4 Idiomas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <style>
+    :root {
+      --blue: #3B8FD4;
+      --orange: #F5943A;
+      --green: #22c55e;
+      --purple: #8b5cf6;
+      --dark: #1e293b;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px 30px 30px;
+      background: #f1f5f9;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .lang-switcher span { font-weight: 700; color: var(--dark); font-size: 1rem; margin-right: 5px; }
+    .lang-btn {
+      padding: 10px 24px;
+      border-radius: 100px;
+      border: 2px solid #cbd5e1;
+      background: white;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--dark);
+    }
+    .lang-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .lang-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+    .page-wrapper {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    /* Slides */
+    .ig-post-wrapper {
+      width: 1080px;
+      height: 1080px;
+      flex-shrink: 0;
+      transform: scale(0.72);
+      transform-origin: top center;
+      margin-bottom: -290px;
+      background: radial-gradient(circle at 30% 0%, #1e293b, #020617);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      border-radius: 20px;
+    }
+
+    .orb { position: absolute; border-radius: 50%; filter: blur(110px); z-index: 0; }
+    .o1 { width: 700px; height: 700px; background: var(--blue); opacity: 0.25; top: -250px; left: -200px; }
+    .o2 { width: 500px; height: 500px; background: var(--orange); opacity: 0.2; bottom: -150px; right: -100px; }
+    .og { width: 400px; height: 400px; background: var(--green); opacity: 0.15; bottom: -100px; left: 100px; }
+    .op { width: 500px; height: 500px; background: var(--purple); opacity: 0.18; bottom: -100px; right: -50px; }
+
+    .content { position: relative; z-index: 10; color: white; width: 88%; text-align: center; }
+
+    h1 { font-size: 5.5rem; font-weight: 900; line-height: 1.1; margin: 0 0 30px 0; letter-spacing: -2px; }
+    .hl { background: linear-gradient(135deg, #3B8FD4, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hl-green { background: linear-gradient(135deg, #22c55e, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hl-orange { background: linear-gradient(135deg, #F5943A, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    p.sub { font-size: 2.2rem; font-weight: 400; color: #cbd5e1; line-height: 1.5; margin: 0 auto 40px auto; max-width: 900px; }
+
+    .badge { display: inline-block; background: rgba(245,148,58,0.15); border: 1px solid rgba(245,148,58,0.4); color: var(--orange); font-size: 1.6rem; font-weight: 700; padding: 10px 35px; border-radius: 100px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+
+    .benefit-card { display: flex; align-items: center; gap: 25px; border-radius: 20px; padding: 28px 35px; }
+    .bc-green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
+    .bc-blue { background: rgba(59,143,212,0.08); border: 1px solid rgba(59,143,212,0.2); }
+    .bc-orange { background: rgba(245,148,58,0.08); border: 1px solid rgba(245,148,58,0.2); }
+
+    .btn-cta { display: inline-block; padding: 22px 60px; background: linear-gradient(135deg, var(--orange), #f59e0b); color: white; border-radius: 100px; font-size: 2.0rem; font-weight: 900; text-transform: none; letter-spacing: 1px; margin-top: 30px; box-shadow: 0 15px 40px rgba(245,148,58,0.4); }
+
+    /* ─── Kanban Mock ─── */
+    .kanban-mock {
+      width: 820px;
+      margin: 0 auto;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      text-align: left;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .kanban-col {
+      flex: 1;
+      border-radius: 18px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .kanban-col-header {
+      padding: 12px 16px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-quote .kanban-col-header   { background: rgba(100,116,139,0.9); color: #f8fafc; }
+    .col-print .kanban-col-header   { background: rgba(59,143,212,0.9);  color: white; }
+    .col-done  .kanban-col-header   { background: rgba(34,197,94,0.9);   color: white; }
+
+    .kanban-col-body {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: none;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-radius: 0 0 18px 18px;
+      min-height: 220px;
+    }
+
+    .kanban-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      backdrop-filter: blur(6px);
+    }
+
+    .kanban-card-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .kanban-card-meta {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kanban-card-value {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .kanban-card-tag {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-top: 6px;
+    }
+
+    .tag-pago    { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+    .tag-pend    { background: rgba(245,148,58,0.15); color: #fdba74; border: 1px solid rgba(245,148,58,0.3); }
+
+    .kanban-card.highlight {
+      border-color: rgba(59,143,212,0.5);
+      background: rgba(59,143,212,0.12);
+      box-shadow: 0 0 0 1px rgba(59,143,212,0.3);
+    }
+
+    .col-badge {
+      background: rgba(255,255,255,0.25);
+      border-radius: 100px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+
+    /* ─── Kanban Mock (Pixel-Perfect SaaS Clone) ─── */
+    .kanban-mock {
+      width: 900px;
+      margin: 0 auto;
+      display: flex;
+      gap: 16px;
+      padding: 20px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      font-family: 'Outfit', sans-serif;
+      text-align: left;
+    }
+    .k-col {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .k-col-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .k-col-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0D1117;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex: 1;
+    }
+    .col-badge {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      border-radius: 100px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    .k-col-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .k-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      cursor: grab;
+      position: relative;
+    }
+    .k-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 4px;
+      border-radius: 10px 0 0 10px;
+    }
+    .k-card.status-orcamento::before { background: #94a3b8; }
+    .k-card.status-producao::before { background: #3b8fd4; }
+    .k-card.status-concluido::before { background: #22c55e; }
+    
+    .k-card-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .k-card-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #3b8fd4;
+      background: rgba(59,143,212,0.1);
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+    .k-card-due {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .k-card-client {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #0D1117;
+      margin-bottom: 2px;
+    }
+    .k-card-desc {
+      font-size: 0.78rem;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .k-card-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 12px;
+    }
+    .k-card-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #0D1117;
+    }
+
+    /* ─── List Mock (Pixel-Perfect SaaS Clone) ─── */
+    .list-mock {
+      width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      font-family: 'Outfit', sans-serif;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .ord-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .ord-table th {
+      background: #f8fafc;
+      padding: 14px 16px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .ord-table td {
+      padding: 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #0D1117;
+      vertical-align: middle;
+    }
+    .ord-table tr:hover td {
+      background: #f8fafc;
+    }
+    .ord-table tr:last-child td { border-bottom: none; }
+    
+    .lm-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #3b8fd4;
+      background: rgba(59,143,212,0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .lm-client-name { font-weight: 800; font-size: 0.95rem; color: #0D1117; }
+    .lm-client-sub { font-size: 0.78rem; color: #64748b; font-weight: 500; margin-top: 2px; }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+    
+    .st-orc { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+    .st-orc .badge-dot { background: #94a3b8; }
+    
+    .st-prod { background: rgba(59,143,212,0.1); color: #3b8fd4; border-color: rgba(59,143,212,0.2); }
+    .st-prod .badge-dot { background: #3b8fd4; }
+    
+    .st-done { background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.2); }
+    .st-done .badge-dot { background: #22c55e; }
+    
+    .pay-pago { background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.2); }
+    .pay-pend { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.2); }
+    
+    .lm-due { font-size: 0.82rem; color: #64748b; font-weight: 600; }
+    .lm-due.warn { color: #f59e0b; font-weight: 800; }
+    .lm-due.late { color: #ef4444; font-weight: 800; }
+    
+    .lm-total {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #0D1117;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      justify-content: center;
+    }
+
+    .stat-pill {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stat-pill-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: white;
+    }
+
+    .stat-pill-label {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 600;
+    }
+
+    .slides-container { display: flex; flex-direction: column; gap: 40px; align-items: center; width: 100%; }
+
+    /* Caption box */
+    .caption-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 520px; flex-shrink: 0; align-self: flex-start; position: sticky; top: 20px; }
+    .caption-box h2 { margin-top: 0; color: var(--dark); font-size: 1.2rem; }
+    .copy-btn { background: var(--blue); color: white; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 14px; font-family: inherit; font-size: 0.9rem; }
+    .copy-btn:hover { background: #1d4ed8; }
+    textarea { width: 100%; height: 500px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: inherit; font-size: 0.88rem; line-height: 1.7; resize: none; box-sizing: border-box; color: #334155; }
+
+    [data-lang] { display: none; }
+    [data-lang].active { display: block; }
+
+    /* ─── Narrator Audio Player ─── */
+    @keyframes speakerPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.2); opacity: 0.7; }
+    }
+    @keyframes narratorSlideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .narrator-trigger {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #F5943A, #f59e0b);
+      color: white;
+      border: none;
+      border-radius: 100px;
+      padding: 13px 24px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(245,148,58,0.45);
+      transition: all 0.25s ease;
+      letter-spacing: 0.2px;
+    }
+    .narrator-trigger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(245,148,58,0.55);
+    }
+    .narrator-trigger .nt-icon { font-size: 1.15rem; }
+
+    .narrator-player {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 1001;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 6px 20px rgba(245,148,58,0.1);
+      width: 330px;
+      overflow: hidden;
+      flex-direction: column;
+      border: 1.5px solid rgba(245,148,58,0.12);
+      display: none;
+    }
+    .narrator-player.open {
+      display: flex;
+      animation: narratorSlideIn 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .narrator-header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .narrator-header-left { display: flex; align-items: center; gap: 10px; }
+    .narrator-icon {
+      font-size: 1.25rem;
+      display: inline-block;
+      line-height: 1;
+    }
+    .narrator-icon.playing { animation: speakerPulse 0.8s ease-in-out infinite; }
+    .narrator-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+    }
+    .narrator-close {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: rgba(255,255,255,0.6);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .narrator-close:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    .narrator-body { padding: 18px 18px 16px; }
+
+    .narrator-slide-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .narrator-slide-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 195px;
+    }
+    .narrator-slide-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 3px 10px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+
+    .narrator-bar {
+      width: 100%;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 100px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .narrator-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #F5943A, #f59e0b);
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      width: 0%;
+    }
+
+    .narrator-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .narrator-btn {
+      font-family: 'Outfit', sans-serif;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+    .narrator-btn:active { transform: scale(0.92); }
+    .narrator-btn-nav {
+      width: 38px;
+      height: 40px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 0.8rem;
+    }
+    .narrator-btn-nav:hover { background: #e2e8f0; color: #1e293b; }
+    .narrator-btn-play {
+      flex: 1;
+      height: 40px;
+      background: linear-gradient(135deg, #F5943A, #f59e0b);
+      color: white;
+      font-size: 0.88rem;
+      box-shadow: 0 4px 14px rgba(245,148,58,0.35);
+    }
+    .narrator-btn-play:hover {
+      box-shadow: 0 6px 20px rgba(245,148,58,0.5);
+      transform: translateY(-1px);
+    }
+    .narrator-btn-stop {
+      width: 38px;
+      height: 40px;
+      background: #fee2e2;
+      color: #ef4444;
+      font-size: 0.8rem;
+    }
+    .narrator-btn-stop:hover { background: #fecaca; }
+
+    .narrator-hint {
+      text-align: center;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      margin-top: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Language Switcher -->
+<div class="lang-switcher">
+  <span>🌍 Idioma:</span>
+  <button class="lang-btn active" onclick="setLang('br', this)">🇧🇷 PT-BR</button>
+  <button class="lang-btn" onclick="setLang('pt', this)">🇵🇹 PT-PT</button>
+  <button class="lang-btn" onclick="setLang('en', this)">🇬🇧 EN</button>
+  <button class="lang-btn" onclick="setLang('es', this)">🇪🇸 ES</button>
+</div>
+
+<div class="page-wrapper">
+
+  <!-- SLIDES -->
+  <div style="width: 100%;">
+    <div class="slides-container">
+
+      <!-- ===== SLIDE 1: HOOK ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb op"></div>
+        <div class="content">
+          <div class="badge" data-key="badge">Funcionalidade #2</div>
+
+          <div data-lang="br" class="active">
+            <h1>"Onde está o<br>pedido <span class="hl-orange">PED-0047?</span>" 🤔</h1>
+            <p class="sub">Se você precisa vasculhar o WhatsApp, planilhas e post-its pra responder isso,<br>o 3DZAAP tem algo pra te mostrar.</p>
+          </div>
+          <div data-lang="pt">
+            <h1>"Onde está o<br>pedido <span class="hl-orange">PED-0047?</span>" 🤔</h1>
+            <p class="sub">Se tens de vasculhar o WhatsApp, folhas de cálculo e post-its para responder a isso,<br>o 3DZAAP tem algo para te mostrar.</p>
+          </div>
+          <div data-lang="en">
+            <h1>"Where is<br>order <span class="hl-orange">PED-0047?</span>" 🤔</h1>
+            <p class="sub">If you have to dig through WhatsApp, spreadsheets and sticky notes to answer that,<br>3DZAAP has something to show you.</p>
+          </div>
+          <div data-lang="es">
+            <h1>"¿Dónde está<br>el pedido <span class="hl-orange">PED-0047?</span>" 🤔</h1>
+            <p class="sub">Si tienes que revisar WhatsApp, hojas de cálculo y post-its para responder eso,<br>3DZAAP tiene algo que mostrarte.</p>
+          </div>
+
+          <p style="font-size: 1.8rem; color: #64748b; margin: 0;">👉 <span data-key="swipe"></span></p>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 2: PROBLEMA ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="content">
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 4.8rem;">Gerir pedidos<br>no <span class="hl">improviso</span><br>tem um custo.</h1>
+            <p class="sub">Pedidos perdidos. Prazos esquecidos. Clientes insatisfeitos. E você sem saber o que está em produção agora mesmo.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 4.8rem;">Gerir pedidos<br>no <span class="hl">improviso</span><br>tem um custo.</h1>
+            <p class="sub">Pedidos perdidos. Prazos esquecidos. Clientes insatisfeitos. E tu sem saber o que está em produção neste momento.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 4.8rem;">Managing orders<br><span class="hl">on the fly</span><br>has a cost.</h1>
+            <p class="sub">Lost orders. Missed deadlines. Unhappy clients. And no idea what's actually in production right now.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 4.8rem;">Gestionar pedidos<br>de forma <span class="hl">improvisada</span><br>tiene un coste.</h1>
+            <p class="sub">Pedidos perdidos. Plazos olvidados. Clientes insatisfechos. Y sin saber qué está en producción ahora mismo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 3: A LISTA ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb op"></div>
+        <div class="content">
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 5rem; margin-bottom: 20px;" data-key="s3_title">A sua lista de<br><span class="hl-blue">Pedidos.</span> 📋</h1>
+            <p class="sub" data-key="s3_sub">Visão global. Saiba rapidamente quem já pagou, totais orçamentados e quais prazos precisam de atenção.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 5rem; margin-bottom: 20px;" data-key="s3_title">A sua lista de<br><span class="hl-blue">Pedidos.</span> 📋</h1>
+            <p class="sub" data-key="s3_sub">Visão global. Saiba rapidamente quem já pagou, totais orçamentados e quais prazos precisam de atenção.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 5rem; margin-bottom: 20px;" data-key="s3_title">Your Orders<br><span class="hl-blue">List.</span> 📋</h1>
+            <p class="sub" data-key="s3_sub">Global overview. Quickly know who paid, totals, and which deadlines need attention.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 5rem; margin-bottom: 20px;" data-key="s3_title">Tu lista de<br><span class="hl-blue">Pedidos.</span> 📋</h1>
+            <p class="sub" data-key="s3_sub">Visión global. Sabe rápidamente quién pagó, totales y qué plazos necesitan atención.</p>
+          </div>
+
+          <!-- List Mock -->
+          <div class="list-mock" style="margin-top: 30px;">
+            <table class="ord-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left">Nº</th>
+                  <th style="text-align:left">Cliente</th>
+                  <th style="text-align:left">Estado</th>
+                  <th style="text-align:left">Pagamento</th>
+                  <th style="text-align:left">Prazo</th>
+                  <th style="text-align:right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="lm-id">ORD-2094</div></td>
+                  <td>
+                    <div class="lm-client-name">João Nogueira</div>
+                    <div class="lm-client-sub">joao.nogueira@email.com</div>
+                  </td>
+                  <td><div class="badge st-orc"><div class="badge-dot"></div> Orçamento</div></td>
+                  <td><div class="badge pay-pend"><i class="ph-bold ph-clock"></i> Pendente</div></td>
+                  <td><div class="lm-due warn">12 Out (Amanhã)</div></td>
+                  <td style="text-align:right"><div class="lm-total">45,00 €</div></td>
+                </tr>
+                <tr>
+                  <td><div class="lm-id">ORD-2093</div></td>
+                  <td>
+                    <div class="lm-client-name">Margarida Silva</div>
+                    <div class="lm-client-sub">msilva@design.pt</div>
+                  </td>
+                  <td><div class="badge st-prod"><div class="badge-dot"></div> Em Produção</div></td>
+                  <td><div class="badge pay-pago"><i class="ph-bold ph-check"></i> Pago</div></td>
+                  <td><div class="lm-due">15 Out</div></td>
+                  <td style="text-align:right"><div class="lm-total">112,50 €</div></td>
+                </tr>
+                <tr>
+                  <td><div class="lm-id">ORD-2092</div></td>
+                  <td>
+                    <div class="lm-client-name">Tiago Fernandes</div>
+                    <div class="lm-client-sub">+351 912 345 678</div>
+                  </td>
+                  <td><div class="badge st-done"><div class="badge-dot"></div> Concluído</div></td>
+                  <td><div class="badge pay-pago"><i class="ph-bold ph-check"></i> Pago</div></td>
+                  <td><div class="lm-due">10 Out</div></td>
+                  <td style="text-align:right"><div class="lm-total">28,90 €</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 4: MOCK KANBAN ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1" style="opacity: 0.12;"></div>
+        <div class="orb op" style="opacity: 0.12;"></div>
+        <div class="content">
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 3.8rem; margin-bottom: 10px;" data-key="s4_title">O Kanban <span class="hl-orange">Interativo.</span> 🎯</h1>
+            <p class="sub" style="font-size: 1.6rem; margin-bottom: 30px;" data-key="s4_sub">Arraste cartões para atualizar. O sistema alerta-o visualmente com cores em cartões com prazos apertados ou atrasados!</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 3.8rem; margin-bottom: 10px;" data-key="s4_title">O Kanban <span class="hl-orange">Interativo.</span> 🎯</h1>
+            <p class="sub" style="font-size: 1.6rem; margin-bottom: 30px;" data-key="s4_sub">Arraste cartões para atualizar. O sistema alerta-o visualmente com cores em cartões com prazos apertados ou atrasados!</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 3.8rem; margin-bottom: 10px;" data-key="s4_title">The Interactive <span class="hl-orange">Kanban.</span> 🎯</h1>
+            <p class="sub" style="font-size: 1.6rem; margin-bottom: 30px;" data-key="s4_sub">Drag & drop to update. Deadlines turn yellow when closing in, and red when overdue!</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 3.8rem; margin-bottom: 10px;" data-key="s4_title">El Kanban <span class="hl-orange">Interactivo.</span> 🎯</h1>
+            <p class="sub" style="font-size: 1.6rem; margin-bottom: 30px;" data-key="s4_sub">Arrastra para actualizar. ¡Los plazos cambian a amarillo si se acercan y a rojo si vencen!</p>
+          </div>
+
+          <div class="kanban-mock">
+            <!-- Orçamento -->
+            <div class="k-col">
+              <div class="k-col-head">
+                <i class="ph-bold ph-hourglass" style="color: #64748b"></i>
+                <div class="k-col-title" data-i18n="p2.k.col_quote">Orçamento</div>
+                <div class="col-badge">1</div>
+              </div>
+              <div class="k-col-body">
+                <div class="k-card status-orcamento">
+                  <div class="k-card-head">
+                    <div class="k-card-id">ORD-2094</div>
+                    <div class="k-card-due" style="color:#f59e0b"><i class="ph-bold ph-clock"></i> Amanhã</div>
+                  </div>
+                  <div class="k-card-client">João Nogueira</div>
+                  <div class="k-card-desc">2x Suporte para Monitor</div>
+                  <div class="k-card-foot">
+                    <div class="badge pay-pend" style="background:rgba(245,158,11,0.1); color:#f59e0b; border-color:rgba(245,158,11,0.2)"><i class="ph-bold ph-clock"></i> Pendente</div>
+                    <div class="k-card-price">45,00 €</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Produção -->
+            <div class="k-col">
+              <div class="k-col-head">
+                <i class="ph-bold ph-printer" style="color: #3b8fd4"></i>
+                <div class="k-col-title" data-i18n="p2.k.col_prod">Em Produção</div>
+                <div class="col-badge">1</div>
+              </div>
+              <div class="k-col-body">
+                <div class="k-card status-producao">
+                  <div class="k-card-head">
+                    <div class="k-card-id">ORD-2093</div>
+                    <div class="k-card-due">15 Out</div>
+                  </div>
+                  <div class="k-card-client">Margarida Silva</div>
+                  <div class="k-card-desc">1x Miniatura RPG (Resina)</div>
+                  <div class="k-card-foot">
+                    <div class="badge pay-pago" style="background:rgba(34,197,94,0.1); color:#22c55e; border-color:rgba(34,197,94,0.2)"><i class="ph-bold ph-check"></i> Pago</div>
+                    <div class="k-card-price">112,50 €</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Concluído -->
+            <div class="k-col">
+              <div class="k-col-head">
+                <i class="ph-bold ph-flag-checkered" style="color: #22c55e"></i>
+                <div class="k-col-title" data-i18n="p2.k.col_done">Concluído</div>
+                <div class="col-badge">1</div>
+              </div>
+              <div class="k-col-body">
+                <div class="k-card status-concluido">
+                  <div class="k-card-head">
+                    <div class="k-card-id">ORD-2092</div>
+                    <div class="k-card-due">10 Out</div>
+                  </div>
+                  <div class="k-card-client">Tiago Fernandes</div>
+                  <div class="k-card-desc">4x Peça de Reposição</div>
+                  <div class="k-card-foot">
+                    <div class="badge pay-pago" style="background:rgba(34,197,94,0.1); color:#22c55e; border-color:rgba(34,197,94,0.2)"><i class="ph-bold ph-check"></i> Pago</div>
+                    <div class="k-card-price">28,90 €</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Strip -->
+          <div class="stats-strip">
+            <div class="stat-pill">
+              <span class="stat-pill-value">9</span>
+              <span class="stat-pill-label" data-key="stat1"></span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-value" style="color: var(--green);">€435</span>
+              <span class="stat-pill-label" data-key="stat2"></span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-value" style="color: var(--orange);">3</span>
+              <span class="stat-pill-label" data-key="stat3"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 5: BENEFÍCIOS ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb op" style="right: -100px; left: auto; top: -100px; bottom: auto;"></div>
+        <div class="content">
+          <div data-lang="br" class="active"><h1 style="font-size: 4.5rem;">O resultado<br>para o seu negócio:</h1></div>
+          <div data-lang="pt"><h1 style="font-size: 4.5rem;">O resultado<br>para o teu negócio:</h1></div>
+          <div data-lang="en"><h1 style="font-size: 4.5rem;">The result<br>for your business:</h1></div>
+          <div data-lang="es"><h1 style="font-size: 4.5rem;">El resultado<br>para tu negocio:</h1></div>
+
+          <div style="display: flex; flex-direction: column; gap: 25px; margin-top: 40px; text-align: left;">
+            <div class="benefit-card bc-green">
+              <i class="ph-bold ph-list-checks" style="font-size: 3rem; color: var(--green); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b1_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b1_desc"></p>
+              </div>
+            </div>
+            <div class="benefit-card bc-orange">
+              <i class="ph-bold ph-currency-circle-dollar" style="font-size: 3rem; color: var(--orange); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b2_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b2_desc"></p>
+              </div>
+            </div>
+            <div class="benefit-card bc-blue">
+              <i class="ph-bold ph-rocket-launch" style="font-size: 3rem; color: var(--blue); flex-shrink: 0;"></i>
+              <div>
+                <p style="margin:0; font-size: 2rem; font-weight: 800; color: white;" data-key="b3_title"></p>
+                <p style="margin: 6px 0 0; font-size: 1.5rem; color: #94a3b8;" data-key="b3_desc"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SLIDE 6: CTA ===== -->
+      <div class="ig-post-wrapper">
+        <div class="orb o1"></div>
+        <div class="orb op"></div>
+        <div class="content">
+          <div style="margin-bottom: 30px;">
+            <span style="color: var(--blue); font-size: 3rem; font-weight: 900;">3D</span><span style="color: var(--orange); font-size: 3rem; font-weight: 900;">ZAAP</span><br>
+            <span style="font-size: 2rem; font-weight: 600; color: white;">Print Manager</span>
+          </div>
+          <div data-lang="br" class="active">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Experimente<br><span class="hl-green">7 Dias Grátis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Sem cartão de crédito.</p>
+          </div>
+          <div data-lang="pt">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Experimenta<br><span class="hl-green">7 Dias Grátis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Sem cartão de crédito.</p>
+          </div>
+          <div data-lang="en">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Try it<br><span class="hl-green">Free for 7 Days.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">No credit card required.</p>
+          </div>
+          <div data-lang="es">
+            <h1 style="font-size: 5.5rem; margin-bottom: 10px;">Pruébalo<br><span class="hl-green">7 Días Gratis.</span></h1>
+            <p class="sub" style="font-size: 2rem; color: #cbd5e1;">Sin tarjeta de crédito.</p>
+          </div>
+          <div class="btn-cta">https://app.3dzaap.com</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CAPTION BOX -->
+  <div class="caption-box">
+    <h2>📋 <span data-key="caption_title">Legenda — Copia e Cola</span></h2>
+    <button class="copy-btn" onclick="copyCaption()"><span data-key="copy_btn">Copiar Legenda</span></button>
+    <textarea id="captionText" readonly></textarea>
+  </div>
+
+</div>
+
+<script>
+  const translations = {
+    br: {
+      badge: "Funcionalidade #2",
+      swipe: "Arrasta para o lado",
+      s3_title: "A sua lista de<br><span class=\"hl-blue\">Pedidos.</span> 📋",
+      s3_sub: "Visão global. Saiba rapidamente quem já pagou, totais orçamentados e quais prazos precisam de atenção.",
+      s4_title: "O Kanban <span class=\"hl-orange\">Interativo.</span> 🎯",
+      s4_sub: "Arraste cartões para atualizar o status. O sistema alerta-o visualmente em cartões com prazos apertados ou atrasados!",
+      th_id: "PEDIDO", th_client: "CLIENTE", th_status: "ESTADO", th_due: "PRAZO", th_pay: "PAGAMENTO", th_total: "TOTAL",
+      col1: "Orçamento", col2: "Em Produção", col3: "Concluído",
+      tag_pago: "✓ Pago", tag_pend: "⏳ Pendente",
+      stat_warn: "A esgotar", stat_late: "Atrasados",
+      b1_title: "Visão total do negócio", b1_desc: "Sabes exatamente o que está em cada fase sem procurar.",
+      b2_title: "Zero pedidos esquecidos", b2_desc: "Nenhum orçamento perdido. Nenhum prazo ignorado.",
+      b3_title: "Escala com confiança", b3_desc: "Quando o volume cresce, o controlo mantém-se. Sempre.",
+      caption_title: "Legenda BR — Copia e Cola", copy_btn: "Copiar Legenda",
+      caption: `"Onde está o pedido PED-0047?" 🤔
+
+Se você precisa vasculhar WhatsApp, planilhas e post-its pra responder isso, chegou a hora de mudar.
+
+O 3DZAAP Print Manager tem um Módulo de Pedidos e Kanban visuais — do orçamento à entrega, tudo organizado numa única tela.
+
+Você sabe, em tempo real:
+📋 Como estão os pagamentos
+🎯 Qual etapa de produção cada peça está
+⏰ Avisos automáticos (amarelo e vermelho) para prazos!
+
+O resultado pro seu negócio?
+✅ Visão total — sem planilha, sem post-it
+✅ Zero pedidos esquecidos ou atrasados
+✅ Escala com confiança quando o volume crescer
+
+E já está disponível no trial gratuito de 7 dias.
+
+👉 Experimente agora em https://app.3dzaap.com (link na bio)
+
+#PrintManager #Impressão3D #Maker3D #PrintFarm #GestãoDePedidos`
+    },
+    pt: {
+      badge: "Funcionalidade #2",
+      swipe: "Arrasta para o lado",
+      s3_title: "A sua lista de<br><span class=\"hl-blue\">Pedidos.</span> 📋",
+      s3_sub: "Visão global. Sabe rapidamente quem já pagou, totais orçamentados e quais prazos precisam de atenção.",
+      s4_title: "O Kanban <span class=\"hl-orange\">Interativo.</span> 🎯",
+      s4_sub: "Arraste cartões para atualizar o status. O sistema alerta-te visualmente em cartões com prazos apertados ou atrasados!",
+      th_id: "PEDIDO", th_client: "CLIENTE", th_status: "ESTADO", th_due: "PRAZO", th_pay: "PAGAMENTO", th_total: "TOTAL",
+      col1: "Orçamento", col2: "Em Produção", col3: "Concluído",
+      tag_pago: "✓ Pago", tag_pend: "⏳ Pendente",
+      stat_warn: "A esgotar", stat_late: "Atrasados",
+      b1_title: "Visão total do negócio", b1_desc: "Sabes exatamente o que está em cada fase sem ter de procurar.",
+      b2_title: "Zero pedidos esquecidos", b2_desc: "Nenhum orçamento perdido. Nenhum prazo ignorado.",
+      b3_title: "Escala com confiança", b3_desc: "Quando o volume cresce, o controlo mantém-se. Sempre.",
+      caption_title: "Legenda PT-PT — Copia e Cola", copy_btn: "Copiar Legenda",
+      caption: `"Onde está o pedido PED-0047?" 🤔
+
+Se tens de vasculhar o WhatsApp, folhas de cálculo e post-its para responder a isso, chegou a hora de mudar.
+
+O 3DZAAP Print Manager tem um Módulo de Pedidos e Kanban visuais — do orçamento à entrega, tudo organizado num único ecrã.
+
+Sabes, em tempo real:
+📋 Como estão os pagamentos
+🎯 Em que etapa de produção cada peça está
+⏰ Avisos automáticos (amarelo e vermelho) para os prazos!
+
+O resultado para o teu negócio?
+✅ Visão total — sem folhas de cálculo, sem post-its
+✅ Zero pedidos esquecidos ou atrasados
+✅ Escalas com confiança quando o volume crescer
+
+E já está disponível no trial gratuito de 7 dias.
+
+👉 Experimenta agora em https://app.3dzaap.com (link na bio)
+
+#PrintManager #Impressão3D #Maker3D #PrintFarm #GestãoDePedidos`
+    },
+    en: {
+      badge: "Feature #2",
+      swipe: "Swipe to see more",
+      s3_title: "Your Orders<br><span class=\"hl-blue\">List.</span> 📋",
+      s3_sub: "Global overview. Quickly know who paid, budget totals, and which deadlines need attention.",
+      s4_title: "The Interactive <span class=\"hl-orange\">Kanban.</span> 🎯",
+      s4_sub: "Drag & drop to update. Deadlines turn yellow when closing in, and red when overdue!",
+      th_id: "ORDER", th_client: "CLIENT", th_status: "STATUS", th_due: "DEADLINE", th_pay: "PAYMENT", th_total: "TOTAL",
+      col1: "Quote", col2: "In Production", col3: "Completed",
+      tag_pago: "✓ Paid", tag_pend: "⏳ Pending",
+      stat_warn: "Closing in", stat_late: "Overdue",
+      b1_title: "Full business visibility", b1_desc: "Know exactly what's at every stage without searching.",
+      b2_title: "Zero forgotten orders", b2_desc: "No lost quotes. No missed deadlines. Ever.",
+      b3_title: "Scale with confidence", b3_desc: "As volume grows, control stays. Always.",
+      caption_title: "Caption EN — Copy & Paste", copy_btn: "Copy Caption",
+      caption: `"Where is order PED-0047?" 🤔
+
+If you have to dig through WhatsApp, spreadsheets and sticky notes to answer that, it's time to change.
+
+3DZAAP Print Manager has a visual Order Module and Kanban — from quote to delivery, everything organised in a single screen.
+
+You know, in real time:
+📋 Payment statuses at a glance
+🎯 Which stage of production each part is in
+⏰ Automatic visual alerts (yellow/red) for deadlines!
+
+The result for your business?
+✅ Full visibility — no spreadsheets, no sticky notes
+✅ Zero forgotten or late orders
+✅ Scale with confidence as your volume grows
+
+And it's already available on the free 7-day trial.
+
+👉 Try it now at https://app.3dzaap.com (link in bio)
+
+#PrintManager #3DPrinting #Maker3D #PrintFarm #OrderManagement`
+    },
+    es: {
+      badge: "Funcionalidad #2",
+      swipe: "Desliza para ver más",
+      s3_title: "Tu lista de<br><span class=\"hl-blue\">Pedidos.</span> 📋",
+      s3_sub: "Visión global. Sabrás rápidamente quién pagó, totales y qué plazos necesitan atención.",
+      s4_title: "El Kanban <span class=\"hl-orange\">Interactivo.</span> 🎯",
+      s4_sub: "Arrastra para actualizar. ¡Los plazos cambian a amarillo si se acercan y a rojo si vencen!",
+      th_id: "PEDIDO", th_client: "CLIENTE", th_status: "ESTADO", th_due: "PLAZO", th_pay: "PAGO", th_total: "TOTAL",
+      col1: "Presupuesto", col2: "En Producción", col3: "Completado",
+      tag_pago: "✓ Pagado", tag_pend: "⏳ Pendiente",
+      stat_warn: "A punto", stat_late: "Retrasados",
+      b1_title: "Visión total del negocio", b1_desc: "Sabes exactamente qué hay en cada fase sin buscar.",
+      b2_title: "Cero pedidos olvidados", b2_desc: "Ningún presupuesto perdido. Ningún plazo ignorado.",
+      b3_title: "Escala con confianza", b3_desc: "Cuando el volumen crece, el control se mantiene. Siempre.",
+      caption_title: "Copy ES — Copiar y Pegar", copy_btn: "Copiar Texto",
+      caption: `"¿Dónde está el pedido PED-0047?" 🤔
+
+Si tienes que revisar WhatsApp, hojas de cálculo y post-its para responder eso, es hora de cambiar.
+
+3DZAAP Print Manager tiene un Módulo de Pedidos y Kanban visual — del presupuesto a la entrega, todo en una pantalla.
+
+Sabes, en tiempo real:
+📋 Cómo están los pagos
+🎯 En qué etapa de producción está cada pieza
+⏰ Avisos automáticos (amarillo/rojo) para los plazos.
+
+¿El resultado para tu negocio?
+✅ Visión total — sin hojas de cálculo, sin post-its
+✅ Cero pedidos olvidados o retrasados
+✅ Escala con confianza cuando el volumen crezca
+
+Y ya está disponible en el trial gratuito de 7 días.
+
+👉 Pruébalo ahora en https://app.3dzaap.com (link en bio)
+
+#PrintManager #Impresión3D #Maker3D #PrintFarm #GestiónDePedidos`
+    }
+  };
+
+  let currentLang = 'br';
+
+  function setLang(lang, btn) {
+    currentLang = lang;
+    if (btn) {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    document.querySelectorAll('[data-lang]').forEach(el => {
+      el.classList.remove('active');
+      if (el.getAttribute('data-lang') === lang) el.classList.add('active');
+    });
+    const t = translations[lang];
+    document.querySelectorAll('[data-key]').forEach(el => {
+      const key = el.getAttribute('data-key');
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    document.getElementById('captionText').value = t.caption;
+  }
+
+  function copyCaption() {
+    var el = document.getElementById("captionText");
+    el.select();
+    navigator.clipboard.writeText(el.value);
+    var btn = document.querySelector('.copy-btn');
+    btn.style.background = "#22c55e";
+    setTimeout(() => { btn.style.background = "#3B8FD4"; }, 2000);
+  }
+
+  window.addEventListener('load', () => {
+    const defaultBtn = document.querySelector('.lang-btn');
+    setLang('br', defaultBtn);
+  });
+
+  // ─── NARRATOR ───────────────────────────────────────────────
+  const narrations = {
+    br: [
+      'Onde está o pedido PED-0047? Se você precisa vasculhar o WhatsApp, planilhas e post-its pra responder isso, o 3DZAAP tem algo pra te mostrar. Arrasta para o lado!',
+      'Gerir pedidos no improviso tem um custo. Pedidos perdidos. Prazos esquecidos. Clientes insatisfeitos. E você sem saber o que está em produção agora mesmo.',
+      'Apresentamos a sua nova Lista de Pedidos! Visão global para saber rapidamente quem já pagou, totais orçamentados e quais prazos precisam da sua atenção.',
+      'E o Kanban Interativo! Arraste cartões para atualizar o status. O sistema pinta de amarelo os cartões com prazos apertados e de vermelho os atrasados! Nunca mais perca um prazo.',
+      'O resultado pro seu negócio: visão total do negócio sem planilha e sem post-it. Zero pedidos esquecidos ou atrasados. E escala com confiança quando o volume crescer.',
+      '3DZAAP Print Manager. Experimente 7 dias grátis. Sem cartão de crédito. Acesse agora em app ponto 3D zaap ponto com.'
+    ],
+    pt: [
+      'Onde está o pedido PED-0047? Se tens de vasculhar o WhatsApp, folhas de cálculo e post-its para responder a isso, o 3DZAAP tem algo para te mostrar. Arrasta para o lado!',
+      'Gerir pedidos no improviso tem um custo. Pedidos perdidos. Prazos esquecidos. Clientes insatisfeitos. E tu sem saber o que está em produção neste momento.',
+      'Apresentamos a tua nova Lista de Pedidos! Visão global para saberes rapidamente quem já pagou, totais orçamentados e quais prazos precisam da tua atenção.',
+      'E o Kanban Interativo! Arrastar e soltar para atualizar o status. O sistema avisa-te de prazos apertados com cor amarela ou vermelha para atrasos. Nunca mais percas um prazo.',
+      'O resultado para o teu negócio: visão total sem folhas de cálculo e sem post-its. Zero pedidos esquecidos ou atrasados. E escalas com confiança quando o volume crescer.',
+      '3DZAAP Print Manager. Experimenta 7 dias grátis. Sem cartão de crédito. Experimenta agora em app ponto 3D zaap ponto com.'
+    ],
+    en: [
+      'Where is order PED-0047? If you have to dig through WhatsApp, spreadsheets and sticky notes to answer that, 3DZAAP has something to show you. Swipe to see more!',
+      'Managing orders on the fly has a cost. Lost orders. Missed deadlines. Unhappy clients. And no idea what is actually in production right now.',
+      'Introducing your new Orders List! A global overview to quickly know who paid, budget totals, and which deadlines need your attention.',
+      'And the Interactive Kanban! Drag and drop to update. Deadlines turn yellow when closing in, and red when overdue! Never miss a deadline again.',
+      'The result for your business: full visibility with no spreadsheets and no sticky notes. Zero forgotten or late orders. And scale with confidence as your volume grows.',
+      '3DZAAP Print Manager. Try it free for 7 days. No credit card required. Try it now at app dot 3D zaap dot com.'
+    ],
+    es: [
+      '¿Dónde está el pedido PED-0047? Si tienes que revisar WhatsApp, hojas de cálculo y post-its para responder eso, 3DZAAP tiene algo que mostrarte. ¡Desliza para ver más!',
+      'Gestionar pedidos de forma improvisada tiene un coste. Pedidos perdidos. Plazos olvidados. Clientes insatisfechos. Y sin saber qué está en producción ahora mismo.',
+      '¡Presentamos tu nueva Lista de Pedidos! Visión global para saber rápidamente quién pagó, los totales y qué plazos necesitan tu atención.',
+      '¡Y el Kanban Interactivo! Arrastra y suelta para actualizar. ¡Los plazos cambian a amarillo si se acercan y a rojo si vencen! No vuelvas a perder un plazo.',
+      'El resultado para tu negocio: visión total sin hojas de cálculo y sin post-its. Cero pedidos olvidados o retrasados. Y escala con confianza cuando el volumen crezca.',
+      '3DZAAP Print Manager. Pruébalo gratis durante 7 días. Sin tarjeta de crédito. Pruébalo ahora en app punto 3D zaap punto com.'
+    ]
+  };
+
+  const narratorSlideNames = {
+    br: ['Hook 🤔', 'O Problema', 'A Lista', 'O Kanban', 'Benefícios', 'Acesso Grátis'],
+    pt: ['Hook 🤔', 'O Problema', 'A Lista', 'O Kanban', 'Benefícios', 'Acesso Grátis'],
+    en: ['Hook 🤔', 'The Problem', 'The List', 'The Kanban', 'Benefits', 'Free Trial'],
+    es: ['Hook 🤔', 'El Problema', 'La Lista', 'El Kanban', 'Beneficios', 'Prueba Gratis']
+  };
+
+  const narrator = {
+    currentSlide: 0,
+    isPlaying: false,
+    isPaused: false,
+    langMap: { br: 'pt-BR', pt: 'pt-PT', en: 'en-US', es: 'es-ES' },
+
+    speak(text) {
+      speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang  = this.langMap[currentLang] || 'pt-BR';
+      utt.rate  = 0.93;
+      utt.pitch = 1;
+      utt.onstart = () => { this.isPlaying = true; this.isPaused = false; this.updateUI(); };
+      utt.onend   = () => {
+        setTimeout(() => {
+          const slides = narrations[currentLang] || [];
+          if (this.isPlaying && this.currentSlide < slides.length - 1) {
+            this.currentSlide++;
+            this.updateUI();
+            this.speak(slides[this.currentSlide]);
+          } else {
+            this.isPlaying = false;
+            this.isPaused  = false;
+            this.updateUI();
+          }
+        }, 900);
+      };
+      utt.onerror = () => { this.isPlaying = false; this.updateUI(); };
+      speechSynthesis.speak(utt);
+    },
+
+    playPause() {
+      if (this.isPlaying && !this.isPaused) {
+        speechSynthesis.pause();
+        this.isPaused = true;
+        this.updateUI();
+      } else if (this.isPaused) {
+        speechSynthesis.resume();
+        this.isPaused = false;
+        this.updateUI();
+      } else {
+        const slides = narrations[currentLang] || [];
+        if (slides[this.currentSlide]) this.speak(slides[this.currentSlide]);
+      }
+    },
+
+    stop() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      this.currentSlide = 0;
+      this.updateUI();
+    },
+
+    prev() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      this.currentSlide = Math.max(0, this.currentSlide - 1);
+      this.updateUI();
+    },
+
+    next() {
+      speechSynthesis.cancel();
+      this.isPlaying    = false;
+      this.isPaused     = false;
+      const max = (narrations[currentLang] || []).length - 1;
+      this.currentSlide = Math.min(max, this.currentSlide + 1);
+      this.updateUI();
+    },
+
+    updateUI() {
+      const slides = narrations[currentLang] || [];
+      const total  = slides.length;
+      const idx    = this.currentSlide;
+      const names  = narratorSlideNames[currentLang] || narratorSlideNames.br;
+
+      document.getElementById('narratorSlideCount').textContent = `${idx + 1} / ${total}`;
+      document.getElementById('narratorSlideName').textContent  = names[idx] || `Slide ${idx + 1}`;
+
+      const pct = total > 1 ? (idx / (total - 1)) * 100 : 0;
+      document.getElementById('narratorBarFill').style.width = pct + '%';
+
+      const btn  = document.getElementById('narratorPlayBtn');
+      const icon = document.getElementById('narratorIcon');
+
+      if (this.isPaused) {
+        btn.textContent = '▶ Continuar';
+        icon.classList.remove('playing');
+      } else if (this.isPlaying) {
+        btn.textContent = '⏸ Pausar';
+        icon.classList.add('playing');
+      } else {
+        btn.textContent = '▶ Ouvir';
+        icon.classList.remove('playing');
+      }
+
+      const navBtns = document.querySelectorAll('.narrator-btn-nav');
+      if (navBtns[0]) navBtns[0].disabled = idx === 0;
+      if (navBtns[1]) navBtns[1].disabled = idx === total - 1;
+    }
+  };
+
+  function openNarrator() {
+    document.getElementById('narratorTrigger').style.display = 'none';
+    const p = document.getElementById('narratorPlayer');
+    p.classList.add('open');
+    narrator.isPlaying    = false;
+    narrator.isPaused     = false;
+    narrator.currentSlide = 0;
+    narrator.updateUI();
+  }
+
+  function closeNarrator() {
+    speechSynthesis.cancel();
+    narrator.isPlaying = false;
+    narrator.isPaused  = false;
+    document.getElementById('narratorPlayer').classList.remove('open');
+    document.getElementById('narratorTrigger').style.display = '';
+  }
+
+  function narratorPlayPause() { narrator.playPause(); }
+  function narratorStop()      { narrator.stop(); }
+  function narratorPrev()      { narrator.prev(); }
+  function narratorNext()      { narrator.next(); }
+</script>
+
+<!-- ─── Narrator Trigger ─── -->
+<button class="narrator-trigger" id="narratorTrigger" onclick="openNarrator()">
+  <span class="nt-icon">🔊</span>
+  <span>Narrar Post</span>
+</button>
+
+<!-- ─── Narrator Player ─── -->
+<div class="narrator-player" id="narratorPlayer">
+  <div class="narrator-header">
+    <div class="narrator-header-left">
+      <span class="narrator-icon" id="narratorIcon">🔊</span>
+      <span class="narrator-label">Narrador</span>
+    </div>
+    <button class="narrator-close" onclick="closeNarrator()">&#x2715;</button>
+  </div>
+  <div class="narrator-body">
+    <div class="narrator-slide-row">
+      <span class="narrator-slide-name" id="narratorSlideName">Slide 1</span>
+      <span class="narrator-slide-badge" id="narratorSlideCount">1 / 6</span>
+    </div>
+    <div class="narrator-bar">
+      <div class="narrator-bar-fill" id="narratorBarFill"></div>
+    </div>
+    <div class="narrator-controls">
+      <button class="narrator-btn narrator-btn-nav" onclick="narratorPrev()" title="Slide anterior">◄</button>
+      <button class="narrator-btn narrator-btn-play" id="narratorPlayBtn" onclick="narratorPlayPause()">▶ Ouvir</button>
+      <button class="narrator-btn narrator-btn-stop"  onclick="narratorStop()"  title="Parar e reiniciar">■</button>
+      <button class="narrator-btn narrator-btn-nav" onclick="narratorNext()" title="Próximo slide">►</button>
+    </div>
+    <div class="narrator-hint">Web Speech API • voz do sistema operativo</div>
+  </div>
+</div>
+
+</body>
+</html>
