@@ -448,6 +448,65 @@
   .admin-tabs { gap: 4px; }
   .admin-tab { padding: 7px 12px; font-size: .78rem; }
 }
+
+/* ── Trial Module Tooltip ─────────────────────────────────── */
+.trial-badge-wrap {
+  display: inline-flex; align-items: center; gap: 4px;
+  cursor: pointer; border-radius: 20px;
+}
+.trial-badge-icon {
+  font-size: .6rem; opacity: .7; color: var(--admin-blue);
+}
+.trial-tooltip {
+  position: fixed; z-index: 9999;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1);
+  min-width: 240px; max-width: 320px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.trial-tooltip.visible { opacity: 1; transform: translateY(0); }
+.trial-tooltip-title {
+  font-size: .68rem; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.trial-tooltip-user {
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.trial-tooltip-user:last-child { border-bottom: none; padding-bottom: 0; }
+.trial-tooltip-email {
+  font-size: .78rem; font-weight: 700; color: var(--dark);
+  margin-bottom: 5px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 270px;
+}
+.trial-tooltip-modules { display: flex; flex-wrap: wrap; gap: 4px; }
+.trial-module-tag {
+  font-size: .6rem; font-weight: 800; padding: 2px 8px; border-radius: 8px;
+  background: rgba(34,197,94,.12); color: var(--admin-success);
+  white-space: nowrap; letter-spacing: .02em;
+}
+.trial-module-none {
+  font-size: .7rem; color: var(--muted); font-style: italic;
+}
+
+/* ── Last Access Column ───────────────────────────────────── */
+.last-access-cell { vertical-align: middle; }
+.last-access-relative {
+  font-size: .78rem; font-weight: 700; color: var(--dark);
+  white-space: nowrap;
+}
+.last-access-absolute {
+  font-size: .65rem; color: var(--muted); margin-top: 1px;
+  white-space: nowrap;
+}
+.last-access-never { font-size: .78rem; color: var(--subtle, var(--muted)); }
 </style>
 
 
@@ -599,12 +658,13 @@
                     <th>Faturação</th>
                     <th style="text-align:center">Vencimento</th>
                     <th style="text-align:center">Utilizadores</th>
+                    <th>Último Acesso</th>
                     <th>Desde</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody id="customersTableBody">
-                  <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px">A carregar ecossistema…</td></tr>
+                  <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">A carregar ecossistema…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1006,6 +1066,9 @@ let _superAdmins   = [];
 let _auditLog      = [];
 let _currentTab    = 'customers';
 let _currentAdminEmail = '';
+let _authMap       = {}; // userId → auth metadata (email, last_sign_in_at, …)
+let _trialActivity = {}; // companyId → { userId → { modules: string[] } }
+let _tooltipEl     = null; // shared floating tooltip DOM element
 
 // ══════════════════════════════════════════════════════════
 //  INIT
@@ -1040,14 +1103,16 @@ async function checkAdminAccess() {
 }
 
 async function refreshAll() {
+  // loadCustomers first: populates _customers + _authMap needed by loadTrialModuleActivity
+  await loadCustomers();
   await Promise.all([
-    loadCustomers(), // Unified
     loadUsers(),
     loadSuperAdmins(),
     loadAuditLog(),
     loadAdminFlags(),
     loadBroadcasts(),
     loadAcordos(),
+    loadTrialModuleActivity(),
   ]);
   updateKPIs();
   renderMetrics();
@@ -1086,7 +1151,7 @@ async function loadCustomers() {
     const { data: companies, error: cErr } = await _adminSb()
       .from('companies')
       .select(`
-        id, name, slug, plan, trial_ends_at, created_at, is_suspended, owner_id,
+        id, name, slug, plan, trial_ends_at, created_at, is_suspended, owner_id, config,
         subscriptions(*),
         memberships(count)
       `)
@@ -1103,6 +1168,15 @@ async function loadCustomers() {
         userCount: c.memberships && c.memberships.length ? c.memberships[0].count : 0
       };
     });
+
+    // Populate global auth metadata map (last_sign_in_at per user id)
+    _authMap = {};
+    try {
+      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
+      if (!rpcErr && Array.isArray(authUsers)) {
+        authUsers.forEach(u => { _authMap[u.id] = u; });
+      }
+    } catch (_) { /* RPC may not exist yet — fail silently */ }
 
     renderCustomersTable(_customers);
     document.getElementById('customersCount').textContent = _customers.length;
@@ -1332,12 +1406,13 @@ function renderCustomersTable(data) {
   const tbody = document.getElementById('customersTableBody');
   if (!tbody) return; // Protection
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:48px">Nenhum cliente no ecossistema</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:48px">Nenhum cliente no ecossistema</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(c => {
-    const plan = c.plan || 'trial';
-    
+    const plan    = c.plan || 'trial';
+    const isTrial = plan === 'trial';
+
     let subStatus = c.subscription?.status;
     if (!subStatus) {
       if (plan === 'trial') {
@@ -1346,25 +1421,54 @@ function renderCustomersTable(data) {
          subStatus = new Date(c.trial_ends_at) > new Date() ? 'active_man' : 'blocked';
       }
     }
-    
+
     const isSuspended = c.is_suspended || subStatus === 'blocked';
-    
+
     let statusClass = 's-active';
     if (subStatus === 'trialing') statusClass = 's-trial';
     if (subStatus === 'past_due') statusClass = 's-due';
     if (subStatus === 'canceled' || isSuspended) statusClass = 's-canceled';
-    
+
     const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
+
+    // ── Bandeira do País (via config.currency) ───────────
+    let flag = '🇵🇹'; // Default
+    const curr = (c.config && c.config.currency) ? c.config.currency.toUpperCase() : 'EUR';
+    if (curr === 'BRL') flag = '🇧🇷';
+    else if (curr === 'USD') flag = '🇺🇸';
+    else if (curr === 'GBP') flag = '🇬🇧';
+    else if (curr === 'EUR') flag = '🇪🇺';
+
+    // ── Último Acesso (via owner_id → _authMap) ──────────
+    const lastAccess    = getCompanyLastAccess(c);
+    const lastRelative  = lastAccess ? fmtRelativeTime(lastAccess) : null;
+    const lastFull      = lastAccess
+      ? new Date(lastAccess).toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' })
+      : null;
+
+    // ── Utilizadores cell — com tooltip nos trials ───────
+    const usersCell = isTrial
+      ? `<td style="text-align:center">
+          <span class="badge trial-badge-wrap"
+            style="background:rgba(59,130,246,.12);color:var(--admin-blue);border:1px solid rgba(59,130,246,.2);padding:4px 10px"
+            onmouseenter="showTrialTooltip(this,'${c.id}')"
+            onmouseleave="hideTrialTooltip()">
+            ${c.userCount}<i class="ph-bold ph-info trial-badge-icon"></i>
+          </span>
+        </td>`
+      : `<td style="text-align:center"><span class="badge" style="background:var(--bg-hover);color:var(--dark)">${c.userCount}</span></td>`;
 
     return `<tr>
       <td>
-        <div style="font-weight:800;color:var(--dark);font-size:.9rem">${escH(c.name)}</div>
+        <div style="font-weight:800;color:var(--dark);font-size:.9rem">
+          <span title="Moeda: ${curr}" style="cursor:help">${flag}</span> ${escH(c.name)}
+        </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
           ${escH(c.slug)} • ID: <span class="mono">${c.id.slice(0,8)}...</span>
         </div>
       </td>
       <td>
-        <select class="form-select btn-sm" style="width:auto; font-size:.72rem; padding: 2px 26px 2px 8px; font-weight:700" 
+        <select class="form-select btn-sm" style="width:auto; font-size:.72rem; padding: 2px 26px 2px 8px; font-weight:700"
           onchange="changeCustomerPlan('${c.id}', this.value)">
           <option value="trial"        ${plan==='trial'?'selected':''}>Trial</option>
           <option value="starter"      ${plan==='starter'?'selected':''}>Starter (Mês)</option>
@@ -1388,7 +1492,13 @@ function renderCustomersTable(data) {
         <div class="mono" style="font-size:.75rem">${c.trial_ends_at ? new Date(c.trial_ends_at).toLocaleDateString('pt-PT') : 'N/A'}</div>
         <div style="font-size:.65rem;color:var(--muted)">Vencimento</div>
       </td>
-      <td style="text-align:center"><span class="badge" style="background:var(--bg-hover);color:var(--dark)">${c.userCount}</span></td>
+      ${usersCell}
+      <td class="last-access-cell">
+        ${lastRelative
+          ? `<div class="last-access-relative">${lastRelative}</div>
+             <div class="last-access-absolute" title="${lastFull}">${lastFull}</div>`
+          : '<span class="last-access-never">—</span>'}
+      </td>
       <td class="mono" style="font-size:.75rem;color:var(--muted)">${fmtDate(c.created_at)}</td>
       <td>
         <div class="action-btns">
@@ -1434,6 +1544,151 @@ function filterCustomers() {
   });
   renderCustomersTable(filtered);
   document.getElementById('customersCount').textContent = filtered.length;
+}
+
+// ══════════════════════════════════════════════════════════
+//  LAST ACCESS HELPERS
+// ══════════════════════════════════════════════════════════
+
+/**
+ * Returns the last_sign_in_at ISO string for a company's owner, or null.
+ * Requires _authMap to be populated (done in loadCustomers).
+ */
+function getCompanyLastAccess(c) {
+  if (!c.owner_id) return null;
+  const u = _authMap[c.owner_id];
+  return u?.last_sign_in_at || null;
+}
+
+/**
+ * Returns a human-readable relative time string (e.g. "3h atrás", "2d atrás").
+ */
+function fmtRelativeTime(isoStr) {
+  if (!isoStr) return null;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  const diffMs  = Date.now() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH   = Math.floor(diffMin / 60);
+  const diffD   = Math.floor(diffH / 24);
+  if (diffMin < 1)  return 'agora mesmo';
+  if (diffMin < 60) return `${diffMin} min atrás`;
+  if (diffH < 24)   return `${diffH}h atrás`;
+  if (diffD < 7)    return `${diffD}d atrás`;
+  return fmtDate(isoStr);
+}
+
+// ══════════════════════════════════════════════════════════
+//  TRIAL MODULE ACTIVITY
+// ══════════════════════════════════════════════════════════
+
+/**
+ * Fetches module usage per user for all trial companies.
+ * Expects a `user_activity` table: (user_id, company_id, module, last_visited_at).
+ * Fails silently if the table does not exist yet.
+ */
+async function loadTrialModuleActivity() {
+  const trialCos = _customers.filter(c => c.plan === 'trial');
+  _trialActivity = {};
+  if (!trialCos.length) return;
+
+  try {
+    const ids = trialCos.map(c => c.id);
+    const { data, error } = await _adminSb()
+      .from('user_activity')
+      .select('user_id, company_id, module, last_visited_at')
+      .in('company_id', ids)
+      .order('last_visited_at', { ascending: false });
+
+    if (error) throw error;
+
+    (data || []).forEach(row => {
+      if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
+      if (!_trialActivity[row.company_id][row.user_id])
+        _trialActivity[row.company_id][row.user_id] = { modules: [] };
+      const mods = _trialActivity[row.company_id][row.user_id].modules;
+      if (!mods.includes(row.module)) mods.push(row.module);
+    });
+  } catch (_) {
+    // Table may not exist yet — tooltip will show graceful fallback message
+  }
+
+  // Re-render so trial tooltips reflect fresh data
+  renderCustomersTable(_customers);
+}
+
+// ══════════════════════════════════════════════════════════
+//  TRIAL MODULE TOOLTIP
+// ══════════════════════════════════════════════════════════
+const _MODULE_LABELS = {
+  calculator:  'Calculadora',
+  materials:   'Materiais',
+  printers:    'Impressoras',
+  orders:      'Pedidos',
+  financial:   'Financeiro',
+  backoffice:  'BackOffice',
+  settings:    'Configurações',
+  dashboard:   'Dashboard',
+  clients:     'Clientes',
+  products:    'Produtos',
+};
+
+function _initTooltipEl() {
+  if (_tooltipEl) return;
+  _tooltipEl = document.createElement('div');
+  _tooltipEl.className = 'trial-tooltip';
+  _tooltipEl.id = 'trialModuleTooltip';
+  document.body.appendChild(_tooltipEl);
+}
+
+function showTrialTooltip(anchorEl, companyId) {
+  _initTooltipEl();
+
+  const activity = _trialActivity[companyId] || {};
+  const entries  = Object.entries(activity);
+
+  let html = `<div class="trial-tooltip-title"><i class="ph-bold ph-puzzle-piece"></i> Módulos utilizados</div>`;
+
+  if (!entries.length) {
+    html += `<div style="font-size:.78rem;color:var(--muted);line-height:1.5">
+      Sem dados de atividade registados.<br>
+      <span style="font-size:.7rem;opacity:.75">Crie a tabela <code style="font-size:.68rem">user_activity</code> para rastrear módulos por utilizador.</span>
+    </div>`;
+  } else {
+    entries.forEach(([uid, info]) => {
+      const u      = _authMap[uid];
+      const email  = u?.email
+        ? escH(u.email)
+        : `<span style="font-family:var(--mono);font-size:.7rem">${uid.slice(0,12)}…</span>`;
+      const modules = info.modules.map(m => _MODULE_LABELS[m] || m);
+
+      html += `<div class="trial-tooltip-user">
+        <div class="trial-tooltip-email">${email}</div>
+        <div class="trial-tooltip-modules">
+          ${modules.length
+            ? modules.map(m => `<span class="trial-module-tag">${escH(m)}</span>`).join('')
+            : '<span class="trial-module-none">Nenhum módulo registado</span>'}
+        </div>
+      </div>`;
+    });
+  }
+
+  _tooltipEl.innerHTML = html;
+
+  // Smart positioning: avoid overflow on right/bottom edge
+  const rect = anchorEl.getBoundingClientRect();
+  const tw   = 300;
+  let   left = rect.left;
+  if (left + tw > window.innerWidth - 16) left = window.innerWidth - tw - 16;
+  let   top  = rect.bottom + 8;
+  if (top + 240 > window.innerHeight - 16) top = rect.top - 248;
+  _tooltipEl.style.left = Math.max(8, left) + 'px';
+  _tooltipEl.style.top  = Math.max(8, top)  + 'px';
+  _tooltipEl.classList.add('visible');
+}
+
+function hideTrialTooltip() {
+  if (_tooltipEl) _tooltipEl.classList.remove('visible');
 }
 
 // ══════════════════════════════════════════════════════════
