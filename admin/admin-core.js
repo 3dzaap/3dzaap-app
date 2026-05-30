@@ -3,18 +3,6 @@
  * Depende de: supabase.js (expõe _sb, Auth)
  */
 
-// ── Constants ─────────────────────────────────────────────
-const PLAN_MRR = {
-  trial: 0,
-  starter: 9.90, pro: 19.90, business: 39.90,
-  starter_ano: 7.90, pro_ano: 15.90, business_ano: 31.90
-};
-const PLAN_ANNUAL_TOTAL = {
-  starter_ano: 7.90 * 12,
-  pro_ano:    15.90 * 12,
-  business_ano: 31.90 * 12
-};
-
 // ── Supabase client helper ────────────────────────────────
 function _adminSb() {
   if (typeof _sb !== 'undefined' && _sb && typeof _sb.from === 'function') return _sb;
