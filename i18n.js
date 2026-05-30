@@ -8,6 +8,9 @@
  * field that the user saves with the Save button. It must NOT trigger a reload.
  */
 
+const _i18nScriptSrc = (document.currentScript || document.querySelector('script[src*="i18n.js"]'))?.getAttribute('src') || 'i18n.js';
+const _i18nBasePath = _i18nScriptSrc.substring(0, _i18nScriptSrc.lastIndexOf('/')) || '.';
+
 const i18n = {
     currentLocale: (() => {
         try { 
@@ -50,7 +53,7 @@ const i18n = {
     async loadTranslations(locale) {
         try {
             const cacheBuster = new Date().getTime();
-            const response = await fetch(`./locales/${locale}.json?v=${cacheBuster}`);
+            const response = await fetch(`${_i18nBasePath}/locales/${locale}.json?v=${cacheBuster}`);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             this.translations = await response.json();
             this.currentLocale = locale;
