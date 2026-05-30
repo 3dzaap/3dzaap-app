@@ -323,6 +323,13 @@ const Auth = {
       }
     }
 
+    // ── AUTO-TRACK MODULE ─────────────────────────────────────
+    const currentPageStr = window.location.pathname.split('/').pop() || 'index.html';
+    if (typeof DB !== 'undefined' && DB.trackModuleUsage && !['auth.html', 'index.html', 'terms.html', 'privacy.html', 'admin.html'].includes(currentPageStr)) {
+      const moduleName = currentPageStr.replace('.html', '');
+      DB.trackModuleUsage(moduleName);
+    }
+
     return true;
   },
 
@@ -381,6 +388,26 @@ function _isLocalId(id) {
 }
 
 const DB = {
+
+  // ── TRACKING ──────────────────────────────────────────────
+  async trackModuleUsage(moduleName) {
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) return;
+      if (!_companyId) await Auth._loadCompany();
+      if (!_companyId) return;
+
+      const user_id = session.user.id;
+      // Upsert: Se já existir na tabela para este (user_id, company_id, module), atualiza o last_visited_at.
+      const { error } = await _sb.from('user_activity').upsert(
+        { user_id, company_id: _companyId, module: moduleName, last_visited_at: new Date().toISOString() },
+        { onConflict: 'user_id,company_id,module' }
+      );
+      if (error) console.warn('[3DZAAP] Falha ao registrar atividade do módulo:', error.message);
+    } catch(e) {
+      console.warn('[3DZAAP] Erro no trackModuleUsage:', e);
+    }
+  },
 
   // ── FILAMENTS ───────────────────────────────────────────────
 
