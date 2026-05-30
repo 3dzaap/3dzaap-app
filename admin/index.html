@@ -137,6 +137,41 @@
           </div>
         </a>
       </div>
+
+      <!-- ── NOVOS CADASTROS FEED ─────────────────────── -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:8px">
+
+        <div class="ad-card">
+          <div class="ad-card-header">
+            <div class="ad-card-title">
+              <i class="ph-bold ph-user-plus"></i> Novos Cadastros
+              <span id="newSignupsBadge" style="display:none; margin-left:8px; background:#22c55e; color:#fff; font-size:.65rem; font-weight:800; padding:2px 7px; border-radius:20px; animation:pulse 1.5s infinite">NOVO</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center">
+              <span class="badge" id="signupsCount" style="background:var(--admin-blue);color:#fff">0</span>
+              <span style="font-size:.7rem; color:var(--muted)">últimos 7 dias</span>
+            </div>
+          </div>
+          <div class="ad-card-body" style="padding:0; max-height:360px; overflow-y:auto">
+            <div id="newSignupsFeed">
+              <div style="text-align:center;color:var(--muted);padding:32px;font-size:.82rem">A carregar…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-card">
+          <div class="ad-card-header">
+            <div class="ad-card-title"><i class="ph-bold ph-clock-countdown"></i> Trials a Expirar</div>
+            <span style="font-size:.7rem; color:var(--muted)">próximos 7 dias</span>
+          </div>
+          <div class="ad-card-body" style="padding:0; max-height:360px; overflow-y:auto">
+            <div id="expiringTrialsFeed">
+              <div style="text-align:center;color:var(--muted);padding:32px;font-size:.82rem">A carregar…</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
@@ -150,6 +185,8 @@
 let _customers = [];
 let _users = [];
 let _acordosCount = 0;
+let _realtimeChannel = null;
+let _unseenSignups = 0;
 
 async function initDashboard() {
   initThemeToggle();
@@ -157,6 +194,7 @@ async function initDashboard() {
   checkAdminAccess(async () => {
     document.getElementById('adminContent').style.display = 'block';
     await refreshData();
+    _startRealtimeSignups();
   });
 }
 
@@ -164,7 +202,7 @@ async function refreshData() {
   try {
     const [cRes, uRes, aRes] = await Promise.all([
       _adminSb().from('companies').select('*', { count: 'exact' }),
-      _adminSb().from('user_memberships').select('user_id', { count: 'exact', head: true }),
+      _adminSb().from('memberships').select('user_id', { count: 'exact', head: true }),
       _adminSb().from('acordos_parceria').select('id', { count: 'exact', head: true })
     ]);
     
@@ -178,10 +216,141 @@ async function refreshData() {
     setText('countAcordos', _acordosCount);
 
     updateKPIs();
+    renderSignupsFeed();
+    renderExpiringTrials();
   } catch (e) {
     showToast('Erro ao carregar dados do dashboard.', 'err');
     console.error(e);
   }
+}
+
+// ── Realtime: escuta novos cadastros em tempo real ─────────────────────
+function _startRealtimeSignups() {
+  if (_realtimeChannel) _adminSb().removeChannel(_realtimeChannel);
+  _realtimeChannel = _adminSb()
+    .channel('admin-new-signups')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'companies' }, (payload) => {
+      const newCompany = payload.new;
+      _customers.unshift(newCompany);
+      _unseenSignups++;
+
+      // Flash badge NOVO
+      const badge = document.getElementById('newSignupsBadge');
+      if (badge) badge.style.display = 'inline';
+
+      // Toast de alerta
+      showToast(`<i class="ph-bold ph-user-plus"></i> Novo cadastro: <b>${newCompany.name || newCompany.slug}</b>`, 'ok');
+
+      // Atualizar feeds e KPIs
+      renderSignupsFeed();
+      renderExpiringTrials();
+      updateKPIs();
+      setText('countClientes', _customers.length);
+
+      // Atualizar badge do sidebar
+      _updateSidebarBadge();
+    })
+    .subscribe();
+}
+
+function _updateSidebarBadge() {
+  let badgeEl = document.getElementById('admSidebarNewBadge');
+  if (!badgeEl) {
+    const dashLink = document.getElementById('admNav_index');
+    if (dashLink) {
+      badgeEl = document.createElement('span');
+      badgeEl.id = 'admSidebarNewBadge';
+      badgeEl.style.cssText = 'margin-left:auto;background:#22c55e;color:#fff;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center';
+      dashLink.appendChild(badgeEl);
+    }
+  }
+  if (badgeEl && _unseenSignups > 0) badgeEl.textContent = _unseenSignups;
+}
+
+// ── Feed: novos cadastros (últimos 7 dias) ────────────────────────────
+function renderSignupsFeed() {
+  const feed = document.getElementById('newSignupsFeed');
+  if (!feed) return;
+
+  const d7 = new Date(); d7.setDate(d7.getDate() - 7);
+  const recent = [..._customers]
+    .filter(c => new Date(c.created_at) >= d7)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 20);
+
+  document.getElementById('signupsCount').textContent = recent.length;
+
+  if (!recent.length) {
+    feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px;font-size:.82rem">Sem novos cadastros nos últimos 7 dias</div>';
+    return;
+  }
+
+  const planColors = { trial:'var(--muted)', starter:'var(--admin-blue)', starter_ano:'var(--admin-blue)', pro:'#f5943a', pro_ano:'#f5943a', business:'var(--admin-success)', business_ano:'var(--admin-success)' };
+
+  feed.innerHTML = recent.map(c => {
+    const ago = fmtRelativeTime(new Date(c.created_at));
+    const plan = c.plan || 'trial';
+    const color = planColors[plan] || 'var(--muted)';
+    const isNew = (Date.now() - new Date(c.created_at)) < 3600000; // < 1h
+    return `<div style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); transition:background .2s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,143,212,.1);display:flex;align-items:center;justify-content:center;color:var(--admin-blue);font-weight:800;font-size:.9rem;flex-shrink:0">
+        ${(c.name || '?').charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.85rem;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${escH(c.name || c.slug)}
+          ${isNew ? '<span style="margin-left:6px;font-size:.6rem;background:#22c55e;color:#fff;padding:1px 5px;border-radius:8px;font-weight:800">NOVO</span>' : ''}
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:1px">${escH(c.slug)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:.72rem;font-weight:700;color:${color}">${plan.toUpperCase()}</div>
+        <div style="font-size:.68rem;color:var(--muted)">${ago}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Feed: trials a expirar nos próximos 7 dias ────────────────────────
+function renderExpiringTrials() {
+  const feed = document.getElementById('expiringTrialsFeed');
+  if (!feed) return;
+
+  const now  = new Date();
+  const in7  = new Date(); in7.setDate(in7.getDate() + 7);
+
+  const expiring = _customers
+    .filter(c => {
+      if (!c.trial_ends_at) return false;
+      const exp = new Date(c.trial_ends_at);
+      return exp >= now && exp <= in7;
+    })
+    .sort((a, b) => new Date(a.trial_ends_at) - new Date(b.trial_ends_at));
+
+  if (!expiring.length) {
+    feed.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px;font-size:.82rem"><i class="ph-bold ph-check-circle" style="color:var(--admin-success)"></i><br>Nenhum trial a expirar nos próximos 7 dias</div>';
+    return;
+  }
+
+  feed.innerHTML = expiring.map(c => {
+    const exp = new Date(c.trial_ends_at);
+    const diffDays = Math.ceil((exp - now) / 86400000);
+    const urgent = diffDays <= 2;
+    const color = urgent ? '#ef4444' : '#f5943a';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .2s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+      <div style="width:36px;height:36px;border-radius:10px;background:${urgent?'rgba(239,68,68,.1)':'rgba(245,148,58,.1)'};display:flex;align-items:center;justify-content:center;color:${color};flex-shrink:0">
+        <i class="ph-bold ${urgent?'ph-warning-octagon':'ph-hourglass'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.85rem;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(c.name || c.slug)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:1px">${escH(c.slug)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:.78rem;font-weight:800;color:${color}">${diffDays}d</div>
+        <div style="font-size:.68rem;color:var(--muted)">${exp.toLocaleDateString('pt-PT')}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function updateKPIs() {
