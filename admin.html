@@ -1068,6 +1068,7 @@ let _currentTab    = 'customers';
 let _currentAdminEmail = '';
 let _authMap       = {}; // userId → auth metadata (email, last_sign_in_at, …)
 let _trialActivity = {}; // companyId → { userId → { modules: string[] } }
+let _moduleCounts = {}; // module → Set of user_ids
 let _tooltipEl     = null; // shared floating tooltip DOM element
 
 // ══════════════════════════════════════════════════════════
@@ -1112,7 +1113,7 @@ async function refreshAll() {
     loadAdminFlags(),
     loadBroadcasts(),
     loadAcordos(),
-    loadTrialModuleActivity(),
+    loadUserActivity(),
   ]);
   updateKPIs();
   renderMetrics();
@@ -1587,34 +1588,38 @@ function fmtRelativeTime(isoStr) {
  * Expects a `user_activity` table: (user_id, company_id, module, last_visited_at).
  * Fails silently if the table does not exist yet.
  */
-async function loadTrialModuleActivity() {
-  const trialCos = _customers.filter(c => c.plan === 'trial');
+async function loadUserActivity() {
   _trialActivity = {};
-  if (!trialCos.length) return;
+  _moduleCounts = {};
 
   try {
-    const ids = trialCos.map(c => c.id);
     const { data, error } = await _adminSb()
       .from('user_activity')
       .select('user_id, company_id, module, last_visited_at')
-      .in('company_id', ids)
       .order('last_visited_at', { ascending: false });
 
     if (error) throw error;
 
     (data || []).forEach(row => {
-      if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
-      if (!_trialActivity[row.company_id][row.user_id])
-        _trialActivity[row.company_id][row.user_id] = { modules: [] };
-      const mods = _trialActivity[row.company_id][row.user_id].modules;
-      if (!mods.includes(row.module)) mods.push(row.module);
+      const isTrial = _customers.some(c => c.id === row.company_id && c.plan === 'trial');
+      if (isTrial) {
+        if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
+        if (!_trialActivity[row.company_id][row.user_id])
+          _trialActivity[row.company_id][row.user_id] = { modules: [] };
+        const mods = _trialActivity[row.company_id][row.user_id].modules;
+        if (!mods.includes(row.module)) mods.push(row.module);
+      }
+      
+      // populate global module counts
+      if (!_moduleCounts[row.module]) _moduleCounts[row.module] = new Set();
+      _moduleCounts[row.module].add(row.user_id);
     });
   } catch (_) {
-    // Table may not exist yet — tooltip will show graceful fallback message
+    // Table may not exist yet
   }
 
-  // Re-render so trial tooltips reflect fresh data
   renderCustomersTable(_customers);
+  if (_currentTab === 'metrics') renderMetrics();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1798,20 +1803,17 @@ function renderMetrics() {
   // ── Module usage — inclui variantes anuais
   const active         = _customers.filter(c => !c.is_suspended);
   const activeCount    = active.length || 1;
-  const ordersUsers    = active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
-  const financialUsers = active.filter(c => ['trial','business','business_ano'].includes(c.plan)).length;
-  const backofficeUsers= active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
-  const settingsUsers  = active.filter(c => ['trial','business','business_ano'].includes(c.plan)).length;
-  const dashboardUsers = active.filter(c => ['trial','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
+  const getModCount    = (mod) => _moduleCounts[mod] ? _moduleCounts[mod].size : 0;
+  
   const moduleUsage = [
-    { name: '<i class="ph-bold ph-ruler"></i> Calculadora',   count: activeCount,    total: activeCount, gate: null },
-    { name: '<i class="ph-bold ph-palette"></i> Materiais',     count: activeCount,    total: activeCount, gate: 'Starter: max 10' },
-    { name: '<i class="ph-bold ph-printer"></i> Impressoras',  count: activeCount,    total: activeCount, gate: 'Starter: max 1' },
-    { name: '<i class="ph-bold ph-package"></i> Pedidos',       count: ordersUsers,    total: activeCount, gate: 'Pro+' },
-    { name: '<i class="ph-bold ph-currency-dollar"></i> Financeiro',    count: financialUsers, total: activeCount, gate: 'Business' },
-    { name: '<i class="ph-bold ph-archive"></i> BackOffice',   count: backofficeUsers, total: activeCount, gate: 'Pro+' },
-    { name: '<i class="ph-bold ph-gear"></i> Configurações', count: settingsUsers,  total: activeCount, gate: 'Business' },
-    { name: '<i class="ph-bold ph-house"></i> Dashboard',     count: dashboardUsers, total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-ruler"></i> Calculadora',   count: getModCount('calculator'),    total: activeCount, gate: null },
+    { name: '<i class="ph-bold ph-palette"></i> Materiais',     count: getModCount('materials'),    total: activeCount, gate: 'Starter: max 10' },
+    { name: '<i class="ph-bold ph-printer"></i> Impressoras',  count: getModCount('printers'),    total: activeCount, gate: 'Starter: max 1' },
+    { name: '<i class="ph-bold ph-package"></i> Pedidos',       count: getModCount('orders'),    total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-currency-dollar"></i> Financeiro',    count: getModCount('financial'), total: activeCount, gate: 'Business' },
+    { name: '<i class="ph-bold ph-archive"></i> BackOffice',   count: getModCount('backoffice'), total: activeCount, gate: 'Pro+' },
+    { name: '<i class="ph-bold ph-gear"></i> Configurações', count: getModCount('settings'),  total: activeCount, gate: 'Business' },
+    { name: '<i class="ph-bold ph-house"></i> Dashboard',     count: getModCount('dashboard'), total: activeCount, gate: 'Pro+' },
   ];
   document.getElementById('moduleUsageBars').innerHTML = moduleUsage.map(m => {
     const pct = Math.round((m.count / m.total) * 100);
@@ -2686,9 +2688,7 @@ function switchTab(name) {
   _currentTab = name;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-  const tabs = ['customers','users','metrics','tools','audit'];
-  const idx = tabs.indexOf(name);
-  if (idx > -1) document.querySelectorAll('.admin-tab')[idx]?.classList.add('active');
+  document.getElementById('tab-btn-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
 }
 
