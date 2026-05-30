@@ -17,6 +17,11 @@
 // ============================================================
 
 const Sidebar = (() => {
+  let _sbBasePath = '';
+  try {
+    const cs = document.currentScript;
+    if (cs && cs.src) _sbBasePath = cs.src.substring(0, cs.src.lastIndexOf('/') + 1);
+  } catch (e) {}
 
   // ── NAV ITEMS ─────────────────────────────────────────────
   const NAV = [
@@ -86,7 +91,7 @@ const Sidebar = (() => {
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <a href="dashboard.html" class="brand-logo-wrap">
-      <img src="logo.jpg" class="brand-nozzle squacircle" alt="3DZAAP">
+      <img src="${_sbBasePath}logo.jpg" class="brand-nozzle squacircle" alt="3DZAAP">
       <div class="brand-text">
         <span class="b3d">3D</span><span class="bzp">ZAAP</span>
       </div>
