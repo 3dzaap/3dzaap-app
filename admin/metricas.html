@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Métricas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Métricas Avançadas</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-chart-line-up"></i> Métricas Avançadas</h1>
+          <div class="adm-page-sub">Análise de adoção, MRR e distribuição de planos</div>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <div class="ad-card" style="grid-column:1/-1">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-trend-up"></i> MRR (Últimos 12 meses)</div></div>
+          <div class="ad-card-body">
+            <div class="chart-container">
+              <div class="chart-bars" id="mrrChart"></div>
+              <div class="chart-x-axis" id="mrrLabels"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ad-card">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-pie-chart"></i> Distribuição de Planos</div></div>
+          <div class="ad-card-body">
+            <div class="stat-bars" id="planDistBars"></div>
+            <div style="margin-top:24px;padding-top:16px;border-top:1.5px solid var(--border);display:flex;justify-content:space-between">
+              <div>
+                <div style="font-size:.75rem;color:var(--muted);font-weight:700;margin-bottom:4px">CONVERSÃO (PAGO)</div>
+                <div style="font-size:1.5rem;font-weight:800;color:var(--admin-success)" id="conversionRate">0%</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:.75rem;color:var(--muted);font-weight:700;margin-bottom:4px">CONVERTIDOS</div>
+                <div style="font-size:1.5rem;font-weight:800"><span id="convertedTrials">0</span><span style="color:var(--muted);font-size:.9rem">/<span id="totalTrials">0</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-card">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-squares-four"></i> Adoção de Módulos (Geral)</div></div>
+          <div class="ad-card-body">
+            <div class="stat-bars" id="moduleUsageBars"></div>
+          </div>
+        </div>
+
+        <div class="ad-card" style="grid-column:1/-1">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-trophy"></i> Top 10 Empresas (MRR)</div></div>
+          <div class="ad-card-body table-wrap" style="padding:0">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">#</th>
+                  <th>Empresa</th>
+                  <th>Plano</th>
+                  <th>MRR</th>
+                  <th>Adesão</th>
+                </tr>
+              </thead>
+              <tbody id="topCompaniesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _customers = [];
+let _moduleCounts = {};
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadData();
+  });
+}
+
+async function loadData() {
+  try {
+    const { data: companies, error: cErr } = await _adminSb()
+      .from('companies')
+      .select('id, name, plan, created_at, is_suspended')
+      .order('created_at', { ascending: false });
+
+    if (cErr) throw cErr;
+    _customers = companies || [];
+
+    // Tentar carregar atividade (módulos)
+    try {
+      const { data: activity } = await _adminSb().from('user_activity').select('user_id, module');
+      if (activity) {
+        activity.forEach(row => {
+          if (!_moduleCounts[row.module]) _moduleCounts[row.module] = new Set();
+          _moduleCounts[row.module].add(row.user_id);
+        });
+      }
+    } catch(e) {}
+
+    renderMetrics();
+  } catch(e) {
+    showToast('Erro ao carregar dados: ' + e.message, 'err');
+  }
+}
+
+function renderMetrics() {
+  const now = new Date();
+  
+  // ── Plan distribution
+  const planCounts = {
+    trial: 0, starter: 0, starter_ano: 0, pro: 0, pro_ano: 0, business: 0, business_ano: 0
+  };
+  _customers.forEach(c => { if (planCounts[c.plan] !== undefined) planCounts[c.plan]++; });
+
+  const planGroups = [
+    { label: 'Trial',          color: 'var(--muted)',         count: planCounts.trial,        annual: false },
+    { label: 'Starter (mês)',  color: 'var(--admin-blue)',    count: planCounts.starter,      annual: false },
+    { label: 'Starter (ano)',  color: 'var(--admin-blue)',    count: planCounts.starter_ano,  annual: true  },
+    { label: 'Pro (mês)',      color: '#f5943a',              count: planCounts.pro,          annual: false },
+    { label: 'Pro (ano)',      color: '#f5943a',              count: planCounts.pro_ano,      annual: true  },
+    { label: 'Business (mês)', color: 'var(--admin-success)', count: planCounts.business,     annual: false },
+    { label: 'Business (ano)', color: 'var(--admin-success)', count: planCounts.business_ano, annual: true  },
+  ];
+  const totalC = _customers.length || 1;
+  document.getElementById('planDistBars').innerHTML = planGroups.map(({ label, color, count, annual }) => {
+    const pct = Math.round((count / totalC) * 100);
+    const annualTag = annual ? `<span style="font-size:.6rem;font-weight:800;padding:1px 5px;border-radius:6px;background:rgba(139,92,246,.12);color:#8b5cf6;margin-left:5px">ANO</span>` : '';
+    return `<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;margin-bottom:4px">
+        <span style="font-weight:700;color:${color};display:flex;align-items:center;gap:4px">${label}${annualTag}</span>
+        <span style="font-family:var(--mono);color:var(--dark)">${count} <span style="color:var(--muted)">(${pct}%)</span></span>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width .6s var(--ease)"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Conversion rate
+  const converted = _customers.filter(c => ['starter','starter_ano','pro','pro_ano','business','business_ano'].includes(c.plan)).length;
+  const totalReg  = _customers.length;
+  const convRate  = totalReg > 0 ? Math.round((converted / totalReg) * 100) : 0;
+  setText('conversionRate', convRate + '%');
+  setText('totalTrials', totalReg);
+  setText('convertedTrials', converted);
+
+  // ── Module usage
+  const activeCount = _customers.filter(c => !c.is_suspended).length || 1;
+  const getModCount = (mod) => _moduleCounts[mod] ? _moduleCounts[mod].size : 0;
+  
+  const moduleUsage = [
+    { name: '<i class="ph-bold ph-ruler"></i> Calculadora',   count: getModCount('calculator'), total: activeCount },
+    { name: '<i class="ph-bold ph-palette"></i> Materiais',   count: getModCount('materials'),  total: activeCount },
+    { name: '<i class="ph-bold ph-printer"></i> Impressoras', count: getModCount('printers'),   total: activeCount },
+    { name: '<i class="ph-bold ph-package"></i> Pedidos',     count: getModCount('orders'),     total: activeCount },
+    { name: '<i class="ph-bold ph-currency-dollar"></i> Financeiro', count: getModCount('financial'),total: activeCount },
+    { name: '<i class="ph-bold ph-archive"></i> BackOffice',  count: getModCount('backoffice'), total: activeCount },
+    { name: '<i class="ph-bold ph-gear"></i> Configurações',  count: getModCount('settings'),   total: activeCount },
+    { name: '<i class="ph-bold ph-house"></i> Dashboard',     count: getModCount('dashboard'),  total: activeCount },
+  ];
+  document.getElementById('moduleUsageBars').innerHTML = moduleUsage.map(m => {
+    const pct = Math.round((m.count / m.total) * 100);
+    return `<div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.76rem;margin-bottom:3px">
+        <span>${m.name}</span>
+        <span style="font-family:var(--mono)">${m.count} <span style="color:var(--muted)">(${pct}%)</span></span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:var(--admin-blue);border-radius:3px;transition:width .6s var(--ease)"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── MRR chart 
+  const monthLabels = [];
+  const mrrBars     = [];
+  for (let i = 11; i >= 0; i--) {
+    const slotDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0); 
+    const label = new Date(now.getFullYear(), now.getMonth() - i, 1).toLocaleString('pt-PT', { month: 'short' });
+    monthLabels.push(label);
+    const existing = _customers.filter(c => {
+      const created = new Date(c.created_at);
+      return !isNaN(created) && created <= slotDate;
+    });
+    const mrr = existing.reduce((s, c) => s + (PLAN_MRR[c.plan] || 0), 0);
+    mrrBars.push(mrr);
+  }
+  const maxBar = Math.max(...mrrBars, 1);
+  document.getElementById('mrrChart').innerHTML = mrrBars.map((v, i) => {
+    const isCurrent = (i === 11);
+    const h = Math.max(4, Math.round((v / maxBar) * 180));
+    return `<div class="chart-bar${isCurrent ? '' : ' faded'}" style="height:${h}px" title="${monthLabels[i]}: € ${v.toFixed(2)}"></div>`;
+  }).join('');
+  document.getElementById('mrrLabels').innerHTML = monthLabels.map(m => `<div class="chart-label">${m}</div>`).join('');
+
+  // ── Top companies by MRR
+  const sorted = [..._customers].sort((a, b) => (PLAN_MRR[b.plan]||0) - (PLAN_MRR[a.plan]||0)).slice(0, 10);
+  document.getElementById('topCompaniesBody').innerHTML = sorted.length
+    ? sorted.map((c, i) => `<tr>
+        <td class="mono" style="color:var(--muted)">${i+1}</td>
+        <td><div style="font-weight:700">${escH(c.name)}</div>${c.is_suspended ? '<div style="font-size:.68rem;color:#ef4444"><i class="ph-bold ph-prohibit"></i> suspenso</div>' : ''}</td>
+        <td><span class="plan-badge plan-${c.plan||'trial'}">${c.plan||'trial'}</span></td>
+        <td class="mono">€ ${(PLAN_MRR[c.plan]||0).toFixed(2)}/mês</td>
+        <td class="mono">${fmtDate(c.created_at)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Sem dados</td></tr>';
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

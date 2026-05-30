@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Auditoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Auditoria</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-shield"></i> Log de Auditoria</h1>
+          <div class="adm-page-sub">Registo de todas as ações executadas pelos administradores do sistema</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:16px">
+        <div class="admin-search-wrap" style="max-width:300px;">
+          <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
+          <input class="admin-search form-input" id="searchAudit" placeholder="Pesquisar ação, email…" oninput="filterAudit()">
+        </div>
+        <button class="btn btn-ghost" onclick="exportAuditLog()"><i class="ph-bold ph-download-simple"></i> Exportar CSV</button>
+      </div>
+      
+      <div class="ad-card">
+        <div class="ad-card-header">
+          <div class="ad-card-title"><i class="ph-bold ph-shield"></i> Ações Registadas</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadAuditLog()"><i class="ph-bold ph-arrows-clockwise"></i> Atualizar</button>
+        </div>
+        <div class="ad-card-body" style="padding:0">
+          <div class="audit-list">
+            <div class="audit-row" style="background:var(--bg-card);border-bottom:1px solid var(--border);position:sticky;top:0;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase">
+              <div class="audit-time">DATA / HORA</div>
+              <div class="audit-msg">AÇÃO & DETALHE</div>
+              <div class="audit-who">ADMINISTRADOR</div>
+            </div>
+            <div id="auditLogBody">
+              <div style="text-align:center;color:var(--muted);padding:32px">A carregar auditoria…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _auditLog = [];
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadAuditLog();
+  });
+}
+
+async function loadAuditLog() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('admin_audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200); // 200 eventos recentes
+
+    if (error) throw error;
+    _auditLog = data || [];
+    renderAuditLog(_auditLog);
+  } catch(e) {
+    document.getElementById('auditLogBody').innerHTML = `<div style="text-align:center;color:var(--danger);padding:32px">Erro: ${e.message}</div>`;
+  }
+}
+
+function filterAudit() {
+  const term = (document.getElementById('searchAudit').value || '').toLowerCase();
+  const filtered = _auditLog.filter(a => 
+    (a.action || '').toLowerCase().includes(term) ||
+    (a.detail || '').toLowerCase().includes(term) ||
+    (a.admin_email || '').toLowerCase().includes(term)
+  );
+  renderAuditLog(filtered);
+}
+
+function renderAuditLog(list) {
+  const el = document.getElementById('auditLogBody');
+  if (!list || list.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px">Sem registos de auditoria correspondentes.</div>';
+    return;
+  }
+  
+  el.innerHTML = list.map(r => `
+    <div class="audit-row">
+      <div class="audit-time">${new Date(r.created_at).toLocaleString('pt-PT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="audit-msg">
+        <span style="font-weight:700;color:var(--dark)">${escH(r.action || 'Desconhecida')}</span>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px;font-family:var(--mono)">${escH(r.detail || '')}</div>
+      </div>
+      <div class="audit-who">${escH(r.admin_email || _currentAdminEmail)}</div>
+    </div>
+  `).join('');
+}
+
+async function exportAuditLog() {
+  showToast('A compilar log...', '');
+  try {
+    const { data } = await _adminSb().from('admin_audit_log').select('*').order('created_at', { ascending: false });
+    if (!data || data.length === 0) {
+      showToast('Sem dados para exportar.', 'err');
+      return;
+    }
+    const sep = ';';
+    let csv = ['Data','Ação','Detalhe','Admin'].join(sep)+'\n';
+    data.forEach(l => {
+      csv += [l.created_at, l.action, l.detail, l.admin_email]
+        .map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
+    });
+    
+    const filename = `3DZAAP_audit_${new Date().toISOString().slice(0,10)}.csv`;
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+    const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:filename, style:'display:none'});
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    showToast('Log de auditoria exportado.', 'suc');
+  } catch (e) {
+    showToast('Erro ao exportar: ' + e.message, 'err');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

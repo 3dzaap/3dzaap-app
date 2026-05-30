@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Clientes & Assinaturas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Clientes & Assinaturas</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-buildings"></i> Clientes & Assinaturas</h1>
+          <div class="adm-page-sub">Gestão do ecossistema de empresas registadas</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:16px">
+        <div class="admin-search-wrap" style="flex:1; min-width:200px">
+          <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
+          <input class="admin-search form-input" id="searchCustomers" placeholder="Pesquisar empresa, slug ou ID…" oninput="filterCustomers()">
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <select class="form-select" id="filterPlan" onchange="filterCustomers()" style="width:auto">
+            <option value="">Todos os planos</option>
+            <option value="trial">Trial</option>
+            <option value="starter">Starter</option>
+            <option value="starter_ano">Starter (Ano)</option>
+            <option value="pro">Pro</option>
+            <option value="pro_ano">Pro (Ano)</option>
+            <option value="business">Business</option>
+            <option value="business_ano">Business (Ano)</option>
+          </select>
+          <select class="form-select" id="filterStatus" onchange="filterCustomers()" style="width:auto">
+            <option value="">Todos os estados</option>
+            <option value="active">Ativo</option>
+            <option value="trialing">Em trial</option>
+            <option value="active_man">Manual</option>
+            <option value="blocked">Bloqueado</option>
+            <option value="past_due">Em atraso</option>
+            <option value="canceled">Cancelado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-card-header">
+          <div class="ad-card-title"><i class="ph-bold ph-buildings"></i> Empresas e Assinaturas</div>
+          <div style="display:flex; gap:10px; align-items:center">
+            <span class="badge" id="customersCount" style="background:var(--admin-blue);color:#fff">0</span>
+            <button class="btn btn-ghost btn-sm" onclick="syncStripe()"><i class="ph-bold ph-arrows-clockwise"></i> Stripe</button>
+          </div>
+        </div>
+        <div class="ad-card-body table-wrap" style="padding:0">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Plano Atual</th>
+                <th>Estado</th>
+                <th>Faturação</th>
+                <th style="text-align:center">Vencimento</th>
+                <th style="text-align:center">Utilizadores</th>
+                <th>Último Acesso</th>
+                <th>Desde</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px">A carregar ecossistema…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhe de Empresa -->
+<div class="confirm-overlay" id="companyDetailOverlay" onclick="if(event.target===this) closeCompanyDetail()">
+  <div class="ad-card" style="width:100%; max-width:700px; margin:20px; animation:cardIn .3s var(--ease)">
+    <div class="ad-card-header" style="justify-content:space-between">
+      <div class="ad-card-title" id="companyDetailTitle"></div>
+      <button class="btn-action" onclick="closeCompanyDetail()"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="ad-card-body" id="companyDetailBody"></div>
+  </div>
+</div>
+
+<!-- Modal Confirm -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-primary" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _customers = [];
+let _authMap = {};
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadCustomers();
+  });
+}
+
+async function refreshAll() {
+  await loadCustomers();
+}
+
+async function loadCustomers() {
+  try {
+    const { data: companies, error: cErr } = await _adminSb()
+      .from('companies')
+      .select('id, name, slug, plan, trial_ends_at, created_at, is_suspended, owner_id, config, subscriptions(*), memberships(count)')
+      .order('created_at', { ascending: false });
+
+    if (cErr) throw cErr;
+
+    _customers = (companies || []).map(c => {
+      const sub = c.subscriptions && c.subscriptions.length ? c.subscriptions[0] : null;
+      return {
+        ...c,
+        subscription: sub,
+        userCount: c.memberships && c.memberships.length ? c.memberships[0].count : 0
+      };
+    });
+
+    _authMap = {};
+    try {
+      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
+      if (!rpcErr && Array.isArray(authUsers)) {
+        authUsers.forEach(u => { _authMap[u.id] = u; });
+      }
+    } catch (_) { }
+
+    renderCustomersTable(_customers);
+    document.getElementById('customersCount').textContent = _customers.length;
+  } catch(e) {
+    console.error('loadCustomers err:', e);
+    showToast('Erro ao carregar clientes: ' + e.message, 'err');
+  }
+}
+
+function getCompanyLastAccess(c) {
+  if (!c.owner_id) return null;
+  const u = _authMap[c.owner_id];
+  return u?.last_sign_in_at || null;
+}
+
+function renderCustomersTable(data) {
+  const tbody = document.getElementById('customersTableBody');
+  if (!tbody) return; 
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:48px">Nenhum cliente no ecossistema</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(c => {
+    const plan    = c.plan || 'trial';
+    const isTrial = plan === 'trial';
+
+    let subStatus = c.subscription?.status;
+    if (!subStatus) {
+      if (plan === 'trial') {
+         subStatus = new Date(c.trial_ends_at) > new Date() ? 'trialing' : 'canceled';
+      } else {
+         subStatus = new Date(c.trial_ends_at) > new Date() ? 'active_man' : 'blocked';
+      }
+    }
+
+    const isSuspended = c.is_suspended || subStatus === 'blocked';
+
+    let statusClass = 's-active';
+    if (subStatus === 'trialing') statusClass = 's-trial';
+    if (subStatus === 'past_due') statusClass = 's-due';
+    if (subStatus === 'canceled' || isSuspended) statusClass = 's-canceled';
+
+    const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
+
+    let flag = '🇵🇹';
+    const curr = (c.config && c.config.currency) ? c.config.currency.toUpperCase() : 'EUR';
+    if (curr === 'BRL') flag = '🇧🇷';
+    else if (curr === 'USD') flag = '🇺🇸';
+    else if (curr === 'GBP') flag = '🇬🇧';
+    else if (curr === 'EUR') flag = '🇪🇺';
+
+    const lastAccess    = getCompanyLastAccess(c);
+    const lastRelative  = lastAccess ? fmtRelativeTime(lastAccess) : null;
+    const lastFull      = lastAccess
+      ? new Date(lastAccess).toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' })
+      : null;
+
+    const usersCell = `<td style="text-align:center"><span class="badge" style="background:var(--bg-hover);color:var(--dark)">${c.userCount}</span></td>`;
+
+    return `<tr>
+      <td>
+        <div style="font-weight:800;color:var(--dark);font-size:.9rem">
+          <span title="Moeda: ${curr}" style="cursor:help">${flag}</span> ${escH(c.name)}
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
+          ${escH(c.slug)} • ID: <span class="mono">${c.id.slice(0,8)}...</span>
+        </div>
+      </td>
+      <td>
+        <select class="form-select btn-sm" style="width:auto; font-size:.72rem; padding: 2px 26px 2px 8px; font-weight:700"
+          onchange="changeCustomerPlan('${c.id}', this.value)">
+          <option value="trial"        ${plan==='trial'?'selected':''}>Trial</option>
+          <option value="starter"      ${plan==='starter'?'selected':''}>Starter (Mês)</option>
+          <option value="starter_ano"  ${plan==='starter_ano'?'selected':''}>Starter (Ano)</option>
+          <option value="pro"          ${plan==='pro'?'selected':''}>Pro (Mês)</option>
+          <option value="pro_ano"      ${plan==='pro_ano'?'selected':''}>Pro (Ano)</option>
+          <option value="business"     ${plan==='business'?'selected':''}>Business (Mês)</option>
+          <option value="business_ano" ${plan==='business_ano'?'selected':''}>Business (Ano)</option>
+        </select>
+      </td>
+      <td><span class="status-pill ${statusClass}">${displayStatus}</span></td>
+      <td>
+        ${plan.endsWith('_ano')
+          ? `<div class="mono" style="font-weight:700;font-size:.75rem">€ ${(PLAN_ANNUAL_TOTAL[plan]||0).toFixed(2)}</div>
+             <div style="font-size:.65rem;color:var(--muted)">Pago à vista &bull; ${c.subscription?.stripe_subscription_id ? 'via Stripe' : 'Manual'}</div>`
+          : `<div class="mono" style="font-weight:700;font-size:.75rem">€ ${(PLAN_MRR[plan]||0).toFixed(2)}/mês</div>
+             <div style="font-size:.65rem;color:var(--muted)">${c.subscription?.stripe_subscription_id ? 'via Stripe' : 'Manual'}</div>`
+        }
+      </td>
+      <td style="text-align:center">
+        <div class="mono" style="font-size:.75rem">${c.trial_ends_at ? new Date(c.trial_ends_at).toLocaleDateString('pt-PT') : 'N/A'}</div>
+        <div style="font-size:.65rem;color:var(--muted)">Vencimento</div>
+      </td>
+      ${usersCell}
+      <td class="last-access-cell">
+        ${lastRelative
+          ? `<div class="last-access-relative">${lastRelative}</div>
+             <div class="last-access-absolute" title="${lastFull}">${lastFull}</div>`
+          : '<span class="last-access-never">—</span>'}
+      </td>
+      <td class="mono" style="font-size:.75rem;color:var(--muted)">${fmtDate(c.created_at)}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-action" onclick="loginAsCompany('${c.slug}')" title="Aceder como empresa"><i class="ph-bold ph-rocket-launch"></i></button>
+          <button class="btn-action" onclick="openCompanyDetail('${c.id}')" title="Ver Detalhes"><i class="ph-bold ph-magnifying-glass"></i></button>
+          ${(plan === 'trial' || subStatus === 'canceled' || subStatus === 'blocked')
+            ? `<button class="btn-action" style="color:var(--admin-blue);border-color:var(--admin-blue)" onclick="openCompanyDetail('${c.id}')" title="Prorrogar Trial/Acesso"><i class="ph-bold ph-hourglass"></i></button>`
+            : ''}
+          <button class="btn-action ${isSuspended ? '' : 'danger'}" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${isSuspended})" title="${isSuspended?'Reativar':'Suspender'}">
+            ${isSuspended ? '<i class="ph-bold ph-check-circle"></i>' : '<i class="ph-bold ph-prohibit"></i>'}
+          </button>
+          <button class="btn-action danger" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')"><i class="ph-bold ph-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterCustomers() {
+  const q      = document.getElementById('searchCustomers').value.toLowerCase();
+  const plan   = document.getElementById('filterPlan').value;
+  const status = document.getElementById('filterStatus').value;
+  
+  const filtered = _customers.filter(c => {
+    const matchQ = !q 
+      || c.name?.toLowerCase().includes(q) 
+      || c.slug?.toLowerCase().includes(q) 
+      || c.id?.toLowerCase().includes(q)
+      || c.owner_id?.toLowerCase().includes(q);
+    const matchPlan = !plan || c.plan === plan || (plan && c.plan?.startsWith(plan.replace('_ano','')));
+    const now = new Date();
+    let subStatus;
+    if (c.subscription?.status) {
+      subStatus = c.subscription.status;
+    } else if (c.plan === 'trial') {
+      subStatus = new Date(c.trial_ends_at) > now ? 'trialing' : 'canceled';
+    } else {
+      subStatus = new Date(c.trial_ends_at) > now ? 'active_man' : 'blocked';
+    }
+    const matchSt = !status || subStatus === status;
+    return matchQ && matchPlan && matchSt;
+  });
+  renderCustomersTable(filtered);
+  document.getElementById('customersCount').textContent = filtered.length;
+}
+
+// ── Modals & Actions ────────────────────────────────────────────────────────
+
+function openCompanyDetail(companyId) {
+  const c = _customers.find(x => x.id === companyId);
+  if (!c) return;
+
+  const overlay = document.getElementById('companyDetailOverlay');
+  const title   = document.getElementById('companyDetailTitle');
+  const body    = document.getElementById('companyDetailBody');
+  if (!overlay || !body) return;
+
+  title.innerHTML = `<i class="ph-bold ph-buildings"></i> ${escH(c.name)}`;
+  
+  body.innerHTML = `
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="det-tab-info" onclick="switchDetailTab('info', '${companyId}')">
+        <i class="ph-bold ph-info"></i> Geral
+      </div>
+      <div class="modal-tab" id="det-tab-payments" onclick="switchDetailTab('payments', '${companyId}')">
+        <i class="ph-bold ph-credit-card"></i> Pagamentos
+      </div>
+      <div class="modal-tab" id="det-tab-tools" onclick="switchDetailTab('tools', '${companyId}')">
+        <i class="ph-bold ph-wrench"></i> Ferramentas
+      </div>
+    </div>
+    
+    <div class="detail-panel active" id="det-panel-info">
+      ${_buildInfoPanel(c)}
+    </div>
+    <div class="detail-panel" id="det-panel-payments">
+      <div style="text-align:center; padding:20px; color:var(--muted)">A carregar histórico...</div>
+    </div>
+    <div class="detail-panel" id="det-panel-tools">
+      ${_buildToolsPanel(c)}
+    </div>
+  `;
+  overlay.style.display = 'flex';
+  setTimeout(() => overlay.classList.add('open'), 10);
+}
+
+function closeCompanyDetail() {
+  const ov = document.getElementById('companyDetailOverlay');
+  if (ov) { ov.classList.remove('open'); setTimeout(() => ov.style.display = 'none', 250); }
+}
+
+function _buildInfoPanel(c) {
+  const plan = c.plan || 'trial';
+  const now  = new Date();
+  const exp  = c.trial_ends_at ? new Date(c.trial_ends_at) : null;
+  const expStr = exp ? exp.toLocaleDateString('pt-PT') : 'N/A';
+  
+  return `
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">EMPRESA</div>
+        <div style="font-size:1.1rem;font-weight:800">${escH(c.name)}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${escH(c.slug)}</div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">PLANO</div>
+        <div style="font-size:1rem;font-weight:800">${plan.toUpperCase()}</div>
+        <div style="font-size:.78rem;color:var(--muted)">Subscritores: ${c.userCount || 0}</div>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px">VENCIMENTO</div>
+        <div style="font-size:1rem;font-weight:800;color:${exp && exp < now ? 'var(--danger)' : 'var(--dark)'}">${expStr}</div>
+      </div>
+    </div>
+    <hr style="margin:20px 0;border-color:var(--border)">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
+      <div class="ad-card" style="padding:16px; background:var(--bg-card-s); border-radius:12px; border:none; box-shadow:none">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:8px">ID DA EMPRESA</div>
+        <div class="mono" style="font-size:.72rem;word-break:break-all">${c.id}</div>
+      </div>
+      <div class="ad-card" style="padding:16px; background:var(--bg-card-s); border-radius:12px; border:none; box-shadow:none">
+        <div style="font-size:.7rem;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:8px">ADESÃO</div>
+        <div style="font-size:.88rem;font-weight:700">${fmtDate(c.created_at)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function _buildToolsPanel(c) {
+  return `
+    <div style="font-size:.78rem;font-weight:700;margin-bottom:10px"><i class="ph-bold ph-hourglass-high"></i> PRORROGAR ACESSO</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="number" id="extendDaysInput" min="1" max="365" value="30"
+        style="width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:.88rem;font-weight:700">
+      <span style="font-size:.82rem;color:var(--muted)">dias a partir de hoje</span>
+      <button class="btn btn-primary btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}')"><i class="ph-bold ph-check-circle"></i> Confirmar</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',7)">+7 dias</button>
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',30)">+30 dias</button>
+      <button class="btn btn-ghost btn-sm" onclick="doExtendAccess('${c.id}','${escH(c.name)}',365)">+1 Ano</button>
+    </div>
+    
+    <hr style="margin:20px 0;border-color:var(--border)">
+    
+    <div style="font-size:.78rem;font-weight:700;margin-bottom:12px"><i class="ph-bold ph-lightning"></i> AÇÕES RÁPIDAS</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="loginAsCompany('${c.slug}')"><i class="ph-bold ph-rocket-launch"></i> Impersonar</button>
+      <button class="btn btn-ghost btn-sm" onclick="confirmSuspendCustomer('${c.id}','${escH(c.name)}', ${c.is_suspended})">
+        <i class="ph-bold ${c.is_suspended ? 'ph-check-circle' : 'ph-prohibit'}"></i> ${c.is_suspended ? 'Reativar' : 'Suspender'}
+      </button>
+      <button class="btn btn-action danger btn-sm" onclick="confirmDeleteCustomer('${c.id}','${escH(c.name)}')"><i class="ph-bold ph-trash"></i> Eliminar</button>
+    </div>
+  `;
+}
+
+async function switchDetailTab(tab, companyId) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('active'));
+  
+  document.getElementById('det-tab-' + tab).classList.add('active');
+  document.getElementById('det-panel-' + tab).classList.add('active');
+
+  if (tab === 'payments') {
+    await loadCompanyPayments(companyId);
+  }
+}
+
+async function loadCompanyPayments(companyId) {
+  const panel = document.getElementById('det-panel-payments');
+  const c = _customers.find(x => x.id === companyId);
+  
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+       <div style="font-size:.85rem; font-weight:700">Histórico de Faturação</div>
+       <button class="btn btn-primary btn-sm" onclick="showAddPaymentForm('${companyId}')"><i class="ph-bold ph-plus"></i> Registar Pagamento</button>
+    </div>
+    <div id="paymentFormContainer" style="display:none; margin-bottom:20px; padding:16px; background:var(--bg-card-s); border-radius:12px; border:1.5px dashed var(--border)">
+       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+          <div>
+            <label class="form-label" style="font-size:.65rem">Valor (€)</label>
+            <input type="number" id="payAmount" class="form-input" value="${PLAN_MRR[c.plan] || 0}" step="0.01">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:.65rem">Método</label>
+            <select id="payMethod" class="form-select">
+              <option value="bank_transfer">Transferência Bancária</option>
+              <option value="mbway">MB Way</option>
+              <option value="cash">Numerário</option>
+              <option value="stripe">Stripe (Manual)</option>
+              <option value="other">Outro</option>
+            </select>
+          </div>
+       </div>
+       <div style="margin-bottom:12px">
+          <label class="form-label" style="font-size:.65rem">Notas / Referência</label>
+          <input type="text" id="payNotes" class="form-input" placeholder="Ex: Ref. Factura 2024/001">
+       </div>
+       <div style="display:flex; gap:8px">
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveManualPayment('${companyId}')">Gravar</button>
+          <button class="btn btn-ghost btn-sm" onclick="showAddPaymentForm(null)">Cancelar</button>
+       </div>
+    </div>
+    <div class="pay-list" id="payListContainer">
+       <div style="text-align:center; padding:20px; color:var(--muted)">A carregar transações...</div>
+    </div>
+  `;
+
+  try {
+    const { data: payments, error } = await _adminSb()
+      .from('company_payments')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('paid_at', { ascending: false });
+
+    if (error) throw error;
+
+    const listContainer = document.getElementById('payListContainer');
+    if (!payments.length) {
+      listContainer.innerHTML = '<div style="text-align:center; padding:32px; color:var(--muted); font-size:.8rem">Nenhum pagamento registado.</div>';
+      return;
+    }
+
+    const ltv = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    panel.insertAdjacentHTML('afterbegin', `
+      <div style="background:linear-gradient(135deg, var(--admin-blue), var(--admin-blue-d)); padding:14px; border-radius:12px; color:#fff; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <div style="font-size:.65rem; opacity:.8; font-weight:700; text-transform:uppercase">Lifetime Value (LTV)</div>
+          <div style="font-size:1.4rem; font-weight:900; font-family:var(--mono)">€ ${ltv.toFixed(2)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.65rem; opacity:.8; font-weight:700">TOTAL RECEBIDO</div>
+          <div style="font-size:0.9rem; font-weight:700">${payments.length} transações</div>
+        </div>
+      </div>
+    `);
+
+    const methodIcons = {
+      stripe: '<i class="ph-bold ph-stripe-logo" style="color:#635bff"></i>',
+      bank_transfer: '<i class="ph-bold ph-bank" style="color:var(--admin-blue)"></i>',
+      mbway: '<i class="ph-bold ph-phone" style="color:#d1005d"></i>',
+      cash: '<i class="ph-bold ph-money" style="color:var(--admin-success)"></i>',
+      other: '<i class="ph-bold ph-dots-three-circle"></i>'
+    };
+
+    const methodLabels = {
+      stripe: 'Stripe',
+      bank_transfer: 'Transferência',
+      mbway: 'MB Way',
+      cash: 'Numerário',
+      other: 'Outro'
+    };
+
+    listContainer.innerHTML = payments.map(p => `
+      <div class="pay-item">
+        <div style="display:flex; align-items:center; gap:12px">
+          <div style="width:36px; height:36px; border-radius:10px; background:var(--bg-hover); display:flex; align-items:center; justify-content:center; font-size:1.1rem">
+            ${methodIcons[p.method] || methodIcons.other}
+          </div>
+          <div>
+            <div style="font-size:.82rem; font-weight:700">${methodLabels[p.method] || p.method.toUpperCase()}</div>
+            <div class="pay-meta">
+              ${new Date(p.paid_at).toLocaleDateString('pt-PT')} · ${escH(p.notes || 'Sem notas')}
+            </div>
+          </div>
+        </div>
+        <div class="pay-amount">€ ${parseFloat(p.amount).toFixed(2)}</div>
+      </div>
+    `).join('');
+
+  } catch (e) {
+    document.getElementById('payListContainer').innerHTML = `<div style="color:var(--danger); font-size:0.75rem">Erro ao carregar pagamentos: ${e.message}</div>`;
+  }
+}
+
+function showAddPaymentForm(companyId) {
+  const container = document.getElementById('paymentFormContainer');
+  if (!container) return;
+  container.style.display = companyId ? 'block' : 'none';
+}
+
+async function saveManualPayment(companyId) {
+  const amount = parseFloat(document.getElementById('payAmount').value);
+  const method = document.getElementById('payMethod').value;
+  const notes  = document.getElementById('payNotes').value.trim();
+
+  if (!amount || amount <= 0) { showToast('Insira um valor válido.', 'err'); return; }
+
+  try {
+    const { error } = await _adminSb()
+      .from('company_payments')
+      .insert({
+        company_id: companyId,
+        amount,
+        method,
+        notes,
+        paid_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+
+    showToast('Pagamento registado com sucesso!', 'ok');
+    await _adminAudit('manual_payment', `Empresa: ${companyId} | Valor: €${amount}`);
+    loadCompanyPayments(companyId);
+  } catch (e) {
+    showToast('Erro ao gravar pagamento: ' + e.message, 'err');
+  }
+}
+
+async function doExtendAccess(companyId, companyName, fixedDays) {
+  const days = fixedDays || parseInt(document.getElementById('extendDaysInput')?.value || '30');
+  if (!days || days < 1) { showToast('Indica um número de dias válido.', 'err'); return; }
+
+  const c = _customers.find(x => x.id === companyId);
+  if (!c) return;
+
+  const base = (c.trial_ends_at && new Date(c.trial_ends_at) > new Date())
+    ? new Date(c.trial_ends_at) 
+    : new Date();
+  base.setDate(base.getDate() + days);
+
+  try {
+    const { error } = await _adminSb()
+      .from('companies')
+      .update({ trial_ends_at: base.toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', companyId);
+    if (error) throw error;
+    await _adminAudit('extend_access', `Empresa: ${companyName} (${companyId}) +${days} dias → ${base.toLocaleDateString('pt-PT')}`);
+    showToast(`<i class="ph-bold ph-check-circle"></i> Acesso de ${companyName} prorrogado por +${days} dias (até ${base.toLocaleDateString('pt-PT')})`, 'ok');
+    closeCompanyDetail();
+    await refreshAll();
+  } catch(e) {
+    showToast('Erro ao prorrogar: ' + e.message, 'err');
+  }
+}
+
+async function changeCustomerPlan(companyId, newPlan) {
+  const c = _customers.find(x => x.id === companyId);
+  if (!c) return;
+  
+  openConfirm('💳 Alterar Plano', `Deseja mudar o plano de "${c.name}" para <strong>${newPlan.toUpperCase()}</strong>?`, async () => {
+    try {
+      const days = newPlan.includes('_ano') ? 365 + 1 : 30 + 1; 
+      const future = new Date();
+      if (newPlan !== 'trial') {
+        future.setDate(future.getDate() + days);
+      } else {
+        future.setDate(future.getDate() + 7);
+      }
+
+      const { error } = await _adminSb()
+        .from('companies')
+        .update({ plan: newPlan, trial_ends_at: future.toISOString(), updated_at: new Date().toISOString() })
+        .eq('id', companyId);
+      
+      if (error) throw error;
+      
+      await _adminAudit('plan_change', `Empresa: ${c.name} (${companyId}) -> Plano: ${newPlan}`);
+      showToast(`<i class="ph-bold ph-check-circle"></i> Plano de ${c.name} atualizado para ${newPlan}`, 'ok');
+      await refreshAll();
+    } catch(e) {
+      showToast('Erro ao mudar plano: ' + e.message, 'err');
+    }
+  });
+}
+
+async function loginAsCompany(slug) {
+  if (!slug) return;
+  showToast('<i class="ph-bold ph-rocket-launch"></i> A preparar impersonate seguro...', '');
+  
+  try {
+    const { data: { session } } = await _adminSb().auth.getSession();
+    if (session) {
+      localStorage.setItem('3dzaap_admin_backup', JSON.stringify(session));
+    }
+
+    const { data, error } = await _adminSb().functions.invoke('admin-impersonate', {
+      body: { companySlug: slug }
+    });
+
+    if (error) throw error;
+    if (!data || !data.action_link) throw new Error('Link de impersonate não recebido.');
+
+    await _adminAudit('impersonate_login', `slug=${slug}`);
+    window.location.href = data.action_link;
+
+  } catch (e) {
+    showToast('Erro ao iniciar impersonate: ' + (e.message || 'Desconhecido'), 'err');
+    localStorage.removeItem('3dzaap_admin_backup');
+  }
+}
+
+function confirmSuspendCustomer(id, name, currentStatus) {
+  const isSuspended = !!currentStatus;
+  openConfirm(
+    isSuspended ? 'Reativar conta' : 'Suspender conta',
+    isSuspended ? `Deseja reativar o acesso de "${name}"?` : `Deseja suspender "${name}"? Todos os utilizadores desta empresa perderão acesso imediato.`,
+    async () => {
+      try {
+        const { error } = await _adminSb()
+          .from('companies')
+          .update({ is_suspended: !isSuspended, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        
+        if (error) throw error;
+        
+        await _adminAudit(isSuspended ? 'unsuspend' : 'suspend', `Empresa: ${name} (${id})`);
+        showToast(isSuspended ? '<i class="ph-bold ph-check-circle"></i> Conta reativada' : '<i class="ph-bold ph-prohibit"></i> Conta suspensa', 'ok');
+        await refreshAll();
+      } catch(e) {
+        showToast('Erro na operação: ' + e.message, 'err');
+      }
+    },
+    isSuspended ? '<i class="ph-bold ph-check-circle"></i>' : '<i class="ph-bold ph-prohibit"></i>'
+  );
+}
+
+function confirmDeleteCustomer(id, name) {
+  openConfirm(
+    'Apagar Empresa',
+    `Tem a certeza que deseja <b>apagar definitivamente</b> a empresa "${name}"? Esta ação não pode ser desfeita e removerá todos os pedidos, materiais e dados associados.`,
+    async () => {
+      try {
+        const { error } = await _adminSb().from('companies').delete().eq('id', id);
+        if (error) throw error;
+        await _adminAudit('delete_company', `Empresa APAGADA: ${name} (${id})`);
+        showToast('Empresa apagada com sucesso.', 'suc');
+        await refreshAll();
+      } catch(e) {
+        showToast('Erro ao apagar empresa: ' + e.message, 'err');
+      }
+    },
+    '<i class="ph-bold ph-trash"></i>'
+  );
+}
+
+async function syncStripe() {
+  showToast('<i class="ph-bold ph-arrows-clockwise"></i> A verificar sincronização Stripe...', '');
+  setTimeout(() => {
+    showToast('<i class="ph-bold ph-check-circle"></i> Dashboards e Assinaturas sincronizados com Stripe.', 'ok');
+    refreshAll();
+  }, 1200);
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

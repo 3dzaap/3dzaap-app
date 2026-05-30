@@ -24,6 +24,29 @@ function _adminSb() {
   ));
 }
 
+// ── Global Variables ───────────────────────────────────────
+let _currentAdminEmail = '';
+
+const PLAN_MRR = {
+  trial: 0,
+  starter: 19,
+  starter_ano: 15,
+  pro: 39,
+  pro_ano: 32,
+  business: 89,
+  business_ano: 75
+};
+
+const PLAN_ANNUAL_TOTAL = {
+  trial: 0,
+  starter: 0,
+  starter_ano: 180,
+  pro: 0,
+  pro_ano: 384,
+  business: 0,
+  business_ano: 900
+};
+
 // ── Auth guard — redireciona para login.html se não for admin ──
 async function checkAdminAccess(onGranted) {
   try {
@@ -37,12 +60,29 @@ async function checkAdminAccess(onGranted) {
       window.location.href = 'login.html';
       return;
     }
+    _currentAdminEmail = session.email;
     AdminSidebar.setAdminEmail(session.email);
     if (typeof onGranted === 'function') await onGranted(session);
   } catch (e) {
     console.error('[AdminCore] checkAdminAccess error:', e);
     window.location.href = 'login.html';
   }
+}
+
+// ── Audit Log ──────────────────────────────────────────────
+async function _adminAudit(action, detail) {
+  try {
+    await _adminSb().from('admin_audit_log').insert({
+      admin_email: _currentAdminEmail,
+      action,
+      detail,
+      created_at: new Date().toISOString(),
+    });
+  } catch(e) {}
+}
+
+async function _adminAuditSA(action, detail) {
+  return _adminAudit('SUPER_ADMIN_' + action, detail);
 }
 
 // ── Toast ──────────────────────────────────────────────────
@@ -67,7 +107,14 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
-// ── Relative time ─────────────────────────────────────────
+// ── Formatting ─────────────────────────────────────────────
+function fmtDate(isoStr) {
+  if (!isoStr) return '—';
+  try {
+    return new Date(isoStr).toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' });
+  } catch(e) { return '—'; }
+}
+
 function fmtRelativeTime(date) {
   const now = new Date();
   const d = date instanceof Date ? date : new Date(date);

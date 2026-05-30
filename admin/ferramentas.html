@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Ferramentas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Ferramentas Avançadas</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-wrench"></i> Ferramentas Avançadas</h1>
+          <div class="adm-page-sub">Comunicação, flags e exportação de dados</div>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+
+        <!-- BROADCAST -->
+        <div class="ad-card">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-megaphone"></i> Broadcast de mensagem</div></div>
+          <div class="ad-card-body">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Destinatários</label>
+              <select class="form-select" id="broadcastTarget">
+                <option value="all">Todos os utilizadores</option>
+                <option value="trial">Apenas em trial</option>
+                <option value="past_due">Apenas em atraso</option>
+                <option value="pro">Plano Pro</option>
+                <option value="business">Plano Business</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Tipo</label>
+              <select class="form-select" id="broadcastType">
+                <option value="info">Informação</option>
+                <option value="warning">Aviso</option>
+                <option value="success">Novidade</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Título</label>
+              <input type="text" class="form-input" id="broadcastTitle" placeholder="ex: Nova funcionalidade disponível">
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Mensagem</label>
+              <textarea class="form-textarea" id="broadcastMsg" rows="3" placeholder="Texto da mensagem…"></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Expirar em <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+              <input type="datetime-local" class="form-input" id="broadcastExpires">
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost btn-sm" onclick="previewBroadcast()"><i class="ph-bold ph-eye"></i> Pré-visualizar</button>
+              <button class="btn btn-primary btn-sm" onclick="sendBroadcast()"><i class="ph-bold ph-megaphone"></i> Enviar</button>
+            </div>
+            <div class="form-hint" id="broadcastFb" style="margin-top:8px"></div>
+          </div>
+        </div>
+
+        <!-- BROADCASTS ATIVOS -->
+        <div class="ad-card">
+          <div class="ad-card-header">
+            <div class="ad-card-title"><i class="ph-bold ph-list-numbers"></i> Broadcasts ativos</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge" id="broadcastsCount" style="background:var(--admin-blue);color:#fff">0</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadBroadcasts()"><i class="ph-bold ph-arrows-clockwise"></i></button>
+            </div>
+          </div>
+          <div class="ad-card-body">
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <button class="btn btn-primary btn-sm" id="bcFilterAll"      onclick="filterBroadcasts('all')"      style="font-size:.72rem">Todos</button>
+              <button class="btn btn-ghost btn-sm"   id="bcFilterActive"   onclick="filterBroadcasts('active')"   style="font-size:.72rem">Ativos</button>
+              <button class="btn btn-ghost btn-sm"   id="bcFilterInactive" onclick="filterBroadcasts('inactive')" style="font-size:.72rem">Inativos</button>
+            </div>
+            <div class="bc-list" id="broadcastsList" style="max-height:400px;overflow-y:auto;padding-right:4px">
+              <div style="text-align:center;color:var(--muted);padding:20px;font-size:.82rem">A carregar…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATURE FLAGS -->
+        <div class="ad-card">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-flag"></i> Feature Flags</div></div>
+          <div class="ad-card-body">
+            <div class="flag-row">
+              <div class="flag-info">
+                <div class="flag-name">Modo manutenção</div>
+                <div class="flag-desc">Exibe banner de manutenção a todos os utilizadores</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="flagMaintenance" onchange="saveFlag('maintenance',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="flag-row">
+              <div class="flag-info">
+                <div class="flag-name">Trial — 7 dias</div>
+                <div class="flag-desc">Duração do trial para novos registos</div>
+              </div>
+              <input type="number" class="form-input" id="flagTrialDays" value="7" min="1" max="90" style="width:70px;text-align:center" onchange="saveFlag('trial_days',this.value)">
+            </div>
+            <div class="flag-row">
+              <div class="flag-info">
+                <div class="flag-name">Novos registos</div>
+                <div class="flag-desc">Permitir novos registos na plataforma</div>
+              </div>
+              <label class="toggle"><input type="checkbox" id="flagNewSignups" checked onchange="saveFlag('new_signups',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPORT DATA -->
+        <div class="ad-card">
+          <div class="ad-card-header"><div class="ad-card-title"><i class="ph-bold ph-download-simple"></i> Exportação de Dados</div></div>
+          <div class="ad-card-body">
+            <div style="display:grid;gap:12px">
+              <button class="btn btn-ghost" onclick="exportGlobal('companies')" style="justify-content:flex-start">
+                <i class="ph-bold ph-buildings"></i> Exportar Clientes (CSV)
+              </button>
+              <button class="btn btn-ghost" onclick="exportGlobal('subscriptions')" style="justify-content:flex-start">
+                <i class="ph-bold ph-credit-card"></i> Exportar Assinaturas (CSV)
+              </button>
+              <button class="btn btn-ghost" onclick="exportGlobal('audit')" style="justify-content:flex-start">
+                <i class="ph-bold ph-shield"></i> Exportar Log de Auditoria (CSV)
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirm -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-primary" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _broadcasts = [];
+let _bcFilter = 'all';
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadBroadcasts();
+    await loadFlags();
+  });
+}
+
+// ── BROADCASTS ────────────────────────────────────────────────────────
+async function loadBroadcasts() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('admin_broadcasts')
+      .select('id, title, message, target, type, active, expires_at, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    _broadcasts = data || [];
+    renderBroadcastsList();
+  } catch(e) {
+    document.getElementById('broadcastsList').innerHTML = `<div style="color:var(--muted);text-align:center;padding:16px">Erro: ${e.message}</div>`;
+  }
+}
+
+function filterBroadcasts(filter) {
+  _bcFilter = filter;
+  ['all','active','inactive'].forEach(f => {
+    const btn = document.getElementById('bcFilter' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (btn) btn.classList.toggle('btn-primary', filter === f);
+    if (btn) btn.classList.toggle('btn-ghost',   filter !== f);
+  });
+  renderBroadcastsList();
+}
+
+function renderBroadcastsList() {
+  const el = document.getElementById('broadcastsList');
+  const countEl = document.getElementById('broadcastsCount');
+  const now = new Date();
+  let list = _broadcasts.filter(b => {
+    const expired = b.expires_at && new Date(b.expires_at) < now;
+    const isActive = b.active && !expired;
+    if (_bcFilter === 'active')   return isActive;
+    if (_bcFilter === 'inactive') return !isActive;
+    return true;
+  });
+
+  const activeCount = _broadcasts.filter(b => b.active && (!b.expires_at || new Date(b.expires_at) >= now)).length;
+  if (countEl) countEl.textContent = activeCount;
+
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:24px;font-size:.82rem">Nenhum broadcast encontrado.</div>`;
+    return;
+  }
+
+  const targetLabels = { all:'Todos', trial:'Trial', past_due:'Atraso', pro:'Pro', business:'Business' };
+  const typeIcons    = { info:'<i class="ph-bold ph-info"></i>', warning:'<i class="ph-bold ph-warning-octagon"></i>', success:'<i class="ph-bold ph-check-circle"></i>' };
+
+  el.innerHTML = list.map(b => {
+    const expired  = b.expires_at && new Date(b.expires_at) < now;
+    const isActive = b.active && !expired;
+    const expStr   = b.expires_at ? (expired ? `<span style="color:var(--danger)">Expirado</span>` : `Expira ${fmtDate(b.expires_at)}`) : 'S/ expiração';
+
+    return `<div class="bc-item${isActive ? '' : ' bc-inactive'}">
+      <div>
+        <div class="bc-item-title">
+          <span class="bc-status-dot ${isActive ? 'on' : 'off'}"></span>
+          ${typeIcons[b.type] || '📢'} ${escH(b.title)}
+        </div>
+        <div class="bc-item-msg">${escH(b.message)}</div>
+        <div class="bc-item-meta">
+          <span><i class="ph-bold ph-users"></i> ${targetLabels[b.target] || b.target}</span>
+          <span>·</span>
+          <span><i class="ph-bold ph-calendar"></i> ${fmtDate(b.created_at)}</span>
+          <span>·</span>
+          <span>${expStr}</span>
+        </div>
+      </div>
+      <div class="bc-actions">
+        <button class="btn-table ${isActive ? 'danger' : 'success'}" onclick="toggleBroadcast('${b.id}', ${isActive})">
+          ${isActive ? 'Desativar' : 'Ativar'}
+        </button>
+        <button class="btn-table danger" onclick="deleteBroadcast('${b.id}', '${escH(b.title)}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleBroadcast(id, currentlyActive) {
+  const newVal = !currentlyActive;
+  try {
+    const { error } = await _adminSb().from('admin_broadcasts').update({ active: newVal }).eq('id', id);
+    if (error) throw error;
+    await _adminAudit('broadcast_toggle', `id=${id} active=${newVal}`);
+    const b = _broadcasts.find(x => x.id === id);
+    if (b) b.active = newVal;
+    renderBroadcastsList();
+    showToast(newVal ? 'Broadcast ativado' : 'Broadcast desativado', 'ok');
+  } catch(e) {
+    showToast(`Erro: ${e.message}`, 'err');
+  }
+}
+
+async function deleteBroadcast(id, title) {
+  openConfirm('Eliminar broadcast', `Eliminar permanentemente o broadcast "${title}"?`, async () => {
+    try {
+      const { error } = await _adminSb().from('admin_broadcasts').delete().eq('id', id);
+      if (error) throw error;
+      await _adminAudit('broadcast_delete', `id=${id} title=${title}`);
+      _broadcasts = _broadcasts.filter(x => x.id !== id);
+      renderBroadcastsList();
+      showToast('Broadcast eliminado', 'ok');
+    } catch(e) {
+      showToast('Erro ao eliminar: ' + e.message, 'err');
+    }
+  }, '<i class="ph-bold ph-trash"></i>');
+}
+
+async function sendBroadcast() {
+  const title   = document.getElementById('broadcastTitle').value.trim();
+  const msg     = document.getElementById('broadcastMsg').value.trim();
+  const target  = document.getElementById('broadcastTarget').value;
+  const type    = document.getElementById('broadcastType').value;
+  const expiresRaw = document.getElementById('broadcastExpires')?.value;
+  
+  if (!title || !msg) { showToast('Preenche título e mensagem', 'err'); return; }
+  
+  const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
+  
+  openConfirm('Enviar broadcast', `Enviar mensagem "${title}" para: ${target}?`, async () => {
+    try {
+      const payload = { title, message: msg, target, type, active: true };
+      if (expiresAt) payload.expires_at = expiresAt;
+      const { error } = await _adminSb().from('admin_broadcasts').insert(payload);
+      if (error) throw error;
+      await _adminAudit('broadcast', `Broadcast enviado (${target}): ${title}`);
+      document.getElementById('broadcastTitle').value = '';
+      document.getElementById('broadcastMsg').value   = '';
+      document.getElementById('broadcastExpires').value = '';
+      showToast('Broadcast enviado!', 'ok');
+      await loadBroadcasts();
+    } catch(e) {
+      showToast('Erro: ' + e.message, 'err');
+    }
+  }, '<i class="ph-bold ph-megaphone"></i>');
+}
+
+function previewBroadcast() {
+  const title = document.getElementById('broadcastTitle').value || '(sem título)';
+  const msg   = document.getElementById('broadcastMsg').value || '(sem mensagem)';
+  const type  = document.getElementById('broadcastType').value;
+  showToast(`${title}: ${msg}`, type === 'success' ? 'ok' : '');
+}
+
+// ── FEATURE FLAGS ────────────────────────────────────────────────────────
+async function loadFlags() {
+  try {
+    const { data } = await _adminSb().from('admin_flags').select('flag, value');
+    if (data) {
+      data.forEach(f => {
+        const el = document.getElementById('flag' + f.flag.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(''));
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = (f.value === 'true');
+        else el.value = f.value;
+      });
+    }
+  } catch(e) {}
+}
+
+async function saveFlag(flag, value) {
+  try {
+    await _adminSb().from('admin_flags').upsert({ flag, value: String(value), updated_at: new Date().toISOString() }, { onConflict: 'flag' });
+    await _adminAudit('flag_change', `Flag "${flag}" → ${value}`);
+    showToast(`Flag "${flag}" atualizado`, 'ok');
+  } catch(e) {
+    showToast('Erro ao guardar flag: ' + e.message, 'err');
+  }
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+async function exportGlobal(type) {
+  showToast('A compilar dados...', '');
+  try {
+    let csv = '', filename = `3DZAAP_${type}_${new Date().toISOString().slice(0,10)}.csv`;
+    const sep = ';';
+    
+    if (type === 'companies') {
+      const { data } = await _adminSb().from('companies').select('id, name, slug, plan, trial_ends_at, is_suspended, created_at');
+      if (data) {
+        csv += ['ID','Nome','Slug','Plano','Estado','Trial Expira','Criado em'].join(sep)+'\n';
+        data.forEach(c => {
+          csv += [c.id, c.name, c.slug, c.plan||'trial', c.is_suspended?'suspenso':'ativo', c.trial_ends_at||'', c.created_at||'']
+            .map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
+        });
+      }
+    } else if (type === 'audit') {
+      const { data } = await _adminSb().from('admin_audit_log').select('*').order('created_at', { ascending: false });
+      if (data) {
+        csv += ['Data','Ação','Detalhe','Admin'].join(sep)+'\n';
+        data.forEach(l => {
+          csv += [l.created_at, l.action, l.detail, l.admin_email]
+            .map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(sep)+'\n';
+        });
+      }
+    } else if (type === 'subscriptions') {
+      // Simplificado (em produção cruza com stripe_subscriptions)
+      csv += ['ID','Funcionalidade não implementada no export standalone'].join(sep)+'\n';
+    }
+
+    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+    const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:filename, style:'display:none'});
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    showToast('Exportação concluída!', 'suc');
+  } catch (e) {
+    showToast('Erro ao exportar: ' + e.message, 'err');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

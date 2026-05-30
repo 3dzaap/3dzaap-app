@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Acordos de Parceria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Acordos de Parceria</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-handshake"></i> Acordos de Parceria</h1>
+          <div class="adm-page-sub">Gestão de acordos comerciais e parceiros de negócio</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:16px">
+        <div class="admin-search-wrap" style="max-width:300px;">
+          <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
+          <input class="admin-search form-input" id="searchAcordos" placeholder="Pesquisar acordos…" oninput="filterAcordos()">
+        </div>
+        <button class="btn btn-primary" onclick="window.open('../gerador_acordo_parceria.html', '_blank')"><i class="ph-bold ph-plus"></i> Novo Acordo</button>
+      </div>
+      
+      <div class="ad-card">
+        <div class="ad-card-header">
+          <div class="ad-card-title"><i class="ph-bold ph-handshake"></i> Documentos e Contratos</div>
+          <span class="badge" id="acordosCount" style="background:var(--admin-purple);color:#fff">0</span>
+        </div>
+        <div class="ad-card-body table-wrap" style="padding:0">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Responsável</th>
+                <th>Data Início</th>
+                <th>Duração</th>
+                <th>Plano</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="acordosAdminBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar acordos…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirm -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-primary" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _acordos = [];
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadAcordos();
+  });
+}
+
+async function loadAcordos() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('acordos_parceria') // note: earlier code selected from 'acordos' but dashboard counts on 'acordos_parceria'
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      // fallback to old 'acordos' table if 'acordos_parceria' fails (schema transition)
+      const fallback = await _adminSb().from('acordos').select('*').order('created_at', { ascending: false });
+      if (fallback.error) throw fallback.error;
+      _acordos = fallback.data || [];
+    } else {
+      _acordos = data || [];
+    }
+    document.getElementById('acordosCount').textContent = _acordos.length;
+    renderAcordosTable(_acordos);
+  } catch(e) {
+    console.error('Erro ao carregar acordos:', e);
+    showToast('Erro ao carregar: ' + e.message, 'err');
+  }
+}
+
+function filterAcordos() {
+  const term = (document.getElementById('searchAcordos').value || '').toLowerCase();
+  const filtered = _acordos.filter(a => 
+    (a.partner_name || '').toLowerCase().includes(term) ||
+    (a.partner_rep || '').toLowerCase().includes(term)
+  );
+  renderAcordosTable(filtered);
+}
+
+function getAcordoStatus(startDate, durationMonths) {
+  if (!startDate) return 'active';
+  const end = new Date(startDate + 'T00:00:00');
+  end.setMonth(end.getMonth() + durationMonths);
+  const diffDays = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return 'expired';
+  if (diffDays <= 30) return 'expiring';
+  return 'active';
+}
+
+function renderAcordosTable(list) {
+  const tbody = document.getElementById('acordosAdminBody');
+  if (!list || list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum acordo encontrado</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = list.map(a => {
+    const status = getAcordoStatus(a.start_date, a.duration);
+    let statusLabel = 'Ativo';
+    let statusClass = 's-active';
+    if (status === 'expired') { statusLabel = 'Expirado'; statusClass = 's-canceled'; }
+    if (status === 'expiring') { statusLabel = 'A expirar'; statusClass = 's-due'; }
+    
+    const d = a.start_date ? new Date(a.start_date + 'T00:00:00').toLocaleDateString('pt-PT') : '—';
+    return `<tr>
+      <td style="font-weight:700;color:var(--dark)">${escH(a.partner_name)}</td>
+      <td style="color:var(--muted)">${escH(a.partner_rep) || '—'}</td>
+      <td class="mono">${d}</td>
+      <td>${a.duration} meses</td>
+      <td><span class="plan-badge plan-${(a.plan || 'pro').toLowerCase().replace(' ','_')}">${escH(a.plan) || 'Pro'}</span></td>
+      <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-action danger" title="Apagar" onclick="deleteAcordo('${a.id}')"><i class="ph-bold ph-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteAcordo(id) {
+  openConfirm(
+    'Apagar Acordo',
+    'Tem certeza que deseja apagar este acordo?',
+    async () => {
+      try {
+        let err = null;
+        let res1 = await _adminSb().from('acordos_parceria').delete().eq('id', id);
+        if (res1.error) {
+          let res2 = await _adminSb().from('acordos').delete().eq('id', id);
+          if (res2.error) err = res2.error;
+        }
+        if (err) throw err;
+        showToast('Acordo apagado.', 'suc');
+        await loadAcordos();
+      } catch(e) {
+        showToast('Erro: ' + e.message, 'err');
+      }
+    },
+    '<i class="ph-bold ph-trash"></i>'
+  );
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin 3DZAAP — Utilizadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script>
+(function(){
+  var t = localStorage.getItem('3dzaap_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase.js"></script>
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="adm-layout">
+  <div class="adm-main">
+    <div class="adm-topbar">
+      <button class="adm-mob-toggle" onclick="toggleAdminSidebar()"><i class="ph-bold ph-list"></i></button>
+      <div class="adm-topbar-title">Utilizadores</div>
+      <div class="adm-topbar-right">
+        <button class="btn-action" onclick="toggleTheme()" id="topbarThemeToggle" title="Alternar Tema">
+          <i class="ph-bold ph-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="adm-page" id="adminContent" style="display:none">
+      <div class="adm-page-header">
+        <div>
+          <h1><i class="ph-bold ph-users"></i> Utilizadores Globais</h1>
+          <div class="adm-page-sub">Contas, acessos e privilégios de super-administrador</div>
+        </div>
+      </div>
+
+      <div class="admin-toolbar" style="margin-bottom:16px">
+        <div class="admin-search-wrap" style="max-width:300px">
+          <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
+          <input class="admin-search form-input" id="searchUsers" placeholder="Pesquisar email ou nome…" oninput="filterUsers()">
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-card-header">
+          <div class="ad-card-title"><i class="ph-bold ph-user-circle"></i> Utilizadores Registados</div>
+          <span class="badge" id="usersCount" style="background:var(--admin-blue);color:#fff">0</span>
+        </div>
+        <div class="ad-card-body table-wrap" style="padding:0">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Empresa</th>
+                <th>Papel</th>
+                <th>Plano</th>
+                <th>Registado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">A carregar utilizadores…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirm -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-primary" id="confirmOkBtn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="admin-core.js"></script>
+<script src="admin-sidebar.js"></script>
+<script>
+let _users = [];
+let _superAdmins = [];
+
+async function initPage() {
+  initThemeToggle();
+  AdminSidebar.init();
+  checkAdminAccess(async () => {
+    document.getElementById('adminContent').style.display = 'block';
+    await loadSuperAdmins();
+    await loadUsers();
+  });
+}
+
+async function loadSuperAdmins() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('super_admins')
+      .select('user_id, granted_at, granted_by');
+    if (!error && data) _superAdmins = data;
+  } catch(e) {}
+}
+
+async function loadUsers() {
+  try {
+    const { data, error } = await _adminSb()
+      .from('memberships')
+      .select('role, joined_at, user_id, companies(name, plan)')
+      .order('joined_at', { ascending: false });
+    if (error) throw error;
+
+    let authMap = {};
+    try {
+      const { data: authUsers, error: rpcErr } = await _adminSb().rpc('get_users_metadata');
+      if (!rpcErr && Array.isArray(authUsers)) {
+        authUsers.forEach(u => { authMap[u.id] = u; });
+      }
+    } catch (_) { }
+
+    _users = (data || []).map(m => ({
+      ...m,
+      _email: authMap[m.user_id]?.email || null,
+      _fname: authMap[m.user_id]?.raw_user_meta_data?.fname || null,
+      _lname: authMap[m.user_id]?.raw_user_meta_data?.lname || null,
+    }));
+    
+    renderUsersTable(_users);
+    document.getElementById('usersCount').textContent = _users.length;
+  } catch(e) {
+    showToast('Erro ao carregar utilizadores: ' + e.message, 'err');
+  }
+}
+
+function renderUsersTable(data) {
+  const tbody = document.getElementById('usersTableBody');
+  if (!tbody) return;
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum utilizador encontrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(u => {
+    const plan  = u.companies?.plan || '—';
+    const isSA  = _superAdmins.some(sa => sa.user_id === u.user_id);
+    const saBtn = isSA
+      ? `<button class="btn-table danger" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',false)">🛡️ Revogar SA</button>`
+      : `<button class="btn-table" onclick="toggleSuperAdmin('${escH(u.user_id||'')}','${escH(u.companies?.name||'')}',true)">🛡️ Dar SA</button>`;
+    const saBadge = isSA
+      ? `<span style="font-size:.65rem;background:rgba(99,102,241,.15);color:#6366f1;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:4px">SA</span>`
+      : '';
+
+    const fullName = [u._fname, u._lname].filter(Boolean).join(' ');
+    const nameCell = fullName
+      ? escH(fullName)
+      : `<span style="color:var(--muted);font-style:italic">Sem nome</span>`;
+    const emailCell = u._email
+      ? escH(u._email)
+      : `<span style="color:var(--muted);font-family:var(--mono);font-size:.72rem" title="${escH(u.user_id||'')}">${(u.user_id||'').slice(0,10)}…</span>`;
+
+    return `<tr>
+      <td><div style="font-weight:700;font-size:.85rem">${nameCell}</div></td>
+      <td><div style="font-size:.78rem;font-family:var(--mono)">${emailCell}</div></td>
+      <td><div style="font-weight:600">${escH(u.companies?.name || '—')}</div></td>
+      <td><span class="badge" style="font-size:.68rem">${u.role || '—'}</span>${saBadge}</td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td class="mono">${fmtDate(u.joined_at)}</td>
+      <td style="white-space:nowrap">
+        ${saBtn}
+        <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u._email||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('searchUsers').value.toLowerCase();
+  const filtered = _users.filter(u =>
+    !q 
+    || u.user_id?.toLowerCase().includes(q) 
+    || u._email?.toLowerCase().includes(q)
+    || u.companies?.name?.toLowerCase().includes(q)
+    || (u._fname + ' ' + u._lname)?.toLowerCase().includes(q)
+  );
+  renderUsersTable(filtered);
+}
+
+function toggleSuperAdmin(userId, companyName, grant) {
+  openConfirm(
+    grant ? 'Conceder Super Admin' : 'Revogar Super Admin',
+    grant 
+      ? `Deseja conceder privilégios de Super Administrador ao utilizador ID ${userId}?`
+      : `Deseja remover privilégios de Super Administrador do utilizador ID ${userId}?`,
+    async () => {
+      try {
+        if (grant) {
+          const { error } = await _adminSb().from('super_admins').insert({ user_id: userId, granted_by: _currentAdminEmail });
+          if (error) throw error;
+          await _adminAuditSA('grant', `User: ${userId}`);
+        } else {
+          const { error } = await _adminSb().from('super_admins').delete().eq('user_id', userId);
+          if (error) throw error;
+          await _adminAuditSA('revoke', `User: ${userId}`);
+        }
+        showToast('Privilégios atualizados com sucesso.', 'ok');
+        await loadSuperAdmins();
+        filterUsers();
+      } catch(e) {
+        showToast('Erro ao atualizar privilégios: ' + e.message, 'err');
+      }
+    },
+    '<i class="ph-bold ph-shield-check"></i>'
+  );
+}
+
+function confirmBanUser(userId, email, companyName) {
+  openConfirm(
+    'Banir Utilizador',
+    `De momento a ação de banir a nível de Auth necessita de ser feita na consola do Supabase ou via Edge Function.<br><br>Utilizador: <b>${email}</b><br>Empresa: <b>${companyName}</b><br><br>Podes remover da empresa manualmente ou suspender a empresa inteira nos Clientes.`,
+    () => { },
+    '<i class="ph-bold ph-warning-octagon"></i>'
+  );
+}
+
+window.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>
