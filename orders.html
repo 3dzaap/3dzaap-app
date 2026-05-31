@@ -3387,7 +3387,8 @@
       let opts = '<option value="">-- Sem impressora --</option>';
       printers.forEach(p => {
         const sel = String(selectedId) === String(p.id) ? 'selected' : '';
-        opts += `<option value="${p.id}" ${sel}>${escH(p.name)}</option>`;
+        const pname = p.customName || (p.brand + ' ' + p.model).trim() || 'Impressora';
+        opts += `<option value="${p.id}" ${sel}>${escH(pname)}</option>`;
       });
       return opts;
     }
@@ -3425,10 +3426,13 @@
     }
 
     function _buildOrdRunRow(gIdx, rIdx, printerId, qty, maxQty) {
-      return `<div class="ord-pmodal-run-row" data-g-idx="${gIdx}" style="display:flex; align-items:center; gap:8px;">
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto;">${_buildOrdPrinterOpts(printerId)}</select>
-        <input type="number" min="0" max="${maxQty}" value="${qty}" class="form-input mono ord-pmodal-qty" style="width:70px; padding:6px; text-align:center; font-size:0.8rem;">
-        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px 6px;" onclick="this.closest('.ord-pmodal-run-row').remove()">
+      return `<div class="ord-pmodal-run-row" data-g-idx="${gIdx}" style="display:flex; align-items:center; gap:8px; width:100%;">
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto; min-width:0;">${_buildOrdPrinterOpts(printerId)}</select>
+        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+          <input type="number" min="0" max="${maxQty}" value="${qty}" class="form-input mono ord-pmodal-qty" style="width:60px; padding:6px; text-align:center; font-size:0.8rem;">
+          <span style="font-size:0.75rem; color:var(--muted)">un.</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px; flex-shrink:0;" onclick="this.closest('.ord-pmodal-run-row').remove()">
           <i class="ph-bold ph-x"></i>
         </button>
       </div>`;

@@ -974,7 +974,8 @@
       let opts = `<option value="">-- Sem impressora --</option>`;
       _printers.forEach(p => {
         const sel = String(selectedId) === String(p.id) ? 'selected' : '';
-        opts += `<option value="${p.id}" ${sel}>${escH(p.name)}</option>`;
+        const pname = p.customName || (p.brand + ' ' + p.model).trim() || 'Impressora';
+        opts += `<option value="${p.id}" ${sel}>${escH(pname)}</option>`;
       });
       return opts;
     }
@@ -1040,15 +1041,18 @@
       row.className = 'pmodal-run-row';
       row.dataset.globalIdx = globalIdx;
       row.dataset.runIdx = runIdx;
-      row.style.cssText = 'display:flex; align-items:center; gap:8px;';
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; width: 100%;';
       row.innerHTML = `
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto;">
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto; min-width: 0;">
           ${_buildPrinterOpts(printerId)}
         </select>
-        <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd"
-          class="form-input mono pmodal-qty-input" style="width:70px; padding:6px; font-size:0.8rem; text-align:center;">
+        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+          <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd"
+            class="form-input mono pmodal-qty-input" style="width:60px; padding:6px; font-size:0.8rem; text-align:center;">
+          <span style="font-size:0.75rem; color:var(--muted)">un.</span>
+        </div>
         <button type="button" class="btn btn-ghost btn-sm" title="Remover"
-          style="color:var(--danger); padding:4px 6px;"
+          style="color:var(--danger); padding:4px; flex-shrink:0;"
           onclick="this.closest('.pmodal-run-row').remove()">
           <i class="ph-bold ph-x"></i>
         </button>
