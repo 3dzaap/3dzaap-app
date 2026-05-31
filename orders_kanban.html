@@ -974,6 +974,7 @@
         _renderItemBlock(listEl, it, globalIdx);
       });
 
+      updateKanbanPrinterModalStats();
       document.getElementById('printerModalOverlay').style.display = 'flex';
     }
 
@@ -1049,20 +1050,73 @@
 
     function _buildRunRow(globalIdx, runIdx, printerId, qty, maxQty) {
       return `<div class="pmodal-run-row" data-global-idx="${globalIdx}" data-run-idx="${runIdx}" style="display:flex; align-items:center; gap:8px; width: 100%;">
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;">
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;" onchange="updateKanbanPrinterModalStats()">
           ${_buildPrinterOpts(printerId)}
         </select>
         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-          <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd"
+          <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd" class="pmodal-qty-input" onchange="updateKanbanPrinterModalStats()"
             style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;">
           <span style="font-size:0.8rem; color:var(--muted)">un.</span>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" title="Remover"
           style="color:var(--danger); padding:4px; flex-shrink:0;"
-          onclick="this.closest('.pmodal-run-row').remove()">
+          onclick="const row = this.closest('.pmodal-run-row'); row.remove(); updateKanbanPrinterModalStats();">
           <i class="ph-bold ph-x"></i>
         </button>
       </div>`;
+    }
+
+    function updateKanbanPrinterModalStats() {
+      const order = _activeOrderForPrinters;
+      if (!order || !order.items) return;
+      
+      let totalPrinters = 0;
+      let totalFil = 0;
+      let totalHours = 0;
+      let totalAssignedItems = 0;
+
+      const blocks = document.querySelectorAll('.pmodal-item-block');
+      blocks.forEach(block => {
+        const globalIdx = parseInt(block.dataset.globalIdx);
+        const it = order.items[globalIdx];
+        if (!it) return;
+
+        const runRows = block.querySelectorAll('.pmodal-run-row');
+        let itemAssignedPrinters = 0;
+        let itemAssignedQty = 0;
+
+        runRows.forEach(row => {
+          const sel = row.querySelector('select');
+          const qtyInput = row.querySelector('.pmodal-qty-input');
+          const pid = sel ? sel.value : '';
+          const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
+          if (qty > 0) {
+             itemAssignedPrinters++;
+             itemAssignedQty += qty;
+          }
+        });
+
+        if (itemAssignedQty > 0) {
+           totalAssignedItems += itemAssignedQty;
+           totalPrinters += itemAssignedPrinters;
+           if (it.weightG) totalFil += (parseFloat(it.weightG) * itemAssignedQty);
+           if (it.printTime) totalHours += (parseTime(it.printTime) * itemAssignedQty);
+        }
+      });
+
+      document.getElementById('pmStatItems').textContent = totalAssignedItems;
+      document.getElementById('pmStatPrinters').textContent = totalPrinters;
+      document.getElementById('pmStatFilament').textContent = (totalFil / 1000).toFixed(2);
+      document.getElementById('pmStatHours').textContent = (totalHours / 60).toFixed(1);
+
+      const totalItems = order.items.length;
+      const doneItems = order.items.filter(it => _itemPrintedQty(it) >= parseInt(it.quantity || 1)).length;
+      const progress = totalItems ? (doneItems / totalItems) * 100 : 0;
+      
+      const pFill = document.getElementById('printerModalProgressFill');
+      const pLbl = document.getElementById('printerModalProgressLbl');
+      if (pFill) pFill.style.width = progress + '%';
+      if (pLbl) pLbl.textContent = `${doneItems} / ${totalItems}`;
     }
 
     function addRunToItem(globalIdx, maxQty) {
