@@ -412,6 +412,17 @@
     .gc-popover-item { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 8px; text-decoration: none; color: var(--dark, #1a2332); font-size: .85rem; font-weight: 600; transition: background .15s; }
     .gc-popover-item:hover { background: var(--blue-g, rgba(59,143,212,.08)); }
     [data-theme="dark"] .gc-popover-item { color: var(--dark); }
+    .pt-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width:768px) {
+      .pt-stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
   </style>
 
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
