@@ -2301,11 +2301,15 @@
 
       checkedBoxes.forEach(cb => {
         const idx = parseInt(cb.dataset.idx);
-        const remQty = parseInt(cb.dataset.qty) || 1;
+        let runQty = parseInt(cb.dataset.qty) || 1;
+        
+        const qtyInput = document.querySelector(`.pt-item-qty[data-idx="${idx}"]`);
+        if (qtyInput) runQty = parseInt(qtyInput.value) || 1;
+
         const printTime = parseFloat(String(cb.dataset.printtime).replace(',', '.')) || 0;
         
-        sumItems += remQty;
-        sumHoras += printTime * remQty;
+        sumItems += runQty;
+        sumHoras += printTime * runQty;
 
         const sel = document.querySelector(`.pt-item-printer[data-idx="${idx}"]`);
         if (sel && sel.value) unqPrinters.add(sel.value);
@@ -2317,7 +2321,7 @@
              try {
                const mm = JSON.parse(matsDiv.textContent);
                mm.forEach(m => {
-                  sumMass += (parseFloat(m.weightG)||0) * remQty;
+                  sumMass += (parseFloat(m.weightG)||0) * runQty;
                });
              }catch(e){}
           }
@@ -2402,11 +2406,15 @@
             </div>
           </label>
           ${!isDone ? `
-          <div style="margin-top:2px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border)">
-             <select class="form-select item-select pt-item-printer" data-idx="${idx}" style="padding:4px 8px; font-size:.75rem" onchange="updatePrintingStats()">
+          <div style="margin-top:2px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border); display:flex; align-items:center; gap:8px;">
+             <select class="form-select item-select pt-item-printer" data-idx="${idx}" style="padding:4px 8px; font-size:.75rem; flex:1; min-width:120px;" onchange="updatePrintingStats()">
                 <option value="">— Atribuir Impressora (Opcional) —</option>
                 ${printerSelectHtml}
              </select>
+             <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                <input type="number" min="1" max="${remaining}" value="${remaining}" placeholder="Qtd" class="pt-item-qty" data-idx="${idx}" style="width:60px; padding:4px 6px; font-size:0.8rem; text-align:center; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text); outline:none;" onchange="updatePrintingStats()">
+                <span style="font-size:0.75rem; color:var(--muted)">un.</span>
+             </div>
              <div style="display:none" class="pt-item-mats-raw">${escH(JSON.stringify(mats))}</div>
           </div>
           ` : ''}
@@ -2437,7 +2445,11 @@
       let mainPrinterId = null;
       checkedBoxes.forEach(cb => {
         const idx = parseInt(cb.dataset.idx);
-        const qty = parseInt(cb.dataset.qty) || 1;
+        let runQty = parseInt(cb.dataset.qty) || 1;
+        
+        const qtyInput = document.querySelector(`.pt-item-qty[data-idx="${idx}"]`);
+        if (qtyInput) runQty = parseInt(qtyInput.value) || 1;
+        
         const it = its[idx];
         if (!it) return;
 
@@ -2456,11 +2468,11 @@
         sessionItems.push({ 
           itemIndex: idx, 
           description: it.description, 
-          quantity: qty, 
+          quantity: runQty, 
           materials: it.materials || [],
           printerId: pId,
           printerLabel: printerLabel,
-          itemEstHours: pTime * qty
+          itemEstHours: pTime * runQty
         });
       });
 
