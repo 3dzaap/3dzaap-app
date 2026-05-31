@@ -537,6 +537,7 @@
     // ══════════════════════════════════════
     let orders = [];
     let _printers = [];
+    let _filaments = [];
     let filterMode = 'active';
     const WARN_DAYS = 3; // days before deadline to show warning
 
@@ -604,12 +605,14 @@
     // ══════════════════════════════════════
     async function loadData() {
       try {
-        const [o, p] = await Promise.all([
+        const [o, p, f] = await Promise.all([
           DB.getOrders('all').catch(() => []),
-          DB.getPrinters().catch(() => [])
+          DB.getPrinters().catch(() => []),
+          DB.getFilaments().catch(() => [])
         ]);
         orders = o;
         _printers = p;
+        _filaments = f;
         renderKanban();
       } catch(e) { console.error('Kanban load error:', e); }
     }
@@ -944,12 +947,16 @@
       // Update modal title & description based on mode
       const titleEl = document.getElementById('printerModalTitle');
       const descEl = document.getElementById('printerModalDesc');
+      const skipBtn = document.getElementById('skipPrintBtn');
+
       if (mode === 'enter') {
         if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
         if (descEl) descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
+        if (skipBtn) skipBtn.style.display = 'none';
       } else {
         if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:var(--success, #22c55e)"></i> Concluir Impressão';
         if (descEl) descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
+        if (skipBtn) skipBtn.style.display = 'flex';
       }
 
       // In 'exit' mode, only show items NOT fully printed and not skipped
@@ -1043,13 +1050,13 @@
       row.dataset.runIdx = runIdx;
       row.style.cssText = 'display:flex; align-items:center; gap:8px; width: 100%;';
       row.innerHTML = `
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto; min-width: 0;">
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;">
           ${_buildPrinterOpts(printerId)}
         </select>
         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
           <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd"
-            class="form-input mono pmodal-qty-input" style="width:60px; padding:6px; font-size:0.8rem; text-align:center;">
-          <span style="font-size:0.75rem; color:var(--muted)">un.</span>
+            style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;">
+          <span style="font-size:0.8rem; color:var(--muted)">un.</span>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" title="Remover"
           style="color:var(--danger); padding:4px; flex-shrink:0;"
@@ -1120,6 +1127,12 @@
       const order = _activeOrderForPrinters;
       if (!order) return;
       _collectPrintRuns(order);
+
+      if (_modalMode === 'exit' && _hasPendingItems(order)) {
+        showToast('<i class="ph-bold ph-warning"></i> Atribua as impressoras em falta ou avance sem imprimir.', 'err');
+        return;
+      }
+
       await _finalizePrinterModal(false);
     }
 

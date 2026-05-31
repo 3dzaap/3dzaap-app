@@ -3357,12 +3357,16 @@
 
       const titleEl = document.getElementById('ordPrinterModalTitle');
       const descEl  = document.getElementById('ordPrinterModalDesc');
+      const skipBtn = document.getElementById('skipOrdPrintBtn');
+
       if (mode === 'enter') {
         if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
         if (descEl)  descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
+        if (skipBtn) skipBtn.style.display = 'none';
       } else {
-        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:#22c55e"></i> Concluir Impressão';
+        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:#22c55e)"></i> Concluir Impressão';
         if (descEl)  descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
+        if (skipBtn) skipBtn.style.display = 'flex';
       }
 
       const itemsToShow = mode === 'exit'
@@ -3373,10 +3377,67 @@
 
       itemsToShow.forEach(it => {
         const gIdx = orderObj.items.indexOf(it);
-        _renderOrdersItemBlock(listEl, it, gIdx);
+        listEl.appendChild(_renderOrdersItemBlock(it, gIdx));
       });
 
       document.getElementById('ordPrinterModalOverlay').style.display = 'flex';
+      _updateOrdPrinterModalStats(orderObj);
+    }
+
+    function _renderOrdersItemBlock(it, gIdx) {
+      const totalQty = parseInt(it.quantity || it.qty || 1);
+      const runs = it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }];
+      const printed = (it.printRuns || []).reduce((sum, r) => sum + (parseInt(r.qty)||0), 0);
+      const remaining = Math.max(0, totalQty - printed);
+      const isDone = remaining === 0;
+
+      const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
+      const matsHtml = mats.map(m => {
+        const fil = filaments.find(f => String(f.id) === String(m.filamentId));
+        if (!fil) return '';
+        const colorDot = fil.colorHex ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${fil.colorHex};border:1px solid rgba(0,0,0,.15);margin-right:4px"></span>` : '';
+        const brandText = Array.isArray(fil.brand) ? fil.brand.join(' ') : (fil.brand || '');
+        const infoStr = `${escH(fil.colorName||fil.color||'')} - ${escH(fil.type||'')} - ${escH(brandText)}`;
+        return `<span style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center">${colorDot}${infoStr} ${m.weightG?'· '+m.weightG+'g/ml':''}</span>`;
+      }).filter(Boolean).join('<span style="margin:0 4px;color:var(--border)">+</span>');
+
+      let runsHtml = '';
+      if (!isDone) {
+        runsHtml = `
+          <div class="ord-pmodal-runs" style="margin-top:8px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:8px;">
+            ${runs.map((r, ri) => _buildOrdRunRow(gIdx, ri, r.printerId, r.qty, totalQty)).join('')}
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-left:24px; margin-top:4px; font-size:0.75rem;" onclick="addOrdRunToItem(${gIdx}, ${totalQty})">
+            <i class="ph-bold ph-plus"></i> Adicionar impressora
+          </button>
+        `;
+      }
+
+      const block = document.createElement('div');
+      block.className = `pt-item-card ${isDone ? 'pt-item-done' : ''} ord-pmodal-item-block`;
+      block.style.cssText = 'display:flex; flex-direction:column; gap:8px; position:relative; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:8px;';
+      block.dataset.gIdx = gIdx;
+
+      block.innerHTML = `
+        <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}" style="align-items:flex-start; display:flex; gap:8px; cursor:default;">
+          <input type="checkbox" class="pt-item-cb" checked disabled style="accent-color:var(--blue); width:16px; height:16px; margin-top:2px">
+          <div style="flex:1; min-width:0">
+            <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--text)'}">${escH(it.description || 'Item ' + (gIdx+1))}</div>
+            ${!isDone && matsHtml ? `
+              <div style="margin-top:4px; margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                ${matsHtml}
+              </div>
+            ` : ''}
+            ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo estimado: ${formatTime(it.printTime)} / peça</div>` : ''}
+          </div>
+          <div style="text-align:right; flex-shrink:0; padding-left:8px">
+            <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' restantes'}</div>
+            <div style="font-size:.65rem; color:var(--muted); margin-top:2px">Total: ${totalQty} | Impresso: ${printed}</div>
+          </div>
+        </label>
+        ${runsHtml}
+      `;
+      return block;
     }
 
     function _ordItemPrintedQty(it) {
@@ -3393,44 +3454,12 @@
       return opts;
     }
 
-    function _renderOrdersItemBlock(container, it, gIdx) {
-      const totalQty = parseInt(it.quantity || it.qty || 1);
-      const printedSoFar = _ordItemPrintedQty(it);
-      const remaining = Math.max(0, totalQty - printedSoFar);
-      const runs = _ordersModalMode === 'exit' && remaining > 0
-        ? [{ printerId: '', qty: remaining }]
-        : (it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }]);
-
-      const block = document.createElement('div');
-      block.className = 'ord-pmodal-item-block';
-      block.dataset.gIdx = gIdx;
-      block.style.cssText = 'background:var(--bg-card-s); border:1.5px solid var(--border); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;';
-
-      block.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div style="font-size:0.87rem; font-weight:700; color:var(--text);">${escH(it.description || 'Item sem nome')}</div>
-          <div style="font-size:0.78rem; color:var(--muted);">
-            ${printedSoFar > 0 ? `<span style="color:var(--blue)">${printedSoFar} impresso(s)</span> / ` : ''}${totalQty} un.
-            ${remaining > 0 ? ` · <span style="color:var(--danger)">${remaining} por imprimir</span>` : ' · <span style="color:#22c55e">✓ Completo</span>'}
-          </div>
-        </div>
-        <div class="ord-pmodal-runs" style="display:flex; flex-direction:column; gap:6px;">
-          ${runs.map((r,ri) => _buildOrdRunRow(gIdx, ri, r.printerId, r.qty, totalQty)).join('')}
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" style="font-size:0.78rem; color:var(--blue); align-self:flex-start;"
-          onclick="_addOrdRunRow(this, ${gIdx}, ${totalQty})">
-          <i class="ph-bold ph-plus"></i> Adicionar outra impressora
-        </button>
-      `;
-      container.appendChild(block);
-    }
-
     function _buildOrdRunRow(gIdx, rIdx, printerId, qty, maxQty) {
       return `<div class="ord-pmodal-run-row" data-g-idx="${gIdx}" style="display:flex; align-items:center; gap:8px; width:100%;">
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto; min-width:0;">${_buildOrdPrinterOpts(printerId)}</select>
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;">${_buildOrdPrinterOpts(printerId)}</select>
         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-          <input type="number" min="0" max="${maxQty}" value="${qty}" class="form-input mono ord-pmodal-qty" style="width:60px; padding:6px; text-align:center; font-size:0.8rem;">
-          <span style="font-size:0.75rem; color:var(--muted)">un.</span>
+          <input type="number" min="0" max="${maxQty}" value="${qty}" style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;" class="mono ord-pmodal-qty">
+          <span style="font-size:0.8rem; color:var(--muted)">un.</span>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px; flex-shrink:0;" onclick="this.closest('.ord-pmodal-run-row').remove()">
           <i class="ph-bold ph-x"></i>
@@ -3438,10 +3467,35 @@
       </div>`;
     }
 
-    function _addOrdRunRow(btn, gIdx, maxQty) {
-      const runs = btn.previousElementSibling;
-      const rIdx = runs.querySelectorAll('.ord-pmodal-run-row').length;
-      runs.insertAdjacentHTML('beforeend', _buildOrdRunRow(gIdx, rIdx, '', 0, maxQty));
+    function addOrdRunToItem(gIdx, maxQty) {
+       const block = document.querySelector(`.ord-pmodal-item-block[data-g-idx="${gIdx}"] .ord-pmodal-runs`);
+       block.insertAdjacentHTML('beforeend', _buildOrdRunRow(gIdx, 0, '', 0, maxQty));
+    }
+
+    function _updateOrdPrinterModalStats(orderObj) {
+      const items = orderObj.items || [];
+      const totalItems = items.length;
+      document.getElementById('opmStatItems').textContent = totalItems;
+
+      let totalPrinters = 0;
+      let totalFil = 0;
+      let totalHours = 0;
+      
+      items.forEach(it => {
+         const qty = parseInt(it.quantity || 1);
+         if (it.printRuns) totalPrinters += it.printRuns.length;
+         if (it.weightG) totalFil += (parseFloat(it.weightG) * qty);
+         if (it.printTime) totalHours += (parseTime(it.printTime) * qty);
+      });
+
+      document.getElementById('opmStatPrinters').textContent = totalPrinters;
+      document.getElementById('opmStatFilament').textContent = (totalFil / 1000).toFixed(2);
+      document.getElementById('opmStatHours').textContent = (totalHours / 60).toFixed(1);
+
+      const doneItems = items.filter(it => _ordItemPrintedQty(it) >= parseInt(it.quantity || 1)).length;
+      const progress = totalItems ? (doneItems / totalItems) * 100 : 0;
+      document.getElementById('ordPrinterModalProgressFill').style.width = progress + '%';
+      document.getElementById('ordPrinterModalProgressLbl').textContent = `${doneItems} / ${totalItems}`;
     }
 
     function _collectOrdPrintRuns(orderObj) {
@@ -3488,6 +3542,19 @@
       if (!_pendingOrderSave) return;
       const { base } = _pendingOrderSave;
       _collectOrdPrintRuns(base);
+
+      if (_ordersModalMode === 'exit') {
+        const hasPending = (base.items || []).some(it => {
+          if (it.printSkipped) return false;
+          const printed = (it.printRuns || []).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
+          return printed < parseInt(it.quantity || it.qty || 1);
+        });
+        if (hasPending) {
+          showToast('<i class="ph-bold ph-warning"></i> Atribua as impressoras em falta ou avance sem imprimir.', 'err');
+          return;
+        }
+      }
+
       document.getElementById('ordPrinterModalOverlay').style.display = 'none';
       await _doSaveOrder(base);
       _pendingOrderSave = null;
@@ -3963,7 +4030,7 @@
         <div id="ordPrinterModalList" style="display:flex; flex-direction:column; gap:12px;"></div>
       </div>
       <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn btn-ghost" onclick="advanceOrdWithoutPrinting()" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
+        <button class="btn btn-ghost" onclick="advanceOrdWithoutPrinting()" id="skipOrdPrintBtn" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-ghost" onclick="closeOrdersPrinterModal()">Cancelar</button>
           <button class="btn btn-primary" onclick="confirmOrdersPrinterModal()"><i class="ph-bold ph-check"></i> Confirmar</button>
