@@ -1547,9 +1547,25 @@
                     <div class="res-label"><i class="ph-bold ph-warning-octagon" style="color:var(--orange); font-size: 0.85rem;"></i> <span data-i18n="calc.results.failure">Falhas</span> (<span id="labFailPct">5</span>%)</div>
                     <div class="res-value" id="resFailCost">0,00</div>
                   </div>
-                  <div class="res-line" style="margin-bottom:15px">
+                  <div class="res-line" style="margin-bottom:5px">
                     <div class="res-label"><i class="ph-bold ph-gear" style="color:var(--orange-d); font-size: 0.85rem;"></i> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
-                    <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
+                    <div class="res-value" id="resIndCost">0,00</div>
+                  </div>
+                  <div class="res-line" id="rowLaborCost" style="display:none; margin-bottom:5px">
+                    <div class="res-label"><i class="ph-bold ph-users" style="color:var(--success); font-size: 0.85rem;"></i> <span data-i18n="calc.results.labor">Mão de Obra</span></div>
+                    <div class="res-value" id="resLaborCost">0,00</div>
+                  </div>
+                  <div class="res-line" id="rowPackCost" style="display:none; margin-bottom:5px">
+                    <div class="res-label"><i class="ph-bold ph-package" style="color:var(--success); font-size: 0.85rem;"></i> <span data-i18n="calc.results.packaging">Embalagem</span></div>
+                    <div class="res-value" id="resPackCost">0,00</div>
+                  </div>
+                  <div class="res-line" id="rowShipCost" style="display:none; margin-bottom:5px">
+                    <div class="res-label"><i class="ph-bold ph-truck" style="color:var(--success); font-size: 0.85rem;"></i> <span data-i18n="calc.results.shipping">Frete</span></div>
+                    <div class="res-value" id="resShipCost">0,00</div>
+                  </div>
+                  <div class="res-line" id="rowTaxCost" style="display:none; margin-bottom:15px">
+                    <div class="res-label"><i class="ph-bold ph-receipt" style="color:var(--danger); font-size: 0.85rem;"></i> <span data-i18n="calc.results.taxes">Impostos</span></div>
+                    <div class="res-value" id="resTaxCost">0,00</div>
                   </div>
                 </div>
               </div>
@@ -1666,6 +1682,31 @@
       </div>
     </div>
   </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-package"></i></div>
+        <span data-i18n="calc.adv_other_costs_section">Outros Custos</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label data-i18n="calc.adv_labor_label">Mão de Obra</label>
+          <div class="adv-wrap"><input type="number" id="laborCost" value="0" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelLaborCost"></span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_packaging_label">Embalagem</label>
+          <div class="adv-wrap"><input type="number" id="packagingCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPackagingCost"></span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_shipping_label">Frete</label>
+          <div class="adv-wrap"><input type="number" id="shippingCost" value="0" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelShippingCost"></span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_taxes_label">Impostos</label>
+          <div class="adv-wrap"><input type="number" id="taxesPct" value="0" step="0.1" min="0" max="100" oninput="liveCalc()"><span class="adv-unit">%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="adv-footer">
     <button class="btn-adv-save" onclick="saveAsDefaults()" data-i18n="calc.adv_save_as_defaults"><i class="ph-bold ph-floppy-disk"></i> Guardar como padrão</button>
     <button class="btn-adv-cancel" onclick="closeAdvPanel()" data-i18n="calc.adv_close_btn">Fechar</button>
@@ -1695,6 +1736,7 @@ const HARDCODED_DEFAULTS = {
   filamentPrice:0,partWeight:0,printTime:0,
   printerPrice:600,printerLife:5000,powerConsumption:200,
   electricityPrice:0.22,failureRate:5,indirectCosts:10,profitMargin:30,
+  laborCost:0,packagingCost:0,shippingCost:0,taxesPct:0
 };
 let defaults = {...HARDCODED_DEFAULTS};
 let calcHistory = [];
@@ -2399,6 +2441,9 @@ function updateCurrencyLabels() {
   if ((el = document.getElementById('labelResinPrice'))) el.textContent = sym + '/L';
   if ((el = document.getElementById('labelPrinterPrice')))el.textContent = sym;
   if ((el = document.getElementById('labelElecPrice')))  el.textContent = sym + '/kWh';
+  if ((el = document.getElementById('labelLaborCost')))  el.textContent = sym;
+  if ((el = document.getElementById('labelPackagingCost')))  el.textContent = sym;
+  if ((el = document.getElementById('labelShippingCost')))  el.textContent = sym;
 }
 function applyDefaultsToForm(){
   updateCurrencyLabels();
@@ -2415,6 +2460,10 @@ function applyDefaultsToForm(){
   setV('failureRate',defaults.failureRate);
   setV('indirectCosts',defaults.indirectCosts);
   setV('profitMargin',defaults.profitMargin);
+  setV('laborCost',defaults.laborCost || 0);
+  setV('packagingCost',defaults.packagingCost || 0);
+  setV('shippingCost',defaults.shippingCost || 0);
+  setV('taxesPct',defaults.taxesPct || 0);
   setSl('printTimeSlider',defaults.printTime,0,48);
   setSl('failureSlider',defaults.failureRate,0,50);
   setSl('indirectSlider',defaults.indirectCosts,0,50);
@@ -2603,7 +2652,11 @@ function getInputs() {
     powerConsumption: pf('powerConsumption') || 250,
     failureRate: pf('failureRate') || 5,
     indirectCosts: pf('indirectCosts') || 10,
-    profitMargin: pf('profitMargin') || 30
+    profitMargin: pf('profitMargin') || 30,
+    laborCost: pf('laborCost') || 0,
+    packagingCost: pf('packagingCost') || 0,
+    shippingCost: pf('shippingCost') || 0,
+    taxesPct: pf('taxesPct') || 0
   };
 
   if (_calcMode === 'simple') {
@@ -2702,7 +2755,14 @@ function computeResults(i) {
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
   
-  const productionCost = baseCost + failureCost + indirectCost;
+  const laborCost = i.laborCost || 0;
+  const packagingCost = i.packagingCost || 0;
+  const shippingCost = i.shippingCost || 0;
+
+  const operationalCost = baseCost + failureCost + indirectCost + laborCost + packagingCost + shippingCost;
+  const taxCost = operationalCost * ((i.taxesPct || 0) / 100);
+
+  const productionCost = operationalCost + taxCost;
   const marginCost = productionCost * (i.profitMargin / 100);
   const finalPrice = productionCost + marginCost;
 
@@ -2716,6 +2776,11 @@ function computeResults(i) {
     baseCost,
     failureCost,
     indirectCost,
+    laborCost,
+    packagingCost,
+    shippingCost,
+    taxCost,
+    operationalCost,
     productionCost,
     marginCost,
     finalPrice,
@@ -2766,6 +2831,18 @@ function _render() {
   setT('resElecCost', fmtCurrency(r.electricityCost));
   setT('resFailCost', fmtCurrency(r.failureCost));
   setT('resIndCost', fmtCurrency(r.indirectCost));
+  
+  // Conditional UI for new costs
+  const setLine = (id, rowId, val) => {
+    setT(id, fmtCurrency(val));
+    const row = document.getElementById(rowId);
+    if (row) row.style.display = val > 0 ? 'flex' : 'none';
+  };
+  setLine('resLaborCost', 'rowLaborCost', r.laborCost);
+  setLine('resPackCost', 'rowPackCost', r.packagingCost);
+  setLine('resShipCost', 'rowShipCost', r.shippingCost);
+  setLine('resTaxCost', 'rowTaxCost', r.taxCost);
+
   const eduState = document.getElementById('calcEduState');
   const heroCard = document.getElementById('priceHeroCard');
   const finPanel = document.querySelector('.finance-panel');
@@ -3274,6 +3351,10 @@ function clearCalculator(){
   setV('filamentPrice', 0);
   setV('partWeight', 0);
   setV('printTime', 0);
+  setV('laborCost', 0);
+  setV('packagingCost', 0);
+  setV('shippingCost', 0);
+  setV('taxesPct', 0);
   
   renderMesas();
   liveCalc();
