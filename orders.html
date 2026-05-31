@@ -3435,8 +3435,8 @@
       block.dataset.gIdx = gIdx;
 
       block.innerHTML = `
-        <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}" style="align-items:flex-start; display:flex; gap:8px; cursor:default;">
-          <input type="checkbox" class="pt-item-cb" checked disabled style="accent-color:var(--blue); width:16px; height:16px; margin-top:2px">
+        <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}" style="align-items:flex-start; display:flex; gap:8px;">
+          <input type="checkbox" class="pt-item-cb" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px; margin-top:2px" onchange="updateOrdPrinterModalStats()">
           <div style="flex:1; min-width:0">
             <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--text)'}">${escH(it.description || 'Item ' + (gIdx+1))}</div>
             ${!isDone && matsHtml ? `
@@ -3472,12 +3472,12 @@
 
     function _buildOrdRunRow(gIdx, rIdx, printerId, qty, maxQty) {
       return `<div class="ord-pmodal-run-row" data-g-idx="${gIdx}" style="display:flex; align-items:center; gap:8px; width:100%;">
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;">${_buildOrdPrinterOpts(printerId)}</select>
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;" onchange="updateOrdPrinterModalStats()">${_buildOrdPrinterOpts(printerId)}</select>
         <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-          <input type="number" min="0" max="${maxQty}" value="${qty}" style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;" class="mono ord-pmodal-qty">
+          <input type="number" min="0" max="${maxQty}" value="${qty}" style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;" class="mono ord-pmodal-qty" onchange="updateOrdPrinterModalStats()">
           <span style="font-size:0.8rem; color:var(--muted)">un.</span>
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px; flex-shrink:0;" onclick="this.closest('.ord-pmodal-run-row').remove()">
+        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px; flex-shrink:0;" onclick="const row = this.closest('.ord-pmodal-run-row'); row.remove(); updateOrdPrinterModalStats();">
           <i class="ph-bold ph-x"></i>
         </button>
       </div>`;
@@ -3486,28 +3486,55 @@
     function addOrdRunToItem(gIdx, maxQty) {
        const block = document.querySelector(`.ord-pmodal-item-block[data-g-idx="${gIdx}"] .ord-pmodal-runs`);
        block.insertAdjacentHTML('beforeend', _buildOrdRunRow(gIdx, 0, '', 0, maxQty));
+       updateOrdPrinterModalStats();
     }
 
-    function _updateOrdPrinterModalStats(orderObj) {
+    function updateOrdPrinterModalStats() {
+      if (!_pendingOrderSave) return;
+      const orderObj = _pendingOrderSave.base;
       const items = orderObj.items || [];
-      const totalItems = items.length;
-      document.getElementById('opmStatItems').textContent = totalItems;
-
+      
       let totalPrinters = 0;
       let totalFil = 0;
       let totalHours = 0;
-      
-      items.forEach(it => {
-         const qty = parseInt(it.quantity || 1);
-         if (it.printRuns) totalPrinters += it.printRuns.length;
-         if (it.weightG) totalFil += (parseFloat(it.weightG) * qty);
-         if (it.printTime) totalHours += (parseTime(it.printTime) * qty);
+      let totalAssignedItems = 0;
+
+      const blocks = document.querySelectorAll('.ord-pmodal-item-block');
+      blocks.forEach(block => {
+        const cb = block.querySelector('.pt-item-cb');
+        if (cb && !cb.checked) return;
+
+        const gIdx = parseInt(block.dataset.gIdx);
+        const it = items[gIdx];
+        if (!it) return;
+
+        let itemAssignedPrinters = 0;
+        let itemAssignedQty = 0;
+
+        block.querySelectorAll('.ord-pmodal-run-row').forEach(row => {
+          const sel = row.querySelector('select');
+          const qtyEl = row.querySelector('.ord-pmodal-qty');
+          const qty = parseInt(qtyEl ? qtyEl.value : 0) || 0;
+          if (qty > 0) {
+            itemAssignedPrinters++;
+            itemAssignedQty += qty;
+          }
+        });
+
+        if (itemAssignedQty > 0) {
+           totalAssignedItems += itemAssignedQty;
+           totalPrinters += itemAssignedPrinters;
+           if (it.weightG) totalFil += (parseFloat(it.weightG) * itemAssignedQty);
+           if (it.printTime) totalHours += (parseTime(it.printTime) * itemAssignedQty);
+        }
       });
 
+      document.getElementById('opmStatItems').textContent = totalAssignedItems;
       document.getElementById('opmStatPrinters').textContent = totalPrinters;
       document.getElementById('opmStatFilament').textContent = (totalFil / 1000).toFixed(2);
       document.getElementById('opmStatHours').textContent = (totalHours / 60).toFixed(1);
 
+      const totalItems = items.length;
       const doneItems = items.filter(it => _ordItemPrintedQty(it) >= parseInt(it.quantity || 1)).length;
       const progress = totalItems ? (doneItems / totalItems) * 100 : 0;
       document.getElementById('ordPrinterModalProgressFill').style.width = progress + '%';
@@ -3519,6 +3546,12 @@
         const gIdx = parseInt(block.dataset.gIdx);
         const it = orderObj.items[gIdx];
         if (!it) return;
+
+        const cb = block.querySelector('.pt-item-cb');
+        if (cb && !cb.checked) {
+           return;
+        }
+
         const newRuns = [];
         block.querySelectorAll('.ord-pmodal-run-row').forEach(row => {
           const sel = row.querySelector('select');
