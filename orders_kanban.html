@@ -1123,6 +1123,7 @@
       const block = document.querySelector(`.pmodal-item-block[data-global-idx="${globalIdx}"] .pmodal-runs`);
       const runCount = block.querySelectorAll('.pmodal-run-row').length;
       block.insertAdjacentHTML('beforeend', _buildRunRow(globalIdx, runCount, '', 0, maxQty));
+      updateKanbanPrinterModalStats();
     }
 
     function _collectPrintRuns(order) {
