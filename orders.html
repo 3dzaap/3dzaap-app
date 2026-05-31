@@ -3304,12 +3304,197 @@
       delete base.order_number;
       if (base.paymentStatus === 'pago' && !base.paymentDate) base.paymentDate = new Date().toISOString().split('T')[0];
 
+      // ── Printer Assignment intercept ──
+      const COL_ORDER_O = ['orcamento','modelagem','validacao','aprovado','fila','printing','enviado','done'];
+      const prevOrder = editingId ? (orders.find(o => o.id === editingId) || {}) : {};
+      const prevStatus = prevOrder.status || 'orcamento';
+      const newStatus  = base.status;
+      const prevIdx = COL_ORDER_O.indexOf(prevStatus);
+      const newIdx  = COL_ORDER_O.indexOf(newStatus);
+
+      // Entering printing from a lower state
+      if (newStatus === 'printing' && newIdx > prevIdx && items.length > 0) {
+        // Merge items from form into base, keeping existing printRuns from prevOrder
+        base.items = base.items.map((it, i) => {
+          const prev = (prevOrder.items || [])[i] || {};
+          return { ...it, printRuns: prev.printRuns || [], printSkipped: prev.printSkipped || false };
+        });
+        _pendingOrderSave = { base, editingId };
+        _openOrdersPrinterModal(base, 'enter');
+        return;
+      }
+
+      // Advancing past printing and some items have pending print runs
+      if (prevStatus === 'printing' && newIdx > prevIdx) {
+        const hasPending = (prevOrder.items || []).some(it => {
+          if (it.printSkipped) return false;
+          const printed = (it.printRuns || []).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
+          return printed < parseInt(it.quantity || it.qty || 1);
+        });
+        if (hasPending) {
+          // Carry over printRuns from prevOrder to base items
+          base.items = base.items.map((it, i) => {
+            const prev = (prevOrder.items || [])[i] || {};
+            return { ...it, printRuns: prev.printRuns || [], printSkipped: prev.printSkipped || false };
+          });
+          _pendingOrderSave = { base, editingId };
+          _openOrdersPrinterModal(base, 'exit');
+          return;
+        }
+      }
+
+      await _doSaveOrder(base);
+    }
+
+    // ── Printer Modal (Orders.html) ──
+    let _pendingOrderSave = null;
+    let _ordersModalMode = 'enter';
+
+    function _openOrdersPrinterModal(orderObj, mode) {
+      _ordersModalMode = mode;
+      const listEl = document.getElementById('ordPrinterModalList');
+      listEl.innerHTML = '';
+
+      const titleEl = document.getElementById('ordPrinterModalTitle');
+      const descEl  = document.getElementById('ordPrinterModalDesc');
+      if (mode === 'enter') {
+        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
+        if (descEl)  descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
+      } else {
+        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:#22c55e"></i> Concluir Impressão';
+        if (descEl)  descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
+      }
+
+      const itemsToShow = mode === 'exit'
+        ? orderObj.items.filter(it => !it.printSkipped && _ordItemPrintedQty(it) < parseInt(it.quantity || it.qty || 1))
+        : orderObj.items;
+
+      if (!itemsToShow.length) { _confirmOrdersPrinterModal(); return; }
+
+      itemsToShow.forEach(it => {
+        const gIdx = orderObj.items.indexOf(it);
+        _renderOrdersItemBlock(listEl, it, gIdx);
+      });
+
+      document.getElementById('ordPrinterModalOverlay').style.display = 'flex';
+    }
+
+    function _ordItemPrintedQty(it) {
+      return (it.printRuns || []).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
+    }
+
+    function _buildOrdPrinterOpts(selectedId) {
+      let opts = '<option value="">-- Sem impressora --</option>';
+      printers.forEach(p => {
+        const sel = String(selectedId) === String(p.id) ? 'selected' : '';
+        opts += `<option value="${p.id}" ${sel}>${escH(p.name)}</option>`;
+      });
+      return opts;
+    }
+
+    function _renderOrdersItemBlock(container, it, gIdx) {
+      const totalQty = parseInt(it.quantity || it.qty || 1);
+      const printedSoFar = _ordItemPrintedQty(it);
+      const remaining = Math.max(0, totalQty - printedSoFar);
+      const runs = _ordersModalMode === 'exit' && remaining > 0
+        ? [{ printerId: '', qty: remaining }]
+        : (it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }]);
+
+      const block = document.createElement('div');
+      block.className = 'ord-pmodal-item-block';
+      block.dataset.gIdx = gIdx;
+      block.style.cssText = 'background:var(--bg-card-s); border:1.5px solid var(--border); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;';
+
+      block.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:0.87rem; font-weight:700; color:var(--text);">${escH(it.description || 'Item sem nome')}</div>
+          <div style="font-size:0.78rem; color:var(--muted);">
+            ${printedSoFar > 0 ? `<span style="color:var(--blue)">${printedSoFar} impresso(s)</span> / ` : ''}${totalQty} un.
+            ${remaining > 0 ? ` · <span style="color:var(--danger)">${remaining} por imprimir</span>` : ' · <span style="color:#22c55e">✓ Completo</span>'}
+          </div>
+        </div>
+        <div class="ord-pmodal-runs" style="display:flex; flex-direction:column; gap:6px;">
+          ${runs.map((r,ri) => _buildOrdRunRow(gIdx, ri, r.printerId, r.qty, totalQty)).join('')}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" style="font-size:0.78rem; color:var(--blue); align-self:flex-start;"
+          onclick="_addOrdRunRow(this, ${gIdx}, ${totalQty})">
+          <i class="ph-bold ph-plus"></i> Adicionar outra impressora
+        </button>
+      `;
+      container.appendChild(block);
+    }
+
+    function _buildOrdRunRow(gIdx, rIdx, printerId, qty, maxQty) {
+      return `<div class="ord-pmodal-run-row" data-g-idx="${gIdx}" style="display:flex; align-items:center; gap:8px;">
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto;">${_buildOrdPrinterOpts(printerId)}</select>
+        <input type="number" min="0" max="${maxQty}" value="${qty}" class="form-input mono ord-pmodal-qty" style="width:70px; padding:6px; text-align:center; font-size:0.8rem;">
+        <button type="button" class="btn btn-ghost btn-sm" style="color:var(--danger); padding:4px 6px;" onclick="this.closest('.ord-pmodal-run-row').remove()">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>`;
+    }
+
+    function _addOrdRunRow(btn, gIdx, maxQty) {
+      const runs = btn.previousElementSibling;
+      const rIdx = runs.querySelectorAll('.ord-pmodal-run-row').length;
+      runs.insertAdjacentHTML('beforeend', _buildOrdRunRow(gIdx, rIdx, '', 0, maxQty));
+    }
+
+    function _collectOrdPrintRuns(orderObj) {
+      document.querySelectorAll('.ord-pmodal-item-block').forEach(block => {
+        const gIdx = parseInt(block.dataset.gIdx);
+        const it = orderObj.items[gIdx];
+        if (!it) return;
+        const newRuns = [];
+        block.querySelectorAll('.ord-pmodal-run-row').forEach(row => {
+          const sel = row.querySelector('select');
+          const qtyEl = row.querySelector('.ord-pmodal-qty');
+          const pid = sel ? sel.value : '';
+          const qty = parseInt(qtyEl ? qtyEl.value : 0) || 0;
+          if (qty > 0) newRuns.push({ printerId: pid || null, qty });
+        });
+        if (_ordersModalMode === 'exit') {
+          it.printRuns = [...(it.printRuns || []), ...newRuns];
+        } else {
+          it.printRuns = newRuns;
+        }
+        delete it.printSkipped;
+      });
+    }
+
+    function closeOrdersPrinterModal() {
+      document.getElementById('ordPrinterModalOverlay').style.display = 'none';
+      _pendingOrderSave = null;
+    }
+
+    async function advanceOrdWithoutPrinting() {
+      if (!_pendingOrderSave) return;
+      const { base } = _pendingOrderSave;
+      (base.items || []).forEach(it => {
+        if (_ordItemPrintedQty(it) < parseInt(it.quantity || it.qty || 1)) {
+          it.printSkipped = true;
+        }
+      });
+      document.getElementById('ordPrinterModalOverlay').style.display = 'none';
+      await _doSaveOrder(base);
+      _pendingOrderSave = null;
+    }
+
+    async function confirmOrdersPrinterModal() {
+      if (!_pendingOrderSave) return;
+      const { base } = _pendingOrderSave;
+      _collectOrdPrintRuns(base);
+      document.getElementById('ordPrinterModalOverlay').style.display = 'none';
+      await _doSaveOrder(base);
+      _pendingOrderSave = null;
+    }
+
+    async function _doSaveOrder(base) {
       // Verificação de Stock (Alerta se exceder o disponível)
       let stockWarnings = [];
       let requiredStock = {};
+      const items = base.items || [];
       
-      // Contabiliza apenas se o pedido estiver a ser guardado e consumir stock
-      // (Não impede orçamentos, mas avisa preventivamente)
       items.forEach(it => {
         if (!it.filamentId || !it.weightG) return;
         const w = parseFloat(it.weightG) || 0;
@@ -3326,33 +3511,32 @@
            const mlMap = {'500ml':0.5,'1L':1,'2L':2,'5L':5};
            const isRes = _isResinMaterial(fId);
            const kgPerRoll = isRes ? (mlMap[fil.rollSize] || 1) : (rollKgMap[fil.rollSize] || 1);
-           
            const newRolls = Math.max(0, (parseInt(fil.total) || 0) - (parseInt(fil.inUse) || 0));
            const inUseKg = (fil.kgRemaining !== undefined && fil.kgRemaining !== null) ? fil.kgRemaining : (parseInt(fil.inUse) || 0) * kgPerRoll;
            const availableKg = inUseKg + (newRolls * kgPerRoll);
-           
            if (reqKg > availableKg) {
-             const matName = (fil.colorName || 'Sem nome') + " (" + (fil.type || '') + ")";
-             const unit = isRes ? "L" : "kg";
+             const matName = (fil.colorName || 'Sem nome') + ' (' + (fil.type || '') + ')';
+             const unit = isRes ? 'L' : 'kg';
              stockWarnings.push(`• ${matName}: necessário ${reqKg.toFixed(2)}${unit}, disponível apenas ${availableKg.toFixed(2)}${unit}`);
            }
         }
       }
 
       if (stockWarnings.length > 0) {
-        const msg = "⚠️ ATENÇÃO: O consumo previsto para este pedido excede o stock disponível:\n\n" + stockWarnings.join("\n") + "\n\nDeseja guardar o pedido mesmo assim?";
+        const msg = '⚠️ ATENÇÃO: O consumo previsto para este pedido excede o stock disponível:\n\n' + stockWarnings.join('\n') + '\n\nDeseja guardar o pedido mesmo assim?';
         if (!window.confirm(msg)) return;
       }
 
       try {
-
-        if (editingId) {
-          const prev = orders.find(o => o.id === editingId) || {};
+        const editId = base._editingId || editingId;
+        if (editId) {
+          const prev = orders.find(o => o.id === editId) || {};
           if (prev.status === 'done') revertFilamentConsumption(prev);
           const merged = { ...prev, ...base };
+          delete merged._editingId;
           if (merged.status === 'done') applyFilamentConsumption(merged);
           const saved = await DB.saveOrder(merged);
-          const idx = orders.findIndex(o => o.id === editingId);
+          const idx = orders.findIndex(o => o.id === editId);
           if (idx > -1) orders[idx] = saved;
           showToast('<i class="ph-bold ph-check-circle"></i> Pedido actualizado!', 'ok');
         } else {
@@ -3364,11 +3548,11 @@
             orderNumeric: nextNumVal,
             createdAt: base.createdAt || new Date().toISOString().split('T')[0],
           };
+          delete newOrder._editingId;
           const saved = await DB.saveOrder(newOrder);
           lastOrderNumber = nextNumVal;
           orders.unshift(saved);
           showToast(i18n.getNestedTranslation('orders.toasts.saved'), 'ok');
-          // Auto-expense: se veio da calculadora, registar custo de material
           if (window._calcMaterialCost > 0) {
             try {
               const modeLabel = window._calcMode === 'resin' ? 'Resina' : 'Material FDM';
@@ -3759,6 +3943,27 @@
         <button class="btn btn-primary" id="btnSaveClient" onclick="saveClientFromOrder()">
           <span data-i18n="clients.modal.btn_save">Gravar Cliente</span>
         </button>
+      </div>
+    </div>
+  </div>
+</body>
+  <!-- Printer Assignment Modal (Orders) -->
+  <div class="modal-overlay" id="ordPrinterModalOverlay" style="display:none; align-items:center; justify-content:center; z-index:10000;">
+    <div class="modal" style="width:100%; max-width:540px; max-height:90vh; display:flex; flex-direction:column;">
+      <div class="modal-header">
+        <div class="modal-title" id="ordPrinterModalTitle"><i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção</div>
+        <button class="modal-close" onclick="closeOrdersPrinterModal()"><i class="ph-bold ph-x"></i></button>
+      </div>
+      <div class="modal-body" style="overflow-y:auto; padding-bottom:10px;">
+        <p id="ordPrinterModalDesc" style="margin-bottom:15px; font-size:0.83rem; color:var(--muted); line-height:1.5;">Atribua impressoras e quantidades a cada item.</p>
+        <div id="ordPrinterModalList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+      <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-ghost" onclick="advanceOrdWithoutPrinting()" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" onclick="closeOrdersPrinterModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmOrdersPrinterModal()"><i class="ph-bold ph-check"></i> Confirmar</button>
+        </div>
       </div>
     </div>
   </div>

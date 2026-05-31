@@ -536,6 +536,7 @@
     //  STATE
     // ══════════════════════════════════════
     let orders = [];
+    let _printers = [];
     let filterMode = 'active';
     const WARN_DAYS = 3; // days before deadline to show warning
 
@@ -603,7 +604,12 @@
     // ══════════════════════════════════════
     async function loadData() {
       try {
-        orders = await DB.getOrders('all').catch(() => []);
+        const [o, p] = await Promise.all([
+          DB.getOrders('all').catch(() => []),
+          DB.getPrinters().catch(() => [])
+        ]);
+        orders = o;
+        _printers = p;
         renderKanban();
       } catch(e) { console.error('Kanban load error:', e); }
     }
@@ -774,6 +780,7 @@
                     </a>
                   </div>
                 </div>
+                ${_renderPrinterBadges(its)}
               </div>
             `;
           });
@@ -789,6 +796,23 @@
         card.addEventListener('dragstart', kDragStart);
         card.addEventListener('dragend',   kDragEnd);
       });
+    }
+
+    function _renderPrinterBadges(items) {
+      if (!items || !items.length) return '';
+      const printerIds = new Set();
+      items.forEach(it => {
+        if (it.printerId) printerIds.add(String(it.printerId));
+      });
+      if (printerIds.size === 0) return '';
+      
+      const badgeHtml = Array.from(printerIds).map(pid => {
+        const p = _printers.find(x => String(x.id) === pid);
+        const name = p ? p.name : 'Impressora removida';
+        return `<span class="badge" style="background:var(--bg-hover); color:var(--text); font-size:0.65rem; padding: 2px 6px; margin-right: 4px; border: 1px solid var(--border);"><i class="ph-bold ph-printer"></i> ${escH(name)}</span>`;
+      }).join('');
+
+      return `<div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border); display: flex; flex-wrap: wrap; gap: 4px;">${badgeHtml}</div>`;
     }
 
     // ══════════════════════════════════════
@@ -814,6 +838,34 @@
     function kDragLeave(e) {
       if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
     }
+    // ── Column order for checking advancement ──
+    const COL_ORDER = ['orcamento','modelagem','validacao','aprovado','fila','printing','enviado','done'];
+    function _colIndex(status) { return COL_ORDER.indexOf(status); }
+    function _isAdvancingFrom(oldStatus, newStatus) {
+      return _colIndex(newStatus) > _colIndex(oldStatus);
+    }
+
+    // ── Print progress helpers ──
+    function _itemPrintedQty(item) {
+      if (!item.printRuns || !item.printRuns.length) return 0;
+      return item.printRuns.reduce((s, r) => s + (parseInt(r.qty) || 0), 0);
+    }
+    function _itemFullyPrinted(item) {
+      const total = parseInt(item.quantity || item.qty || 1);
+      return _itemPrintedQty(item) >= total;
+    }
+    function _orderFullyPrinted(order) {
+      if (!order.items || !order.items.length) return true;
+      return order.items.every(it => _itemFullyPrinted(it));
+    }
+    function _hasPendingItems(order) {
+      if (!order.items || !order.items.length) return false;
+      return order.items.some(it => {
+        const skipped = it.printSkipped;
+        return !skipped && !_itemFullyPrinted(it);
+      });
+    }
+
     async function kDrop(e) {
       e.preventDefault();
       this.classList.remove('drag-over');
@@ -821,7 +873,23 @@
       const newStatus = this.getAttribute('data-status');
       const order = orders.find(o => String(o.id) === String(draggedId));
       if (!order || order.status === newStatus) return;
+
       const oldStatus = order.status;
+
+      // Moving INTO printing → show printer assignment modal
+      if (newStatus === 'printing' && order.items && order.items.length > 0) {
+        order.status = newStatus;
+        openPrinterModal(order, oldStatus, 'enter');
+        return;
+      }
+
+      // Moving OUT of printing to a later column → check if all items are printed
+      if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
+        order.status = newStatus;
+        openPrinterModal(order, oldStatus, 'exit');
+        return;
+      }
+
       order.status = newStatus;
       renderKanban();
       try {
@@ -852,6 +920,247 @@
       const pop = document.getElementById('topbarHelpPopover');
       if (pop && !e.target.closest('.gc-help-wrap')) pop.style.display = 'none';
     });
+
+    // ══════════════════════════════════════
+    //  PRINTER SELECTION MODAL (Advanced)
+    // ══════════════════════════════════════
+    let _activeOrderForPrinters = null;
+    let _oldStatusFallback = null;
+    let _modalMode = 'enter'; // 'enter' | 'exit'
+
+    function openPrinterModal(order, oldStatus, mode = 'enter') {
+      _activeOrderForPrinters = order;
+      _oldStatusFallback = oldStatus;
+      _modalMode = mode;
+
+      const listEl = document.getElementById('printerModalList');
+      listEl.innerHTML = '';
+
+      if (!order.items || order.items.length === 0) {
+        _finalizePrinterModal(false);
+        return;
+      }
+
+      // Update modal title & description based on mode
+      const titleEl = document.getElementById('printerModalTitle');
+      const descEl = document.getElementById('printerModalDesc');
+      if (mode === 'enter') {
+        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
+        if (descEl) descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
+      } else {
+        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:var(--success, #22c55e)"></i> Concluir Impressão';
+        if (descEl) descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
+      }
+
+      // In 'exit' mode, only show items NOT fully printed and not skipped
+      const itemsToShow = mode === 'exit'
+        ? order.items.filter((it, idx) => !it.printSkipped && !_itemFullyPrinted(it))
+        : order.items;
+
+      if (itemsToShow.length === 0) {
+        _finalizePrinterModal(false);
+        return;
+      }
+
+      itemsToShow.forEach((it) => {
+        const globalIdx = order.items.indexOf(it);
+        _renderItemBlock(listEl, it, globalIdx);
+      });
+
+      document.getElementById('printerModalOverlay').style.display = 'flex';
+    }
+
+    function _buildPrinterOpts(selectedId) {
+      let opts = `<option value="">-- Sem impressora --</option>`;
+      _printers.forEach(p => {
+        const sel = String(selectedId) === String(p.id) ? 'selected' : '';
+        opts += `<option value="${p.id}" ${sel}>${escH(p.name)}</option>`;
+      });
+      return opts;
+    }
+
+    function _renderItemBlock(container, it, globalIdx) {
+      const totalQty = parseInt(it.quantity || it.qty || 1);
+      const runs = it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }];
+      const printedSoFar = _itemPrintedQty(it);
+      const remaining = Math.max(0, totalQty - printedSoFar);
+
+      const block = document.createElement('div');
+      block.className = 'pmodal-item-block';
+      block.dataset.globalIdx = globalIdx;
+      block.style.cssText = 'background:var(--bg-card-s); border:1.5px solid var(--border); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:8px;';
+
+      // Header
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex; align-items:center; justify-content:space-between;';
+      header.innerHTML = `
+        <div style="font-size:0.87rem; font-weight:700; color:var(--text);">
+          ${escH(it.description || 'Item sem nome')}
+        </div>
+        <div style="font-size:0.78rem; color:var(--muted); white-space:nowrap; margin-left:10px;">
+          ${printedSoFar > 0 ? `<span style="color:var(--blue)">${printedSoFar} impresso(s)</span> / ` : ''}${totalQty} un. total
+          ${remaining > 0 ? ` · <span style="color:var(--danger)">${remaining} por imprimir</span>` : ' · <span style="color:#22c55e">✓ Completo</span>'}
+        </div>
+      `;
+      block.appendChild(header);
+
+      // Print runs container
+      const runsContainer = document.createElement('div');
+      runsContainer.className = 'pmodal-runs';
+      runsContainer.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+
+      // Use new runs if they exist (for enter mode), or start fresh for remaining qty on exit mode
+      const displayRuns = _modalMode === 'exit' && remaining > 0
+        ? [{ printerId: '', qty: remaining }]
+        : runs;
+
+      displayRuns.forEach((run, runIdx) => {
+        runsContainer.appendChild(_buildRunRow(globalIdx, runIdx, run.printerId, run.qty, totalQty));
+      });
+
+      block.appendChild(runsContainer);
+
+      // Add printer row button
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn btn-ghost btn-sm';
+      addBtn.style.cssText = 'font-size:0.78rem; color:var(--blue); align-self:flex-start; margin-top:2px;';
+      addBtn.innerHTML = '<i class="ph-bold ph-plus"></i> Adicionar outra impressora';
+      addBtn.onclick = () => {
+        const runCount = runsContainer.querySelectorAll('.pmodal-run-row').length;
+        runsContainer.appendChild(_buildRunRow(globalIdx, runCount, '', 0, totalQty));
+      };
+      block.appendChild(addBtn);
+
+      container.appendChild(block);
+    }
+
+    function _buildRunRow(globalIdx, runIdx, printerId, qty, maxQty) {
+      const row = document.createElement('div');
+      row.className = 'pmodal-run-row';
+      row.dataset.globalIdx = globalIdx;
+      row.dataset.runIdx = runIdx;
+      row.style.cssText = 'display:flex; align-items:center; gap:8px;';
+      row.innerHTML = `
+        <select class="form-input" style="flex:1; padding:6px; font-size:0.8rem; height:auto;">
+          ${_buildPrinterOpts(printerId)}
+        </select>
+        <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd"
+          class="form-input mono pmodal-qty-input" style="width:70px; padding:6px; font-size:0.8rem; text-align:center;">
+        <button type="button" class="btn btn-ghost btn-sm" title="Remover"
+          style="color:var(--danger); padding:4px 6px;"
+          onclick="this.closest('.pmodal-run-row').remove()">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      `;
+      return row;
+    }
+
+    function _collectPrintRuns(order) {
+      const blocks = document.querySelectorAll('.pmodal-item-block');
+      blocks.forEach(block => {
+        const globalIdx = parseInt(block.dataset.globalIdx);
+        const it = order.items[globalIdx];
+        if (!it) return;
+
+        const runRows = block.querySelectorAll('.pmodal-run-row');
+        const totalQty = parseInt(it.quantity || it.qty || 1);
+
+        // Collect new runs from modal
+        const newRuns = [];
+        runRows.forEach(row => {
+          const sel = row.querySelector('select');
+          const qtyInput = row.querySelector('.pmodal-qty-input');
+          const pid = sel ? sel.value : '';
+          const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
+          if (qty > 0) newRuns.push({ printerId: pid || null, qty });
+        });
+
+        // Merge with existing runs (for exit mode top-up)
+        if (_modalMode === 'exit') {
+          it.printRuns = [...(it.printRuns || []), ...newRuns];
+        } else {
+          it.printRuns = newRuns;
+        }
+
+        // Clear skip flag now that user is assigning
+        delete it.printSkipped;
+      });
+    }
+
+    function closePrinterModal() {
+      document.getElementById('printerModalOverlay').style.display = 'none';
+      if (_activeOrderForPrinters && _oldStatusFallback) {
+        _activeOrderForPrinters.status = _oldStatusFallback;
+        renderKanban();
+      }
+      _activeOrderForPrinters = null;
+      _oldStatusFallback = null;
+    }
+
+    async function advanceWithoutPrinting() {
+      const order = _activeOrderForPrinters;
+      if (!order) return;
+      // Mark unprinted items as skipped (they won't count for material consumption)
+      if (order.items) {
+        order.items.forEach(it => {
+          if (!_itemFullyPrinted(it)) {
+            it.printSkipped = true;
+          }
+        });
+      }
+      await _finalizePrinterModal(false);
+    }
+
+    async function confirmPrinterModal() {
+      const order = _activeOrderForPrinters;
+      if (!order) return;
+      _collectPrintRuns(order);
+      await _finalizePrinterModal(false);
+    }
+
+    async function _finalizePrinterModal(revert) {
+      document.getElementById('printerModalOverlay').style.display = 'none';
+      const order = _activeOrderForPrinters;
+      const oldStatus = _oldStatusFallback;
+      _activeOrderForPrinters = null;
+      _oldStatusFallback = null;
+
+      if (revert && order) {
+        order.status = oldStatus;
+      }
+
+      renderKanban();
+      if (!revert && order) {
+        try {
+          await DB.saveOrder(order);
+          showToast('<i class="ph-bold ph-check-circle"></i> Pedido atualizado!', 'ok');
+        } catch(err) {
+          showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar.', 'err');
+        }
+      }
+    }
   </script>
+
+  <!-- Printer Allocation Modal (Advanced) -->
+  <div class="modal-overlay" id="printerModalOverlay" style="display:none; align-items:center; justify-content:center; z-index:9999;">
+    <div class="modal" style="width:100%; max-width:540px; max-height:90vh; display:flex; flex-direction:column;">
+      <div class="modal-header">
+        <div class="modal-title" id="printerModalTitle"><i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção</div>
+        <button class="modal-close" onclick="closePrinterModal()"><i class="ph-bold ph-x"></i></button>
+      </div>
+      <div class="modal-body" style="overflow-y:auto; padding-bottom:10px;">
+        <p id="printerModalDesc" style="margin-bottom:15px; font-size:0.83rem; color:var(--muted); line-height:1.5;">Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.</p>
+        <div id="printerModalList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+      <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-ghost" onclick="advanceWithoutPrinting()" id="skipPrintBtn" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="closePrinterModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmPrinterModal()"><i class="ph-bold ph-check"></i> Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
