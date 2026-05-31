@@ -3386,10 +3386,14 @@
 
     function _renderOrdersItemBlock(it, gIdx) {
       const totalQty = parseInt(it.quantity || it.qty || 1);
-      const runs = it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }];
       const printed = (it.printRuns || []).reduce((sum, r) => sum + (parseInt(r.qty)||0), 0);
       const remaining = Math.max(0, totalQty - printed);
       const isDone = remaining === 0;
+
+      const runs = it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }];
+      const displayRuns = _ordersModalMode === 'exit' && remaining > 0
+        ? [{ printerId: '', qty: remaining }]
+        : runs;
 
       const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
       const matsHtml = mats.map(m => {
@@ -3405,7 +3409,7 @@
       if (!isDone) {
         runsHtml = `
           <div class="ord-pmodal-runs" style="margin-top:8px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:8px;">
-            ${runs.map((r, ri) => _buildOrdRunRow(gIdx, ri, r.printerId, r.qty, totalQty)).join('')}
+            ${displayRuns.map((r, ri) => _buildOrdRunRow(gIdx, ri, r.printerId, r.qty, totalQty)).join('')}
           </div>
           <button type="button" class="btn btn-ghost btn-sm" style="margin-left:24px; margin-top:4px; font-size:0.75rem;" onclick="addOrdRunToItem(${gIdx}, ${totalQty})">
             <i class="ph-bold ph-plus"></i> Adicionar impressora
@@ -4020,20 +4024,56 @@
 </body>
   <!-- Printer Assignment Modal (Orders) -->
   <div class="modal-overlay" id="ordPrinterModalOverlay" style="display:none; align-items:center; justify-content:center; z-index:10000;">
-    <div class="modal" style="width:100%; max-width:540px; max-height:90vh; display:flex; flex-direction:column;">
+    <div class="modal" style="width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column;">
       <div class="modal-header">
-        <div class="modal-title" id="ordPrinterModalTitle"><i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção</div>
+        <div class="modal-title" id="ordPrinterModalTitle"></div>
         <button class="modal-close" onclick="closeOrdersPrinterModal()"><i class="ph-bold ph-x"></i></button>
       </div>
-      <div class="modal-body" style="overflow-y:auto; padding-bottom:10px;">
-        <p id="ordPrinterModalDesc" style="margin-bottom:15px; font-size:0.83rem; color:var(--muted); line-height:1.5;">Atribua impressoras e quantidades a cada item.</p>
-        <div id="ordPrinterModalList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      <div class="modal-body" style="padding:0; overflow-y:auto; display:flex; flex-direction:column;">
+        <p id="ordPrinterModalDesc" style="color:var(--muted); font-size:0.85rem; padding:16px 20px 0; margin:0;"></p>
+        
+        <!-- Progress header -->
+        <div style="padding:14px 20px 12px; background:var(--bg-card-s); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; margin-top:16px;">
+          <div style="flex:1">
+            <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px">Progresso do Pedido</div>
+            <div style="background:var(--bg-input); border-radius:100px; height:6px; overflow:hidden">
+              <div id="ordPrinterModalProgressFill" style="height:100%; background:var(--blue); border-radius:100px; transition:width .5s; width:0%"></div>
+            </div>
+          </div>
+          <div id="ordPrinterModalProgressLbl" style="font-family:var(--mono); font-size:.82rem; font-weight:800; color:var(--blue); white-space:nowrap">0 / 0</div>
+        </div>
+
+        <div style="padding:16px 20px 0;">
+          <div class="pt-stats-grid">
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-blue" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-package"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="opmStatItems" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Itens escolhidos</div></div>
+            </div>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-purple" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-printer"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="opmStatPrinters" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Impressoras</div></div>
+            </div>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-orange" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-palette"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="opmStatFilament" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Material (g/ml)</div></div>
+            </div>
+            <div class="stat-mini" style="padding:10px; gap:8px">
+              <div class="stat-mini-icon si-green" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-clock"></i></div>
+              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="opmStatHours" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Horas Estimadas</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:16px 20px;">
+          <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Itens a imprimir nesta sessão</div>
+          <div id="ordPrinterModalList" style="display:flex; flex-direction:column; gap:8px; padding-right:2px"></div>
+        </div>
       </div>
       <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
         <button class="btn btn-ghost" onclick="advanceOrdWithoutPrinting()" id="skipOrdPrintBtn" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-ghost" onclick="closeOrdersPrinterModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="confirmOrdersPrinterModal()"><i class="ph-bold ph-check"></i> Confirmar</button>
+          <button class="btn btn-primary" onclick="confirmOrdersPrinterModal()"><i class="ph-bold ph-printer"></i> Guardar sessão</button>
         </div>
       </div>
     </div>
