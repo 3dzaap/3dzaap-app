@@ -391,9 +391,31 @@ const DB = {
 
   // ── TRACKING ──────────────────────────────────────────────
   async trackModuleUsage(moduleName) {
-    // Desativado temporariamente para evitar erro 400 (Bad Request) 
-    // quando a tabela user_activity ou a constraint única não existem no Supabase.
-    return;
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId || !_companyId) return;
+
+      await _sb.from('user_activity').upsert(
+        {
+          user_id:         userId,
+          company_id:      _companyId,
+          module:          moduleName,
+          last_visited_at: new Date().toISOString(),
+          visit_count:     1,
+        },
+        {
+          onConflict: 'user_id,company_id,module',
+          ignoreDuplicates: false
+        }
+      );
+      // Increment visit_count via a raw update (upsert doesn't support expressions)
+      await _sb.rpc('increment_module_visit', { p_user_id: userId, p_company_id: _companyId, p_module: moduleName })
+        .then(() => {}) // Fire-and-forget — RPC may not exist yet, ignore errors
+        .catch(() => {});
+    } catch (_) {
+      // Fail silently — tracking is non-critical
+    }
   },
 
   // ── FILAMENTS ───────────────────────────────────────────────
