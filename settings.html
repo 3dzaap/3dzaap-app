@@ -768,15 +768,66 @@
             </div>
           </div>
 
-          <!-- TAB: EQUIPA (Agora Utilizador) -->
+          <!-- TAB: EQUIPA (Agora Utilizador/Equipa) -->
           <div class="settings-panel" id="tab-equipa" style="display:none">
+            
+            <!-- Invite Button (Only visible for Business) -->
+            <div id="inviteArea" style="display:none; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:800; color:var(--dark)">A minha equipa</h3>
+                <p style="font-size:0.85rem; color:var(--muted)">Convida membros para colaborar na tua empresa.</p>
+              </div>
+              <button class="btn-primary" style="margin:0; width:auto; padding:10px 20px" onclick="openInviteModal()">
+                <i class="ph-bold ph-plus"></i> Convidar Utilizador
+              </button>
+            </div>
+            
+            <!-- Invite Modal -->
+            <div class="pin-overlay" id="inviteModal">
+              <div class="pin-card" style="text-align:left">
+                <h3 style="font-size:1.2rem; font-weight:800; margin-bottom:16px">Convidar para a Equipa</h3>
+                
+                <div class="field">
+                  <label>E-mail do Utilizador</label>
+                  <input type="email" class="inp" id="inviteEmail" placeholder="colaborador@empresa.com">
+                </div>
+                
+                <div class="field" style="margin-top:16px">
+                  <label>Função</label>
+                  <select class="form-select" id="inviteRole">
+                    <option value="member">Membro (Acesso normal)</option>
+                    <option value="admin">Admin (Acesso a configurações)</option>
+                  </select>
+                </div>
+                
+                <div id="inviteSuccess" style="display:none; margin-top:20px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:12px; padding:16px">
+                  <p style="font-size:0.85rem; font-weight:700; color:var(--success); margin-bottom:4px"><i class="ph-bold ph-check-circle"></i> Convite Enviado com Sucesso!</p>
+                  <p style="font-size:0.8rem; color:var(--success);">O utilizador irá receber um e-mail com as instruções para aderir à equipa.</p>
+                </div>
+                
+                <div style="display:flex; gap:12px; margin-top:24px" id="inviteActions">
+                  <button class="btn-primary" style="background:var(--bg-card); color:var(--muted); border:1.5px solid var(--border); box-shadow:none" onclick="closeInviteModal()">Cancelar</button>
+                  <button class="btn-primary" id="btnSendInvite" onclick="submitInvite()">Enviar Convite por E-mail</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Members -->
             <div class="settings-card">
               <div class="settings-card-title">
-                <span data-i18n="settings.team.active"><i class="ph-bold ph-user"></i> O Meu Perfil</span>
+                <span data-i18n="settings.team.active"><i class="ph-bold ph-users"></i> Membros Ativos</span>
               </div>
               <div id="membersList">
-                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar perfil...</div>
+                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar equipa...</div>
               </div>
+            </div>
+            
+            <!-- Pending Invites -->
+            <div class="settings-card" id="pendingInvitesCard" style="display:none; margin-top:24px">
+              <div class="settings-card-title">
+                <span><i class="ph-bold ph-envelope-open"></i> Convites Pendentes</span>
+              </div>
+              <div id="invitesList"></div>
             </div>
           </div>
 
@@ -1205,34 +1256,7 @@ function applyCrop() {
 
 
 async function loadTeam() {
-  const membersList = document.getElementById('membersList');
-  
-  try {
-    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
-    const fullName = ((_session.fname + ' ' + _session.lname).trim() || _session.email.split('@')[0]);
-    const displayEmail = _session.email;
-    const avatarChar = fullName.charAt(0).toUpperCase();
-    
-    const editBtn = `<button class="btn-icon" onclick="openRenameModal()" title="Editar nome" style="margin-left:auto"><i class="ph-bold ph-pencil-simple"></i></button>`;
-    
-    membersList.innerHTML = `
-      <div class="member-row">
-        <div class="member-avatar">${avatarChar}</div>
-        <div class="member-info">
-          <div class="member-name">${escH(fullName)}</div>
-          <div class="member-email">${escH(displayEmail)}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:10px">
-          <span class="role-badge role-${_session.role}">${roleMap[_session.role] || _session.role}</span>
-          ${editBtn}
-        </div>
-      </div>
-    `;
-    
-  } catch (err) {
-    console.error('[3DZAAP] team load err:', err);
-    membersList.innerHTML = `<div style="padding:20px; color:var(--danger)">Erro ao carregar perfil: ${err.message}</div>`;
-  }
+  await renderTeam();
 }
 
 // ── RENAME MODAL ─────────────────────────────────────────
@@ -1344,6 +1368,137 @@ async function updateSubTab() {
     }
   }
 }
+
+// Invite Logic
+function openInviteModal() {
+  document.getElementById('inviteModal').classList.add('active');
+  document.getElementById('inviteSuccess').style.display = 'none';
+  document.getElementById('inviteActions').style.display = 'flex';
+  document.getElementById('inviteEmail').value = '';
+}
+
+function closeInviteModal() {
+  document.getElementById('inviteModal').classList.remove('active');
+}
+
+async function submitInvite() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  if(!email || !email.includes('@')) {
+    showToast('Insere um e-mail válido.', 'err');
+    return;
+  }
+  
+  const btn = document.getElementById('btnSendInvite');
+  const oldTxt = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A enviar...';
+  
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    
+    // Call Edge Function
+    const { data, error } = await _sb.functions.invoke('invite-user', {
+      body: {
+        email,
+        role,
+        companyId: _session.companyId,
+        redirectTo: window.location.origin + '/auth.html'
+      }
+    });
+    
+    if(error) throw error;
+    
+    document.getElementById('inviteActions').style.display = 'none';
+    document.getElementById('inviteSuccess').style.display = 'block';
+    loadTeam(); // Refresh list
+  } catch(e) {
+    showToast('Erro ao enviar convite: ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = oldTxt;
+  }
+}
+
+async function renderTeam() {
+  // Ver se o plano permite convites
+  if(_session.plan && _session.plan.startsWith('business')) {
+    document.getElementById('inviteArea').style.display = 'flex';
+  } else {
+    document.getElementById('inviteArea').style.display = 'none';
+  }
+  
+  // Membros ativos
+  const { data: members, error } = await _sb
+    .from('memberships')
+    .select('role, user:user_id(id, email, raw_user_meta_data)')
+    .eq('company_id', _session.companyId);
+    
+  if(members) {
+    let html = '';
+    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
+    members.forEach(m => {
+      const isMe = m.user?.id === _session.userId;
+      const f = m.user?.raw_user_meta_data?.fname || '';
+      const l = m.user?.raw_user_meta_data?.lname || '';
+      const fullName = isMe ? ((_session.fname + ' ' + _session.lname).trim() || _session.email.split('@')[0]) : ((f + ' ' + l).trim() || m.user?.email.split('@')[0]);
+      const displayEmail = m.user?.email;
+      const avatarChar = fullName.charAt(0).toUpperCase();
+      const editBtn = isMe ? `<button class="btn-icon" onclick="openRenameModal()" title="Editar nome" style="margin-left:auto"><i class="ph-bold ph-pencil-simple"></i></button>` : '';
+
+      html += `
+        <div class="member-row">
+          <div class="member-avatar">${avatarChar}</div>
+          <div class="member-info">
+            <div class="member-name">${escH(fullName)} ${isMe ? '(Tu)' : ''}</div>
+            <div class="member-email">${escH(displayEmail)}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
+            <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
+            ${editBtn}
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('membersList').innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--subtle)">Nenhum membro encontrado.</div>';
+  }
+  
+  // Convites pendentes
+  const { data: invites } = await _sb
+    .from('invites')
+    .select('*')
+    .eq('company_id', _session.companyId)
+    .is('accepted_at', null);
+    
+  if(invites && invites.length > 0) {
+    document.getElementById('pendingInvitesCard').style.display = 'block';
+    let html = '';
+    invites.forEach(inv => {
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:700">${inv.email}</div>
+            <div style="font-size:0.8rem; color:var(--orange)">Pendente • Expira a ${new Date(inv.expires_at).toLocaleDateString()}</div>
+          </div>
+          <button class="btn-ghost" style="color:var(--danger); padding:6px; font-size:1.1rem" onclick="cancelInvite('${inv.id}')">
+            <i class="ph-bold ph-trash"></i>
+          </button>
+        </div>
+      `;
+    });
+    document.getElementById('invitesList').innerHTML = html;
+  } else {
+    document.getElementById('pendingInvitesCard').style.display = 'none';
+  }
+}
+
+async function cancelInvite(id) {
+  if(!confirm('Tem a certeza que quer cancelar este convite?')) return;
+  const { error } = await _sb.from('invites').delete().eq('id', id);
+  if(error) showToast('Erro: ' + error.message, 'err');
+  else { showToast('Convite cancelado.', 'ok'); loadTeam(); }
+}
+
 
 let _billingCycle = 'monthly';
 

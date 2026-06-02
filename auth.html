@@ -207,16 +207,40 @@ input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-b
             <div class="spinner"></div>
           </button>
         </div>
-        <div class="reset-sent" id="resetSent">
-          <div class="icon"><i class="ph-bold ph-envelope-open"></i></div>
-          <h3>Email enviado!</h3>
-          <p>Verifica a tua caixa de entrada e segue as instruções.</p>
-          <button class="btn-primary" style="margin-top:20px" onclick="cancelReset()">
-            <span class="btn-label">Voltar ao login</span>
-            <div class="spinner"></div>
-          </button>
-        </div>
+        <!-- Reset Sent Msg -->
+      <div id="resetSent" style="display:none; text-align:center; padding:20px 0;">
+        <div style="font-size:3rem; color:var(--success); margin-bottom:12px"><i class="ph-bold ph-envelope-simple-open"></i></div>
+        <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:8px">Email enviado</h3>
+        <p style="font-size:.9rem; color:var(--muted); margin-bottom:24px">Verifica a tua caixa de correio (e a pasta de spam) para obteres o link de recuperação.</p>
+        <button class="btn-primary" style="background:var(--bdark); color:var(--dark); box-shadow:none" onclick="cancelReset()">Voltar ao Login</button>
       </div>
+      
+      <!-- Invite Set Password Form -->
+      <div id="invitePassForm" style="display:none; padding:10px 0;">
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="font-size:3rem; color:var(--blue); margin-bottom:12px"><i class="ph-bold ph-handshake"></i></div>
+          <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:4px">Bem-vindo(a) à Equipa!</h3>
+          <p style="font-size:.85rem; color:var(--muted)">Define a tua password para concluir o registo.</p>
+        </div>
+        
+        <div class="field">
+          <label>Nova Password</label>
+          <div class="field-wrap">
+            <span class="ico"><i class="ph-bold ph-lock"></i></span>
+            <input type="password" class="inp" id="invitePass" placeholder="Mínimo 8 caracteres" oninput="checkPasswordStrength(this.value)">
+            <button class="eye-btn" onclick="toggleEye('invitePass',this)" type="button"><i class="ph-bold ph-eye"></i></button>
+          </div>
+          <div class="pw-bar"><div class="pw-fill" id="pwFill"></div></div>
+          <div class="field-hint" id="pwHint">Use letras, números e símbolos</div>
+        </div>
+        
+        <button class="btn-primary" id="invitePassBtn" onclick="doSetInvitePassword()" style="margin-top:24px">
+          <span class="btn-label">Entrar na Empresa →</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+    </div>
 
       <!-- SIGNUP -->
       <div id="signupForm" style="display:none">
@@ -293,6 +317,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bootProcessed || !session) return;
     bootProcessed = true;
     try {
+      if (window.location.hash.includes('type=invite')) {
+        STATE.user = session.user;
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'none';
+        document.getElementById('resetForm').style.display = 'none';
+        document.querySelector('.tabs').style.display = 'none';
+        document.getElementById('invitePassForm').style.display = 'block';
+        if (overlay) overlay.classList.add('hidden');
+        return;
+      }
+      
       const company = await Auth._loadCompany(true, session.user);
       if (company) {
         window.location.href = 'dashboard.html';
@@ -418,6 +453,26 @@ async function doReset() {
     document.getElementById('resetInputArea').style.display = 'none';
     document.getElementById('resetSent').style.display = 'block';
   } catch(e) { toast('Erro: ' + e.message, 'err'); } finally { STATE.resetBusy = false; setBusy('resetBtn', false); }
+}
+
+async function doSetInvitePassword() {
+  const pass = document.getElementById('invitePass').value;
+  if (pass.length < 8) { toast('A password deve ter pelo menos 8 caracteres.', 'err'); return; }
+  
+  setBusy('invitePassBtn', true);
+  try {
+    const { error: updateErr } = await _sb.auth.updateUser({ password: pass });
+    if (updateErr) throw updateErr;
+    
+    // Auth.completeOnboarding handles checking invites automatically
+    await Auth.completeOnboarding({ userId: STATE.user.id });
+    
+    toast('Bem-vindo(a)! A redirecionar...', 'ok');
+    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+  } catch (e) {
+    toast('Erro: ' + e.message, 'err');
+    setBusy('invitePassBtn', false);
+  }
 }
 
 async function googleAuth() { try { await Auth.loginWithGoogle(); } catch (e) { toast('Erro: ' + e.message, 'err'); } }

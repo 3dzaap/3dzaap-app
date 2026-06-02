@@ -86,44 +86,58 @@ const Auth = {
     }
     if (!userId) throw new Error('Utilizador não autenticado.');
 
-    const cleanSlug = (slug || companyName).toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
+    // FIRST: Check if the user has a pending invite for their email
+    const { data: inviteData, error: inviteErr } = await _sb.rpc('accept_invite_by_email', {
+      p_user_id: userId
+    });
+    
     let company = null;
-    const { data: rpcData, error: rpcErr } = await _sb
-      .rpc('create_company_for_user', {
-        p_user_id:   userId,
-        p_name:      companyName,
-        p_slug:      cleanSlug,
-        p_plan:      plan || 'trial',
-        p_config:    config || {},
-        p_signature: signature || null,
-        p_logo_url:  logo || null
-      });
 
-    if (!rpcErr && rpcData?.length) {
-      company = rpcData[0];
+    if (!inviteErr && inviteData?.success) {
+      // User accepted an invite via email, load the company they joined
+      _companyId = inviteData.company_id;
+      const { data: loadedCompany } = await _sb.from('companies').select('*').eq('id', _companyId).single();
+      if(loadedCompany) company = loadedCompany;
     } else {
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+      // Normal flow: create a new company
+      const cleanSlug = (slug || companyName || 'empresa').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      const { data: ins, error: insErr } = await _sb
-        .from('companies')
-        .insert({
-          owner_id:       userId,
-          name:           companyName,
-          slug:           cleanSlug,
-          plan:           plan || 'trial',
-          config:         config || {},
-          signature:      signature || null,
-          logo_url:       logo || null,
-          trial_ends_at:  trialEndsAt.toISOString()
-        })
-        .select()
-        .single();
-      if (insErr) throw new Error('Erro ao criar empresa: ' + insErr.message);
-      company = ins;
+      const { data: rpcData, error: rpcErr } = await _sb
+        .rpc('create_company_for_user', {
+          p_user_id:   userId,
+          p_name:      companyName || 'Minha Empresa',
+          p_slug:      cleanSlug,
+          p_plan:      plan || 'trial',
+          p_config:    config || {},
+          p_signature: signature || null,
+          p_logo_url:  logo || null
+        });
+
+      if (!rpcErr && rpcData?.length) {
+        company = rpcData[0];
+      } else {
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+
+        const { data: ins, error: insErr } = await _sb
+          .from('companies')
+          .insert({
+            owner_id:       userId,
+            name:           companyName || 'Minha Empresa',
+            slug:           cleanSlug,
+            plan:           plan || 'trial',
+            config:         config || {},
+            signature:      signature || null,
+            logo_url:       logo || null,
+            trial_ends_at:  trialEndsAt.toISOString()
+          })
+          .select()
+          .single();
+        if (insErr) throw new Error('Erro ao criar empresa: ' + insErr.message);
+        company = ins;
+      }
     }
 
     _companyId    = company.id;
