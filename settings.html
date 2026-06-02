@@ -780,9 +780,11 @@
                 <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar membros...</div>
               </div>
               
-              <div class="settings-card-title" style="margin-top:32px"><span data-i18n="settings.team.pending">Convites Pendentes</span></div>
-              <div id="pendingInvitesList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px">
-                <!-- Invites render here -->
+              <div id="pendingInvitesCard" style="display:none">
+                <div class="settings-card-title" style="margin-top:32px"><span data-i18n="settings.team.pending">Convites Pendentes</span></div>
+                <div id="pendingInvitesList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px">
+                  <!-- Invites render here -->
+                </div>
               </div>
             </div>
 
@@ -1476,7 +1478,7 @@ async function renderTeam() {
         </div>
       `;
     });
-    document.getElementById('invitesList').innerHTML = html;
+    document.getElementById('pendingInvitesList').innerHTML = html;
   } else {
     document.getElementById('pendingInvitesCard').style.display = 'none';
   }
