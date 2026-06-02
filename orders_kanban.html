@@ -437,6 +437,7 @@
   <div class="layout">
     <script src="utils.js"></script>
     <script src="sidebar.js"></script>
+    <script src="printer_modal.js"></script>
     <script>Sidebar.init();</script>
 
     <div class="main">
@@ -624,6 +625,29 @@
         orders = o;
         _printers = p;
         _filaments = f;
+
+        // Inicializar modal partilhada com os callbacks deste contexto
+        _PM_init({
+          getPrinters : () => _printers,
+          getFilaments: () => _filaments,
+          escH,
+          formatTime,
+          parseTime   : (t) => parseFloat(String(t).replace(',', '.')) || 0,
+          onSave      : async (order) => {
+            renderKanban();
+            try {
+              await DB.saveOrder(order);
+              showToast('<i class="ph-bold ph-check-circle"></i> Pedido atualizado!', 'ok');
+            } catch(err) {
+              showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar.', 'err');
+            }
+          },
+          onRevert: (order, oldStatus) => {
+            order.status = oldStatus;
+            renderKanban();
+          }
+        });
+
         renderKanban();
       } catch(e) { console.error('Kanban load error:', e); }
     }
@@ -935,364 +959,9 @@
       if (pop && !e.target.closest('.gc-help-wrap')) pop.style.display = 'none';
     });
 
-    // ══════════════════════════════════════
-    //  PRINTER SELECTION MODAL (Advanced)
-    // ══════════════════════════════════════
-    let _activeOrderForPrinters = null;
-    let _oldStatusFallback = null;
-    let _modalMode = 'enter'; // 'enter' | 'exit'
+    // Printer modal is handled by shared printer_modal.js
 
-    function openPrinterModal(order, oldStatus, mode = 'enter') {
-      _activeOrderForPrinters = order;
-      _oldStatusFallback = oldStatus;
-      _modalMode = mode;
-
-      const listEl = document.getElementById('printerModalList');
-      listEl.innerHTML = '';
-
-      if (!order.items || order.items.length === 0) {
-        _finalizePrinterModal(false);
-        return;
-      }
-
-      // Update modal title & description based on mode
-      const titleEl = document.getElementById('printerModalTitle');
-      const descEl = document.getElementById('printerModalDesc');
-      const skipBtn = document.getElementById('skipPrintBtn');
-
-      if (mode === 'enter') {
-        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
-        if (descEl) descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
-        if (skipBtn) skipBtn.style.display = 'none';
-      } else {
-        if (titleEl) titleEl.innerHTML = '<i class="ph-bold ph-check-circle" style="color:var(--success, #22c55e)"></i> Concluir Impressão';
-        if (descEl) descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
-        if (skipBtn) skipBtn.style.display = 'flex';
-      }
-
-      // In 'exit' mode, only show items NOT fully printed and not skipped
-      const itemsToShow = mode === 'exit'
-        ? order.items.filter((it, idx) => !it.printSkipped && !_itemFullyPrinted(it))
-        : order.items;
-
-      if (itemsToShow.length === 0) {
-        _finalizePrinterModal(false);
-        return;
-      }
-
-      itemsToShow.forEach((it) => {
-        const globalIdx = order.items.indexOf(it);
-        _renderItemBlock(listEl, it, globalIdx);
-      });
-
-      updateKanbanPrinterModalStats();
-      document.getElementById('printerModalOverlay').style.display = 'flex';
-    }
-
-    function _buildPrinterOpts(selectedId) {
-      let opts = `<option value="">-- Sem impressora --</option>`;
-      _printers.forEach(p => {
-        const sel = String(selectedId) === String(p.id) ? 'selected' : '';
-        const pname = p.customName || (p.brand + ' ' + p.model).trim() || 'Impressora';
-        opts += `<option value="${p.id}" ${sel}>${escH(pname)}</option>`;
-      });
-      return opts;
-    }
-
-    function _renderItemBlock(container, it, globalIdx) {
-      const totalQty = parseInt(it.quantity || it.qty || 1);
-      const runs = it.printRuns && it.printRuns.length ? it.printRuns : [{ printerId: '', qty: totalQty }];
-      const printed = _itemPrintedQty(it);
-      const remaining = Math.max(0, totalQty - printed);
-      const isDone = remaining === 0;
-
-      const displayRuns = _modalMode === 'exit' && remaining > 0
-        ? [{ printerId: '', qty: remaining }]
-        : runs;
-
-      const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
-      const matsHtml = mats.map(m => {
-        const fil = _filaments.find(f => String(f.id) === String(m.filamentId));
-        if (!fil) return '';
-        const colorDot = fil.colorHex ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${fil.colorHex};border:1px solid rgba(0,0,0,.15);margin-right:4px"></span>` : '';
-        const brandText = Array.isArray(fil.brand) ? fil.brand.join(' ') : (fil.brand || '');
-        const infoStr = `${escH(fil.colorName||fil.color||'')} - ${escH(fil.type||'')} - ${escH(brandText)}`;
-        return `<span style="font-size:.72rem; color:var(--muted); display:inline-flex; align-items:center">${colorDot}${infoStr} ${m.weightG?'· '+m.weightG+'g/ml':''}</span>`;
-      }).filter(Boolean).join('<span style="margin:0 4px;color:var(--border)">+</span>');
-
-      let runsHtml = '';
-      if (!isDone) {
-        runsHtml = `
-          <div class="pmodal-runs" style="margin-top:8px; margin-left:24px; padding-top:8px; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:8px;">
-            ${displayRuns.map((r, ri) => _buildRunRow(globalIdx, ri, r.printerId, r.qty, totalQty)).join('')}
-          </div>
-          <button type="button" class="btn btn-ghost btn-sm" style="margin-left:24px; margin-top:4px; font-size:0.75rem;" onclick="addRunToItem(${globalIdx}, ${totalQty})">
-            <i class="ph-bold ph-plus"></i> Adicionar impressora
-          </button>
-        `;
-      }
-
-      const block = document.createElement('div');
-      block.className = `pt-item-card ${isDone ? 'pt-item-done' : ''} pmodal-item-block`;
-      block.style.cssText = 'display:flex; flex-direction:column; gap:8px; position:relative; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:8px;';
-      block.dataset.globalIdx = globalIdx;
-
-      block.innerHTML = `
-        <label class="pt-item-check ${isDone ? 'pt-check-disabled' : ''}" style="align-items:flex-start; display:flex; gap:8px;">
-          <input type="checkbox" class="pt-item-cb" data-idx="${globalIdx}" ${isDone ? 'disabled' : 'checked'} style="accent-color:var(--blue); width:16px; height:16px; margin-top:2px" onchange="updateKanbanPrinterModalStats()">
-          <div style="flex:1; min-width:0">
-            <div style="font-weight:700; font-size:.9rem; color:${isDone ? 'var(--muted)' : 'var(--text)'}">${escH(it.description || 'Item ' + (globalIdx+1))}</div>
-            ${!isDone && matsHtml ? `
-              <div style="margin-top:4px; margin-bottom:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap">
-                ${matsHtml}
-              </div>
-            ` : ''}
-            ${it.printTime ? `<div style="margin-top:4px; font-size:0.65rem; color:var(--subtle)"><i class="ph-bold ph-clock"></i> Tempo estimado: ${formatTime(it.printTime)} / peça</div>` : ''}
-          </div>
-          <div style="text-align:right; flex-shrink:0; padding-left:8px">
-            <div style="font-family:var(--mono); font-size:.78rem; font-weight:800; color:${isDone ? 'var(--success)' : 'var(--blue)'}">${isDone ? '✅ Impresso' : remaining + ' restantes'}</div>
-            <div style="font-size:.65rem; color:var(--muted); margin-top:2px">Total: ${totalQty} | Impresso: ${printed}</div>
-          </div>
-        </label>
-        ${runsHtml}
-      `;
-      container.appendChild(block);
-    }
-
-    function _buildRunRow(globalIdx, runIdx, printerId, qty, maxQty) {
-      return `<div class="pmodal-run-row" data-global-idx="${globalIdx}" data-run-idx="${runIdx}" style="display:flex; align-items:center; gap:8px; width: 100%;">
-        <select class="form-input" style="flex:1; padding:6px; font-size:0.85rem; height:auto; min-width:120px;" onchange="updateKanbanPrinterModalStats()">
-          ${_buildPrinterOpts(printerId)}
-        </select>
-        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
-          <input type="number" min="0" max="${maxQty}" value="${qty}" placeholder="Qtd" class="pmodal-qty-input" onchange="updateKanbanPrinterModalStats()"
-            style="width:70px; padding:6px; font-size:0.9rem; text-align:center; border:1px solid var(--border); border-radius:6px; background:var(--bg-input); color:var(--text); outline:none;">
-          <span style="font-size:0.8rem; color:var(--muted)">un.</span>
-        </div>
-        <button type="button" class="btn btn-ghost btn-sm" title="Remover"
-          style="color:var(--danger); padding:4px; flex-shrink:0;"
-          onclick="const row = this.closest('.pmodal-run-row'); row.remove(); updateKanbanPrinterModalStats();">
-          <i class="ph-bold ph-x"></i>
-        </button>
-      </div>`;
-    }
-
-    function updateKanbanPrinterModalStats() {
-      const order = _activeOrderForPrinters;
-      if (!order || !order.items) return;
-      
-      let totalPrinters = 0;
-      let totalFil = 0;
-      let totalHours = 0;
-      let totalAssignedItems = 0;
-
-      const blocks = document.querySelectorAll('.pmodal-item-block');
-      blocks.forEach(block => {
-        const cb = block.querySelector('.pt-item-cb');
-        if (cb && !cb.checked) return;
-
-        const globalIdx = parseInt(block.dataset.globalIdx);
-        const it = order.items[globalIdx];
-        if (!it) return;
-
-        const runRows = block.querySelectorAll('.pmodal-run-row');
-        let itemAssignedPrinters = 0;
-        let itemAssignedQty = 0;
-
-        runRows.forEach(row => {
-          const sel = row.querySelector('select');
-          const qtyInput = row.querySelector('.pmodal-qty-input');
-          const pid = sel ? sel.value : '';
-          const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
-          if (qty > 0) {
-             itemAssignedPrinters++;
-             itemAssignedQty += qty;
-          }
-        });
-
-        if (itemAssignedQty > 0) {
-           totalAssignedItems += itemAssignedQty;
-           totalPrinters += itemAssignedPrinters;
-           if (it.weightG) totalFil += (parseFloat(it.weightG) * itemAssignedQty);
-           if (it.printTime) totalHours += (parseTime(it.printTime) * itemAssignedQty);
-        }
-      });
-
-      document.getElementById('pmStatItems').textContent = totalAssignedItems;
-      document.getElementById('pmStatPrinters').textContent = totalPrinters;
-      document.getElementById('pmStatFilament').textContent = (totalFil / 1000).toFixed(2);
-      document.getElementById('pmStatHours').textContent = (totalHours / 60).toFixed(1);
-
-      const totalItems = order.items.length;
-      const doneItems = order.items.filter(it => _itemPrintedQty(it) >= parseInt(it.quantity || 1)).length;
-      const progress = totalItems ? (doneItems / totalItems) * 100 : 0;
-      
-      const pFill = document.getElementById('printerModalProgressFill');
-      const pLbl = document.getElementById('printerModalProgressLbl');
-      if (pFill) pFill.style.width = progress + '%';
-      if (pLbl) pLbl.textContent = `${doneItems} / ${totalItems}`;
-    }
-
-    function addRunToItem(globalIdx, maxQty) {
-      const block = document.querySelector(`.pmodal-item-block[data-global-idx="${globalIdx}"] .pmodal-runs`);
-      const runCount = block.querySelectorAll('.pmodal-run-row').length;
-      block.insertAdjacentHTML('beforeend', _buildRunRow(globalIdx, runCount, '', 0, maxQty));
-      updateKanbanPrinterModalStats();
-    }
-
-    function _collectPrintRuns(order) {
-      const blocks = document.querySelectorAll('.pmodal-item-block');
-      blocks.forEach(block => {
-        const globalIdx = parseInt(block.dataset.globalIdx);
-        const it = order.items[globalIdx];
-        if (!it) return;
-
-        const cb = block.querySelector('.pt-item-cb');
-        if (cb && !cb.checked) {
-          // If unchecked, do not collect new runs for this item
-          return;
-        }
-
-        const runRows = block.querySelectorAll('.pmodal-run-row');
-        const totalQty = parseInt(it.quantity || it.qty || 1);
-
-        // Collect new runs from modal
-        const newRuns = [];
-        runRows.forEach(row => {
-          const sel = row.querySelector('select');
-          const qtyInput = row.querySelector('.pmodal-qty-input');
-          const pid = sel ? sel.value : '';
-          const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
-          if (qty > 0) newRuns.push({ printerId: pid || null, qty });
-        });
-
-        // Merge with existing runs (for exit mode top-up)
-        if (_modalMode === 'exit') {
-          it.printRuns = [...(it.printRuns || []), ...newRuns];
-        } else {
-          it.printRuns = newRuns;
-        }
-
-        // Clear skip flag now that user is assigning
-        delete it.printSkipped;
-      });
-    }
-
-    function closePrinterModal() {
-      document.getElementById('printerModalOverlay').style.display = 'none';
-      if (_activeOrderForPrinters && _oldStatusFallback) {
-        _activeOrderForPrinters.status = _oldStatusFallback;
-        renderKanban();
-      }
-      _activeOrderForPrinters = null;
-      _oldStatusFallback = null;
-    }
-
-    async function advanceWithoutPrinting() {
-      const order = _activeOrderForPrinters;
-      if (!order) return;
-      // Mark unprinted items as skipped (they won't count for material consumption)
-      if (order.items) {
-        order.items.forEach(it => {
-          if (!_itemFullyPrinted(it)) {
-            it.printSkipped = true;
-          }
-        });
-      }
-      await _finalizePrinterModal(false);
-    }
-
-    async function confirmPrinterModal() {
-      const order = _activeOrderForPrinters;
-      if (!order) return;
-      _collectPrintRuns(order);
-
-      if (_modalMode === 'exit' && _hasPendingItems(order)) {
-        showToast('<i class="ph-bold ph-warning"></i> Atribua as impressoras em falta ou avance sem imprimir.', 'err');
-        return;
-      }
-
-      await _finalizePrinterModal(false);
-    }
-
-    async function _finalizePrinterModal(revert) {
-      document.getElementById('printerModalOverlay').style.display = 'none';
-      const order = _activeOrderForPrinters;
-      const oldStatus = _oldStatusFallback;
-      _activeOrderForPrinters = null;
-      _oldStatusFallback = null;
-
-      if (revert && order) {
-        order.status = oldStatus;
-      }
-
-      renderKanban();
-      if (!revert && order) {
-        try {
-          await DB.saveOrder(order);
-          showToast('<i class="ph-bold ph-check-circle"></i> Pedido atualizado!', 'ok');
-        } catch(err) {
-          showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar.', 'err');
-        }
-      }
-    }
   </script>
 
-  <!-- Printer Allocation Modal (Advanced) -->
-  <div class="modal-overlay" id="printerModalOverlay" style="display:none; align-items:center; justify-content:center; z-index:9999;">
-    <div class="modal" style="width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column;">
-      <div class="modal-header">
-        <div class="modal-title" id="printerModalTitle"></div>
-        <button class="modal-close" onclick="_finalizePrinterModal(true)"><i class="ph-bold ph-x"></i></button>
-      </div>
-      <div class="modal-body" style="padding:0; overflow-y:auto; display:flex; flex-direction:column;">
-        <p id="printerModalDesc" style="color:var(--muted); font-size:0.85rem; padding:16px 20px 0; margin:0;"></p>
-        
-        <!-- Progress header -->
-        <div id="printerModalProgressBar" style="padding:14px 20px 12px; background:var(--bg-card-s); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; margin-top:16px;">
-          <div style="flex:1">
-            <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px">Progresso do Pedido</div>
-            <div style="background:var(--bg-input); border-radius:100px; height:6px; overflow:hidden">
-              <div id="printerModalProgressFill" style="height:100%; background:var(--blue); border-radius:100px; transition:width .5s; width:0%"></div>
-            </div>
-          </div>
-          <div id="printerModalProgressLbl" style="font-family:var(--mono); font-size:.82rem; font-weight:800; color:var(--blue); white-space:nowrap">0 / 0</div>
-        </div>
-
-        <div style="padding:16px 20px 0;">
-          <div class="pt-stats-grid">
-            <div class="stat-mini" style="padding:10px; gap:8px">
-              <div class="stat-mini-icon si-blue" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-package"></i></div>
-              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="pmStatItems" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Itens escolhidos</div></div>
-            </div>
-            <div class="stat-mini" style="padding:10px; gap:8px">
-              <div class="stat-mini-icon si-purple" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-printer"></i></div>
-              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="pmStatPrinters" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Impressoras</div></div>
-            </div>
-            <div class="stat-mini" style="padding:10px; gap:8px">
-              <div class="stat-mini-icon si-orange" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-palette"></i></div>
-              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="pmStatFilament" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Material (g/ml)</div></div>
-            </div>
-            <div class="stat-mini" style="padding:10px; gap:8px">
-              <div class="stat-mini-icon si-green" style="width:28px;height:28px;font-size:.8rem"><i class="ph-bold ph-clock"></i></div>
-              <div style="flex:1;min-width:0"><div class="stat-mini-val" id="pmStatHours" style="font-size:1rem">0</div><div class="stat-mini-lbl" style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Horas Estimadas</div></div>
-            </div>
-          </div>
-        </div>
-
-        <div style="padding:16px 20px;">
-          <div style="font-size:.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px">Itens a imprimir nesta sessão</div>
-          <div id="printerModalList" style="display:flex; flex-direction:column; gap:8px; padding-right:2px"></div>
-        </div>
-      </div>
-      <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn btn-ghost" onclick="advanceWithoutPrinting()" id="skipPrintBtn" style="color:var(--muted); font-size:0.82rem;"><i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir</button>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-ghost" onclick="_finalizePrinterModal(true)">Cancelar</button>
-          <button class="btn btn-primary" onclick="confirmPrinterModal()"><i class="ph-bold ph-printer"></i> Guardar sessão</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
