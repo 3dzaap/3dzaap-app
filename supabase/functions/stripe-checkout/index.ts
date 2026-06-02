@@ -125,6 +125,7 @@ serve(async (req) => {
         name: 'auto',
         address: 'auto'
       },
+      metadata: { companyId, plan },
       success_url: `${origin}/settings.html?tab=assinatura&status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/settings.html?tab=assinatura&status=cancel`,
       subscription_data: {

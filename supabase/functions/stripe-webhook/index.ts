@@ -29,9 +29,19 @@ serve(async (req) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        const companyId = session.subscription_data?.metadata?.companyId || session.metadata?.companyId;
+        let companyId = session.subscription_data?.metadata?.companyId || session.metadata?.companyId || session.client_reference_id;
         const subscriptionId = session.subscription;
         
+        // Fallback: se a metadata não estiver na sessão, procurar a empresa pelo Customer ID
+        if (!companyId && session.customer) {
+          const { data: comp } = await supabaseAdmin
+            .from('companies')
+            .select('id')
+            .eq('stripe_customer_id', session.customer)
+            .single();
+          if (comp) companyId = comp.id;
+        }
+
         if (companyId && subscriptionId) {
           // Obter detalhes da subscrição para saber o plano
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -59,7 +69,11 @@ serve(async (req) => {
             'prod_UWBDTCsfQ33Xeu': 'business_ano', 'prod_UWBFpUFpaHCRXb': 'business_ano',
           };
 
-          const planName = PRODUCT_TO_PLAN[productId || ''] || 'starter';
+          // Obter o plano a partir do produto, com fallback para a metadata enviada no checkout
+          let planName = PRODUCT_TO_PLAN[productId || ''];
+          if (!planName) {
+            planName = session.subscription_data?.metadata?.plan || session.metadata?.plan || 'starter';
+          }
 
           await supabaseAdmin
             .from('companies')
@@ -76,7 +90,16 @@ serve(async (req) => {
 
       case 'invoice.paid': {
         const invoice = event.data.object;
-        const companyId = invoice.subscription_details?.metadata?.companyId;
+        let companyId = invoice.subscription_details?.metadata?.companyId;
+        
+        if (!companyId && invoice.customer) {
+          const { data: comp } = await supabaseAdmin
+            .from('companies')
+            .select('id')
+            .eq('stripe_customer_id', invoice.customer)
+            .single();
+          if (comp) companyId = comp.id;
+        }
         
         if (companyId) {
           await supabaseAdmin.from('payments').insert({
@@ -92,7 +115,16 @@ serve(async (req) => {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
-        const companyId = subscription.metadata?.companyId;
+        let companyId = subscription.metadata?.companyId;
+        
+        if (!companyId && subscription.customer) {
+          const { data: comp } = await supabaseAdmin
+            .from('companies')
+            .select('id')
+            .eq('stripe_customer_id', subscription.customer)
+            .single();
+          if (comp) companyId = comp.id;
+        }
         
         if (companyId) {
           await supabaseAdmin
