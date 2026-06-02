@@ -838,6 +838,7 @@
     <script src="utils.js"></script>
     <script src="sidebar.js"></script>
     <script src="printer_modal.js"></script>
+    <script src="xray_modal.js"></script>
     <script>Sidebar.init();</script>
     <!-- SIDEBAR -->
 
@@ -1144,6 +1145,7 @@
         </div>
       </div>
       <div class="modal-footer">
+        <button class="btn btn-ghost" id="btnOrderXRay" onclick="if(editingId) { const oo=orders.find(x=>x.id===editingId); if(oo) openOrderXRay(oo); }" style="color:var(--orange); display:none; margin-right:auto"><i class="ph-bold ph-scan"></i> Raio-X</button>
         <button class="btn btn-ghost" onclick="closeModal()" data-i18n="orders.modal.btn_cancel">Cancelar</button>
         <button class="btn btn-primary" onclick="saveOrder()" data-i18n="orders.modal.btn_save"><i
             class="ph-bold ph-floppy-disk"></i> Guardar</button>
@@ -1725,6 +1727,14 @@
                 loadData();
               }
             });
+
+            if (typeof _XRAY_init === 'function') {
+              _XRAY_init({
+                getFilaments: () => filaments,
+                formatTime,
+                fmtCurrency: window.fmtEur || window.fmtCurrency
+              });
+            }
           });
         }
       } catch (e) {
@@ -2061,6 +2071,7 @@
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn-icon" onclick="duplicateOrder('${o.id}')" title="${i18n.getNestedTranslation('orders.details.duplicate')}" style="margin-right:2px"><i class="ph-bold ph-copy"></i></button>
           <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px"><i class="ph-bold ph-pencil-simple"></i></button>
+          <button class="btn-icon" onclick="(function(id){const oo=orders.find(x=>x.id===id);if(oo)openOrderXRay(oo);})('${o.id}')" title="Raio-X Financeiro" style="margin-right:2px;color:var(--orange)"><i class="ph-bold ph-scan"></i></button>
           <button class="btn-icon del" onclick="confirmDelete('${o.id}')" title="Eliminar" style="margin-right:4px"><i class="ph-bold ph-trash"></i></button>
           <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')"><i class="ph-bold ph-caret-down"></i></button>
         </td>
@@ -2085,6 +2096,7 @@
               <button class="btn btn-ghost btn-sm" onclick="${o.paymentStatus === 'pago' ? `togglePayment('${o.id}','pendente')` : `togglePayment('${o.id}','pago')`}">${o.paymentStatus === 'pago' ? i18n.getNestedTranslation('status.pendente') : i18n.getNestedTranslation('status.pago')}</button>
               <button class="btn btn-ghost btn-sm" onclick="duplicateOrder('${o.id}')"><i class="ph-bold ph-copy"></i> <span data-i18n="orders.details.duplicate">${i18n.getNestedTranslation('orders.details.duplicate')}</span></button>
               <button class="btn btn-ghost btn-sm" onclick="openModal('${o.id}')" data-i18n="orders.card.btn_edit"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
+              <button class="btn btn-ghost btn-sm" onclick="const oo=orders.find(x=>x.id==='${o.id}'); if(oo) openOrderXRay(oo)" style="color:var(--orange)"><i class="ph-bold ph-scan"></i> Raio-X</button>
               <button class="btn btn-ghost btn-sm" onclick="printReceipt('${o.id}')" style="color:var(--blue)" data-i18n="orders.details.receipt"><i class="ph-bold ph-receipt"></i> Recibo</button>
               <button class="btn btn-ghost btn-sm" onclick="sendWhatsAppTracking('${o.id}')" style="color:#25D366;display:flex;align-items:center;gap:4px">
                 <i class="ph-bold ph-whatsapp-logo"></i>
@@ -2650,6 +2662,11 @@
         libBtn.style.opacity = '1';
         libBtn.style.cursor = 'pointer';
         libBtn.title = '';
+      }
+
+      const btnXRay = document.getElementById('btnOrderXRay');
+      if (btnXRay) {
+        btnXRay.style.display = id ? 'inline-block' : 'none';
       }
 
       document.getElementById('modalOverlay').classList.add('open');

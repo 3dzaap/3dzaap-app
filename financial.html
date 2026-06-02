@@ -310,6 +310,7 @@
 <div class="layout">
 <script src="utils.js"></script>
 <script src="sidebar.js"></script>
+<script src="xray_modal.js"></script>
 <script>Sidebar.init();</script>
   
   <div class="main">
@@ -551,7 +552,7 @@
             <thead>
               <tr>
                 <th data-i18n="financial.th_num">Nº</th><th data-i18n="financial.th_client">Cliente</th><th data-i18n="financial.th_status">Estado</th><th data-i18n="financial.th_payment">Pagamento</th>
-                <th class="r" id="finThTotal2">Total</th><th data-i18n="financial.th_date">Data</th>
+                <th class="r" id="finThTotal2">Total</th><th data-i18n="financial.th_date">Data</th><th style="width:40px"></th>
               </tr>
             </thead>
             <tbody id="ordersTableBody"></tbody>
@@ -668,15 +669,54 @@ function animateValue(id, start, end, duration) {
   }, 16);
 }
 
+let filaments = [];
+
 document.addEventListener('DOMContentLoaded', async () => {
   initThemeToggle();
   await loadUserData();
   const allowed = await applyFeatureGating();
   if (!allowed) return;
   setToday();
-  await loadOrders();
-  await loadExpenses();
-  await loadPrinters();
+  
+  try {
+    const results = await Promise.allSettled([
+      DB.getOrders(),
+      DB.getExpenses(),
+      DB.getPrinters(),
+      DB.getFilaments()
+    ]);
+    
+    orders = results[0].status === 'fulfilled' ? results[0].value : [];
+    
+    // Process expenses
+    if (results[1].status === 'fulfilled') {
+      const unique = [];
+      results[1].value.forEach(e => {
+         const isDup = unique.some(u => u.date === e.date && u.value === e.value && u.description === e.description);
+         if (!isDup) unique.push(e);
+      });
+      expenses = unique;
+    } else {
+      expenses = [];
+    }
+    
+    printers = results[2].status === 'fulfilled' ? results[2].value : [];
+    filaments = results[3].status === 'fulfilled' ? results[3].value : [];
+    
+  } catch(e) {
+    console.error('Error loading data:', e);
+  }
+
+  if (typeof _XRAY_init === 'function') {
+    _XRAY_init({
+      getFilaments: () => filaments,
+      formatTime: (t) => t,
+      fmtCurrency: window.fmtEur || window.fmtCurrency
+    });
+  }
+
+  renderAll();
+  renderYearlyChart();
 });
 
 function renderStatusDistribution(periodOrders) {
@@ -1111,6 +1151,9 @@ function renderAll() {
         <td>${renderPayBadge(o.paymentStatus)}</td>
         <td class="r" style="font-weight:700">${fmtCurrency(o.total||0)}</td>
         <td style="color:var(--muted);font-size:.78rem">${fmtDate(o.createdAt)}</td>
+        <td class="r" style="white-space:nowrap">
+           <button class="btn-icon" onclick="(function(id){const oo=orders.find(x=>x.id===id);if(oo)openOrderXRay(oo);})('${o.id}')" title="Raio-X Financeiro" style="color:var(--orange)"><i class="ph-bold ph-scan"></i></button>
+        </td>
       </tr>`).join('');
     const mobFin = document.getElementById('mobFinList');
     if (mobFin) mobFin.innerHTML = periodOrders.map(o => `
@@ -1123,7 +1166,12 @@ function renderAll() {
             <span class="mob-fin-date">${fmtDate(o.createdAt)}</span>
           </div>
         </div>
-        <div class="mob-fin-right"><div class="mob-fin-total">${fmtCurrency(o.total||0)}</div></div>
+        <div class="mob-fin-right">
+          <div class="mob-fin-total">${fmtCurrency(o.total||0)}</div>
+          <div style="margin-top:4px;text-align:right">
+            <button class="btn-icon" onclick="(function(id){const oo=orders.find(x=>x.id===id);if(oo)openOrderXRay(oo);})('${o.id}')" style="color:var(--orange)"><i class="ph-bold ph-scan"></i></button>
+          </div>
+        </div>
       </div>`).join('');
   }
 }
