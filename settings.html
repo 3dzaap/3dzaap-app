@@ -1414,72 +1414,94 @@ async function submitInvite() {
 
 async function renderTeam() {
   // Ver se o plano permite convites
-  if(_session.plan && _session.plan.startsWith('business')) {
-    document.getElementById('btnInviteMember').style.display = 'inline-block';
-  } else {
-    document.getElementById('btnInviteMember').style.display = 'none';
-  }
-  
-  // Membros ativos
-  const { data: members, error } = await _sb
-    .from('memberships')
-    .select('role, user:user_id(id, email, raw_user_meta_data)')
-    .eq('company_id', _session.companyId);
-    
-  if(members) {
-    let html = '';
-    const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
-    members.forEach(m => {
-      const isMe = m.user?.id === _session.userId;
-      const f = m.user?.raw_user_meta_data?.fname || '';
-      const l = m.user?.raw_user_meta_data?.lname || '';
-      const fullName = isMe ? ((_session.fname + ' ' + _session.lname).trim() || _session.email.split('@')[0]) : ((f + ' ' + l).trim() || m.user?.email.split('@')[0]);
-      const displayEmail = m.user?.email;
-      const avatarChar = fullName.charAt(0).toUpperCase();
-      const editBtn = isMe ? `<button class="btn-icon" onclick="openRenameModal()" title="Editar nome" style="margin-left:auto"><i class="ph-bold ph-pencil-simple"></i></button>` : '';
+  const isBusiness = _session.plan && _session.plan.startsWith('business');
+  document.getElementById('btnInviteMember').style.display = isBusiness ? 'inline-block' : 'none';
 
-      html += `
-        <div class="member-row">
-          <div class="member-avatar">${avatarChar}</div>
-          <div class="member-info">
-            <div class="member-name">${escH(fullName)} ${isMe ? '(Tu)' : ''}</div>
-            <div class="member-email">${escH(displayEmail)}</div>
+  const membersList = document.getElementById('membersList');
+  const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
+
+  // Always show current user from session (no DB query needed)
+  const fullName = ((_session.fname + ' ' + _session.lname).trim() || _session.email.split('@')[0]);
+  const avatarChar = fullName.charAt(0).toUpperCase();
+  const editBtn = `<button class="btn-icon" onclick="openRenameModal()" title="Editar nome" style="margin-left:auto"><i class="ph-bold ph-pencil-simple"></i></button>`;
+
+  let html = `
+    <div class="member-row">
+      <div class="member-avatar">${avatarChar}</div>
+      <div class="member-info">
+        <div class="member-name">${escH(fullName)} <em style="font-size:0.8rem;color:var(--muted)">(Tu)</em></div>
+        <div class="member-email">${escH(_session.email)}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
+        <span class="role-badge role-${_session.role}">${roleMap[_session.role] || _session.role}</span>
+        ${editBtn}
+      </div>
+    </div>
+  `;
+
+  // Try to load other team members from memberships (bonus — fails silently if table doesn't exist)
+  try {
+    const { data: members, error } = await _sb
+      .from('memberships')
+      .select('role, user:user_id(id, email, raw_user_meta_data)')
+      .eq('company_id', _session.companyId);
+
+    if (!error && members) {
+      members.forEach(m => {
+        if (m.user?.id === _session.userId) return; // skip self, already shown
+        const f = m.user?.raw_user_meta_data?.fname || '';
+        const l = m.user?.raw_user_meta_data?.lname || '';
+        const mName = (f + ' ' + l).trim() || m.user?.email?.split('@')[0] || '?';
+        const mChar = mName.charAt(0).toUpperCase();
+        html += `
+          <div class="member-row">
+            <div class="member-avatar">${mChar}</div>
+            <div class="member-info">
+              <div class="member-name">${escH(mName)}</div>
+              <div class="member-email">${escH(m.user?.email || '')}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
+              <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
-            <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
-            ${editBtn}
-          </div>
-        </div>
-      `;
-    });
-    document.getElementById('membersList').innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--subtle)">Nenhum membro encontrado.</div>';
+        `;
+      });
+    }
+  } catch (_) {
+    // memberships table not yet set up — silently skip extra members
   }
-  
-  // Convites pendentes
-  const { data: invites } = await _sb
-    .from('invites')
-    .select('*')
-    .eq('company_id', _session.companyId)
-    .is('accepted_at', null);
-    
-  if(invites && invites.length > 0) {
-    document.getElementById('pendingInvitesCard').style.display = 'block';
-    let html = '';
-    invites.forEach(inv => {
-      html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-weight:700">${inv.email}</div>
-            <div style="font-size:0.8rem; color:var(--orange)">Pendente • Expira a ${new Date(inv.expires_at).toLocaleDateString()}</div>
+
+  membersList.innerHTML = html;
+
+  // Pending invites (also optional)
+  try {
+    const { data: invites } = await _sb
+      .from('invites')
+      .select('*')
+      .eq('company_id', _session.companyId)
+      .is('accepted_at', null);
+
+    if (invites && invites.length > 0) {
+      document.getElementById('pendingInvitesCard').style.display = 'block';
+      let iHtml = '';
+      invites.forEach(inv => {
+        iHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:700">${inv.email}</div>
+              <div style="font-size:0.8rem; color:var(--orange)">Pendente • Expira a ${new Date(inv.expires_at).toLocaleDateString()}</div>
+            </div>
+            <button class="btn-ghost" style="color:var(--danger); padding:6px; font-size:1.1rem" onclick="cancelInvite('${inv.id}')">
+              <i class="ph-bold ph-trash"></i>
+            </button>
           </div>
-          <button class="btn-ghost" style="color:var(--danger); padding:6px; font-size:1.1rem" onclick="cancelInvite('${inv.id}')">
-            <i class="ph-bold ph-trash"></i>
-          </button>
-        </div>
-      `;
-    });
-    document.getElementById('pendingInvitesList').innerHTML = html;
-  } else {
+        `;
+      });
+      document.getElementById('pendingInvitesList').innerHTML = iHtml;
+    } else {
+      document.getElementById('pendingInvitesCard').style.display = 'none';
+    }
+  } catch (_) {
     document.getElementById('pendingInvitesCard').style.display = 'none';
   }
 }
