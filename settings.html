@@ -760,74 +760,56 @@
                   <div class="toggle-label" data-i18n="settings.notifs.monthly">Resumo mensal</div>
                   <div class="toggle-desc" data-i18n="settings.notifs.monthly_desc">Lembrete para verificar relatórios</div>
                 </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="notifMonthly">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB: EQUIPA (Agora Utilizador/Equipa) -->
+                  <!-- TAB: EQUIPA (Agora Utilizador/Equipa) -->
           <div class="settings-panel" id="tab-equipa" style="display:none">
-            
-            <!-- Invite Button (Only visible for Business) -->
-            <div id="inviteArea" style="display:none; justify-content:space-between; align-items:center; margin-bottom:24px;">
-              <div>
-                <h3 style="font-size:1.1rem; font-weight:800; color:var(--dark)">A minha equipa</h3>
-                <p style="font-size:0.85rem; color:var(--muted)">Convida membros para colaborar na tua empresa.</p>
+            <div class="settings-card" style="padding:24px">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+                <div class="settings-card-title" style="margin:0"><span data-i18n="settings.team.active">Membros Activos</span></div>
+                <button class="btn btn-primary btn-sm" onclick="openInviteModal()" data-i18n="settings.team.invite_btn" id="btnInviteMember">+ Convidar</button>
               </div>
-              <button class="btn-primary" style="margin:0; width:auto; padding:10px 20px" onclick="openInviteModal()">
-                <i class="ph-bold ph-plus"></i> Convidar Utilizador
-              </button>
-            </div>
-            
-            <!-- Invite Modal -->
-            <div class="pin-overlay" id="inviteModal">
-              <div class="pin-card" style="text-align:left">
-                <h3 style="font-size:1.2rem; font-weight:800; margin-bottom:16px">Convidar para a Equipa</h3>
-                
-                <div class="field">
-                  <label>E-mail do Utilizador</label>
-                  <input type="email" class="inp" id="inviteEmail" placeholder="colaborador@empresa.com">
-                </div>
-                
-                <div class="field" style="margin-top:16px">
-                  <label>Função</label>
-                  <select class="form-select" id="inviteRole">
-                    <option value="member">Membro (Acesso normal)</option>
-                    <option value="admin">Admin (Acesso a configurações)</option>
-                  </select>
-                </div>
-                
-                <div id="inviteSuccess" style="display:none; margin-top:20px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:12px; padding:16px">
-                  <p style="font-size:0.85rem; font-weight:700; color:var(--success); margin-bottom:4px"><i class="ph-bold ph-check-circle"></i> Convite Enviado com Sucesso!</p>
-                  <p style="font-size:0.8rem; color:var(--success);">O utilizador irá receber um e-mail com as instruções para aderir à equipa.</p>
-                </div>
-                
-                <div style="display:flex; gap:12px; margin-top:24px" id="inviteActions">
-                  <button class="btn-primary" style="background:var(--bg-card); color:var(--muted); border:1.5px solid var(--border); box-shadow:none" onclick="closeInviteModal()">Cancelar</button>
-                  <button class="btn-primary" id="btnSendInvite" onclick="submitInvite()">Enviar Convite por E-mail</button>
-                </div>
+              
+              <div id="membersList" style="margin-bottom:24px; display:flex; flex-direction:column; gap:8px">
+                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar membros...</div>
+              </div>
+              
+              <div class="settings-card-title" style="margin-top:32px"><span data-i18n="settings.team.pending">Convites Pendentes</span></div>
+              <div id="pendingInvitesList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px">
+                <!-- Invites render here -->
               </div>
             </div>
 
-            <!-- Active Members -->
-            <div class="settings-card">
-              <div class="settings-card-title">
-                <span data-i18n="settings.team.active"><i class="ph-bold ph-users"></i> Membros Ativos</span>
+            <!-- Invite Modal -->
+            <div class="modal" id="inviteModal">
+              <div class="modal-box" style="max-width:400px">
+                <h3 style="margin-bottom:16px; font-weight:800; font-size:1.2rem"><i class="ph-bold ph-envelope-simple"></i> <span data-i18n="settings.team.invite_title">A minha equipa</span></h3>
+                <p style="font-size:0.9rem; color:var(--muted); margin-bottom:24px" data-i18n="settings.team.invite_desc">Convida membros para colaborar na tua empresa.</p>
+
+                <div id="inviteActions">
+                  <div class="field">
+                    <label data-i18n="settings.team.modal_email">E-mail do Utilizador</label>
+                    <input type="email" id="inviteEmail" class="form-input" placeholder="email@exemplo.com">
+                  </div>
+                  
+                  <div class="field" style="margin-top:16px">
+                    <label data-i18n="settings.team.modal_role">Função</label>
+                    <select id="inviteRole" class="form-select">
+                      <option value="member" data-i18n="settings.team.role_member">Membro (Acesso normal)</option>
+                      <option value="admin" data-i18n="settings.team.role_admin">Admin (Acesso a configurações)</option>
+                    </select>
+                  </div>
+                  
+                  <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px">
+                    <button class="btn btn-ghost" onclick="closeInviteModal()" data-i18n="settings.team.btn_cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="btnSendInvite" onclick="submitInvite(this)" data-i18n="settings.team.invite_btn_add">Convidar Utilizador</button>
+                  </div>
+                </div>
+
+                <div id="inviteSuccess" style="display:none; text-align:center; padding:20px 0;">
+                  <p style="font-size:0.85rem; font-weight:700; color:var(--success); margin-bottom:4px"><i class="ph-bold ph-check-circle"></i> <span data-i18n="settings.team.invite_success_title">Convite Enviado com Sucesso!</span></p>
+                  <p style="font-size:0.8rem; color:var(--muted)" data-i18n="settings.team.invite_success_desc">O utilizador irá receber um e-mail com as instruções para aderir à equipa.</p>
+                  <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="closeInviteModal()">Fechar</button>
+                </div>
               </div>
-              <div id="membersList">
-                <div style="padding:20px; text-align:center; color:var(--subtle)" data-i18n="settings.team.loading">A carregar equipa...</div>
-              </div>
-            </div>
-            
-            <!-- Pending Invites -->
-            <div class="settings-card" id="pendingInvitesCard" style="display:none; margin-top:24px">
-              <div class="settings-card-title">
-                <span><i class="ph-bold ph-envelope-open"></i> Convites Pendentes</span>
-              </div>
-              <div id="invitesList"></div>
             </div>
           </div>
 
