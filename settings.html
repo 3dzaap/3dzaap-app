@@ -787,8 +787,8 @@
             </div>
 
             <!-- Invite Modal -->
-            <div class="modal" id="inviteModal">
-              <div class="modal-box" style="max-width:400px">
+            <div id="inviteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center">
+              <div class="modal" style="padding: 24px; max-width:400px">
                 <h3 style="margin-bottom:16px; font-weight:800; font-size:1.2rem"><i class="ph-bold ph-envelope-simple"></i> <span data-i18n="settings.team.invite_title">A minha equipa</span></h3>
                 <p style="font-size:0.9rem; color:var(--muted); margin-bottom:24px" data-i18n="settings.team.invite_desc">Convida membros para colaborar na tua empresa.</p>
 
@@ -1361,14 +1361,14 @@ async function updateSubTab() {
 
 // Invite Logic
 function openInviteModal() {
-  document.getElementById('inviteModal').classList.add('active');
+  document.getElementById('inviteModal').style.display = 'flex';
   document.getElementById('inviteSuccess').style.display = 'none';
   document.getElementById('inviteActions').style.display = 'flex';
   document.getElementById('inviteEmail').value = '';
 }
 
 function closeInviteModal() {
-  document.getElementById('inviteModal').classList.remove('active');
+  document.getElementById('inviteModal').style.display = 'none';
 }
 
 async function submitInvite() {
@@ -1413,9 +1413,9 @@ async function submitInvite() {
 async function renderTeam() {
   // Ver se o plano permite convites
   if(_session.plan && _session.plan.startsWith('business')) {
-    document.getElementById('inviteArea').style.display = 'flex';
+    document.getElementById('btnInviteMember').style.display = 'inline-block';
   } else {
-    document.getElementById('inviteArea').style.display = 'none';
+    document.getElementById('btnInviteMember').style.display = 'none';
   }
   
   // Membros ativos
