@@ -1439,36 +1439,32 @@ async function renderTeam() {
     </div>
   `;
 
-  // Try to load other team members from memberships (bonus — fails silently if table doesn't exist)
-  try {
-    const { data: members, error } = await _sb
-      .from('memberships')
-      .select('role, user:user_id(id, email, raw_user_meta_data)')
-      .eq('company_id', _session.companyId);
+  // Try to load other team members (only for Business plan, avoids unnecessary requests)
+  if (isBusiness) {
+    try {
+      const { data: members, error } = await _sb
+        .from('memberships')
+        .select('role, user_id')
+        .eq('company_id', _session.companyId);
 
-    if (!error && members) {
-      members.forEach(m => {
-        if (m.user?.id === _session.userId) return; // skip self, already shown
-        const f = m.user?.raw_user_meta_data?.fname || '';
-        const l = m.user?.raw_user_meta_data?.lname || '';
-        const mName = (f + ' ' + l).trim() || m.user?.email?.split('@')[0] || '?';
-        const mChar = mName.charAt(0).toUpperCase();
-        html += `
-          <div class="member-row">
-            <div class="member-avatar">${mChar}</div>
-            <div class="member-info">
-              <div class="member-name">${escH(mName)}</div>
-              <div class="member-email">${escH(m.user?.email || '')}</div>
+      if (!error && members) {
+        members.forEach(m => {
+          if (m.user_id === _session.userId) return; // skip self
+          html += `
+            <div class="member-row">
+              <div class="member-avatar">?</div>
+              <div class="member-info">
+                <div class="member-name">Membro da equipa</div>
+                <div class="member-email" style="font-size:0.75rem;color:var(--muted)">${escH(m.user_id.substring(0,8))}...</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
+                <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
-              <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
-            </div>
-          </div>
-        `;
-      });
-    }
-  } catch (_) {
-    // memberships table not yet set up — silently skip extra members
+          `;
+        });
+      }
+    } catch (_) { /* silently skip */ }
   }
 
   membersList.innerHTML = html;
