@@ -215,15 +215,17 @@ input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-b
         <button class="btn-primary" style="background:var(--bdark); color:var(--dark); box-shadow:none" onclick="cancelReset()">Voltar ao Login</button>
       </div>
       
-      <!-- Invite Set Password Form -->
+      </div>
+
+      <!-- Invite Set Password Form (outside resetForm) -->
       <div id="invitePassForm" style="display:none; padding:10px 0;">
         <div style="text-align:center; margin-bottom:20px;">
           <div style="font-size:3rem; color:var(--blue); margin-bottom:12px"><i class="ph-bold ph-handshake"></i></div>
           <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:4px">Bem-vindo(a) à Equipa!</h3>
-          <p style="font-size:.85rem; color:var(--muted)">Define a tua password para concluir o registo.</p>
+          <p style="font-size:.85rem; color:var(--muted)" id="invitePassSubtitle">Define a tua password para concluir o registo.</p>
         </div>
         
-        <div class="field">
+        <div class="field" id="invitePassField">
           <label>Nova Password</label>
           <div class="field-wrap">
             <span class="ico"><i class="ph-bold ph-lock"></i></span>
@@ -239,8 +241,6 @@ input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-b
           <div class="spinner"></div>
         </button>
       </div>
-
-    </div>
 
       <!-- SIGNUP -->
       <div id="signupForm" style="display:none">
@@ -317,14 +317,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bootProcessed || !session) return;
     bootProcessed = true;
     try {
-      if (window.location.hash.includes('type=invite') || window.location.search.includes('type=invite')) {
+      const isInviteFlow = window.location.hash.includes('type=invite') || window.location.search.includes('type=invite');
+      
+      if (isInviteFlow) {
         STATE.user = session.user;
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('signupForm').style.display = 'none';
         document.getElementById('resetForm').style.display = 'none';
         document.querySelector('.tabs').style.display = 'none';
-        document.getElementById('invitePassForm').style.display = 'block';
-        if (overlay) overlay.classList.add('hidden');
+        
+        // Check if user already has a password set (existing user via Magic Link)
+        // Existing users: app_metadata.provider !== 'email' or has_password flag
+        // The safest check: if user was invited (new), their last_sign_in would be very recent and no password set.
+        // Simplest: check if the user has confirmed email before this session (identities array).
+        const isExistingUser = session.user.identities && 
+          session.user.identities.length > 0 &&
+          session.user.user_metadata?.hasOwnProperty('fname');
+        
+        if (isExistingUser) {
+          // Existing user clicked Magic Link invite - skip password form, accept invite & go to dashboard
+          document.getElementById('invitePassSubtitle').textContent = 'A aceitar o convite e a redirecionar...';
+          document.getElementById('invitePassField').style.display = 'none';
+          document.getElementById('invitePassBtn').style.display = 'none';
+          document.getElementById('invitePassForm').style.display = 'block';
+          if (overlay) overlay.classList.add('hidden');
+          
+          // Accept invite automatically via RPC (safe - won't create a new company)
+          try {
+            const { data: inviteResult } = await _sb.rpc('accept_invite_by_email', { p_user_id: session.user.id });
+            console.log('[3DZAAP] Invite accepted:', inviteResult);
+          } catch(e) {
+            console.warn('[3DZAAP] accept_invite_by_email failed:', e.message);
+          }
+          toast('Bem-vindo(a)! A redirecionar...', 'ok');
+          setTimeout(() => window.location.href = 'dashboard.html', 1200);
+        } else {
+          // New user: show password form
+          document.getElementById('invitePassForm').style.display = 'block';
+          if (overlay) overlay.classList.add('hidden');
+        }
         return;
       }
       
