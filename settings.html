@@ -1435,9 +1435,10 @@ async function submitInvite() {
 }
 
 async function renderTeam() {
-  // Ver se o plano permite convites
+  // Ver se o plano permite convites e se o user é manager
   const isBusiness = _session.plan && _session.plan.startsWith('business');
-  document.getElementById('btnInviteMember').style.display = isBusiness ? 'inline-block' : 'none';
+  const isManager = _session.role === 'owner' || _session.role === 'admin';
+  document.getElementById('btnInviteMember').style.display = (isBusiness && isManager) ? 'inline-block' : 'none';
 
   const membersList = document.getElementById('membersList');
   const roleMap = { owner: 'Owner', admin: 'Admin', member: 'Membro' };
@@ -1461,26 +1462,34 @@ async function renderTeam() {
     </div>
   `;
 
-  // Try to load other team members (only for Business plan, avoids unnecessary requests)
-  if (isBusiness) {
+  // Load other team members using the RPC (Only for Business plan and if isManager)
+  if (isBusiness && isManager) {
     try {
-      const { data: members, error } = await _sb
-        .from('memberships')
-        .select('role, user_id')
-        .eq('company_id', _session.companyId);
-
+      const { data: members, error } = await _sb.rpc('get_company_members_metadata', { p_company_id: _session.companyId });
       if (!error && members) {
         members.forEach(m => {
-          if (m.user_id === _session.user_id) return; // skip self
+          if (m.id === _session.user_id) return; // skip self
+          
+          const f = m.raw_user_meta_data?.fname || '';
+          const l = m.raw_user_meta_data?.lname || '';
+          let mName = (f + ' ' + l).trim();
+          if (!mName) mName = m.email.split('@')[0];
+          
+          const mAvatar = mName.charAt(0).toUpperCase();
+          
+          // Only managers can remove members
+          const removeBtn = isManager ? `<button class="btn-icon" onclick="confirmRemoveMember('${m.membership_id}')" title="Remover membro" style="color:var(--danger)"><i class="ph-bold ph-trash"></i></button>` : '';
+          
           html += `
             <div class="member-row">
-              <div class="member-avatar">?</div>
+              <div class="member-avatar">${mAvatar}</div>
               <div class="member-info">
-                <div class="member-name">Membro da equipa</div>
-                <div class="member-email" style="font-size:0.75rem;color:var(--muted)">${escH(m.user_id.substring(0,8))}...</div>
+                <div class="member-name">${escH(mName)}</div>
+                <div class="member-email" style="font-size:0.8rem;color:var(--muted)">${escH(m.email)}</div>
               </div>
               <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
                 <span class="role-badge role-${m.role}">${roleMap[m.role] || m.role}</span>
+                ${removeBtn}
               </div>
             </div>
           `;
@@ -1491,35 +1500,41 @@ async function renderTeam() {
 
   membersList.innerHTML = html;
 
-  // Pending invites (also optional)
-  try {
-    const { data: invites } = await _sb
-      .from('invites')
-      .select('*')
-      .eq('company_id', _session.companyId)
-      .is('accepted_at', null);
+  // Pending invites (also optional, only for managers)
+  if (isManager) {
+    try {
+      const { data: invites } = await _sb
+        .from('invites')
+        .select('*')
+        .eq('company_id', _session.companyId)
+        .is('accepted_at', null);
 
-    if (invites && invites.length > 0) {
-      document.getElementById('pendingInvitesCard').style.display = 'block';
-      let iHtml = '';
-      invites.forEach(inv => {
-        iHtml += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
-            <div>
-              <div style="font-weight:700">${inv.email}</div>
-              <div style="font-size:0.8rem; color:var(--orange)">Pendente • Expira a ${new Date(inv.expires_at).toLocaleDateString()}</div>
+      if (invites && invites.length > 0) {
+        document.getElementById('pendingInvitesCard').style.display = 'block';
+        let invHtml = '';
+        invites.forEach(inv => {
+          invHtml += `
+            <div class="member-row" style="opacity:0.7">
+              <div class="member-avatar" style="background:var(--bg)">?</div>
+              <div class="member-info">
+                <div class="member-name">${escH(inv.email)}</div>
+                <div class="member-email" style="color:var(--warning)">Pendente</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; margin-left:auto">
+                <span class="role-badge role-${inv.role}">${roleMap[inv.role] || inv.role}</span>
+                <button class="btn-icon" onclick="confirmCancelInvite('${inv.id}')" title="Cancelar convite" style="color:var(--danger)"><i class="ph-bold ph-x"></i></button>
+              </div>
             </div>
-            <button class="btn-ghost" style="color:var(--danger); padding:6px; font-size:1.1rem" onclick="cancelInvite('${inv.id}')">
-              <i class="ph-bold ph-trash"></i>
-            </button>
-          </div>
-        `;
-      });
-      document.getElementById('pendingInvitesList').innerHTML = iHtml;
-    } else {
+          `;
+        });
+        document.getElementById('pendingInvitesList').innerHTML = invHtml;
+      } else {
+        document.getElementById('pendingInvitesCard').style.display = 'none';
+      }
+    } catch (_) { 
       document.getElementById('pendingInvitesCard').style.display = 'none';
     }
-  } catch (_) {
+  } else {
     document.getElementById('pendingInvitesCard').style.display = 'none';
   }
 }

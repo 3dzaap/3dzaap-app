@@ -225,6 +225,22 @@ input::-webkit-contacts-auto-fill-button, input::-webkit-credentials-auto-fill-b
           <p style="font-size:.85rem; color:var(--muted)" id="invitePassSubtitle">Define a tua password para concluir o registo.</p>
         </div>
         
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <div class="field" style="flex:1">
+            <label>Primeiro Nome</label>
+            <div class="field-wrap">
+              <span class="ico"><i class="ph-bold ph-user"></i></span>
+              <input type="text" class="inp" id="inviteFname" placeholder="João">
+            </div>
+          </div>
+          <div class="field" style="flex:1">
+            <label>Apelido</label>
+            <div class="field-wrap">
+              <input type="text" class="inp" id="inviteLname" placeholder="Silva">
+            </div>
+          </div>
+        </div>
+
         <div class="field" id="invitePassField">
           <label>Nova Password</label>
           <div class="field-wrap">
@@ -488,11 +504,17 @@ async function doReset() {
 
 async function doSetInvitePassword() {
   const pass = document.getElementById('invitePass').value;
+  const fname = document.getElementById('inviteFname')?.value.trim() || '';
+  const lname = document.getElementById('inviteLname')?.value.trim() || '';
+  
   if (pass.length < 8) { toast('A password deve ter pelo menos 8 caracteres.', 'err'); return; }
   
   setBusy('invitePassBtn', true);
   try {
-    const { error: updateErr } = await _sb.auth.updateUser({ password: pass });
+    const { error: updateErr } = await _sb.auth.updateUser({ 
+      password: pass,
+      data: { fname, lname }
+    });
     if (updateErr) {
       console.warn("Update user error (might be already set):", updateErr.message);
       // If they already set the password 1 minute ago, this fails with 422.
