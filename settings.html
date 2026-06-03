@@ -1400,11 +1400,21 @@ async function submitInvite() {
     });
     
     if(error) {
-      console.error(error);
+      console.error('Edge function error object:', error);
       let errMsg = error.message;
-      if (error.context && typeof error.context.json === 'function') {
-        const errBody = await error.context.json();
-        errMsg = errBody.error || errMsg;
+      try {
+        if (error.context && typeof error.context.text === 'function') {
+          const textBody = await error.context.text();
+          console.error('Edge function response text:', textBody);
+          try {
+            const errBody = JSON.parse(textBody);
+            errMsg = errBody.error || errMsg;
+          } catch(e) {
+            errMsg = textBody || errMsg;
+          }
+        }
+      } catch(e) {
+        console.error('Could not extract error context', e);
       }
       throw new Error(errMsg || 'Falha ao comunicar com o servidor');
     }
