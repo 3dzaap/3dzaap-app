@@ -49,18 +49,25 @@ serve(async (req) => {
 
     // 1. Send the invite email via Supabase Auth
     // This will create a user in auth.users and send the invite link.
-    const { data: authData, error: authError } = await supabaseClient.auth.admin.inviteUserByEmail(email, {
-      redirectTo: redirectTo || `${Deno.env.get('SUPABASE_URL')}/auth.html`
-    })
+    try {
+      const { data: authData, error: authError } = await supabaseClient.auth.admin.inviteUserByEmail(email, {
+        redirectTo: redirectTo || `${Deno.env.get('SUPABASE_URL')}/auth.html`
+      })
 
-    if (authError) {
-      // If user already exists, inviteUserByEmail might return an error, but we still want to create the invite
-      const msg = (authError.message || '').toLowerCase();
-      if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user already')) {
-         console.log('User already exists, continuing to create invite record.')
-         // Note: Supabase doesn't send an invite to existing users.
+      if (authError) {
+        const msg = (authError.message || '').toLowerCase();
+        if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+           console.log('User already exists (from error object), continuing.')
+        } else {
+          throw authError
+        }
+      }
+    } catch (err) {
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+         console.log('User already exists (from exception), continuing.')
       } else {
-        throw authError
+        throw err
       }
     }
 
