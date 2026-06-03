@@ -57,7 +57,12 @@ serve(async (req) => {
       if (authError) {
         const msg = (authError.message || '').toLowerCase();
         if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
-           console.log('User already exists (from error object), continuing.')
+           console.log('User already exists (from error object). Sending Magic Link fallback.')
+           const { error: otpError } = await supabaseClient.auth.signInWithOtp({
+             email: email,
+             options: { emailRedirectTo: redirectTo || `${Deno.env.get('SUPABASE_URL')}/auth.html` }
+           })
+           if (otpError) console.error('Fallback OTP error:', otpError.message)
         } else {
           throw authError
         }
@@ -65,7 +70,12 @@ serve(async (req) => {
     } catch (err) {
       const msg = (err.message || '').toLowerCase();
       if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
-         console.log('User already exists (from exception), continuing.')
+         console.log('User already exists (from exception). Sending Magic Link fallback.')
+         const { error: otpError } = await supabaseClient.auth.signInWithOtp({
+           email: email,
+           options: { emailRedirectTo: redirectTo || `${Deno.env.get('SUPABASE_URL')}/auth.html` }
+         })
+         if (otpError) console.error('Fallback OTP error:', otpError.message)
       } else {
         throw err
       }
