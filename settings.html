@@ -796,12 +796,12 @@
 
                 <div id="inviteActions">
                   <div class="form-group" style="text-align: left;">
-                    <label data-i18n="settings.team.modal_email">E-mail do Utilizador</label>
+                    <label class="form-label" data-i18n="settings.team.modal_email">E-mail do Utilizador</label>
                     <input type="email" id="inviteEmail" class="form-input" placeholder="email@exemplo.com">
                   </div>
                   
                   <div class="form-group" style="margin-top:16px; text-align: left;">
-                    <label data-i18n="settings.team.modal_role">Função</label>
+                    <label class="form-label" data-i18n="settings.team.modal_role">Função</label>
                     <select id="inviteRole" class="form-select">
                       <option value="member" data-i18n="settings.team.role_member">Membro (Acesso normal)</option>
                       <option value="admin" data-i18n="settings.team.role_admin">Admin (Acesso a configurações)</option>
@@ -1365,7 +1365,7 @@ async function updateSubTab() {
 function openInviteModal() {
   document.getElementById('inviteModal').style.display = 'flex';
   document.getElementById('inviteSuccess').style.display = 'none';
-  document.getElementById('inviteActions').style.display = 'flex';
+  document.getElementById('inviteActions').style.display = 'block';
   document.getElementById('inviteEmail').value = '';
 }
 
