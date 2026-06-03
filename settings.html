@@ -795,12 +795,12 @@
                 <p style="font-size:0.9rem; color:var(--muted); margin-bottom:24px" data-i18n="settings.team.invite_desc">Convida membros para colaborar na tua empresa.</p>
 
                 <div id="inviteActions">
-                  <div class="field">
+                  <div class="form-group" style="text-align: left;">
                     <label data-i18n="settings.team.modal_email">E-mail do Utilizador</label>
                     <input type="email" id="inviteEmail" class="form-input" placeholder="email@exemplo.com">
                   </div>
                   
-                  <div class="field" style="margin-top:16px">
+                  <div class="form-group" style="margin-top:16px; text-align: left;">
                     <label data-i18n="settings.team.modal_role">Função</label>
                     <select id="inviteRole" class="form-select">
                       <option value="member" data-i18n="settings.team.role_member">Membro (Acesso normal)</option>
@@ -1395,17 +1395,29 @@ async function submitInvite() {
         email,
         role,
         companyId: _session.companyId,
-        redirectTo: window.location.origin + '/auth.html'
+        redirectTo: window.location.origin + '/auth.html?type=invite'
       }
     });
     
-    if(error) throw error;
+    if(error) {
+      console.error(error);
+      let errMsg = error.message;
+      if (error.context && typeof error.context.json === 'function') {
+        const errBody = await error.context.json();
+        errMsg = errBody.error || errMsg;
+      }
+      throw new Error(errMsg || 'Falha ao comunicar com o servidor');
+    }
     
     document.getElementById('inviteActions').style.display = 'none';
     document.getElementById('inviteSuccess').style.display = 'block';
     loadTeam(); // Refresh list
   } catch(e) {
-    showToast('Erro ao enviar convite: ' + e.message, 'err');
+    let msg = e.message;
+    if (msg && msg.includes('duplicate key value violates unique constraint')) {
+      msg = 'Este e-mail já foi convidado ou já pertence à equipa.';
+    }
+    showToast('Erro: ' + msg, 'err');
   } finally {
     btn.disabled = false;
     btn.innerHTML = oldTxt;
@@ -1449,7 +1461,7 @@ async function renderTeam() {
 
       if (!error && members) {
         members.forEach(m => {
-          if (m.user_id === _session.userId) return; // skip self
+          if (m.user_id === _session.user_id) return; // skip self
           html += `
             <div class="member-row">
               <div class="member-avatar">?</div>

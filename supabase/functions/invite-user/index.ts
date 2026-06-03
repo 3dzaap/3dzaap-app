@@ -55,10 +55,10 @@ serve(async (req) => {
 
     if (authError) {
       // If user already exists, inviteUserByEmail might return an error, but we still want to create the invite
-      if (authError.message.includes('User already registered')) {
-         // User exists, we can still proceed to just link them later or send a normal email.
-         // But Supabase doesn't send an invite to existing users. We should handle it later.
+      const msg = (authError.message || '').toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('user already')) {
          console.log('User already exists, continuing to create invite record.')
+         // Note: Supabase doesn't send an invite to existing users.
       } else {
         throw authError
       }

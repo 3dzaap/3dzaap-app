@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bootProcessed || !session) return;
     bootProcessed = true;
     try {
-      if (window.location.hash.includes('type=invite')) {
+      if (window.location.hash.includes('type=invite') || window.location.search.includes('type=invite')) {
         STATE.user = session.user;
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('signupForm').style.display = 'none';
