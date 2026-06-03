@@ -1448,17 +1448,15 @@ function renderCustomersTable(data) {
       ? new Date(lastAccess).toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' })
       : null;
 
-    // ── Utilizadores cell — com tooltip nos trials ───────
-    const usersCell = isTrial
-      ? `<td style="text-align:center">
-          <span class="badge trial-badge-wrap"
-            style="background:rgba(59,130,246,.12);color:var(--admin-blue);border:1px solid rgba(59,130,246,.2);padding:4px 10px"
-            onmouseenter="showTrialTooltip(this,'${c.id}')"
-            onmouseleave="hideTrialTooltip()">
-            ${c.userCount}<i class="ph-bold ph-info trial-badge-icon"></i>
-          </span>
-        </td>`
-      : `<td style="text-align:center"><span class="badge" style="background:var(--bg-hover);color:var(--dark)">${c.userCount}</span></td>`;
+    // ── Utilizadores cell — com tooltip em todas as empresas ───────
+    const usersCell = `<td style="text-align:center">
+        <span class="badge trial-badge-wrap"
+          style="background:rgba(59,130,246,.12);color:var(--admin-blue);border:1px solid rgba(59,130,246,.2);padding:4px 10px;cursor:pointer"
+          onmouseenter="showTrialTooltip(this,'${c.id}')"
+          onmouseleave="hideTrialTooltip()">
+          ${c.userCount}<i class="ph-bold ph-info trial-badge-icon"></i>
+        </span>
+      </td>`;
 
     return `<tr>
       <td>
@@ -1466,7 +1464,7 @@ function renderCustomersTable(data) {
           <span title="Moeda: ${curr}" style="cursor:help">${flag}</span> ${escH(c.name)}
         </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-          ${escH(c.slug)} • ID: <span class="mono">${c.id.slice(0,8)}...</span>
+          ${escH(c.slug)} • Owner: <span class="mono">${_authMap[c.owner_id]?.email ? escH(_authMap[c.owner_id].email) : c.id.slice(0,8)+'...'}</span>
         </div>
       </td>
       <td>
@@ -1602,14 +1600,11 @@ async function loadUserActivity() {
     if (error) throw error;
 
     (data || []).forEach(row => {
-      const isTrial = _customers.some(c => c.id === row.company_id && c.plan === 'trial');
-      if (isTrial) {
-        if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
-        if (!_trialActivity[row.company_id][row.user_id])
-          _trialActivity[row.company_id][row.user_id] = { modules: [] };
-        const mods = _trialActivity[row.company_id][row.user_id].modules;
-        if (!mods.includes(row.module)) mods.push(row.module);
-      }
+      if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
+      if (!_trialActivity[row.company_id][row.user_id])
+        _trialActivity[row.company_id][row.user_id] = { modules: [] };
+      const mods = _trialActivity[row.company_id][row.user_id].modules;
+      if (!mods.includes(row.module)) mods.push(row.module);
       
       // populate global module counts
       if (!_moduleCounts[row.module]) _moduleCounts[row.module] = new Set();
