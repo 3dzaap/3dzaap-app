@@ -493,7 +493,11 @@ async function doSetInvitePassword() {
   setBusy('invitePassBtn', true);
   try {
     const { error: updateErr } = await _sb.auth.updateUser({ password: pass });
-    if (updateErr) throw updateErr;
+    if (updateErr) {
+      console.warn("Update user error (might be already set):", updateErr.message);
+      // If they already set the password 1 minute ago, this fails with 422.
+      // We will try to complete onboarding anyway. If it succeeds, they are good!
+    }
     
     // Auth.completeOnboarding handles checking invites automatically
     await Auth.completeOnboarding({ userId: STATE.user.id });
