@@ -729,9 +729,25 @@
                 <div class="res-label"><span class="res-dot" style="background:var(--orange-d)"></span> <span data-i18n="calc.results.indirect">Indiretos</span> (<span id="labIndPct">10</span>%)</div>
                 <div class="res-value" id="resIndCost">0,00 <span class="curr-sym">€</span></div>
               </div>
+              <div class="res-line" id="rowLaborCost" style="display:none;">
+                <div class="res-label"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.labor">Mão de Obra</span></div>
+                <div class="res-value" id="resLaborCost">0,00 <span class="curr-sym">€</span></div>
+              </div>
+              <div class="res-line" id="rowPackCost" style="display:none;">
+                <div class="res-label"><span class="res-dot" style="background:var(--success)"></span> <span data-i18n="calc.results.packaging">Embalagem</span></div>
+                <div class="res-value" id="resPackCost">0,00 <span class="curr-sym">€</span></div>
+              </div>
+              <div class="res-line" id="rowStlCost" style="display:none;">
+                <div class="res-label"><span class="res-dot" style="background:var(--blue)"></span> STL</div>
+                <div class="res-value" id="resStlCost">0,00 <span class="curr-sym">€</span></div>
+              </div>
               <div class="res-line">
                 <div class="res-label"><span class="res-dot" style="background:#a855f7"></span> <span data-i18n="calc.results.margin">Margem</span> (<span id="labMargPct">30</span>%)</div>
                 <div class="res-value" id="resMargCost" style="color:#a855f7">0,00 <span class="curr-sym">€</span></div>
+              </div>
+              <div class="res-line" id="rowTaxCost" style="display:none;">
+                <div class="res-label"><span class="res-dot" style="background:var(--danger)"></span> <span data-i18n="calc.results.taxes">Impostos</span></div>
+                <div class="res-value" id="resTaxCost" style="color:var(--danger)">0,00 <span class="curr-sym">€</span></div>
               </div>
             </div>
 
@@ -850,6 +866,42 @@
           <label data-i18n="calc.adv_profit_margin_label">Margem de lucro</label>
           <div class="adv-wrap"><input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()"><span class="adv-unit">%</span></div>
           <div class="adv-slider-wrap"><input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()"><span class="adv-slider-val" id="marginVal">30%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-users"></i></div>
+        <span>Mão de Obra</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label>Valor Hora</label>
+          <div class="adv-wrap"><input type="number" id="laborRate" value="10" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit">€/h</span></div>
+        </div>
+        <div class="adv-field">
+          <label>Minutos na peça</label>
+          <div class="adv-wrap"><input type="number" id="laborMinutes" value="0" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">min</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon" style="background: rgba(44,142,246,0.15); color: var(--blue);"><i class="ph-bold ph-plus"></i></div>
+        <span>Custos Adicionais & Impostos</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label>Custo Ficheiro STL</label>
+          <div class="adv-wrap"><input type="number" id="extraStlCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
+        </div>
+        <div class="adv-field">
+          <label data-i18n="calc.adv_packaging_label">Embalagem</label>
+          <div class="adv-wrap"><input type="number" id="packagingCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
+        </div>
+        <div class="adv-field full">
+          <label data-i18n="calc.adv_taxes_label">Impostos (s/ Total)</label>
+          <div class="adv-wrap"><input type="number" id="taxesPct" value="0" step="0.1" min="0" max="100" oninput="liveCalc()"><span class="adv-unit">%</span></div>
         </div>
       </div>
     </div>
@@ -1578,7 +1630,12 @@ function getInputs() {
     powerConsumption: pf('powerConsumption') || 250,
     failureRate: pf('failureRate') || 5,
     indirectCosts: pf('indirectCosts') || 10,
-    profitMargin: pf('profitMargin') || 30
+    profitMargin: pf('profitMargin') || 30,
+    laborRate: pf('laborRate') || 10,
+    laborMinutes: pf('laborMinutes') || 0,
+    packagingCost: pf('packagingCost') || 0,
+    extraStlCost: pf('extraStlCost') || 0,
+    taxesPct: pf('taxesPct') || 0
   };
 
   if (_calcMode === 'simple') {
@@ -1642,8 +1699,19 @@ function computeResults(i) {
   const baseCost = materialCost + amortizationCost + electricityCost;
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
-  const marginCost = (baseCost + failureCost + indirectCost) * (i.profitMargin / 100);
-  const finalPrice = baseCost + failureCost + indirectCost + marginCost;
+  
+  const laborCost = (i.laborMinutes / 60) * i.laborRate;
+  const packagingCost = i.packagingCost || 0;
+  const extraStlCost = i.extraStlCost || 0;
+  const extraCostsTotal = packagingCost + extraStlCost;
+
+  const productionCostForMargin = baseCost + failureCost + indirectCost + laborCost;
+  const marginCost = productionCostForMargin * (i.profitMargin / 100);
+
+  const preTaxPrice = productionCostForMargin + marginCost + extraCostsTotal;
+  const taxCost = preTaxPrice * ((i.taxesPct || 0) / 100);
+  
+  const finalPrice = preTaxPrice + taxCost;
 
   return {
     materialCost,
@@ -1652,6 +1720,10 @@ function computeResults(i) {
     baseCost,
     failureCost,
     indirectCost,
+    laborCost,
+    packagingCost,
+    extraStlCost,
+    taxCost,
     marginCost,
     finalPrice,
     unitPrice: finalPrice / (i.qty || 1),
@@ -1697,6 +1769,16 @@ function _render() {
   setV('resIndCost', r.indirectCost);
   setV('resMargCost', r.marginCost);
   
+  const setLine = (id, rowId, val) => {
+    setV(id, val);
+    const row = document.getElementById(rowId);
+    if (row) row.style.display = val > 0 ? 'flex' : 'none';
+  };
+  setLine('resLaborCost', 'rowLaborCost', r.laborCost);
+  setLine('resPackCost', 'rowPackCost', r.packagingCost);
+  setLine('resStlCost', 'rowStlCost', r.extraStlCost);
+  setLine('resTaxCost', 'rowTaxCost', r.taxCost);
+
   // Update percentage labels
   const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   setT('labFailPct', i.failureRate);
@@ -1791,6 +1873,7 @@ function setBar(id,pct){
 function clearFields(){
   setV('printName',''); setV('printQty',1);
   setV('filamentPrice',0); setV('partWeight',0); setV('printTime',0);
+  setV('laborMinutes',0); setV('packagingCost',0); setV('extraStlCost',0); setV('taxesPct',0);
   setSl('printTimeSlider',0,0,48);
   setV('resinPrice',35); setV('resinVolume',20); setV('resinDensity',1.1);
   setV('resinPrintTime',2); setV('uvLampPower',60); setV('washCureTime',20);
@@ -2013,6 +2096,8 @@ function restoreHistory(id){
   setV('powerConsumption',i.powerConsumption||200);
   setV('electricityPrice',i.electricityPrice);
   setV('failureRate',i.failureRate); setV('indirectCosts',i.indirectCosts); setV('profitMargin',i.profitMargin);
+  setV('laborRate',i.laborRate||10); setV('laborMinutes',i.laborMinutes||0);
+  setV('packagingCost',i.packagingCost||0); setV('extraStlCost',i.extraStlCost||0); setV('taxesPct',i.taxesPct||0);
   setSl('failureSlider',i.failureRate,0,50);
   setSl('indirectSlider',i.indirectCosts,0,50);
   setSl('marginSlider',i.profitMargin,0,100);

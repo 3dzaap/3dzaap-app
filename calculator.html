@@ -1559,6 +1559,10 @@
                     <div class="res-label"><i class="ph-bold ph-package" style="color:var(--success); font-size: 0.85rem;"></i> <span data-i18n="calc.results.packaging">Embalagem</span></div>
                     <div class="res-value" id="resPackCost">0,00</div>
                   </div>
+                  <div class="res-line" id="rowStlCost" style="display:none; margin-bottom:5px">
+                    <div class="res-label"><i class="ph-bold ph-file-code" style="color:var(--blue); font-size: 0.85rem;"></i> STL</div>
+                    <div class="res-value" id="resStlCost">0,00</div>
+                  </div>
                   <div class="res-line" id="rowTaxCost" style="display:none; margin-bottom:15px">
                     <div class="res-label"><i class="ph-bold ph-receipt" style="color:var(--danger); font-size: 0.85rem;"></i> <span data-i18n="calc.results.taxes">Impostos</span></div>
                     <div class="res-value" id="resTaxCost">0,00</div>
@@ -1680,20 +1684,36 @@
   </div>
     <div class="adv-section">
       <div class="adv-section-title">
-        <div class="adv-section-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-package"></i></div>
-        <span data-i18n="calc.adv_other_costs_section">Outros Custos</span>
+        <div class="adv-section-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-users"></i></div>
+        <span>Mão de Obra</span>
       </div>
       <div class="adv-grid">
         <div class="adv-field">
-          <label data-i18n="calc.adv_labor_label">Mão de Obra</label>
-          <div class="adv-wrap"><input type="number" id="laborCost" value="0" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelLaborCost"></span></div>
+          <label>Valor Hora</label>
+          <div class="adv-wrap"><input type="number" id="laborRate" value="10" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit">€/h</span></div>
+        </div>
+        <div class="adv-field">
+          <label>Minutos na peça</label>
+          <div class="adv-wrap"><input type="number" id="laborMinutes" value="0" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">min</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="adv-section">
+      <div class="adv-section-title">
+        <div class="adv-section-icon" style="background: rgba(44,142,246,0.15); color: var(--blue);"><i class="ph-bold ph-plus"></i></div>
+        <span>Custos Adicionais & Impostos</span>
+      </div>
+      <div class="adv-grid">
+        <div class="adv-field">
+          <label>Custo Ficheiro STL</label>
+          <div class="adv-wrap"><input type="number" id="extraStlCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
         </div>
         <div class="adv-field">
           <label data-i18n="calc.adv_packaging_label">Embalagem</label>
-          <div class="adv-wrap"><input type="number" id="packagingCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit" id="labelPackagingCost"></span></div>
+          <div class="adv-wrap"><input type="number" id="packagingCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
         </div>
-        <div class="adv-field">
-          <label data-i18n="calc.adv_taxes_label">Impostos</label>
+        <div class="adv-field full">
+          <label data-i18n="calc.adv_taxes_label">Impostos (s/ Total)</label>
           <div class="adv-wrap"><input type="number" id="taxesPct" value="0" step="0.1" min="0" max="100" oninput="liveCalc()"><span class="adv-unit">%</span></div>
         </div>
       </div>
@@ -2643,8 +2663,10 @@ function getInputs() {
     failureRate: pf('failureRate') || 5,
     indirectCosts: pf('indirectCosts') || 10,
     profitMargin: pf('profitMargin') || 30,
-    laborCost: pf('laborCost') || 0,
+    laborRate: pf('laborRate') || 10,
+    laborMinutes: pf('laborMinutes') || 0,
     packagingCost: pf('packagingCost') || 0,
+    extraStlCost: pf('extraStlCost') || 0,
     taxesPct: pf('taxesPct') || 0
   };
 
@@ -2744,15 +2766,20 @@ function computeResults(i) {
   const failureCost = baseCost * (i.failureRate / 100);
   const indirectCost = baseCost * (i.indirectCosts / 100);
   
-  const laborCost = i.laborCost || 0;
+  const laborCost = (i.laborMinutes / 60) * i.laborRate;
   const packagingCost = i.packagingCost || 0;
+  const extraStlCost = i.extraStlCost || 0;
+  const extraCostsTotal = packagingCost + extraStlCost;
 
-  const operationalCost = baseCost + failureCost + indirectCost + laborCost + packagingCost;
-  const taxCost = operationalCost * ((i.taxesPct || 0) / 100);
+  const productionCostForMargin = baseCost + failureCost + indirectCost + laborCost;
+  const marginCost = productionCostForMargin * (i.profitMargin / 100);
 
-  const productionCost = operationalCost + taxCost;
-  const marginCost = productionCost * (i.profitMargin / 100);
-  const finalPrice = productionCost + marginCost;
+  const preTaxPrice = productionCostForMargin + marginCost + extraCostsTotal;
+  const taxCost = preTaxPrice * ((i.taxesPct || 0) / 100);
+  
+  const finalPrice = preTaxPrice + taxCost;
+  const operationalCost = baseCost + failureCost + indirectCost + laborCost + extraCostsTotal;
+  const productionCost = preTaxPrice; // Maintained for UI compatibility
 
   const validTime = machineTime > 0 ? machineTime : 1;
   const profitPerHour = marginCost / validTime;
@@ -2766,6 +2793,7 @@ function computeResults(i) {
     indirectCost,
     laborCost,
     packagingCost,
+    extraStlCost,
     taxCost,
     operationalCost,
     productionCost,
@@ -2827,6 +2855,7 @@ function _render() {
   };
   setLine('resLaborCost', 'rowLaborCost', r.laborCost);
   setLine('resPackCost', 'rowPackCost', r.packagingCost);
+  setLine('resStlCost', 'rowStlCost', r.extraStlCost);
   setLine('resTaxCost', 'rowTaxCost', r.taxCost);
 
   const eduState = document.getElementById('calcEduState');
@@ -3337,8 +3366,9 @@ function clearCalculator(){
   setV('filamentPrice', 0);
   setV('partWeight', 0);
   setV('printTime', 0);
-  setV('laborCost', 0);
+  setV('laborMinutes', 0);
   setV('packagingCost', 0);
+  setV('extraStlCost', 0);
   setV('taxesPct', 0);
   
   renderMesas();
@@ -3601,6 +3631,8 @@ function restoreHistory(id){
   setV('powerConsumption',i.powerConsumption||200);
   setV('electricityPrice',i.electricityPrice);
   setV('failureRate',i.failureRate); setV('indirectCosts',i.indirectCosts); setV('profitMargin',i.profitMargin);
+  setV('laborRate',i.laborRate||10); setV('laborMinutes',i.laborMinutes||0);
+  setV('packagingCost',i.packagingCost||0); setV('extraStlCost',i.extraStlCost||0); setV('taxesPct',i.taxesPct||0);
   setSl('failureSlider',i.failureRate,0,50);
   setSl('indirectSlider',i.indirectCosts,0,50);
   setSl('marginSlider',i.profitMargin,0,100);
