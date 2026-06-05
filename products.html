@@ -596,15 +596,29 @@ async function saveProduct() {
     const tech = document.getElementById('prTech').value;
     const qty = parseFloat(document.getElementById('prWeight').value) || 0;
     
+    let baseConfig = {};
+    if (_editPrId) {
+      const existingProduct = products.find(p => p.id === _editPrId);
+      if (existingProduct && existingProduct.config) {
+        baseConfig = { ...existingProduct.config };
+      }
+    }
+
     // Create unified config
     const config = {
+      ...baseConfig,
       mode: tech,
       est_print_hours: parseFloat(document.getElementById('prTime').value) || 0,
       material_id: document.getElementById('prMaterialId').value
     };
     
-    if(tech === 'resin') config.resin_volume = qty;
-    else config.filament_weight = qty;
+    if(tech === 'resin') {
+      config.resin_volume = qty;
+      delete config.filament_weight; // Clean up opposite tech key if tech changed
+    } else {
+      config.filament_weight = qty;
+      delete config.resin_volume; // Clean up opposite tech key if tech changed
+    }
 
     const payload = {
       name,
