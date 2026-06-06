@@ -1,10 +1,10 @@
 -- Migration: create_product_thumbnails_bucket.sql
--- Creates the Storage bucket for 3D generated GIFs and configures RLS.
+-- Creates the Storage bucket for 3D generated WebP thumbnails and configures RLS.
 
--- 1. Create the bucket
+-- 1. Create the bucket (public so getPublicUrl works for displaying thumbnails)
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('product_thumbnails', 'product_thumbnails', false)
-ON CONFLICT (id) DO NOTHING;
+VALUES ('product_thumbnails', 'product_thumbnails', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
 
 -- 2. Enable RLS
 -- Note: the storage.objects table might already have RLS enabled by default.

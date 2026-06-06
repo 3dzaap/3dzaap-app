@@ -1154,6 +1154,7 @@ function _mapOrderFromDB(row) {
     shippingService: row.shipping_service || '',
     trackingCode:  row.tracking_code || '',
     updatedAt:     row.updated_at,
+    config:        row.config        || {},
   };
 }
 
