@@ -252,10 +252,19 @@ const Sidebar = (() => {
 
   async function _checkUnreadNotifications(session) {
     try {
-      if (typeof DB !== 'undefined' && DB.hasUnreadOrders) {
-        const hasUnread = await DB.hasUnreadOrders();
+      if (typeof DB !== 'undefined' && DB.getUnreadOrdersCount) {
+        const unreadCount = await DB.getUnreadOrdersCount();
         const badge = document.getElementById('sidebarUnreadOrdersBadge');
-        if (badge) badge.style.display = hasUnread ? 'inline-block' : 'none';
+        if (badge) badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+
+        // Atualizar App Icon Badge (Notificação vermelha no ícone da app no telemóvel/desktop)
+        if ('setAppBadge' in navigator) {
+          if (unreadCount > 0) {
+            navigator.setAppBadge(unreadCount).catch(e => console.warn('[PWA] setAppBadge error:', e));
+          } else if ('clearAppBadge' in navigator) {
+            navigator.clearAppBadge().catch(e => console.warn('[PWA] clearAppBadge error:', e));
+          }
+        }
       }
 
       if (session && session.isSuperAdmin) {

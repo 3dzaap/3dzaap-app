@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sem Ligação — 3D Print Flow</title>
+  <meta name="theme-color" content="#3B8FD4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: var(--bg-color, #F4F7FE);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .offline-card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      max-width: 400px;
+      width: 100%;
+    }
+    .offline-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: var(--text-color, #2B3674);
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    p {
+      color: #A3AED0;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+    button {
+      background: var(--primary-color, #3B8FD4);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: opacity 0.2s;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-card">
+    <div class="offline-icon">📡</div>
+    <h1>Está offline</h1>
+    <p>Parece que perdeu a ligação à internet. A aplicação precisa de ligação para aceder aos seus dados atualizados.</p>
+    <button onclick="window.location.reload()">Tentar novamente</button>
+  </div>
+</body>
+</html>

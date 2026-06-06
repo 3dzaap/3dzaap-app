@@ -610,6 +610,17 @@ const DB = {
     return data && data.length > 0;
   },
 
+  async getUnreadOrdersCount() {
+    if (!_companyId) await Auth._loadCompany();
+    if (!_companyId) return 0;
+    const { count } = await _sb
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', _companyId)
+      .eq('has_unread_client_update', true);
+    return count || 0;
+  },
+
   async deleteOrder(id) {
     await _ensureCompany();
     const { error } = await _sb.from('orders').delete().eq('id', id).eq('company_id', _companyId);
