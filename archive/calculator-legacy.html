@@ -111,6 +111,8 @@
 
 .form-section:last-child{border-bottom:none}
 
+.marketplace-section-card { margin-top: 15px; animation: fadeUp .5s var(--ease) .2s both; }
+
 .section-title{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px}
 
 .section-title-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.82rem}
@@ -687,6 +689,47 @@
                 </div>
               </div>
             </div>
+
+            <!-- ── SEÇÃO: MÃO DE OBRA ── -->
+            <div class="form-section marketplace-section-card">
+              <div class="section-title">
+                <div class="section-title-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-users"></i></div>
+                <span>Mão de Obra</span>
+              </div>
+              <div class="fields-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="field">
+                  <label>Valor Hora (€/h)</label>
+                  <input type="number" id="laborRate" value="10" step="0.5" min="0" class="inp" oninput="liveCalc()">
+                </div>
+                <div class="field">
+                  <label>Minutos na peça</label>
+                  <input type="number" id="laborMinutes" value="0" step="1" min="0" class="inp" oninput="liveCalc()">
+                </div>
+              </div>
+            </div>
+
+            <!-- ── SEÇÃO: CUSTOS ADICIONAIS & IMPOSTOS ── -->
+            <div class="form-section marketplace-section-card">
+              <div class="section-title">
+                <div class="section-title-icon" style="background: rgba(44,142,246,0.15); color: var(--blue);"><i class="ph-bold ph-plus"></i></div>
+                <span>Custos Adicionais & Impostos</span>
+              </div>
+              <div class="fields-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="field">
+                  <label>Ficheiro STL (€)</label>
+                  <input type="number" id="extraStlCost" value="0" step="0.1" min="0" class="inp" oninput="liveCalc()">
+                </div>
+                <div class="field">
+                  <label data-i18n="calc.adv_packaging_label">Embalagem (€)</label>
+                  <input type="number" id="packagingCost" value="0" step="0.1" min="0" class="inp" oninput="liveCalc()">
+                </div>
+                <div class="field full" style="grid-column: 1 / -1;">
+                  <label data-i18n="calc.adv_taxes_label">Impostos (%) s/ Total</label>
+                  <input type="number" id="taxesPct" value="0" step="0.1" min="0" max="100" class="inp" oninput="liveCalc()">
+                </div>
+              </div>
+            </div>
+
           </div>
           <div class="card-footer">
             <button class="btn-clear" onclick="clearCalculator()">
@@ -866,42 +909,6 @@
           <label data-i18n="calc.adv_profit_margin_label">Margem de lucro</label>
           <div class="adv-wrap"><input type="number" id="profitMargin" value="30" step="1" min="0" max="300" oninput="syncAdvSlider('profitMargin','marginSlider',0,100);liveCalc()"><span class="adv-unit">%</span></div>
           <div class="adv-slider-wrap"><input type="range" id="marginSlider" min="0" max="100" step="1" value="30" oninput="syncAdvInput('marginSlider','profitMargin');liveCalc()"><span class="adv-slider-val" id="marginVal">30%</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="adv-section">
-      <div class="adv-section-title">
-        <div class="adv-section-icon" style="background: rgba(34,197,94,0.15); color: var(--success);"><i class="ph-bold ph-users"></i></div>
-        <span>Mão de Obra</span>
-      </div>
-      <div class="adv-grid">
-        <div class="adv-field">
-          <label>Valor Hora</label>
-          <div class="adv-wrap"><input type="number" id="laborRate" value="10" step="0.5" min="0" oninput="liveCalc()"><span class="adv-unit">€/h</span></div>
-        </div>
-        <div class="adv-field">
-          <label>Minutos na peça</label>
-          <div class="adv-wrap"><input type="number" id="laborMinutes" value="0" step="1" min="0" oninput="liveCalc()"><span class="adv-unit">min</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="adv-section">
-      <div class="adv-section-title">
-        <div class="adv-section-icon" style="background: rgba(44,142,246,0.15); color: var(--blue);"><i class="ph-bold ph-plus"></i></div>
-        <span>Custos Adicionais & Impostos</span>
-      </div>
-      <div class="adv-grid">
-        <div class="adv-field">
-          <label>Custo Ficheiro STL</label>
-          <div class="adv-wrap"><input type="number" id="extraStlCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
-        </div>
-        <div class="adv-field">
-          <label data-i18n="calc.adv_packaging_label">Embalagem</label>
-          <div class="adv-wrap"><input type="number" id="packagingCost" value="0" step="0.1" min="0" oninput="liveCalc()"><span class="adv-unit currency-sym">€</span></div>
-        </div>
-        <div class="adv-field full">
-          <label data-i18n="calc.adv_taxes_label">Impostos (s/ Total)</label>
-          <div class="adv-wrap"><input type="number" id="taxesPct" value="0" step="0.1" min="0" max="100" oninput="liveCalc()"><span class="adv-unit">%</span></div>
         </div>
       </div>
     </div>
