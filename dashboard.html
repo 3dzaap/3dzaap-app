@@ -1614,16 +1614,6 @@ function renderRecentOrders() {
   }).join('');
 
   el.innerHTML = `<div class="liquid-carousel">${cardsHtml}</div>`;
-
-      <span class="order-num">${o.orderNumber || o.order_number || 'PED-?'}</span>
-      <div class="order-client">
-        <div class="order-client-name">${escH(o.clientName || o.client_name || 'Cliente')}</div>
-        <div class="order-client-date">${dateStr}</div>
-      </div>
-      <span class="order-status-badge s-${status}">${statusLabel}</span>
-      <span class="order-amount">${fmtCurrency(o.total||0)}</span>
-    </div>`;
-  }).join('');
 }
 
 // ── PRINTER ALERTS ─────────────────────
