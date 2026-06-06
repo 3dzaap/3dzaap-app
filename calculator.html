@@ -2790,7 +2790,7 @@ function computeResults(i) {
   
   const finalPrice = preTaxPrice + taxCost;
   const operationalCost = baseCost + failureCost + indirectCost + laborCost + extraCostsTotal;
-  const productionCost = preTaxPrice; // Maintained for UI compatibility
+  const productionCost = operationalCost;
 
   const validTime = machineTime > 0 ? machineTime : 1;
   const profitPerHour = marginCost / validTime;
