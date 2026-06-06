@@ -1598,13 +1598,13 @@ function renderRecentOrders() {
 
     const clientLabel = escH(o.clientName || o.client_name || 'Sem cliente');
     const descLabel   = escH(o.description || o.items?.[0]?.description || 'Pedido sem nome');
-    const ordId       = (o.id || '').substring(0,6).toUpperCase();
+    const ordId = o.orderNumber || o.order_number || ('#' + (o.id || '').substring(0,6).toUpperCase());
 
     return `
       <div class="liquid-card">
         <div class="liquid-card-header">
           <div class="liquid-badge ${badgeClass}">${badgeText}</div>
-          <span style="font-size:0.75rem; font-family:var(--mono); font-weight:700; color:var(--muted)">#${ordId}</span>
+          <span style="font-size:0.75rem; font-family:var(--mono); font-weight:700; color:var(--muted)">${ordId}</span>
         </div>
         <div class="liquid-video-wrap">
           ${thumbHtml}
