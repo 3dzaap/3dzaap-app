@@ -233,7 +233,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" data-i18n="products.modal.lbl_time">Tempo (h)</label>
-          <input type="number" id="prTime" class="form-input mono" step="0.1" placeholder="0.0">
+          <input type="text" id="prTime" class="form-input mono" placeholder="0:00" onblur="this.value = formatTime(parseTime(this.value))">
         </div>
       </div>
 
@@ -699,7 +699,7 @@ function openProductModal(id = null) {
       
       document.getElementById('prTech').value = tech;
       document.getElementById('prWeight').value = cfg.filament_weight || cfg.resin_volume || '';
-      document.getElementById('prTime').value = cfg.est_print_hours || '';
+      document.getElementById('prTime').value = cfg.est_print_hours ? formatTime(cfg.est_print_hours) : '';
       document.getElementById('prMaterialId').value = cfg.material_id || '';
       onTechChange();
     }

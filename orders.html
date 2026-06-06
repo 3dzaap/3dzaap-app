@@ -2025,12 +2025,17 @@
           return `
           <tr>
             <td style="padding-bottom:12px">
-              <strong>${idx + 1}. ${escH(it.description || '—')}</strong>
-              ${advancedHtml}
+              <div style="display:flex; gap:10px; align-items:flex-start;">
+                ${cfg.thumbnail_url ? `<img src="${cfg.thumbnail_url}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0" loading="lazy" alt="3D">` : ''}
+                <div style="flex:1;min-width:0">
+                  <strong>${idx + 1}. ${escH(it.description || '—')}</strong>
+                  ${advancedHtml}
+                </div>
+              </div>
             </td>
-            <td class="r" style="vertical-align:top">${it.quantity || it.qty || 1}</td>
-            <td class="r" style="vertical-align:top">${fmtCurrency(parseFloat(it.unitPrice) || 0)}</td>
-            <td class="bold" style="vertical-align:top">${fmtCurrency(_itTotal(it))}</td>
+            <td class="r" style="vertical-align:top;padding-top:4px">${it.quantity || it.qty || 1}</td>
+            <td class="r" style="vertical-align:top;padding-top:4px">${fmtCurrency(parseFloat(it.unitPrice) || 0)}</td>
+            <td class="bold" style="vertical-align:top;padding-top:4px">${fmtCurrency(_itTotal(it))}</td>
           </tr>`;
         }).join('');
 

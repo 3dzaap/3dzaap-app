@@ -633,7 +633,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Vida útil estimada (horas)</label>
-          <input type="text" id="pLifeHours" class="form-input" placeholder="5000:00">
+          <input type="text" id="pLifeHours" class="form-input" placeholder="5000:00" onblur="this.value = formatTime(parseTime(this.value))">
         </div>
       </div>
       <div class="form-row">
@@ -651,18 +651,18 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" data-i18n="printers.modal.lbl_maint_interval">Intervalo de manutenção (horas)</label>
-          <input type="text" id="pMaintIntervalHours" class="form-input" placeholder="500:00">
+          <input type="text" id="pMaintIntervalHours" class="form-input" placeholder="500:00" onblur="this.value = formatTime(parseTime(this.value))">
           <span class="form-hint" data-i18n="printers.modal.hint_maint_threshold">Alerta quando faltar menos de 20% do intervalo</span>
         </div>
         <div class="form-group">
           <label class="form-label" data-i18n="printers.modal.lbl_last_maint">Horas na última manutenção</label>
-          <input type="text" id="pLastMaintHours" class="form-input" placeholder="0:00">
+          <input type="text" id="pLastMaintHours" class="form-input" placeholder="0:00" onblur="this.value = formatTime(parseTime(this.value))">
         </div>
       </div>
       <div class="form-row" style="margin-top:12px;">
         <div class="form-group">
           <label class="form-label" data-i18n="printers.modal.lbl_hours_used">Horas usadas (estimativa/manual)</label>
-          <input type="text" id="pHoursUsed" class="form-input" placeholder="Ex: 1000:00">
+          <input type="text" id="pHoursUsed" class="form-input" placeholder="Ex: 1000:00" onblur="this.value = formatTime(parseTime(this.value))">
         </div>
       </div>
 
@@ -728,7 +728,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Horas no contador</label>
-          <input type="text" id="mHoursAtMaint" class="form-input" placeholder="HH:MM">
+          <input type="text" id="mHoursAtMaint" class="form-input" placeholder="HH:MM" onblur="this.value = formatTime(parseTime(this.value))">
         </div>
       </div>
       <div class="form-row full" style="margin-bottom:0">
@@ -1291,12 +1291,12 @@ function openPrinterModal(id = null) {
     document.getElementById('pStatus').value             = 'operacional';
     document.getElementById('pCustomName').value         = '';
     document.getElementById('pPrice').value              = '';
-    document.getElementById('pLifeHours').value          = '5000';
-    document.getElementById('pHoursUsed').value          = '0';
+    document.getElementById('pLifeHours').value          = formatTime(5000);
+    document.getElementById('pHoursUsed').value          = formatTime(0);
     document.getElementById('pPurchaseDate').value       = '';
     document.getElementById('pWarrantyUntil').value      = '';
-    document.getElementById('pMaintIntervalHours').value = '500';
-    document.getElementById('pLastMaintHours').value     = '0';
+    document.getElementById('pMaintIntervalHours').value = formatTime(500);
+    document.getElementById('pLastMaintHours').value     = formatTime(0);
     document.getElementById('pNotes').value              = '';
     // Reset model selects
     document.getElementById('pModelSelect').innerHTML    = '<option value="">— Selecionar fabricante primeiro —</option>';
