@@ -24,20 +24,22 @@ const i18n = {
             for (let lang of browserLangs) {
                 if (!lang) continue;
                 // Exact match
-                if (['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU'].includes(lang)) return lang;
+                if (['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU', 'fr', 'de'].includes(lang)) return lang;
                 
                 // Base language match
                 const base = lang.split('-')[0].toLowerCase();
                 if (base === 'pt') return lang.toLowerCase() === 'pt-br' ? 'pt-BR' : 'pt-PT';
                 if (base === 'es') return 'es';
                 if (base === 'en') return lang.toLowerCase() === 'en-gb' ? 'en-GB' : 'en-US';
+                if (base === 'fr') return 'fr';
+                if (base === 'de') return 'de';
             }
         } catch(e) {}
         
         return 'pt-PT';
     })(),
     translations: {},
-    supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU'],
+    supportedLocales: ['pt-PT', 'pt-BR', 'en-US', 'es', 'en-GB', 'en-EU', 'fr', 'de'],
 
     async init() {
         // Fallback for old 'pt' or 'br' codes
