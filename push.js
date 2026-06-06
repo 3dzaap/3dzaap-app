@@ -1,4 +1,4 @@
-// push.js — 3D Print Flow PWA Push Notifications Manager
+// push.js — 3DZAAP Print Manager PWA Push Notifications Manager
 // Handles: permission request, subscription, unsubscription, and storage in Supabase.
 
 const PushManager3D = (() => {
@@ -110,7 +110,7 @@ const PushManager3D = (() => {
   // ── Send a test notification (local, no server needed) ────────────────────
   async function sendTestNotification() {
     const reg = await _getSWRegistration();
-    await reg.showNotification('🔔 3D Print Flow', {
+    await reg.showNotification('🔔 3DZAAP - Print Manager', {
       body: 'As notificações estão a funcionar! Vai receber alertas de pedidos e da saúde do negócio.',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',

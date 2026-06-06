@@ -1,9 +1,9 @@
 /**
- * 3D Print Flow — Service Worker
+ * 3DZAAP - Print Manager — Service Worker
  * Estratégia: Cache-First para assets estáticos, Network-First para API calls.
  */
 
-const CACHE_NAME = '3dprintflow-v1.0.0';
+const CACHE_NAME = '3dzaap-pm-v1.0.0';
 
 // Assets estáticos que ficam em cache
 const STATIC_ASSETS = [
@@ -117,10 +117,10 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data.json();
   } catch (e) {
-    data = { title: '3D Print Flow', body: event.data.text() };
+    data = { title: '3DZAAP - Print Manager', body: event.data.text() };
   }
 
-  const title = data.title || '3D Print Flow';
+  const title = data.title || '3DZAAP - Print Manager';
   const options = {
     body: data.body || '',
     icon: '/icons/icon-192.png',
