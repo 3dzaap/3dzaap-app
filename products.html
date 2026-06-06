@@ -68,6 +68,22 @@
   .btn-trash { color: #FF3B30 !important; border-color: rgba(255,59,48,0.2) !important; }
   .btn-trash:hover { background: rgba(255,59,48,0.1) !important; border-color: #FF3B30 !important; }
 
+  .file-upload-box {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .file-upload-box:hover {
+    border-color: var(--blue);
+    background: rgba(44,142,246,0.05);
+    color: var(--blue);
+  }
+  .file-upload-box i { font-size: 1.5rem; display: block; margin-bottom: 8px; }
+
 @media(max-width: 680px) {
   .table-card .table-wrap { display: none; }
   .mob-prod-list { display: flex; }
@@ -233,6 +249,15 @@
         <textarea id="prDesc" class="form-textarea" rows="2" placeholder="Notas curtas para identificação..."></textarea>
       </div>
 
+      <div class="form-group" style="margin-top:14px">
+        <label class="form-label">Modelo 3D (Opcional - Gera miniatura WebM animada)</label>
+        <div class="file-upload-box" id="prDropZone" onclick="document.getElementById('prFile3D').click()">
+           <i class="ph-bold ph-cube"></i>
+           <span id="prFileName">Carregar modelo .stl ou .3mf</span>
+           <input type="file" id="prFile3D" style="display:none" accept=".stl,.3mf" onchange="onSelect3DFile(this)">
+        </div>
+      </div>
+
       <input type="hidden" id="prConfig" value="{}">
 
     </div>
@@ -255,6 +280,113 @@ let expandId = null;
 let materials = [];
 let _editPrId = null;
 let _isSaving = false;
+let _file3D = null;
+
+async function loadThreeLoaders() {
+  if (window.THREE && window.STLLoader) return;
+  const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+  window.THREE = THREE;
+  const { STLLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/STLLoader.js');
+  window.STLLoader = STLLoader;
+  const { ThreeMFLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/3MFLoader.js');
+  window.ThreeMFLoader = ThreeMFLoader;
+}
+
+function onSelect3DFile(input) {
+  if (input.files && input.files[0]) {
+    _file3D = input.files[0];
+    document.getElementById('prFileName').textContent = _file3D.name;
+    document.getElementById('prDropZone').style.borderColor = 'var(--blue)';
+    document.getElementById('prDropZone').style.background = 'rgba(44,142,246,0.05)';
+  }
+}
+
+async function generate3DThumbnail(file) {
+  await loadThreeLoaders();
+  return new Promise((resolve, reject) => {
+    const width = 400;
+    const height = 400;
+    const scene = new window.THREE.Scene();
+    scene.background = new window.THREE.Color('#f4f4f5'); // Light grey studio
+    
+    const hemiLight = new window.THREE.HemisphereLight( 0xffffff, 0x444444, 0.8 );
+    hemiLight.position.set( 0, 200, 0 );
+    scene.add( hemiLight );
+    const dirLight = new window.THREE.DirectionalLight( 0xffffff, 0.6 );
+    dirLight.position.set( 100, 200, 50 );
+    scene.add( dirLight );
+
+    const material = new window.THREE.MeshStandardMaterial({ color: 0xa0a0a0, roughness: 0.5, metalness: 0.1 });
+    const camera = new window.THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
+    const renderer = new window.THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(width, height);
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const contents = e.target.result;
+        const ext = file.name.split('.').pop().toLowerCase();
+        let geometry;
+
+        if (ext === 'stl') {
+          const loader = new window.STLLoader();
+          geometry = loader.parse(contents);
+        } else if (ext === '3mf') {
+          const loader = new window.ThreeMFLoader();
+          const group = loader.parse(contents);
+          let meshFound = null;
+          group.traverse(child => { if (child.isMesh && !meshFound) meshFound = child; });
+          if (meshFound) geometry = meshFound.geometry;
+          else throw new Error("No mesh found in 3MF");
+        }
+
+        if(!geometry) throw new Error("Geometria inválida");
+        geometry.computeBoundingBox();
+        const center = new window.THREE.Vector3();
+        geometry.boundingBox.getCenter(center);
+        geometry.center();
+
+        const mesh = new window.THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        const boundingSphere = geometry.boundingBox.getBoundingSphere(new window.THREE.Sphere());
+        const radius = boundingSphere.radius;
+        camera.position.set(0, radius*1.5, radius * 2.5);
+        camera.lookAt(0,0,0);
+
+        const canvas = renderer.domElement;
+        const stream = canvas.captureStream(30);
+        let recorder;
+        try { recorder = new MediaRecorder(stream, { mimeType: 'video/webm' }); } 
+        catch (err) { recorder = new MediaRecorder(stream); }
+
+        const chunks = [];
+        recorder.ondataavailable = ev => { if(ev.data.size > 0) chunks.push(ev.data); };
+        recorder.onstop = () => { resolve(new Blob(chunks, { type: 'video/webm' })); };
+
+        recorder.start();
+        
+        let frames = 0;
+        const totalFrames = 90; // 3 secs at 30 fps
+        const rotSpeed = (Math.PI * 2) / totalFrames;
+
+        function renderFrame() {
+          if (frames < totalFrames) {
+            mesh.rotation.y += rotSpeed;
+            renderer.render(scene, camera);
+            frames++;
+            requestAnimationFrame(renderFrame);
+          } else {
+            recorder.stop();
+          }
+        }
+        renderFrame();
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   Sidebar.init();
@@ -400,7 +532,10 @@ function renderProducts() {
       <tr class="exp-tr ${isExpanded ? 'is-expanded' : ''}" onclick="toggleProductExpand('${p.id}')">
         <td>
           <div class="cell-product">
-            <div class="prod-icon-box"><i class="ph-bold ph-package"></i></div>
+            ${cfg.thumbnail_url 
+              ? `<video src="${cfg.thumbnail_url}" autoplay loop muted playsinline style="width:36px; height:36px; border-radius:10px; object-fit:cover; border: 1px solid var(--border); background:var(--bg-card)"></video>`
+              : `<div class="prod-icon-box"><i class="ph-bold ph-package"></i></div>`
+            }
             <div>
               <div class="prod-name-main" style="display:flex; align-items:center; gap:8px">
                 ${escH(p.name)}
@@ -487,7 +622,10 @@ function renderProducts() {
       <div class="mob-prod-card" onclick="toggleProductExpand('${p.id}')">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <div style="display:flex; gap:12px; align-items:center">
-            <div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem"><i class="ph-bold ph-package"></i></div>
+            ${cfg.thumbnail_url 
+              ? `<video src="${cfg.thumbnail_url}" autoplay loop muted playsinline style="width:34px; height:34px; border-radius:10px; object-fit:cover; border: 1px solid var(--border); background:var(--bg-card)"></video>`
+              : `<div class="prod-icon-box" style="width:34px; height:34px; font-size:1rem"><i class="ph-bold ph-package"></i></div>`
+            }
             <div>
               <div class="prod-name-main" style="font-size:0.85rem">${escH(p.name)}</div>
               <div style="font-family:var(--mono); font-size:0.78rem; color:var(--blue); font-weight:700">${fmtCurrency(p.salePrice)}</div>
@@ -580,6 +718,11 @@ function openProductModal(id = null) {
     document.getElementById('prWeight').value = '';
     document.getElementById('prTime').value = '';
     document.getElementById('prMaterialId').value = '';
+    _file3D = null;
+    document.getElementById('prFileName').textContent = 'Carregar modelo .stl ou .3mf';
+    document.getElementById('prDropZone').style.borderColor = 'var(--border)';
+    document.getElementById('prDropZone').style.background = 'transparent';
+    document.getElementById('prFile3D').value = '';
     onTechChange();
   }
   
@@ -635,6 +778,20 @@ async function saveProduct() {
     };
     if(_editPrId) payload.id = _editPrId;
     
+    if (_file3D) {
+      showToast('<i class="ph-bold ph-aperture ph-spin"></i> A gerar miniatura 3D... (aguarde)', 'ok');
+      try {
+        const webmBlob = await generate3DThumbnail(_file3D);
+        const webmFile = new File([webmBlob], "anim.webm", { type: 'video/webm' });
+        showToast('<i class="ph-bold ph-cloud-arrow-up"></i> A fazer upload da miniatura...', 'ok');
+        const thumbUrl = await DB.uploadProductThumbnail(webmFile);
+        payload.config.thumbnail_url = thumbUrl;
+      } catch(err) {
+        console.error('Erro 3D:', err);
+        showToast('Aviso: Falha ao gerar/upload da miniatura 3D', 'err');
+      }
+    }
+
     const saved = await DB.saveProduct(payload);
     if(_editPrId) {
       const idx = products.findIndex(x => x.id === _editPrId);

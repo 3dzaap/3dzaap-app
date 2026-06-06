@@ -1041,6 +1041,20 @@ const DB = {
 
     return catalog;
   },
+
+  async uploadProductThumbnail(file) {
+    if(!_sb) throw new Error('Supabase não inicializado.');
+    if(!_companyId) throw new Error('Sem company_id');
+    const ext = file.name.split('.').pop();
+    const fname = `thumb_${Date.now()}_${Math.floor(Math.random()*1000)}.${ext}`;
+    const path = `${_companyId}/${fname}`;
+    
+    const { data, error } = await _sb.storage.from('product_thumbnails').upload(path, file, { upsert: true });
+    if(error) throw error;
+    
+    const { data: urlData } = _sb.storage.from('product_thumbnails').getPublicUrl(path);
+    return urlData.publicUrl;
+  },
 };
 
 // ============================================================

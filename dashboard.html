@@ -320,6 +320,41 @@
 
 .health-delta{font-size:.75rem;font-weight:600;color:var(--subtle);text-align:center}
 
+/* ── LIQUID GLASS CAROUSEL ──────────────── */
+.liquid-carousel {
+  display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory;
+}
+.liquid-carousel::-webkit-scrollbar { height: 6px; }
+.liquid-carousel::-webkit-scrollbar-track { background: transparent; }
+.liquid-carousel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+[data-theme="dark"] .liquid-carousel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+.liquid-card {
+  min-width: 260px; max-width: 260px; scroll-snap-align: start;
+  background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  display: flex; flex-direction: column; gap: 12px; transition: transform 0.3s ease; position: relative;
+}
+[data-theme="dark"] .liquid-card {
+  background: rgba(30, 41, 59, 0.4); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.liquid-card:hover { transform: translateY(-4px); }
+.liquid-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.liquid-badge { font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+.liquid-badge.late { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.liquid-badge.today { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.liquid-video-wrap {
+  width: 100%; height: 160px; border-radius: 12px; overflow: hidden;
+  background: var(--bg-body); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 2rem;
+}
+.liquid-video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+.liquid-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--dark); margin: 0 0 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.liquid-info p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+.liquid-btn { background: var(--blue-g); color: var(--blue); border: 1px solid rgba(59,143,212,0.3); font-size: 0.8rem; font-weight: 800; padding: 8px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.liquid-btn:hover { background: var(--blue); color: white; }
+
 /* ── CONTENT GRID ───────────────────── */
 .content-grid{
   display:grid;
@@ -775,7 +810,7 @@
         <!-- To-Do Hub / Recent Orders -->
         <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
           <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:16px">
-            <div class="card-title" data-i18n="dash.cards.action_hub"><i class="ph-bold ph-list-numbers"></i> Pedidos em foco para hoje</div>
+            <div class="card-title" data-i18n="dash.cards.action_hub"><i class="ph-bold ph-calendar-warning"></i> Pedidos em Atraso & Hoje</div>
             <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ir para Pedidos →</a>
           </div>
           <div class="card-body" id="recentOrdersBody" style="padding-top:16px">
@@ -1517,37 +1552,69 @@ function renderStats() {
 // ── RECENT ORDERS ──────────────────────
 function renderRecentOrders() {
   const el = document.getElementById('recentOrdersBody');
-  const recent = [...state.orders]
-    .sort((a,b) => new Date(b.createdAt||b.created_at||0) - new Date(a.createdAt||a.created_at||0))
-    .slice(0,5);
+  const now = new Date();
+  now.setHours(0,0,0,0);
 
-  if (!recent.length) {
+  // Filter Late and Today
+  const focusOrders = state.orders.filter(o => {
+    if (!o.due_date) return false;
+    if (o.status === 'done' || o.status === 'enviado') return false;
+    const dDate = new Date(o.due_date);
+    dDate.setHours(0,0,0,0);
+    return dDate <= now;
+  }).sort((a,b) => new Date(a.due_date) - new Date(b.due_date));
+
+  if (!focusOrders.length) {
     el.innerHTML = `<div class="empty-state">
         <div class="empty-icon" style="font-size:2rem;margin-bottom:8px"><i class="ph-bold ph-confetti"></i></div>
         <div class="empty-text" style="color:var(--dark);font-weight:600">${window.i18n ? window.i18n.getNestedTranslation('dash.cards.all_ok') || 'Tudo em dia!' : 'Tudo em dia!'}</div>
-        <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Neste momento não tem tarefas pendentes.<br>Sem pedidos ativos.</div>
+        <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Sem pedidos atrasados ou para entregar hoje.</div>
       </div>`;
-    // We must re-apply translations when injecting raw HTML if data-i18n is inside
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') window.i18n.applyTranslations();
     return;
   }
 
   const t = (k, val) => window.i18n ? window.i18n.getNestedTranslation(k) || val : val;
-  el.innerHTML = recent.map(o => {
-    const status = o.status || 'orcamento';
-    const statusLabel = { 
-      orcamento: t('status.orcamento','Orçamento'), 
-      modelagem: t('status.modelagem','Modelagem'), 
-      validacao: t('status.validacao','Validação'), 
-      aprovado:  t('status.aprovado','Confirmado'), 
-      fila:      t('status.fila','Em Fila'),
-      printing:  t('status.printing','Produção'), 
-      enviado:   t('status.enviado','Enviado'),
-      done:      t('status.done','Concluído') 
-    }[status] || status;
-    const date = o.createdAt || o.created_at_date || '';
-    const dateStr = date ? new Date(date).toLocaleDateString('pt-PT',{day:'2-digit',month:'short'}) : '';
-    return `<div class="order-row" onclick="navigate('orders')">
+  
+  const cardsHtml = focusOrders.map(o => {
+    const dDate = new Date(o.due_date);
+    dDate.setHours(0,0,0,0);
+    const diffDays = Math.floor((now - dDate) / (1000 * 60 * 60 * 24));
+    
+    let badgeClass = 'today';
+    let badgeText = 'Hoje';
+    if (diffDays > 0) {
+      badgeClass = 'late';
+      badgeText = `${diffDays}d Atraso`;
+    }
+
+    const cfg = o.config || {};
+    const thumbHtml = cfg.thumbnail_url
+      ? `<video src="${cfg.thumbnail_url}" autoplay loop muted playsinline></video>`
+      : `<i class="ph-bold ph-cube"></i>`;
+
+    return `
+      <div class="liquid-card">
+        <div class="liquid-card-header">
+          <div class="liquid-badge ${badgeClass}">${badgeText}</div>
+          <span style="font-size:0.75rem; font-family:var(--mono); font-weight:700; color:var(--muted)">#${o.id.substring(0,6).toUpperCase()}</span>
+        </div>
+        <div class="liquid-video-wrap">
+          ${thumbHtml}
+        </div>
+        <div class="liquid-info">
+          <h4>${escH(o.description || 'Pedido sem nome')}</h4>
+          <p><i class="ph-bold ph-user"></i> ${escH(o.client_name || 'Sem cliente')}</p>
+        </div>
+        <div class="liquid-btn" onclick="navigate('orders')">
+          Ver Pedido →
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `<div class="liquid-carousel">${cardsHtml}</div>`;
+
       <span class="order-num">${o.orderNumber || o.order_number || 'PED-?'}</span>
       <div class="order-client">
         <div class="order-client-name">${escH(o.clientName || o.client_name || 'Cliente')}</div>
