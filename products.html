@@ -5,6 +5,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3DZAAP — Biblioteca de Produtos</title>
+<!-- Import Map for Three.js -->
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -284,11 +293,11 @@ let _file3D = null;
 
 async function loadThreeLoaders() {
   if (window.THREE && window.STLLoader) return;
-  const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+  const THREE = await import('three');
   window.THREE = THREE;
-  const { STLLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/STLLoader.js');
+  const { STLLoader } = await import('three/addons/loaders/STLLoader.js');
   window.STLLoader = STLLoader;
-  const { ThreeMFLoader } = await import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/3MFLoader.js');
+  const { ThreeMFLoader } = await import('three/addons/loaders/3MFLoader.js');
   window.ThreeMFLoader = ThreeMFLoader;
 }
 
