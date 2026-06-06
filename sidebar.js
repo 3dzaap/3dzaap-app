@@ -47,7 +47,7 @@ const Sidebar = (() => {
     {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
-        { id: 'settings', i18nKey: 'nav.settings', href: 'settings.html', icon: '<i class="ph-bold ph-gear"></i>', label: 'Definições', lockId: 'navLockSettings' },
+        { id: 'settings', i18nKey: 'nav.settings_short', href: 'settings.html', icon: '<i class="ph-bold ph-gear"></i>', label: 'Definições', lockId: 'navLockSettings' },
         { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '<i class="ph-bold ph-shield-check"></i>', label: 'Admin', superAdmin: true },
       ]
     },
