@@ -727,6 +727,20 @@
         </div>
       </div>
 
+      <!-- Wow Cards / To-Do Hub -->
+      <div id="wowCardsContainer" style="margin-bottom:24px; animation: fadeUp .6s var(--ease) .1s both;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; padding:0 4px">
+          <div style="font-size:1.1rem; font-weight:800; color:var(--dark); letter-spacing:-0.02em" data-i18n="dash.cards.action_hub"><i class="ph-bold ph-lightning" style="color:var(--orange)"></i> Pedidos em Ação</div>
+          <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all" style="font-size:0.85rem; font-weight:700">Ver Todos →</a>
+        </div>
+        <div id="recentOrdersBody">
+          <div class="empty-state" style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px">
+            <div class="empty-icon"><i class="ph-bold ph-check-circle"></i></div>
+            <div class="empty-text" data-i18n="dash.cards.empty_orders">Tudo em dia!<br>Sem pedidos pendentes de ação.</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Quick Actions (Discreet Bar) -->
       <div class="quick-actions-bar" style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center;background:var(--bg-card);padding:12px 20px;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh-sm);animation:fadeUp .6s var(--ease) .2s both;">
         <span style="font-size:0.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-right:8px" data-i18n="dash.actions.quick_start">Início Rápido:</span>
@@ -807,19 +821,6 @@
       <!-- Content Grid (v2.0) -->
       <div class="content-grid" id="mainContentGrid" style="grid-template-columns: 2fr 1fr;gap:24px">
 
-        <!-- To-Do Hub / Recent Orders -->
-        <div class="card" style="box-shadow:var(--sh);border-color:rgba(0,0,0,.08)">
-          <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:16px">
-            <div class="card-title" data-i18n="dash.cards.action_hub"><i class="ph-bold ph-calendar-warning"></i> Pedidos em Atraso & Hoje</div>
-            <a class="card-action" onclick="navigate('orders')" href="#" data-i18n="dash.cards.see_all">Ir para Pedidos →</a>
-          </div>
-          <div class="card-body" id="recentOrdersBody" style="padding-top:16px">
-            <div class="empty-state">
-              <div class="empty-icon"><i class="ph-bold ph-check-circle"></i></div>
-              <div class="empty-text" data-i18n="dash.cards.empty_orders">Tudo em dia!<br>Sem pedidos pendentes de ação.</div>
-            </div>
-          </div>
-        </div>
 
         <!-- Exception Alerts Stack -->
         <div id="exceptionStack" style="display:flex;flex-direction:column;gap:24px">
@@ -1566,7 +1567,7 @@ function renderRecentOrders() {
   }).sort((a,b) => new Date(a.dueDate || a.due_date) - new Date(b.dueDate || b.due_date));
 
   if (!focusOrders.length) {
-    el.innerHTML = `<div class="empty-state">
+    el.innerHTML = `<div class="empty-state" style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px">
         <div class="empty-icon" style="font-size:2rem;margin-bottom:8px"><i class="ph-bold ph-confetti"></i></div>
         <div class="empty-text" style="color:var(--dark);font-weight:600">${window.i18n ? window.i18n.getNestedTranslation('dash.cards.all_ok') || 'Tudo em dia!' : 'Tudo em dia!'}</div>
         <div class="empty-text" style="font-size:.8rem;margin-top:4px" data-i18n="dash.cards.empty_orders">Sem pedidos atrasados ou para entregar hoje.</div>
