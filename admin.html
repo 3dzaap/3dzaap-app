@@ -1107,6 +1107,7 @@ async function checkAdminAccess() {
   document.getElementById('adminContent').style.display = 'block';
   await refreshAll();
   localStorage.setItem('3dzaap_last_admin_view', new Date().toISOString());
+  Sidebar.updateBadges(session);
 }
 
 async function refreshAll() {

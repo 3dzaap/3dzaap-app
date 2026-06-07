@@ -2147,7 +2147,7 @@
 
           return `<div class="mob-ord-card${isOverdue ? ' mob-ord-card--overdue' : ''}" id="mc-${o.id}">
         <div class="mob-ord-top">
-          <span class="mob-ord-num">${escH(o.orderNumber || '—')}</span>
+          <span class="mob-ord-num">${o.hasUnreadClientUpdate ? `<span class="unread-dot-mob" style="display:inline-block;width:10px;height:10px;background:var(--danger);border-radius:50%;margin-right:6px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)" title="Atualização Nova"></span>` : ''}${escH(o.orderNumber || '—')}</span>
           <div style="text-align:right">
             <div class="mob-ord-total">${fmtCurrency(grand)}</div>
             <div style="font-size:.65rem;color:var(--blue);font-weight:800;margin-top:2px">${grandWeight > 0 ? grandWeight.toFixed(1).replace('.0', '') + finalUnit : ''}</div>
@@ -2215,7 +2215,15 @@
           const dot = row.querySelector('.ord-number').previousSibling;
           if (dot && dot.tagName === 'SPAN') dot.remove();
         }
-        updateStats(); // Update sidebar indicator
+        const mobCard = document.getElementById('mc-' + id);
+        if (mobCard) {
+          const mobDot = mobCard.querySelector('.unread-dot-mob');
+          if (mobDot) mobDot.remove();
+        }
+        updateStats(); // Update stats summary
+        if (typeof Sidebar !== 'undefined' && Sidebar.updateBadges) {
+          Sidebar.updateBadges(); // Sync sidebar notification
+        }
       }
     }
 

@@ -414,7 +414,7 @@ const Sidebar = (() => {
   }
 
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, exitImpersonate, PLAN_FEATURES, PLAN_LIMITS };
+  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, exitImpersonate, PLAN_FEATURES, PLAN_LIMITS, updateBadges: _checkUnreadNotifications };
 
 })();
 
