@@ -1851,72 +1851,86 @@ async function executeDeleteSelfAccount() {
 <script>
   // ── PUSH NOTIFICATION UI ─────────────────────────────────────────────────
   async function initPushUI() {
-    // Detectar se é iOS (iPhone/iPad)
-    const isIos = /iP(hone|ad|od)/.test(navigator.userAgent)
+    // ── Detect platform ───────────────────────────────────────────────────────
+    const isIos = /iP(hone|ad|od)/i.test(navigator.userAgent)
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    // Detectar se está instalado como PWA (standalone)
     const isStandalone = window.navigator.standalone === true
       || window.matchMedia('(display-mode: standalone)').matches;
 
-    if (!('PushManager3D' in window) || !PushManager3D.isSupported()) {
-      const banner = document.getElementById('pushStatusBanner');
+    const banner  = document.getElementById('pushStatusBanner');
+    const hint    = document.getElementById('pushIosHint');
+    const btnEnable  = document.getElementById('btnEnablePush');
+    const btnDisable = document.getElementById('btnDisablePush');
+    const btnTest    = document.getElementById('btnTestPush');
+
+    // ── CASO 1: iPhone/iPad a correr no Safari (NÃO como PWA instalada) ──────
+    // Push NUNCA funciona no Safari iOS — é necessário instalar a PWA primeiro.
+    if (isIos && !isStandalone) {
       if (banner) {
         banner.style.display = 'flex';
-        banner.style.color = 'var(--muted)';
-        if (isIos && !isStandalone) {
-          // iOS no Safari normal — mostrar apenas a dica de instalação
-          banner.style.background = 'rgba(59,143,212,0.08)';
-          banner.style.color = 'var(--blue)';
-          banner.innerHTML = '<i class="ph-bold ph-device-mobile"></i> Para ativar notificações no iPhone, instala primeiro a app no ecrã principal (ver dica abaixo).';
-        } else {
-          banner.style.background = 'rgba(163,174,208,0.15)';
-          banner.innerHTML = '<i class="ph-bold ph-warning"></i> Notificações push não suportadas neste browser.';
-        }
+        banner.style.background = 'rgba(59,143,212,0.1)';
+        banner.style.color = 'var(--blue, #3B8FD4)';
+        banner.innerHTML = '<i class="ph-bold ph-device-mobile" style="flex-shrink:0"></i>&nbsp; Para ativar notificações no iPhone é necessário instalar primeiro a app (ver instruções abaixo).';
       }
-      // Mostrar dica do iOS se NÃO estiver em modo standalone
-      if (isIos && !isStandalone) {
-        const hint = document.getElementById('pushIosHint');
-        if (hint) hint.style.display = 'block';
-      }
+      if (hint)    hint.style.display = 'block';
+      if (btnEnable)  btnEnable.style.display  = 'none';
+      if (btnDisable) btnDisable.style.display = 'none';
+      if (btnTest)    btnTest.style.display    = 'none';
       return;
     }
 
-    // Esconder a dica iOS se já está em modo standalone (PWA instalada)
-    const hint = document.getElementById('pushIosHint');
+    // ── CASO 2: Browser que não suporta push (nem iOS) ────────────────────────
+    if (!('PushManager3D' in window) || !PushManager3D.isSupported()) {
+      if (banner) {
+        banner.style.display = 'flex';
+        banner.style.background = 'rgba(163,174,208,0.15)';
+        banner.style.color = 'var(--muted)';
+        banner.innerHTML = '<i class="ph-bold ph-warning"></i>&nbsp; Notificações push não suportadas neste browser.';
+      }
+      if (hint)       hint.style.display       = 'none';
+      if (btnEnable)  btnEnable.style.display  = 'none';
+      if (btnDisable) btnDisable.style.display = 'none';
+      if (btnTest)    btnTest.style.display    = 'none';
+      return;
+    }
+
+    // ── CASO 3: PWA instalada ou browser compatível ───────────────────────────
+    // (iOS standalone, Android, Chrome Desktop, etc.)
     if (hint) hint.style.display = 'none';
 
     const subscribed = await PushManager3D.isSubscribed();
     const permission = PushManager3D.getPermissionStatus();
-    const banner = document.getElementById('pushStatusBanner');
-    const btnEnable = document.getElementById('btnEnablePush');
-    const btnDisable = document.getElementById('btnDisablePush');
-    const btnTest = document.getElementById('btnTestPush');
 
     if (subscribed) {
       if (banner) {
         banner.style.display = 'flex';
         banner.style.background = 'rgba(34,197,94,0.1)';
         banner.style.color = 'var(--success, #22c55e)';
-        banner.innerHTML = '<i class="ph-bold ph-check-circle"></i> Notificações ativas neste dispositivo.';
+        banner.innerHTML = '<i class="ph-bold ph-check-circle"></i>&nbsp; Notificações ativas neste dispositivo.';
       }
-      if (btnEnable) btnEnable.style.display = 'none';
+      if (btnEnable)  btnEnable.style.display  = 'none';
       if (btnDisable) btnDisable.style.display = 'inline-flex';
-      if (btnTest) btnTest.style.display = 'inline-flex';
+      if (btnTest)    btnTest.style.display    = 'inline-flex';
     } else if (permission === 'denied') {
       if (banner) {
         banner.style.display = 'flex';
         banner.style.background = 'rgba(239,68,68,0.08)';
         banner.style.color = 'var(--danger, #ef4444)';
-        banner.innerHTML = '<i class="ph-bold ph-prohibit"></i> Permissão bloqueada. Vá às definições do browser e permita notificações para este site.';
+        banner.innerHTML = '<i class="ph-bold ph-prohibit"></i>&nbsp; Permissão bloqueada. Vá às definições do sistema e permita notificações para este site.';
       }
+      if (btnEnable)  btnEnable.style.display  = 'none';
+      if (btnDisable) btnDisable.style.display = 'none';
+      if (btnTest)    btnTest.style.display    = 'none';
     } else {
       if (banner) {
         banner.style.display = 'flex';
         banner.style.background = 'rgba(59,143,212,0.08)';
         banner.style.color = 'var(--blue, #3B8FD4)';
-        banner.innerHTML = '<i class="ph-bold ph-bell"></i> Notificações desativadas neste dispositivo.';
+        banner.innerHTML = '<i class="ph-bold ph-bell"></i>&nbsp; Notificações desativadas neste dispositivo.';
       }
-      if (btnEnable) btnEnable.style.display = 'inline-flex';
+      if (btnEnable)  btnEnable.style.display  = 'inline-flex';
+      if (btnDisable) btnDisable.style.display = 'none';
+      if (btnTest)    btnTest.style.display    = 'none';
     }
   }
 
