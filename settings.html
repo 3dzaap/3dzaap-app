@@ -1883,11 +1883,16 @@ async function executeDeleteSelfAccount() {
     // ── CASO 2: Browser que não suporta push (nem iOS) ────────────────────────
     if (!('PushManager3D' in window) || !PushManager3D.isSupported()) {
       if (banner) {
+        const swSup = 'serviceWorker' in navigator;
+        const pmSup = 'PushManager' in window;
+        const noSup = 'Notification' in window;
+        const dbg = `(SW:${swSup} PM:${pmSup} Notif:${noSup})`;
+        
         banner.style.display = 'flex';
         banner.style.marginBottom = '0';
         banner.style.background = 'rgba(245,158,11,0.1)';
         banner.style.color = 'var(--orange, #f59e0b)';
-        banner.innerHTML = '<i class="ph-bold ph-warning" style="flex-shrink:0"></i>&nbsp; <span style="flex:1">As notificações push não estão disponíveis. No iPhone, é necessário <strong>iOS 16.4+</strong>. Tenta aceder a Definições > Safari > Limpar Histórico e reinstalar a app.</span> <span style="opacity:0.3; font-size:10px">v1.2</span>';
+        banner.innerHTML = `<i class="ph-bold ph-warning" style="flex-shrink:0"></i>&nbsp; <span style="flex:1">Notificações não suportadas pelo sistema ${dbg}. Garante que abriste a app pelo Ecrã Principal.</span> <span style="opacity:0.3; font-size:10px">v1.3</span>`;
       }
       if (hint)       hint.style.display       = 'none';
       if (btnEnable)  btnEnable.style.display  = 'none';
