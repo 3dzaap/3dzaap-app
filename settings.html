@@ -1885,16 +1885,9 @@ async function executeDeleteSelfAccount() {
       if (banner) {
         banner.style.display = 'flex';
         banner.style.marginBottom = '0';
-        if (isIos) {
-          // iOS standalone mas sem suporte — iOS < 16.4
-          banner.style.background = 'rgba(245,158,11,0.1)';
-          banner.style.color = 'var(--orange, #f59e0b)';
-          banner.innerHTML = '<i class="ph-bold ph-warning" style="flex-shrink:0"></i>&nbsp; O teu iOS pode ser demasiado antigo. Notificações requerem <strong>iOS 16.4 ou superior</strong>. Verifica em Definições → Geral → Atualização de Software. Se já tens iOS 16.4+, fecha e reabre a app.';
-        } else {
-          banner.style.background = 'rgba(163,174,208,0.15)';
-          banner.style.color = 'var(--muted)';
-          banner.innerHTML = '<i class="ph-bold ph-warning"></i>&nbsp; Notificações push não suportadas neste browser.';
-        }
+        banner.style.background = 'rgba(245,158,11,0.1)';
+        banner.style.color = 'var(--orange, #f59e0b)';
+        banner.innerHTML = '<i class="ph-bold ph-warning" style="flex-shrink:0"></i>&nbsp; <span style="flex:1">As notificações push não estão disponíveis. No iPhone, é necessário <strong>iOS 16.4+</strong>. Tenta aceder a Definições > Safari > Limpar Histórico e reinstalar a app.</span> <span style="opacity:0.3; font-size:10px">v1.2</span>';
       }
       if (hint)       hint.style.display       = 'none';
       if (btnEnable)  btnEnable.style.display  = 'none';
