@@ -71,9 +71,13 @@ serve(async (req) => {
       const isApproved = ['aprovado', 'modelagem'].includes(newStatus);
       const isDeclined = ['rejeitado', 'declined'].includes(newStatus);
 
-      let actBody = `O pedido ${order.order_numeric ? '#' + order.order_numeric + ' ' : ''}de ${order.client_name || 'um cliente'} foi atualizado.`;
-      if (significantStatusChange && isApproved) actBody = `O cliente ${order.client_name || ''} APROVOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}! 🎉`;
-      if (significantStatusChange && isDeclined) actBody = `O cliente ${order.client_name || ''} REJEITOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}.`;
+      const formattedNum = order.order_numeric ? 'IMP-' + String(order.order_numeric).padStart(4, '0') : '';
+      const orderStr = formattedNum ? `${formattedNum} ` : '';
+      const orderStrNoSpace = formattedNum ? formattedNum : '';
+
+      let actBody = `O pedido ${orderStr}de ${order.client_name || 'um cliente'} foi atualizado.`;
+      if (significantStatusChange && isApproved) actBody = `O cliente ${order.client_name || ''} APROVOU o orçamento ${orderStrNoSpace}! 🎉`;
+      if (significantStatusChange && isDeclined) actBody = `O cliente ${order.client_name || ''} REJEITOU o orçamento ${orderStrNoSpace}.`;
 
       payloadData = {
         companyId: order.company_id,
