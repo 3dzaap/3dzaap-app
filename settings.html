@@ -797,34 +797,36 @@
 
               <div class="settings-card-title" style="margin-top:24px"><i class="ph-bold ph-palette"></i> Alertas de Stock</div>
               <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="toggle-label">Alerta de material esgotado</div>
-                  <div class="toggle-desc">Notifica quando um material chega a zero</div>
-                </div>
-                <label class="toggle-switch"><input type="checkbox" id="notifStockOut" checked><span class="slider"></span></label>
-              </div>
+              <div class="settings-card-title"><i class="ph-bold ph-bell-ringing"></i> Alertas Operacionais</div>
               <div class="toggle-row">
                 <div class="toggle-info">
-                  <div class="toggle-label">Alerta de stock baixo</div>
-                  <div class="toggle-desc">Notifica antes de acabar</div>
-                </div>
-                <label class="toggle-switch"><input type="checkbox" id="notifStockLow" checked><span class="slider"></span></label>
-              </div>
-
-              <div class="settings-card-title" style="margin-top:24px"><i class="ph-bold ph-currency-dollar"></i> Alertas Financeiros</div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="toggle-label">Pagamentos em atraso</div>
-                  <div class="toggle-desc">Alerta semanal para pedidos por cobrar</div>
+                  <div class="toggle-label">Pedidos Atrasados / Prazos</div>
+                  <div class="toggle-desc">Notifica diariamente pedidos com data de entrega para hoje/amanhã</div>
                 </div>
                 <label class="toggle-switch"><input type="checkbox" id="notifOverdue" checked><span class="slider"></span></label>
               </div>
               <div class="toggle-row">
                 <div class="toggle-info">
-                  <div class="toggle-label">Resumo semanal</div>
-                  <div class="toggle-desc">Resumo de faturação todas as segundas-feiras</div>
+                  <div class="toggle-label">Estoque Crítico</div>
+                  <div class="toggle-desc">Avisa quando um filamento atinge o peso de alerta ou menos de 150g</div>
                 </div>
-                <label class="toggle-switch"><input type="checkbox" id="notifMonthly"><span class="slider"></span></label>
+                <label class="toggle-switch"><input type="checkbox" id="notifStockLow" checked><span class="slider"></span></label>
+              </div>
+
+              <div class="settings-card-title" style="margin-top:24px"><i class="ph-bold ph-currency-dollar"></i> Financeiro e Vendas</div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Lembrete de Follow-up</div>
+                  <div class="toggle-desc">Avisa sobre orçamentos sem resposta há mais de 3 dias</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="notifFollowUp" checked><span class="slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Resumo de Faturação Semanal</div>
+                  <div class="toggle-desc">Resumo das vendas concluídas (todas as Sextas-feiras)</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="notifWeeklyRev" checked><span class="slider"></span></label>
               </div>
 
               <button class="btn btn-primary" style="margin-top:20px" onclick="saveNotifPrefs()">
@@ -1130,10 +1132,10 @@ function loadData() {
   document.getElementById('prefDateFmt').value = cfg.dateFmt || 'DD/MM/YYYY';
   document.getElementById('prefWeightUnit').value = cfg.weightUnit || 'g';
   
-  document.getElementById('notifStockOut').checked = cfg.notifStockOut !== false;
-  document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
   document.getElementById('notifOverdue').checked = cfg.notifOverdue !== false;
-  document.getElementById('notifMonthly').checked = cfg.notifMonthly === true;
+  document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
+  document.getElementById('notifFollowUp').checked = cfg.notifFollowUp !== false;
+  document.getElementById('notifWeeklyRev').checked = cfg.notifWeeklyRev !== false;
   
   if (cfg.themeAuto) document.getElementById('prefThemeAuto').checked = true;
   const theme = cfg.theme || 'light';
@@ -1268,10 +1270,10 @@ async function saveAll() {
     lang: document.getElementById('prefLang').value,
     dateFmt: document.getElementById('prefDateFmt').value,
     weightUnit: document.getElementById('prefWeightUnit').value,
-    notifStockOut: document.getElementById('notifStockOut').checked,
-    notifStockLow: document.getElementById('notifStockLow').checked,
     notifOverdue: document.getElementById('notifOverdue').checked,
-    notifMonthly: document.getElementById('notifMonthly').checked,
+    notifStockLow: document.getElementById('notifStockLow').checked,
+    notifFollowUp: document.getElementById('notifFollowUp').checked,
+    notifWeeklyRev: document.getElementById('notifWeeklyRev').checked,
     theme: document.querySelector('input[name="prefTheme"]:checked').value,
     themeAuto: document.getElementById('prefThemeAuto').checked
   };
@@ -1973,32 +1975,34 @@ async function executeDeleteSelfAccount() {
     }
   }
 
-  function saveNotifPrefs() {
+  async function saveNotifPrefs() {
     const prefs = {
-      notifOrderClient: document.getElementById('notifOrderClient')?.checked ?? true,
-      notifOrdersDue:   document.getElementById('notifOrdersDue')?.checked ?? true,
-      notifOrdersLate:  document.getElementById('notifOrdersLate')?.checked ?? true,
-      notifStockOut:    document.getElementById('notifStockOut')?.checked ?? true,
-      notifStockLow:    document.getElementById('notifStockLow')?.checked ?? true,
-      notifOverdue:     document.getElementById('notifOverdue')?.checked ?? true,
-      notifMonthly:     document.getElementById('notifMonthly')?.checked ?? false,
+      notifOverdue:   document.getElementById('notifOverdue')?.checked ?? true,
+      notifStockLow:  document.getElementById('notifStockLow')?.checked ?? true,
+      notifFollowUp:  document.getElementById('notifFollowUp')?.checked ?? true,
+      notifWeeklyRev: document.getElementById('notifWeeklyRev')?.checked ?? true,
     };
     try {
-      localStorage.setItem('3dzaap_notif_prefs', JSON.stringify(prefs));
-      showToast('Preferências guardadas!', 'ok');
+      const btn = document.querySelector('button[onclick="saveNotifPrefs()"]');
+      if(btn) btn.disabled = true;
+      const cfg = { ...(_session.config || {}), ...prefs };
+      await Auth.updateCompany({ config: cfg });
+      _session.config = cfg;
+      showToast('Preferências de notificação guardadas!', 'ok');
+      if(btn) btn.disabled = false;
     } catch (e) {
-      showToast('Erro ao guardar preferências.', 'err');
+      showToast('Erro ao guardar preferências: ' + e.message, 'err');
+      const btn = document.querySelector('button[onclick="saveNotifPrefs()"]');
+      if(btn) btn.disabled = false;
     }
   }
 
   function loadNotifPrefs() {
-    try {
-      const saved = JSON.parse(localStorage.getItem('3dzaap_notif_prefs') || '{}');
-      Object.entries(saved).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.checked = val;
-      });
-    } catch {}
+    const cfg = _session?.config || {};
+    if(document.getElementById('notifOverdue')) document.getElementById('notifOverdue').checked = cfg.notifOverdue !== false;
+    if(document.getElementById('notifStockLow')) document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
+    if(document.getElementById('notifFollowUp')) document.getElementById('notifFollowUp').checked = cfg.notifFollowUp !== false;
+    if(document.getElementById('notifWeeklyRev')) document.getElementById('notifWeeklyRev').checked = cfg.notifWeeklyRev !== false;
   }
 
 </script>
