@@ -1951,8 +1951,8 @@ async function loadBroadcasts() {
       <div class="broadcast-banner bc-${b.type || 'info'}" id="bc-${b.id}">
         <span class="broadcast-icon">${icons[b.type] || '<i class="ph-bold ph-megaphone"></i>'}</span>
         <div class="broadcast-body">
-          <div class="broadcast-title" style="margin-bottom:6px">${escH(b.title)}</div>
-          <div class="broadcast-msg" style="white-space: pre-wrap;">${escH(b.message)}</div>
+          <div class="broadcast-title" style="margin-bottom:6px">${escH(b.title).replace(/\\n/g, '<br>')}</div>
+          <div class="broadcast-msg">${escH(b.message).replace(/\n/g, '<br>').replace(/\\n/g, '<br>')}</div>
         </div>
         <button class="broadcast-close" onclick="dismissBroadcast('${b.id}')" title="Fechar"><i class="ph-bold ph-x"></i></button>
       </div>`).join('');
