@@ -2248,6 +2248,7 @@
     }
 
     function toggleMobExpand(id) {
+      clearUnread(id);
       const exp = document.getElementById('mce-' + id);
       const btn = document.getElementById('mcb-' + id);
       const card = document.getElementById('mcard-' + id);
@@ -3646,5 +3647,22 @@
       </div>
     </div>
   </div>
+
+  <script>
+    // ── iOS PWA FROZEN UI WORKAROUND ──────────────────────────────
+    // Sometimes when returning from background, iOS Safari freezes rendering and shows a white screen.
+    // This forces a reflow to wake up the rendering engine.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        setTimeout(() => {
+          const body = document.body;
+          const disp = body.style.display;
+          body.style.display = 'none';
+          body.offsetHeight; // trigger reflow
+          body.style.display = disp;
+        }, 50);
+      }
+    });
+  </script>
 </body>
 </html>
