@@ -1881,7 +1881,7 @@ async function executeDeleteSelfAccount() {
     }
 
     // ── CASO 2: Browser que não suporta push (nem iOS) ────────────────────────
-    if (!('PushManager3D' in window) || !PushManager3D.isSupported()) {
+    if (typeof PushManager3D === 'undefined' || !PushManager3D.isSupported()) {
       if (banner) {
         const swSup = 'serviceWorker' in navigator;
         const pmSup = 'PushManager' in window;
