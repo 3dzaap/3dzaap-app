@@ -193,21 +193,29 @@ serve(async (req) => {
       const oldOrder = payloadData.old_record || {};
       
       const unreadChangedToTrue = (oldOrder.has_unread_client_update !== true && order.has_unread_client_update === true);
-      const statusChangedToAprovado = (oldOrder.status !== 'aprovado' && order.status === 'aprovado');
-      const statusChangedToRejeitado = (oldOrder.status !== 'rejeitado' && order.status === 'rejeitado');
+      
+      const newStatus = order.status;
+      const oldStatus = oldOrder.status;
+      const statusChanged = (oldStatus !== newStatus);
+      const isSignificantStatus = ['modelagem', 'aprovado', 'rejeitado', 'declined'].includes(newStatus);
+      
+      const significantStatusChange = (statusChanged && isSignificantStatus);
 
       // If nothing relevant changed, abort
-      if (!unreadChangedToTrue && !statusChangedToAprovado && !statusChangedToRejeitado) {
+      if (!unreadChangedToTrue && !significantStatusChange) {
         return new Response(JSON.stringify({ message: 'No notification needed (condition not met)' }), { status: 200 });
       }
 
+      const isApproved = ['aprovado', 'modelagem'].includes(newStatus);
+      const isDeclined = ['rejeitado', 'declined'].includes(newStatus);
+
       let actBody = `O pedido ${order.order_numeric ? '#' + order.order_numeric + ' ' : ''}de ${order.client_name || 'um cliente'} foi atualizado.`;
-      if (statusChangedToAprovado) actBody = `O cliente ${order.client_name || ''} APROVOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}! 🎉`;
-      if (statusChangedToRejeitado) actBody = `O cliente ${order.client_name || ''} REJEITOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}.`;
+      if (significantStatusChange && isApproved) actBody = `O cliente ${order.client_name || ''} APROVOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}! 🎉`;
+      if (significantStatusChange && isDeclined) actBody = `O cliente ${order.client_name || ''} REJEITOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}.`;
 
       payloadData = {
         companyId: order.company_id,
-        title: statusChangedToAprovado ? 'Orçamento Aprovado!' : 'Atualização do Cliente',
+        title: (significantStatusChange && isApproved) ? 'Orçamento Aprovado!' : 'Atualização do Cliente',
         body: actBody,
         url: `/orders.html?highlight=${order.id}`,
         tag: `order-${order.id}`
