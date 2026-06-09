@@ -192,15 +192,23 @@ serve(async (req) => {
       const order = payloadData.record;
       const oldOrder = payloadData.old_record || {};
       
-      // If has_unread_client_update didn't change from false to true, we abort (return 200 OK without doing anything)
-      if (oldOrder.has_unread_client_update === true || order.has_unread_client_update !== true) {
+      const unreadChangedToTrue = (oldOrder.has_unread_client_update !== true && order.has_unread_client_update === true);
+      const statusChangedToAprovado = (oldOrder.status !== 'aprovado' && order.status === 'aprovado');
+      const statusChangedToRejeitado = (oldOrder.status !== 'rejeitado' && order.status === 'rejeitado');
+
+      // If nothing relevant changed, abort
+      if (!unreadChangedToTrue && !statusChangedToAprovado && !statusChangedToRejeitado) {
         return new Response(JSON.stringify({ message: 'No notification needed (condition not met)' }), { status: 200 });
       }
 
+      let actBody = `O pedido ${order.order_numeric ? '#' + order.order_numeric + ' ' : ''}de ${order.client_name || 'um cliente'} foi atualizado.`;
+      if (statusChangedToAprovado) actBody = `O cliente ${order.client_name || ''} APROVOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}! 🎉`;
+      if (statusChangedToRejeitado) actBody = `O cliente ${order.client_name || ''} REJEITOU o orçamento ${order.order_numeric ? '#' + order.order_numeric : ''}.`;
+
       payloadData = {
         companyId: order.company_id,
-        title: 'Atualização do Cliente',
-        body: `O pedido ${order.order_numeric ? '#' + order.order_numeric + ' ' : ''}de ${order.client_name || 'um cliente'} foi atualizado.`,
+        title: statusChangedToAprovado ? 'Orçamento Aprovado!' : 'Atualização do Cliente',
+        body: actBody,
         url: `/orders.html?highlight=${order.id}`,
         tag: `order-${order.id}`
       };
