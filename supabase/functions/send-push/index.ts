@@ -185,7 +185,28 @@ serve(async (req) => {
   }
 
   try {
-    const { companyId, title, body, url = '/orders.html', tag = 'default', badge = 1 } = await req.json();
+    let payloadData = await req.json();
+
+    // Check if this is a Supabase Webhook payload
+    if (payloadData.type === 'UPDATE' && payloadData.record) {
+      const order = payloadData.record;
+      const oldOrder = payloadData.old_record || {};
+      
+      // If has_unread_client_update didn't change from false to true, we abort (return 200 OK without doing anything)
+      if (oldOrder.has_unread_client_update === true || order.has_unread_client_update !== true) {
+        return new Response(JSON.stringify({ message: 'No notification needed (condition not met)' }), { status: 200 });
+      }
+
+      payloadData = {
+        companyId: order.company_id,
+        title: 'Atualização do Cliente',
+        body: `O pedido ${order.order_numeric ? '#' + order.order_numeric + ' ' : ''}de ${order.client_name || 'um cliente'} foi atualizado.`,
+        url: `/orders.html?highlight=${order.id}`,
+        tag: `order-${order.id}`
+      };
+    }
+
+    const { companyId, title, body, url = '/orders.html', tag = 'default', badge = 1 } = payloadData;
 
     if (!companyId || !title || !body) {
       return new Response(JSON.stringify({ error: 'Missing required fields: companyId, title, body' }), { status: 400 });
