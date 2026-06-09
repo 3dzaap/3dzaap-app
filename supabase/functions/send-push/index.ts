@@ -5,6 +5,7 @@
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -12,168 +13,29 @@ const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!;
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!;
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:suporte@3dzaap.com.br';
 
-// ── VAPID helpers ───────────────────────────────────────────────────────────
-
-function base64urlToUint8Array(base64: string): Uint8Array {
-  const pad = base64.length % 4 === 0 ? '' : '='.repeat(4 - (base64.length % 4));
-  const b64 = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/');
-  const raw = atob(b64);
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
-}
-
-function uint8ArrayToBase64url(arr: Uint8Array): string {
-  return btoa(String.fromCharCode(...arr))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-async function createVapidJwt(audience: string): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'ES256', typ: 'JWT' };
-  const payload = { aud: audience, exp: now + 12 * 3600, sub: VAPID_SUBJECT };
-
-  const toSign = `${uint8ArrayToBase64url(new TextEncoder().encode(JSON.stringify(header)))}.${uint8ArrayToBase64url(new TextEncoder().encode(JSON.stringify(payload)))}`;
-
-  const privKeyBytes = base64urlToUint8Array(VAPID_PRIVATE_KEY);
-
-  const privateKey = await crypto.subtle.importKey(
-    'raw', privKeyBytes,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false, ['sign']
-  );
-
-  const sigBytes = new Uint8Array(await crypto.subtle.sign(
-    { name: 'ECDSA', hash: { name: 'SHA-256' } },
-    privateKey,
-    new TextEncoder().encode(toSign)
-  ));
-
-  return `${toSign}.${uint8ArrayToBase64url(sigBytes)}`;
-}
-
-// ── Send a single push subscription ────────────────────────────────────────
+webpush.setVapidDetails(
+  VAPID_SUBJECT,
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
 
 async function sendPushToSubscription(
   sub: { endpoint: string; p256dh: string; auth: string },
   payload: string
 ): Promise<void> {
-  const url = new URL(sub.endpoint);
-  const audience = `${url.protocol}//${url.host}`;
-  const jwt = await createVapidJwt(audience);
+  const pushSubscription = {
+    endpoint: sub.endpoint,
+    keys: {
+      p256dh: sub.p256dh,
+      auth: sub.auth
+    }
+  };
 
-  const authHeader = `vapid t=${jwt},k=${VAPID_PUBLIC_KEY}`;
-
-  // Encrypt the payload using Web Push encryption (RFC 8291 / AES-128-GCM)
-  // For simplicity we use the standard Web Push encryption approach
-  const encoder = new TextEncoder();
-  const payloadBytes = encoder.encode(payload);
-
-  // Generate salt (16 bytes)
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-
-  // Import receiver's public key
-  const receiverPubKey = await crypto.subtle.importKey(
-    'raw', base64urlToUint8Array(sub.p256dh),
-    { name: 'ECDH', namedCurve: 'P-256' },
-    false, []
-  );
-
-  // Generate sender key pair
-  const senderKeyPair = await crypto.subtle.generateKey(
-    { name: 'ECDH', namedCurve: 'P-256' },
-    true, ['deriveKey']
-  );
-
-  // Derive shared secret
-  const sharedSecret = await crypto.subtle.deriveKey(
-    { name: 'ECDH', public: receiverPubKey },
-    senderKeyPair.privateKey,
-    { name: 'HKDF' },
-    false, ['deriveKey']
-  );
-
-  // Auth bytes
-  const authBytes = base64urlToUint8Array(sub.auth);
-
-  // PRK (Pseudo-Random Key) via HKDF
-  const prk = await crypto.subtle.deriveKey(
-    {
-      name: 'HKDF',
-      hash: 'SHA-256',
-      salt: authBytes,
-      info: encoder.encode('Content-Encoding: auth\0')
-    },
-    sharedSecret,
-    { name: 'HMAC', hash: 'SHA-256', length: 256 },
-    true, ['sign']
-  );
-
-  const senderPubKeyRaw = new Uint8Array(
-    await crypto.subtle.exportKey('raw', senderKeyPair.publicKey)
-  );
-
-  // Content encryption key
-  const cekInfo = new Uint8Array([
-    ...encoder.encode('Content-Encoding: aesgcm\0'),
-    ...encoder.encode('P-256\0'),
-    0, 65, ...base64urlToUint8Array(sub.p256dh),
-    0, 65, ...senderPubKeyRaw,
-  ]);
-
-  const cekKeyMaterial = await crypto.subtle.exportKey('raw', prk);
-  const cekHkdf = await crypto.subtle.importKey('raw', cekKeyMaterial, 'HKDF', false, ['deriveKey']);
-  const cek = await crypto.subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: cekInfo },
-    cekHkdf,
-    { name: 'AES-GCM', length: 128 },
-    false, ['encrypt']
-  );
-
-  // Nonce
-  const nonceInfo = new Uint8Array([
-    ...encoder.encode('Content-Encoding: nonce\0'),
-    ...encoder.encode('P-256\0'),
-    0, 65, ...base64urlToUint8Array(sub.p256dh),
-    0, 65, ...senderPubKeyRaw,
-  ]);
-  const nonceKeyMaterial = await crypto.subtle.exportKey('raw', prk);
-  const nonceHkdf = await crypto.subtle.importKey('raw', nonceKeyMaterial, 'HKDF', false, ['deriveKey']);
-  const nonce = new Uint8Array(await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: nonceInfo },
-    nonceHkdf,
-    96
-  ));
-
-  // Padding + encrypt
-  const paddedPayload = new Uint8Array([0, 0, ...payloadBytes]);
-  const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, cek, paddedPayload)
-  );
-
-  // Build the body: salt + dh_len + dh + ciphertext
-  const body = new Uint8Array([
-    ...salt,
-    0x00, 0x00, 0x10, 0x00,         // record size = 4096
-    senderPubKeyRaw.length,           // dh key length (1 byte)
-    ...senderPubKeyRaw,
-    ...ciphertext
-  ]);
-
-  const res = await fetch(sub.endpoint, {
-    method: 'POST',
-    headers: {
-      'Authorization': authHeader,
-      'Content-Type': 'application/octet-stream',
-      'Content-Encoding': 'aesgcm',
-      'Encryption': `salt=${uint8ArrayToBase64url(salt)}`,
-      'Crypto-Key': `dh=${uint8ArrayToBase64url(senderPubKeyRaw)};p256ecdsa=${VAPID_PUBLIC_KEY}`,
-      'TTL': '86400',
-    },
-    body
-  });
-
-  if (!res.ok && res.status !== 201) {
-    const text = await res.text();
-    throw new Error(`Push failed [${res.status}]: ${text}`);
+  try {
+    await webpush.sendNotification(pushSubscription, payload);
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    throw error;
   }
 }
 

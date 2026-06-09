@@ -2203,11 +2203,10 @@
       i18n.translatePage(mContainer);
     }
 
-    function clearUnread(id) {
+    async function clearUnread(id) {
       const order = orders.find(o => String(o.id) === String(id));
       if (order && order.hasUnreadClientUpdate) {
         order.hasUnreadClientUpdate = false;
-        DB.saveOrder(order).catch(e => console.error("Error clearing unread status:", e));
         
         // Remove the dot from the UI immediately to prevent full render
         const row = document.getElementById('row-' + id);
@@ -2221,8 +2220,14 @@
           if (mobDot) mobDot.remove();
         }
         updateStats(); // Update stats summary
-        if (typeof Sidebar !== 'undefined' && Sidebar.updateBadges) {
-          Sidebar.updateBadges(); // Sync sidebar notification
+        
+        try {
+          await DB.saveOrder(order);
+          if (typeof Sidebar !== 'undefined' && Sidebar.updateBadges) {
+            Sidebar.updateBadges(); // Sync sidebar notification
+          }
+        } catch (e) {
+          console.error("Error clearing unread status:", e);
         }
       }
     }
