@@ -680,13 +680,17 @@ const DB = {
     };
   },
 
-  async respondToQuote(shareToken, action, passphrase) {
+  async respondToQuote(shareToken, action, optionsOrPassphrase) {
     if (!shareToken) throw new Error('Token de partilha necessário.');
     
+    // Maintain backwards compatibility: if it's a string, it's a passphrase. If object, it's options.
+    const options = typeof optionsOrPassphrase === 'object' ? optionsOrPassphrase : { passphrase: optionsOrPassphrase };
+    const { passphrase, selectedItems } = options;
+
     // First verify passphrase if provided in the data
     const { data: check, error: checkErr } = await _sb
       .from('orders')
-      .select('id, passphrase, expires_at, status, is_quote')
+      .select('id, passphrase, expires_at, status, is_quote, items')
       .eq('share_token', shareToken)
       .single();
       
@@ -718,24 +722,35 @@ const DB = {
       has_unread_client_update: true
     };
     
+    if (selectedItems) {
+      updateFields.items = selectedItems;
+      // Recalculate price if needed? 
+      // Assuming frontend handles price or we just rely on items array.
+    }
+    
     // If approved at final stage or initial budget, it might no longer be just a "quote"
     if (action === 'approve' && newStatus === 'aprovado') updateFields.is_quote = false;
 
-    const { error } = await _sb
+    const { data: updatedData, error } = await _sb
       .from('orders')
       .update(updateFields)
-      .eq('share_token', shareToken);
+      .eq('share_token', shareToken)
+      .select('id');
 
     if (error) {
-      if (error.message && error.message.includes('has_unread_client_update') || error.code === 'PGRST204') {
+      if ((error.message && error.message.includes('has_unread_client_update')) || error.code === 'PGRST204') {
         console.warn('[3DZAAP] Coluna has_unread_client_update não existe no DB. Tentando sem ela.');
         delete updateFields.has_unread_client_update;
-        const retry = await _sb.from('orders').update(updateFields).eq('share_token', shareToken);
+        const retry = await _sb.from('orders').update(updateFields).eq('share_token', shareToken).select('id');
         if (retry.error) throw retry.error;
+        if (!retry.data || retry.data.length === 0) throw new Error('Erro de permissão: Orçamento não atualizado (RLS bloqueou).');
       } else {
         throw error;
       }
+    } else if (!updatedData || updatedData.length === 0) {
+      throw new Error('Erro de permissão: Orçamento não atualizado (RLS bloqueou).');
     }
+    
     return { status: newStatus };
   },
 
