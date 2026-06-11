@@ -115,21 +115,24 @@
 
     const opCost = totalPrintTime * hourlyCost;
     const revenue = parseFloat(order.total) || 0;
+    const shippingCost = (order.items || []).filter(it => it.tech === 'repasse').reduce((s, it) => s + ((parseInt(it.quantity || it.qty) || 1) * (parseFloat(it.unitPrice) || 0)), 0);
 
-    let profit = revenue - matCost - opCost;
+    let profit = revenue - matCost - opCost - shippingCost;
     
     // Safety against negative visual percentages or division by zero
     const rPct = revenue > 0 ? revenue : 1; 
     let pctProfit = (profit / rPct) * 100;
     let pctMat = (matCost / rPct) * 100;
     let pctOp = (opCost / rPct) * 100;
+    let pctShip = (shippingCost / rPct) * 100;
 
     // If costs exceed revenue, cap for the chart so it doesn't break
     if (profit < 0) {
       pctProfit = 0;
-      const totalCost = matCost + opCost;
+      const totalCost = matCost + opCost + shippingCost;
       pctMat = (matCost / totalCost) * 100;
       pctOp = (opCost / totalCost) * 100;
+      pctShip = (shippingCost / totalCost) * 100;
     }
 
     // Update UI
@@ -139,6 +142,30 @@
     document.getElementById('xrValProfit').style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
     document.getElementById('xrValMaterial').textContent = _cfg.fmtCurrency(matCost);
     document.getElementById('xrValOp').textContent = _cfg.fmtCurrency(opCost);
+    
+    // Handle shipping cost display dynamically (it might not exist in old DOM without recreating it, but we can check or inject it)
+    let shipRow = document.getElementById('xrShippingRow');
+    if (!shipRow) {
+      const statsList = document.querySelector('.xray-breakdown .xray-stats-list');
+      if (statsList) {
+        statsList.insertAdjacentHTML('beforeend', `
+          <div class="xray-stat-row shipping" id="xrShippingRow" style="display:none">
+            <div class="xray-stat-lbl"><i class="ph-bold ph-truck"></i> Custo de Transporte</div>
+            <div class="xray-stat-val" id="xrValShipping">0,00 €</div>
+          </div>
+        `);
+        shipRow = document.getElementById('xrShippingRow');
+      }
+    }
+    
+    if (shipRow) {
+      if (shippingCost > 0) {
+        shipRow.style.display = 'flex';
+        document.getElementById('xrValShipping').textContent = _cfg.fmtCurrency(shippingCost);
+      } else {
+        shipRow.style.display = 'none';
+      }
+    }
 
     document.getElementById('xrMatDetails').textContent = `(${Math.round(totalGrams)}g no total)`;
     document.getElementById('xrOpDetails').textContent = `(${totalPrintTime.toFixed(1)}h a ~${hourlyCost.toFixed(3)}€/h)`;
@@ -148,16 +175,18 @@
     marginEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
 
     // Update Donut Chart CSS
-    // Colors: success (profit), orange (material), purple (energy)
+    // Colors: success (profit), orange (material), purple (energy), blue (shipping)
     const cProf = profit >= 0 ? '#22c55e' : '#ef4444';
     const cMat = '#f97316';
     const cOp = '#a855f7';
+    const cShip = '#3b82f6';
     
     // Build gradient string (e.g. conic-gradient(#22c55e 0% 70%, #f97316 70% 90%, #a855f7 90% 100%))
     const p1 = Math.round(pctProfit);
     const p2 = p1 + Math.round(pctMat);
+    const p3 = p2 + Math.round(pctOp);
     
-    const grad = `conic-gradient(${cProf} 0% ${p1}%, ${cMat} ${p1}% ${p2}%, ${cOp} ${p2}% 100%)`;
+    const grad = `conic-gradient(${cProf} 0% ${p1}%, ${cMat} ${p1}% ${p2}%, ${cOp} ${p2}% ${p3}%, ${cShip} ${p3}% 100%)`;
     document.getElementById('xrDonut').style.background = grad;
 
     document.getElementById('xrayModalOverlay').style.display = 'flex';

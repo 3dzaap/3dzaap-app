@@ -1140,6 +1140,7 @@
             <i class="ph-bold ph-plus"></i> Novo Envio Parcial
           </button>
         </div>
+
         <div class="form-row full" style="margin-bottom:0">
           <div class="form-group">
             <label class="form-label"><span data-i18n="orders.modal.lbl_notes">Observações</span> <span
@@ -2374,7 +2375,7 @@
 
     // Check if all items in an order have been fully printed
     function _allItemsPrinted(o) {
-      const its = (o.items || []).filter(it => it.tech !== 'service');
+      const its = (o.items || []).filter(it => it.tech !== 'service' && it.tech !== 'repasse');
       if (!its.length) return true;
       return its.every(it => {
         if (it.printSkipped) return true;
@@ -2386,7 +2387,7 @@
 
     // Count total and printed quantities across all items
     function _printProgress(o) {
-      const its = (o.items || []).filter(it => it.tech !== 'service');
+      const its = (o.items || []).filter(it => it.tech !== 'service' && it.tech !== 'repasse');
       const total = its.reduce((s, it) => s + (parseInt(it.quantity || it.qty) || 1), 0);
       const printed = its.reduce((s, it) => {
         const qty = parseInt(it.quantity || it.qty) || 1;
@@ -3002,7 +3003,7 @@
         </div>
         <div class="item-mats-panel" data-id="${id}">
           <div class="item-mats-header" style="display:flex; align-items:center; justify-content:space-between">
-            <div style="cursor:pointer; display:flex; align-items:center; gap:6px; flex:1; visibility:${it.tech === 'service' ? 'hidden' : 'visible'}" onclick="toggleMatsPanel('${id}')">
+            <div style="cursor:pointer; display:flex; align-items:center; gap:6px; flex:1; visibility:${(it.tech === 'service' || it.tech === 'repasse') ? 'hidden' : 'visible'}" onclick="toggleMatsPanel('${id}')">
               <i class="ph-bold ph-palette" style="font-size:.8rem"></i>
               <span class="item-mats-label" id="matslbl-${id}">${mats.length ? mats.length + ' material(is)' : 'Materiais (opcional)'}</span>
               <i class="ph-bold ph-caret-down item-mats-caret" id="matscaret-${id}"></i>
@@ -3011,6 +3012,7 @@
               <button type="button" class="tech-btn ${it.tech === 'fdm' ? 'active' : ''}" onclick="updateItem('${id}','tech','fdm')">FDM</button>
               <button type="button" class="tech-btn ${it.tech === 'resin' ? 'active' : ''}" onclick="updateItem('${id}','tech','resin')">Resina</button>
               <button type="button" class="tech-btn ${it.tech === 'service' ? 'active' : ''}" onclick="updateItem('${id}','tech','service')">Serviço</button>
+              <button type="button" class="tech-btn ${it.tech === 'repasse' ? 'active' : ''}" onclick="updateItem('${id}','tech','repasse')" title="Use para custos repassados ao cliente, como transportes, taxas alfandegárias ou comissões.">Repasse</button>
             </div>
           </div>
           <div class="item-mats-body" id="matsBody-${id}" style="display:${it.tech === 'service' ? 'none' : 'none'}; flex-direction:column; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border)">
@@ -3127,18 +3129,14 @@
              }
            });
         }
-        // If service, hide material panel completely
+        // If service or repasse, hide material panel completely
         const panel = document.querySelector(`.item-mats-panel[data-id="${id}"]`);
         if (panel) {
           const header = panel.querySelector('.item-mats-header > div:first-child');
-          if (header) header.style.visibility = (val === 'service') ? 'hidden' : 'visible';
+          if (header) header.style.visibility = (val === 'service' || val === 'repasse') ? 'hidden' : 'visible';
           const body = document.getElementById('matsBody-' + id);
           if (body) {
             body.style.display = 'none';
-            if (val !== 'service') {
-               // Optional: could keep it hidden until manually toggled, or show it. 
-               // For now, keep it hidden but accessible.
-            }
           }
         }
 
@@ -3148,7 +3146,7 @@
           const btns = toggle.querySelectorAll('.tech-btn');
           btns.forEach(b => {
              const t = b.textContent.toLowerCase();
-             const mode = t.includes('resina') ? 'resin' : (t.includes('serviço') ? 'service' : 'fdm');
+             const mode = t.includes('repasse') ? 'repasse' : (t.includes('resina') ? 'resin' : (t.includes('serviço') ? 'service' : 'fdm'));
              b.classList.toggle('active', it.tech === mode);
           });
         }
@@ -3286,7 +3284,7 @@
       // Advancing past printing and some items have pending print runs
       if (prevStatus === 'printing' && newIdx > prevIdx) {
         const hasPending = (prevOrder.items || []).some(it => {
-          if (it.tech === 'service') return false;
+          if (it.tech === 'service' || it.tech === 'repasse') return false;
           if (it.printSkipped) return false;
           const printed = (it.printRuns || []).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
           return printed < parseInt(it.quantity || it.qty || 1);

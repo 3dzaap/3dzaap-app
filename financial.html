@@ -835,7 +835,8 @@ function renderBI(periodOrders) {
   let totalProdCost = 0;
 
   periodOrders.forEach(o => {
-    totalRevenue += (o.total || 0);
+    const shipping = (o.items || []).filter(it => it.tech === 'repasse').reduce((s, it) => s + ((parseInt(it.quantity || it.qty) || 1) * (parseFloat(it.unitPrice) || 0)), 0);
+    totalRevenue += ((o.total || 0) - shipping);
     totalProdCost += calculateOrderProductionCost(o);
   });
 
