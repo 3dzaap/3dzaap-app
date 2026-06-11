@@ -195,15 +195,18 @@ window.saveShippingModal = function() {
   if (!_SM_order.shipments) _SM_order.shipments = [];
   _SM_order.shipments.push(newShipment);
 
-  // Se estivermos em orders.html com "currentOrder" ou em orders_kanban.html
+  const onSaveCb = _SM_onSave;
+  const orderObj = _SM_order;
+
+  // Fecha a modal sem despoletar o cancelamento
   closeShippingModal(false);
   
-  if (_SM_onSave) {
-    _SM_onSave(_SM_order);
+  if (onSaveCb) {
+    onSaveCb(orderObj);
   } else {
     // Fallback: se não houver callback, tentamos atualizar o "currentOrder" e dar re-render
     if (window.currentOrder) {
-      window.currentOrder.shipments = _SM_order.shipments;
+      window.currentOrder.shipments = orderObj.shipments;
       if (window.renderShipmentsList) window.renderShipmentsList(window.currentOrder);
       // Salva no formulário atual
       window.currentOrder._changed = true; // flag if we wanted to auto-save
