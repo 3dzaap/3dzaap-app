@@ -48,7 +48,7 @@ function initShippingModal() {
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Transportadora</label>
-              <select id="smCarrier" class="form-select">
+              <select id="smCarrier" class="form-select" onchange="document.getElementById('smCarrierOther').style.display = this.value === 'outra' ? 'block' : 'none'">
                 <option value="">Sem transportadora</option>
                 <option value="ctt">CTT</option>
                 <option value="dpd">DPD</option>
@@ -60,6 +60,7 @@ function initShippingModal() {
                 <option value="fedex">FedEx</option>
                 <option value="outra">Outra (Manual)</option>
               </select>
+              <input type="text" id="smCarrierOther" class="form-input" placeholder="Nome da Transportadora" style="display:none; margin-top:8px;">
             </div>
             <div class="form-group">
               <label class="form-label">Código de Rastreio (Tracking)</label>
@@ -79,15 +80,19 @@ function initShippingModal() {
   document.body.insertAdjacentHTML('beforeend', html);
 }
 
+let _SM_onCancel = null;
+
 // Renderiza a modal
-window.openShippingModal = function(order, onSaveCallback) {
+window.openShippingModal = function(order, onSaveCallback, onCancelCallback) {
   if (!order || !order.items || order.items.length === 0) {
     if (window.showToast) window.showToast("Este pedido não tem itens.", "err");
+    if (onCancelCallback) onCancelCallback();
     return;
   }
   
   _SM_order = JSON.parse(JSON.stringify(order)); // clone
   _SM_onSave = onSaveCallback;
+  _SM_onCancel = onCancelCallback;
 
   initShippingModal();
   document.getElementById('smCarrier').value = '';
@@ -142,11 +147,13 @@ window.openShippingModal = function(order, onSaveCallback) {
   document.getElementById('smOverlay').style.display = 'flex';
 };
 
-window.closeShippingModal = function() {
+window.closeShippingModal = function(isCancel = true) {
   const ov = document.getElementById('smOverlay');
   if (ov) ov.style.display = 'none';
+  if (isCancel && _SM_onCancel) _SM_onCancel();
   _SM_order = null;
   _SM_onSave = null;
+  _SM_onCancel = null;
 };
 
 window.saveShippingModal = function() {
@@ -170,7 +177,11 @@ window.saveShippingModal = function() {
     return;
   }
 
-  const carrier = document.getElementById('smCarrier').value;
+  let carrier = document.getElementById('smCarrier').value;
+  if (carrier === 'outra') {
+    const manual = document.getElementById('smCarrierOther');
+    if (manual) carrier = manual.value.trim() || 'Outra';
+  }
   const tracking = document.getElementById('smTracking').value.trim();
 
   const newShipment = {
@@ -185,7 +196,7 @@ window.saveShippingModal = function() {
   _SM_order.shipments.push(newShipment);
 
   // Se estivermos em orders.html com "currentOrder" ou em orders_kanban.html
-  closeShippingModal();
+  closeShippingModal(false);
   
   if (_SM_onSave) {
     _SM_onSave(_SM_order);

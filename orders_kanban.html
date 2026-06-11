@@ -932,6 +932,8 @@
       // Moving OUT of printing to a later column → check if all items are printed
       if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
         order.status = newStatus;
+        renderKanban(); // Optimistic move
+
         const saveOverrideFn = async (updatedOrder) => {
           if (_hasPendingItems(updatedOrder)) {
             updatedOrder.status = 'printing';
@@ -943,17 +945,25 @@
             updatedOrder.status = newStatus;
             if (newStatus === 'enviado' && !updatedOrder._partialShipped) {
               if (window.openShippingModal) {
-                window.openShippingModal(updatedOrder, async (shippedOrder) => {
-                  const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
-                  if (idx > -1) orders[idx] = shippedOrder;
-                  renderKanban();
-                  try {
-                    await DB.saveOrder(shippedOrder);
-                    showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-                  } catch(e) {
-                    showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                window.openShippingModal(
+                  updatedOrder, 
+                  async (shippedOrder) => {
+                    const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
+                    if (idx > -1) orders[idx] = shippedOrder;
+                    renderKanban();
+                    try {
+                      await DB.saveOrder(shippedOrder);
+                      showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                    } catch(e) {
+                      showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                    }
+                  },
+                  () => {
+                    // Canceled Shipping Modal after skipping printing
+                    order.status = oldStatus;
+                    renderKanban();
                   }
-                });
+                );
                 return;
               }
             }
@@ -964,33 +974,48 @@
             await DB.saveOrder(updatedOrder);
           }
         };
-        openPrinterModal(order, oldStatus, 'exit', saveOverrideFn);
+        openPrinterModal(order, oldStatus, 'exit', saveOverrideFn, () => {
+          // Revert if cancelled Printer Modal
+          order.status = oldStatus;
+          renderKanban();
+        });
         return;
       }
 
       // Moving INTO enviado -> show shipping modal
       if (newStatus === 'enviado' && order.items && order.items.length > 0) {
-        if (window.openShippingModal) {
-          window.openShippingModal(order, async (updatedOrder) => {
-            // Check if there are still pending items to print
-            if (_hasPendingItems(updatedOrder)) {
-              updatedOrder.status = 'printing';
-            } else {
-              updatedOrder.status = newStatus;
-            }
-            
-            // Apply changes to global array
-            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
-            if (idx > -1) orders[idx] = updatedOrder;
+        order.status = 'enviado'; // Optimistic UI
+        renderKanban();
 
-            renderKanban();
-            try {
-              await DB.saveOrder(updatedOrder);
-              showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-            } catch(e) {
-              showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+        if (window.openShippingModal) {
+          window.openShippingModal(
+            order, 
+            async (updatedOrder) => {
+              // Check if there are still pending items to print
+              if (_hasPendingItems(updatedOrder)) {
+                updatedOrder.status = 'printing';
+              } else {
+                updatedOrder.status = newStatus;
+              }
+              
+              // Apply changes to global array
+              const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+              if (idx > -1) orders[idx] = updatedOrder;
+
+              renderKanban();
+              try {
+                await DB.saveOrder(updatedOrder);
+                showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+              } catch(e) {
+                showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+              }
+            },
+            () => {
+              // Cancelled
+              order.status = oldStatus;
+              renderKanban();
             }
-          });
+          );
           return;
         }
       }

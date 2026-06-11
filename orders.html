@@ -2321,13 +2321,20 @@
         // Shipping Modal Intercept
         if (orderObj.status === 'enviado' && !orderObj._partialShipped) {
           if (window.openShippingModal) {
-            window.openShippingModal(orderObj, async (shippedOrder) => {
-              await DB.saveOrder(shippedOrder);
-              for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
-              renderOrders(id);
-              const statusName = typeof STATUS_LABELS[shippedOrder.status] === 'function' ? STATUS_LABELS[shippedOrder.status]() : (STATUS_LABELS[shippedOrder.status] || shippedOrder.status);
-              showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
-            });
+            window.openShippingModal(
+              orderObj, 
+              async (shippedOrder) => {
+                await DB.saveOrder(shippedOrder);
+                for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
+                renderOrders(id);
+                const statusName = typeof STATUS_LABELS[shippedOrder.status] === 'function' ? STATUS_LABELS[shippedOrder.status]() : (STATUS_LABELS[shippedOrder.status] || shippedOrder.status);
+                showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+              },
+              () => {
+                // Cancelled
+                orderObj.status = oldStatusOriginal;
+              }
+            );
             return;
           }
         }
