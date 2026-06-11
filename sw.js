@@ -3,7 +3,7 @@
  * Estratégia: Cache-First para assets estáticos, Network-First para API calls.
  */
 
-const CACHE_NAME = '3dzaap-pm-v1.1.0'; // bumped: push.js fix
+const CACHE_NAME = '3dzaap-pm-v1.1.1'; // bumped: clear cache to fix kanban issues
 
 // Assets estáticos que ficam em cache
 const STATIC_ASSETS = [

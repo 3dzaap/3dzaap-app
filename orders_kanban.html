@@ -981,11 +981,18 @@
             await DB.saveOrder(updatedOrder);
           }
         };
-        openPrinterModal(order, oldStatus, 'exit', saveOverrideFn, () => {
-          // Revert if cancelled Printer Modal
+        try {
+          openPrinterModal(order, oldStatus, 'exit', saveOverrideFn, () => {
+            // Revert if cancelled Printer Modal
+            order.status = oldStatus;
+            renderKanban();
+          });
+        } catch(err) {
           order.status = oldStatus;
           renderKanban();
-        });
+          showToast('Erro ao abrir a janela da impressora: ' + err.message, 'err');
+          console.error(err);
+        }
         return;
       }
 
