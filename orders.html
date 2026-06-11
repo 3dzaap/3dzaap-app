@@ -2306,33 +2306,63 @@
       if (!o) return;
       const next = STATUS_NEXT[o.status];
       if (!next) return;
+      
+      const oldStatusOriginal = o.status;
+
+      async function finishAdvance(orderObj) {
+        if (orderObj.status === 'printing' && next !== 'printing') {
+          // All printed (or skipped) — accumulate printer hours
+          await _accumulatePrinterHours(orderObj);
+        }
+        
+        orderObj.updatedAt = new Date().toISOString();
+        if (orderObj.status === 'done') applyFilamentConsumptionForOrder(orderObj);
+        
+        // Shipping Modal Intercept
+        if (orderObj.status === 'enviado' && !orderObj._partialShipped) {
+          if (window.openShippingModal) {
+            window.openShippingModal(orderObj, async (shippedOrder) => {
+              await DB.saveOrder(shippedOrder);
+              for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
+              renderOrders(id);
+              const statusName = typeof STATUS_LABELS[shippedOrder.status] === 'function' ? STATUS_LABELS[shippedOrder.status]() : (STATUS_LABELS[shippedOrder.status] || shippedOrder.status);
+              showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+            });
+            return;
+          }
+        }
+        
+        await DB.saveOrder(orderObj);
+        // Persist any filament changes
+        for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
+        renderOrders(id);
+        const statusName = typeof STATUS_LABELS[orderObj.status] === 'function' ? STATUS_LABELS[orderObj.status]() : (STATUS_LABELS[orderObj.status] || orderObj.status);
+        showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+      }
 
       // Intercept transition to/within 'printing' — show session modal
       if (next === 'printing') {
         o.status = next;
-        openPrinterModal(o, o.status, 'enter');
+        openPrinterModal(o, oldStatusOriginal, 'enter'); // it uses default onSave which is fine, no shipping needed
         return;
       }
+      
       if (o.status === 'printing' && !_allItemsPrinted(o)) {
         o.status = next;
-        openPrinterModal(o, o.status, 'exit');
+        const saveOverrideFn = async (updatedOrder) => {
+           if (!_allItemsPrinted(updatedOrder)) {
+             updatedOrder.status = 'printing';
+           } else {
+             updatedOrder.status = next;
+           }
+           await finishAdvance(updatedOrder);
+        };
+        openPrinterModal(o, oldStatusOriginal, 'exit', saveOverrideFn);
         return;
-      }
-
-      if (o.status === 'printing' && next !== 'printing') {
-        // All printed (or skipped) — accumulate printer hours
-        await _accumulatePrinterHours(o);
       }
 
       o.status = next;
-      o.updatedAt = new Date().toISOString();
-      if (next === 'done') applyFilamentConsumptionForOrder(o);
-      await DB.saveOrder(o);
-      // Persist any filament changes
-      for (const fil of filaments) { if (fil._changed) { try { await DB.saveFilament(fil); } catch(e){} delete fil._changed; } }
-      renderOrders(id);
-      const statusName = typeof STATUS_LABELS[next] === 'function' ? STATUS_LABELS[next]() : (STATUS_LABELS[next] || next);
-      showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+      await finishAdvance(o);
     }
 
     // Check if all items in an order have been fully printed

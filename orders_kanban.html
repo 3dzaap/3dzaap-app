@@ -932,7 +932,7 @@
       // Moving OUT of printing to a later column → check if all items are printed
       if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
         order.status = newStatus;
-        order._onSaveOverride = async (updatedOrder) => {
+        const saveOverrideFn = async (updatedOrder) => {
           if (_hasPendingItems(updatedOrder)) {
             updatedOrder.status = 'printing';
             const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
@@ -964,7 +964,7 @@
             await DB.saveOrder(updatedOrder);
           }
         };
-        openPrinterModal(order, oldStatus, 'exit');
+        openPrinterModal(order, oldStatus, 'exit', saveOverrideFn);
         return;
       }
 
