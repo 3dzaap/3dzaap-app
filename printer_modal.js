@@ -454,4 +454,57 @@
     }
   }
 
+  window.createPartialShipment = async function() {
+    if (!_order) return;
+    
+    // Recolher as quantidades introduzidas no modal
+    _collectRuns(_order);
+    
+    const orderCopy = JSON.parse(JSON.stringify(_order));
+    const oldStatus = _oldStatus;
+    const isEnter = (_mode === 'enter');
+    
+    // Guardar as funções de callback para usar depois
+    const onSaveOverride = _order._onSaveOverride;
+    
+    // Fechar a modal de impressão
+    const overlay = document.getElementById('pmOverlay');
+    if (overlay) overlay.style.display = 'none';
+
+    // Chama a modal de envio
+    if (window.openShippingModal) {
+      window.openShippingModal(orderCopy, async (updatedOrder) => {
+        // Se ainda houver itens pendentes para imprimir, garante que o status fica em printing
+        const hasPending = updatedOrder.items.some(it => {
+          if (it.tech === 'service') return false;
+          if (it.printSkipped) return false;
+          const tot = parseInt(it.quantity || it.qty || 1);
+          const prt = (it.printRuns || []).reduce((s, r) => s + (parseInt(r.qty) || 0), 0);
+          return prt < tot;
+        });
+
+        if (hasPending) {
+          updatedOrder.status = 'printing';
+        }
+        
+        // Grava
+        if (onSaveOverride) {
+           await onSaveOverride(updatedOrder);
+        } else {
+           await _cfg.onSave(updatedOrder);
+        }
+        
+        _order = _oldStatus = null;
+      });
+    } else {
+      // Fallback
+      if (onSaveOverride) {
+         await onSaveOverride(orderCopy);
+      } else {
+         await _cfg.onSave(orderCopy);
+      }
+      _order = _oldStatus = null;
+    }
+  };
+
 })();

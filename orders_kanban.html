@@ -941,7 +941,7 @@
         if (window.openShippingModal) {
           window.openShippingModal(order, async (updatedOrder) => {
             // Check if there are still pending items to print
-            if (window._hasPendingItems && window._hasPendingItems(updatedOrder)) {
+            if (_hasPendingItems(updatedOrder)) {
               updatedOrder.status = 'printing';
             } else {
               updatedOrder.status = newStatus;
