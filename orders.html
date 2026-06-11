@@ -3219,6 +3219,18 @@
       const prevIdx = COL_ORDER_O.indexOf(prevStatus);
       const newIdx  = COL_ORDER_O.indexOf(newStatus);
 
+      async function finalizeSave(orderToSave) {
+        if (orderToSave.status === 'enviado' && !orderToSave._partialShipped) {
+          if (window.openShippingModal) {
+            window.openShippingModal(orderToSave, async (shippedOrder) => {
+              await _doSaveOrder(shippedOrder);
+            });
+            return;
+          }
+        }
+        await _doSaveOrder(orderToSave);
+      }
+
       // Entering printing from a lower state
       if (newStatus === 'printing' && newIdx > prevIdx && items.length > 0) {
         // Merge items from form into base, keeping existing printRuns from prevOrder
@@ -3228,7 +3240,7 @@
         });
         
         openPrinterModal(base, prevStatus, 'enter', 
-           async (updatedBase) => { await _doSaveOrder(updatedBase); },
+           async (updatedBase) => { await finalizeSave(updatedBase); },
            (revertedBase, oldStatus) => { /* Cancelled, do not save form */ }
         );
         return;
@@ -3237,6 +3249,7 @@
       // Advancing past printing and some items have pending print runs
       if (prevStatus === 'printing' && newIdx > prevIdx) {
         const hasPending = (prevOrder.items || []).some(it => {
+          if (it.tech === 'service') return false;
           if (it.printSkipped) return false;
           const printed = (it.printRuns || []).reduce((s,r) => s + (parseInt(r.qty)||0), 0);
           return printed < parseInt(it.quantity || it.qty || 1);
@@ -3249,14 +3262,22 @@
           });
 
           openPrinterModal(base, prevStatus, 'exit',
-             async (updatedBase) => { await _doSaveOrder(updatedBase); },
+             async (updatedBase) => {
+               // updatedBase.status was originally set to newStatus by the modal if it finishes
+               // but wait, orders.html didn't change updatedBase.status to newStatus!
+               // openPrinterModal sets `order` to what we passed `base`.
+               // The user clicked "Avançar sem imprimir", which skips items, and then saves.
+               // We need to set the target status here, like Kanban does!
+               updatedBase.status = newStatus;
+               await finalizeSave(updatedBase); 
+             },
              (revertedBase, oldStatus) => { /* Cancelled, do not save form */ }
           );
           return;
         }
       }
 
-      await _doSaveOrder(base);
+      await finalizeSave(base);
     }
 
     async function _doSaveOrder(base) {
