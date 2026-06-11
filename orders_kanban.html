@@ -913,143 +913,148 @@
     }
 
     async function kDrop(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-      if (!draggedId) return;
-      const newStatus = this.getAttribute('data-status');
-      const order = orders.find(o => String(o.id) === String(draggedId));
-      if (!order || order.status === newStatus) return;
+      try {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if (!draggedId) return;
+        const newStatus = this.getAttribute('data-status');
+        const order = orders.find(o => String(o.id) === String(draggedId));
+        if (!order || order.status === newStatus) return;
 
-      const oldStatus = order.status;
+        const oldStatus = order.status;
 
-      // Moving INTO printing → show printer assignment modal
-      if (newStatus === 'printing' && order.items && order.items.length > 0) {
-        order.status = newStatus;
-        openPrinterModal(order, oldStatus, 'enter');
-        return;
-      }
-
-      // Moving OUT of printing to a later column → check if all items are printed
-      if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
-        order.status = newStatus;
-        renderKanban(); // Optimistic move
-
-        const saveOverrideFn = async (updatedOrder) => {
-          if (_hasPendingItems(updatedOrder)) {
-            updatedOrder.status = 'printing';
-            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
-            if (idx > -1) orders[idx] = updatedOrder;
-            renderKanban();
-            await DB.saveOrder(updatedOrder);
-          } else {
-            updatedOrder.status = newStatus;
-            if (newStatus === 'enviado' && !updatedOrder._partialShipped) {
-              if (window.openShippingModal) {
-                try {
-                  window.openShippingModal(
-                    updatedOrder, 
-                    async (shippedOrder) => {
-                      const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
-                      if (idx > -1) orders[idx] = shippedOrder;
-                      renderKanban();
-                      try {
-                        await DB.saveOrder(shippedOrder);
-                        showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-                      } catch(e) {
-                        showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
-                      }
-                    },
-                    () => {
-                      // Canceled Shipping Modal after skipping printing
-                      order.status = oldStatus;
-                      renderKanban();
-                    }
-                  );
-                } catch(err) {
-                  order.status = oldStatus;
-                  renderKanban();
-                  showToast('Erro ao abrir modal de envios: ' + err.message, 'err');
-                  console.error(err);
-                }
-                return;
-              }
-            }
-            // Fallback ou outro status
-            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
-            if (idx > -1) orders[idx] = updatedOrder;
-            renderKanban();
-            await DB.saveOrder(updatedOrder);
-          }
-        };
-        try {
-          openPrinterModal(order, oldStatus, 'exit', saveOverrideFn, () => {
-            // Revert if cancelled Printer Modal
-            order.status = oldStatus;
-            renderKanban();
-          });
-        } catch(err) {
-          order.status = oldStatus;
-          renderKanban();
-          showToast('Erro ao abrir a janela da impressora: ' + err.message, 'err');
-          console.error(err);
+        // Moving INTO printing → show printer assignment modal
+        if (newStatus === 'printing' && order.items && order.items.length > 0) {
+          order.status = newStatus;
+          openPrinterModal(order, oldStatus, 'enter');
+          return;
         }
-        return;
-      }
 
-      // Moving INTO enviado -> show shipping modal
-      if (newStatus === 'enviado' && order.items && order.items.length > 0) {
-        order.status = 'enviado'; // Optimistic UI
-        renderKanban();
+        // Moving OUT of printing to a later column → check if all items are printed
+        if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
+          order.status = newStatus;
+          renderKanban(); // Optimistic move
 
-        if (window.openShippingModal) {
-          try {
-            window.openShippingModal(
-              order, 
-              async (updatedOrder) => {
-                // Check if there are still pending items to print
-                if (_hasPendingItems(updatedOrder)) {
-                  updatedOrder.status = 'printing';
-                } else {
-                  updatedOrder.status = newStatus;
+          const saveOverrideFn = async (updatedOrder) => {
+            if (_hasPendingItems(updatedOrder)) {
+              updatedOrder.status = 'printing';
+              const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+              if (idx > -1) orders[idx] = updatedOrder;
+              renderKanban();
+              await DB.saveOrder(updatedOrder);
+            } else {
+              updatedOrder.status = newStatus;
+              if (newStatus === 'enviado' && !updatedOrder._partialShipped) {
+                if (window.openShippingModal) {
+                  try {
+                    window.openShippingModal(
+                      updatedOrder, 
+                      async (shippedOrder) => {
+                        const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
+                        if (idx > -1) orders[idx] = shippedOrder;
+                        renderKanban();
+                        try {
+                          await DB.saveOrder(shippedOrder);
+                          showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                        } catch(e) {
+                          showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                        }
+                      },
+                      () => {
+                        // Canceled Shipping Modal after skipping printing
+                        order.status = oldStatus;
+                        renderKanban();
+                      }
+                    );
+                  } catch(err) {
+                    order.status = oldStatus;
+                    renderKanban();
+                    showToast('Erro ao abrir modal de envios: ' + err.message, 'err');
+                    console.error(err);
+                  }
+                  return;
                 }
-                
-                // Apply changes to global array
-                const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
-                if (idx > -1) orders[idx] = updatedOrder;
-
-                renderKanban();
-                try {
-                  await DB.saveOrder(updatedOrder);
-                  showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-                } catch(e) {
-                  showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
-                }
-              },
-              () => {
-                // Cancelled
-                order.status = oldStatus;
-                renderKanban();
               }
-            );
+              // Fallback ou outro status
+              const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+              if (idx > -1) orders[idx] = updatedOrder;
+              renderKanban();
+              await DB.saveOrder(updatedOrder);
+            }
+          };
+          try {
+            openPrinterModal(order, oldStatus, 'exit', saveOverrideFn, () => {
+              // Revert if cancelled Printer Modal
+              order.status = oldStatus;
+              renderKanban();
+            });
           } catch(err) {
             order.status = oldStatus;
             renderKanban();
-            showToast('Erro interno ao abrir modal: ' + err.message, 'err');
+            showToast('Erro ao abrir a janela da impressora: ' + err.message, 'err');
             console.error(err);
           }
           return;
         }
-      }
 
-      order.status = newStatus;
-      renderKanban();
-      try {
-        await DB.saveOrder(order);
-        showToast('<i class="ph-bold ph-check-circle"></i> Estado atualizado.', 'ok');
-      } catch(err) {
-        order.status = oldStatus;
+        // Moving INTO enviado -> show shipping modal
+        if (newStatus === 'enviado' && order.items && order.items.length > 0) {
+          order.status = 'enviado'; // Optimistic UI
+          renderKanban();
+
+          if (window.openShippingModal) {
+            try {
+              window.openShippingModal(
+                order, 
+                async (updatedOrder) => {
+                  // Check if there are still pending items to print
+                  if (_hasPendingItems(updatedOrder)) {
+                    updatedOrder.status = 'printing';
+                  } else {
+                    updatedOrder.status = newStatus;
+                  }
+                  
+                  // Apply changes to global array
+                  const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+                  if (idx > -1) orders[idx] = updatedOrder;
+
+                  renderKanban();
+                  try {
+                    await DB.saveOrder(updatedOrder);
+                    showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                  } catch(e) {
+                    showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                  }
+                },
+                () => {
+                  // Cancelled
+                  order.status = oldStatus;
+                  renderKanban();
+                }
+              );
+            } catch(err) {
+              order.status = oldStatus;
+              renderKanban();
+              showToast('Erro interno ao abrir modal: ' + err.message, 'err');
+              console.error(err);
+            }
+            return;
+          }
+        }
+
+        order.status = newStatus;
         renderKanban();
-        showToast('<i class="ph-bold ph-warning"></i> Erro ao mover pedido.', 'err');
+        try {
+          await DB.saveOrder(order);
+          showToast('<i class="ph-bold ph-check-circle"></i> Estado atualizado.', 'ok');
+        } catch(err) {
+          order.status = oldStatus;
+          renderKanban();
+          showToast('<i class="ph-bold ph-warning"></i> Erro ao mover pedido.', 'err');
+        }
+      } catch(fatalErr) {
+        showToast('Erro FATAL no Kanban: ' + fatalErr.message, 'err');
+        console.error("kDrop FATAL:", fatalErr);
       }
     }
 
