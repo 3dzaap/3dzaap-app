@@ -443,6 +443,7 @@
     <script src="utils.js"></script>
     <script src="sidebar.js?v=1.2"></script>
     <script src="printer_modal.js"></script>
+    <script src="shipping_modal.js"></script>
     <script>Sidebar.init();</script>
 
     <div class="main">
@@ -933,6 +934,33 @@
         order.status = newStatus;
         openPrinterModal(order, oldStatus, 'exit');
         return;
+      }
+
+      // Moving INTO enviado -> show shipping modal
+      if (newStatus === 'enviado' && order.items && order.items.length > 0) {
+        if (window.openShippingModal) {
+          window.openShippingModal(order, async (updatedOrder) => {
+            // Check if there are still pending items to print
+            if (window._hasPendingItems && window._hasPendingItems(updatedOrder)) {
+              updatedOrder.status = 'printing';
+            } else {
+              updatedOrder.status = newStatus;
+            }
+            
+            // Apply changes to global array
+            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+            if (idx > -1) orders[idx] = updatedOrder;
+
+            renderKanban();
+            try {
+              await DB.saveOrder(updatedOrder);
+              showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+            } catch(e) {
+              showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+            }
+          });
+          return;
+        }
       }
 
       order.status = newStatus;

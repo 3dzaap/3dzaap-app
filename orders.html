@@ -843,6 +843,7 @@
     <script src="utils.js"></script>
     <script src="sidebar.js?v=1.2"></script>
     <script src="printer_modal.js"></script>
+    <script src="shipping_modal.js"></script>
     <script src="xray_modal.js"></script>
     <script>Sidebar.init();</script>
     <!-- SIDEBAR -->
@@ -1130,17 +1131,14 @@
 
         <div class="form-section-divider" style="margin-top:18px" data-i18n="orders.modal.section_shipping"><i
             class="ph-bold ph-truck"></i> Expedição e Entrega</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" data-i18n="orders.modal.lbl_shipping_service">Transportadora</label>
-            <select id="oShippingService" class="form-select">
-              <!-- Dynamically populated by renderShippingOptions() -->
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" data-i18n="orders.modal.lbl_tracking_code">Código de Rastreio</label>
-            <input type="text" id="oTrackingCode" class="form-input" placeholder="Insira o código..." data-i18n="[placeholder]orders.modal.shipping_placeholder">
-          </div>
+        <div id="oShipmentsContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+          <!-- Shipments will be rendered here -->
+        </div>
+
+        <div style="text-align: right; margin-bottom: 16px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openShippingModalWithCallback(currentOrder)" id="btnNewShipment">
+            <i class="ph-bold ph-plus"></i> Novo Envio Parcial
+          </button>
         </div>
         <div class="form-row full" style="margin-bottom:0">
           <div class="form-group">
@@ -1282,6 +1280,7 @@
     let lastOrderNumber = 0;
     let editingId = null;
     let _items = []; // modal items buffer
+    let currentOrder = null;
 
     const STATUS_LABELS = {
       orcamento:   () => i18n.getNestedTranslation('status.orcamento')   || 'Orçamento',
@@ -2083,7 +2082,7 @@
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn-icon" onclick="duplicateOrder('${o.id}')" title="${i18n.getNestedTranslation('orders.details.duplicate')}" style="margin-right:2px"><i class="ph-bold ph-copy"></i></button>
           <button class="btn-icon" onclick="openModal('${o.id}')" title="Editar" style="margin-right:2px"><i class="ph-bold ph-pencil-simple"></i></button>
-          <button class="btn-icon" onclick="(function(id){const oo=orders.find(x=>x.id===id);if(oo)openOrderXRay(oo);})('${o.id}')" title="Raio-X Financeiro" style="margin-right:2px;color:var(--orange)"><i class="ph-bold ph-scan"></i></button>
+          <button class="btn-icon" onclick="(function(id){const oo=orders.find(x=>x.id===id);if(oo) openOrderXRay(oo);})('${o.id}')" title="Raio-X Financeiro" style="margin-right:2px;color:var(--orange)"><i class="ph-bold ph-scan"></i></button>
           <button class="btn-icon del" onclick="confirmDelete('${o.id}')" title="Eliminar" style="margin-right:4px"><i class="ph-bold ph-trash"></i></button>
           <button class="expand-btn" id="ebtn-${o.id}" onclick="toggleExpand('${o.id}')"><i class="ph-bold ph-caret-down"></i></button>
         </td>
@@ -2579,8 +2578,6 @@
       document.getElementById('oClientNif').value = o.clientNif || '';
       document.getElementById('oClientAddress').value = o.clientAddress || '';
       document.getElementById('oNotes').value = o.notes || '';
-      document.getElementById('oShippingService').value = o.shippingService || '';
-      document.getElementById('oTrackingCode').value = o.trackingCode || '';
 
       // Limpar itens padrão de openModal(null)
       document.getElementById('orderItemsList').innerHTML = '';
@@ -2623,13 +2620,82 @@
       select.innerHTML = html;
     }
 
+    // ── GESTÃO DE ENVIOS ──
+    window.renderShipmentsList = function(order) {
+      const container = document.getElementById('oShipmentsContainer');
+      const btn = document.getElementById('btnNewShipment');
+      if (!container || !btn) return;
+      
+      container.innerHTML = '';
+      
+      if (!order) {
+        container.innerHTML = '<div style="font-size:0.75rem; color:var(--muted); text-align:center;">Guarde o pedido primeiro para adicionar envios.</div>';
+        btn.disabled = true;
+        return;
+      }
+      btn.disabled = false;
+
+      const ships = order.shipments || [];
+      if (ships.length === 0) {
+        container.innerHTML = '<div style="font-size:0.75rem; color:var(--muted); text-align:center; padding:10px; border:1px dashed var(--border); border-radius:8px;">Nenhum envio registado.</div>';
+        return;
+      }
+
+      ships.forEach((ship, idx) => {
+        let itemsHtml = '';
+        if (ship.items && ship.items.length) {
+          itemsHtml = '<ul style="margin:4px 0 0 16px; padding:0; font-size:0.7rem; color:var(--muted); list-style-type:circle;">';
+          ship.items.forEach(sit => {
+            const orderItem = order.items.find(i => i.id === sit.itemId);
+            const name = orderItem ? orderItem.description : 'Item removido';
+            itemsHtml += `<li>${sit.qty}x ${name}</li>`;
+          });
+          itemsHtml += '</ul>';
+        }
+
+        const dateStr = ship.createdAt ? new Date(ship.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const serviceBadge = ship.shippingService ? `<span style="background:var(--bg-hover); padding:2px 6px; border-radius:4px; font-weight:700; font-size:0.65rem; border:1px solid var(--border);">${ship.shippingService.toUpperCase()}</span>` : '';
+
+        const html = `
+          <div style="border:1px solid var(--border); border-radius:8px; padding:10px; position:relative;">
+            <button type="button" onclick="removeShipment(${idx})" style="position:absolute; top:8px; right:8px; background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.85rem;" title="Eliminar Envio"><i class="ph-bold ph-trash"></i></button>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <strong style="font-size:0.8rem; color:var(--text);"><i class="ph-bold ph-package"></i> Envio #${idx + 1}</strong>
+              <span style="font-size:0.65rem; color:var(--muted);">${dateStr}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              ${serviceBadge}
+              ${ship.trackingCode ? `<span style="font-size:0.75rem; color:var(--blue); font-family:var(--mono);">${ship.trackingCode}</span>` : '<span style="font-size:0.75rem; color:var(--muted);">Sem rastreio</span>'}
+            </div>
+            ${itemsHtml}
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+      });
+    }
+
+    window.removeShipment = function(idx) {
+      if (!confirm('Tem a certeza que deseja eliminar este registo de envio?')) return;
+      if (currentOrder && currentOrder.shipments) {
+        currentOrder.shipments.splice(idx, 1);
+        renderShipmentsList(currentOrder);
+      }
+    };
+
+    window.openShippingModalWithCallback = function(order) {
+      // Overwrite default openShippingModal to add a custom save callback for the form
+      openShippingModal(order, (updatedOrder) => {
+        currentOrder.shipments = updatedOrder.shipments;
+        renderShipmentsList(currentOrder);
+      });
+    };
+
     function openModal(id = null) {
       if (id) clearUnread(id);
       editingId = id;
       _items = [];
       document.getElementById('orderItemsList').innerHTML = '';
       
-      renderShippingOptions();
       // reset weight unit header
       const _lbl = document.getElementById('weightUnitLabel');
       if (_lbl) _lbl.textContent = 'g/ml';
@@ -2640,6 +2706,7 @@
       if (id) {
         const o = orders.find(x => x.id === id);
         if (!o) return;
+        currentOrder = o;
         document.getElementById('oClientName').value = o.clientName || '';
         document.getElementById('oClientEmail').value = o.clientEmail || '';
         document.getElementById('oClientPhone').value = o.clientPhone || '';
@@ -2653,12 +2720,12 @@
         document.getElementById('oDueDate').value = _toDateStr(o.dueDate);
         document.getElementById('oNotes').value = o.notes || '';
         document.getElementById('oExpiresAt').value = o.expiresAt ? o.expiresAt.split('T')[0] : '';
-        document.getElementById('oShippingService').value = o.shippingService || '';
-        document.getElementById('oTrackingCode').value = o.trackingCode || '';
         const its = (o.items?.length) ? o.items : [{ description: o.description || '', quantity: o.quantity || 1, unitPrice: o.unitPrice || 0, filamentId: '', weightG: '' }];
         // Normalize items: support old calculator format (qty/weight/total → quantity/weightG/unitPrice)
         its.forEach(it => addOrderItem(_normalizeItem(it)));
+        renderShipmentsList(o);
       } else {
+        currentOrder = null;
         document.getElementById('oClientName').value = '';
         document.getElementById('oClientEmail').value = '';
         document.getElementById('oClientPhone').value = '';
@@ -2674,10 +2741,9 @@
         const defExp = new Date();
         defExp.setDate(defExp.getDate() + 7);
         document.getElementById('oExpiresAt').value = defExp.toISOString().split('T')[0];
-        document.getElementById('oShippingService').value = '';
-        document.getElementById('oTrackingCode').value = '';
 
         addOrderItem();
+        renderShipmentsList(null);
       }
       document.getElementById('clientSugs').style.display = 'none';
       
@@ -3136,8 +3202,6 @@
         dueDate: document.getElementById('oDueDate').value,
         notes: document.getElementById('oNotes').value.trim(),
         expiresAt: document.getElementById('oExpiresAt').value ? new Date(document.getElementById('oExpiresAt').value).toISOString() : null,
-        shippingService: document.getElementById('oShippingService').value,
-        trackingCode: document.getElementById('oTrackingCode').value.trim(),
         updatedAt: new Date().toISOString(),
       };
       console.log('[3DZAAP] Objecto de pedido capturado no modal:', base);

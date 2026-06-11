@@ -13,6 +13,7 @@
  *   closePrinterModal()
  *   advanceWithoutPrinting()
  *   confirmPrinterModal()
+ *   createPartialShipment()
  *   pmUpdateStats()          — chamado pelos handlers inline do HTML gerado
  *   pmAddRunToItem(idx, max) — idem
  * ─────────────────────────────────────────────────────────────────────────────
@@ -122,10 +123,16 @@
       </div>
 
       <div class="modal-footer" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn btn-ghost" id="pmSkipBtn" onclick="advanceWithoutPrinting()"
-                style="color:var(--muted); font-size:0.82rem; display:none;">
-          <i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir
-        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" id="pmSkipBtn" onclick="advanceWithoutPrinting()"
+                  style="color:var(--muted); font-size:0.82rem; display:none;">
+            <i class="ph-bold ph-fast-forward"></i> Avançar sem imprimir
+          </button>
+          <button class="btn btn-secondary" id="pmPartialShipBtn" onclick="createPartialShipment()"
+                  style="color:var(--blue); font-size:0.82rem; display:none; background:rgba(59,143,212,0.1);">
+            <i class="ph-bold ph-package"></i> Fazer Envio Parcial
+          </button>
+        </div>
         <div style="display:flex; gap:8px; margin-left:auto;">
           <button class="btn btn-ghost" onclick="closePrinterModal()">Cancelar</button>
           <button class="btn btn-primary" onclick="confirmPrinterModal()">
@@ -280,15 +287,18 @@
     const titleEl = document.getElementById('pmTitle');
     const descEl  = document.getElementById('pmDesc');
     const skipBtn = document.getElementById('pmSkipBtn');
+    const shipBtn = document.getElementById('pmPartialShipBtn');
 
     if (mode === 'enter') {
       titleEl.innerHTML  = '<i class="ph-bold ph-printer" style="color:var(--blue)"></i> Iniciar Produção';
       descEl.textContent = 'Atribua impressoras e quantidades a cada item. Pode dividir a quantidade de um item por várias impressoras.';
       skipBtn.style.display = 'none';
+      if (shipBtn) shipBtn.style.display = 'none';
     } else {
       titleEl.innerHTML  = '<i class="ph-bold ph-check-circle" style="color:var(--success,#22c55e)"></i> Concluir Impressão';
       descEl.textContent = 'Alguns itens têm quantidade ainda por imprimir. Complete as atribuições ou avance sem imprimir os itens em falta.';
       skipBtn.style.display = 'flex';
+      if (shipBtn) shipBtn.style.display = 'flex';
     }
 
     /* Itens a mostrar */

@@ -1299,11 +1299,32 @@
             <div class="hero-title">${title}</div>
             <div class="hero-desc">${desc}</div>
             
-            ${_order.trackingCode ? `
-              <div class="tracking-action" style="margin-top:20px">
-                <a href="${getTrackingUrl(_order.shippingService, _order.trackingCode) || '#'}" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #3b8fd4, #2a72b0); border:none; padding:12px 24px; font-size:1rem; box-shadow:0 8px 16px rgba(59,143,212,0.3)">
-                  <i class="ph-bold ph-truck"></i> ${t('portal.btn_track', 'Rastrear Encomenda')}
-                </a>
+            ${(_order.shipments && _order.shipments.length > 0) ? `
+              <div class="tracking-action" style="margin-top:20px; text-align:left;">
+                <div style="font-size:0.8rem; font-weight:700; color:var(--muted); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px;">📦 Envios Realizados (${_order.shipments.length})</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  ${_order.shipments.map((ship, idx) => `
+                    <div style="background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:12px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.85rem; font-weight:800; color:var(--text);"><i class="ph-bold ph-package"></i> Envio #${idx+1}</span>
+                        ${ship.shippingService ? `<span style="background:var(--bg-card); padding:2px 8px; border-radius:6px; font-size:0.7rem; font-weight:700; border:1px solid var(--border);">${ship.shippingService.toUpperCase()}</span>` : ''}
+                      </div>
+                      ${ship.items && ship.items.length ? `
+                        <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px;">
+                          ${ship.items.map(sit => {
+                             const oit = _order.items.find(i => i.id === sit.itemId);
+                             return `${sit.qty}x ${oit ? oit.description : 'Item'}`;
+                          }).join('<br>')}
+                        </div>
+                      ` : ''}
+                      ${ship.trackingCode ? `
+                        <a href="${getTrackingUrl(ship.shippingService, ship.trackingCode) || '#'}" target="_blank" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg, #3b8fd4, #2a72b0); border:none; width:100%; justify-content:center;">
+                          <i class="ph-bold ph-truck"></i> Rastrear: ${ship.trackingCode}
+                        </a>
+                      ` : `<div style="font-size:0.75rem; color:var(--muted);"><i class="ph-bold ph-info"></i> Sem código de rastreio</div>`}
+                    </div>
+                  `).join('')}
+                </div>
               </div>
             ` : ''}
           </div>
