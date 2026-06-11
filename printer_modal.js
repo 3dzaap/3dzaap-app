@@ -148,7 +148,7 @@
   }
 
   function _hasPendingItems(order) {
-    return (order.items || []).some(it => !it.printSkipped && !_itemFullyPrinted(it));
+    return (order.items || []).some(it => it.tech !== 'service' && !it.printSkipped && !_itemFullyPrinted(it));
   }
 
   function _buildPrinterOpts(selectedId) {
@@ -293,8 +293,8 @@
 
     /* Itens a mostrar */
     const itemsToShow = mode === 'exit'
-      ? order.items.filter(it => !it.printSkipped && !_itemFullyPrinted(it))
-      : order.items;
+      ? order.items.filter(it => it.tech !== 'service' && !it.printSkipped && !_itemFullyPrinted(it))
+      : order.items.filter(it => it.tech !== 'service');
 
     if (itemsToShow.length === 0) {
       _finalize(false);
