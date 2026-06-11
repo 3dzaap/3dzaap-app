@@ -697,6 +697,7 @@
         <div class="color-custom-row">
           <div class="color-swatch-preview" id="colorSwatchPreview" style="background:#3B8FD4"></div>
           <input type="color" id="colorPicker" value="#3B8FD4" oninput="onColorPick(this.value)">
+          <input type="text" id="colorHexText" class="form-input mono" style="width:100px; text-transform:uppercase" placeholder="#FFFFFF" value="#3B8FD4" oninput="onColorHexTextPick(this.value)">
           <input type="text" id="colorName" class="form-input" placeholder="Nome da cor (ex: Cinzento Smoke)" data-i18n="[placeholder]materials.modal_mat.placeholder_color">
         </div>
       </div>
@@ -1108,6 +1109,8 @@ function selectColorPreset(hex, translatedName, el) {
   el.classList.add('selected');
   selectedColor = hex;
   document.getElementById('colorPicker').value = hex;
+  const hexText = document.getElementById('colorHexText');
+  if (hexText) hexText.value = hex.toUpperCase();
   document.getElementById('colorSwatchPreview').style.background = hex;
   const cn = document.getElementById('colorName');
   // Se estiver vazio ou for um nome de cor padrão (independente do idioma), atualiza
@@ -1117,8 +1120,22 @@ function selectColorPreset(hex, translatedName, el) {
 function onColorPick(hex) {
   selectedColor = hex;
   document.getElementById('colorSwatchPreview').style.background = hex;
+  const hexText = document.getElementById('colorHexText');
+  if (hexText) hexText.value = hex.toUpperCase();
   document.querySelectorAll('.color-preset').forEach(p =>
     p.classList.toggle('selected', p.dataset.hex.toLowerCase() === hex.toLowerCase()));
+}
+
+function onColorHexTextPick(val) {
+  let hex = val.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (/^#[0-9A-F]{6}$/i.test(hex)) {
+    selectedColor = hex;
+    document.getElementById('colorSwatchPreview').style.background = hex;
+    document.getElementById('colorPicker').value = hex;
+    document.querySelectorAll('.color-preset').forEach(p =>
+      p.classList.toggle('selected', p.dataset.hex.toLowerCase() === hex.toLowerCase()));
+  }
 }
 
 // ══════════════════════════════════════
@@ -1485,6 +1502,8 @@ function openModal(id = null) {
     // Populate colour
     selectedColor = m.colorHex || '#3B8FD4';
     document.getElementById('colorPicker').value = selectedColor;
+    const hexTextEdit = document.getElementById('colorHexText');
+    if (hexTextEdit) hexTextEdit.value = selectedColor.toUpperCase();
     document.getElementById('colorSwatchPreview').style.background = selectedColor;
     document.getElementById('colorName').value = m.colorName || '';
     document.querySelectorAll('.color-preset').forEach(p =>
@@ -1527,6 +1546,8 @@ function openModal(id = null) {
     // Reset all fields
     selectedColor = '#3B8FD4';
     document.getElementById('colorPicker').value = '#3B8FD4';
+    const hexTextNew = document.getElementById('colorHexText');
+    if (hexTextNew) hexTextNew.value = '#3B8FD4';
     document.getElementById('colorSwatchPreview').style.background = '#3B8FD4';
     document.getElementById('colorName').value = '';
     document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
