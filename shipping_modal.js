@@ -118,7 +118,7 @@ window.openShippingModal = function(order, onSaveCallback) {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:0.85rem; cursor:pointer;">
             <input type="checkbox" id="sm_chk_${idx}" ${isChecked ? 'checked' : ''} style="width:16px; height:16px;">
-            ${(it.description || 'Item sem nome').replace(/</g, '&lt;')}
+            ${String(it.description || 'Item sem nome').replace(/</g, '&lt;')}
           </label>
           <span style="font-size:0.75rem; color:var(--muted)">Prontos: <strong style="color:var(--text)">${printedQty}/${totalQty}</strong></span>
         </div>
