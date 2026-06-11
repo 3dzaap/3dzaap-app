@@ -491,14 +491,10 @@ const DB = {
     await _ensureCompany();
 
     if (filter === 'active') {
-      // Pedidos que estão ANTES do estado enviado (não finalizados), independente do mês
-      // ou seja: orcamento, modelagem, validacao, aprovado, fila, printing
-      // E também incluímos pedidos finalizados SE o pagamento estiver pendente (para não os perder de vista)?
-      // O utilizador pediu: "pedidos que estão antes do estado enviado, mesmo que seja de outro mês"
       const { data, error } = await _sb.from('orders')
         .select('*')
         .eq('company_id', _companyId)
-        .in('status', ['orcamento', 'modelagem', 'validacao', 'aprovado', 'fila', 'printing', '']) // null/empty fallbacks
+        .in('status', ['orcamento', 'modelagem', 'validacao', 'aprovado', 'fila', 'printing', 'enviado', '']) // null/empty fallbacks
         .order('order_numeric', { ascending: false });
 
       if (error) throw error;

@@ -697,7 +697,7 @@
       // ── Tab filter (client-side) ──
       const tabFiltered = orders.filter(o => {
         if (filterMode === 'active') {
-          if (['enviado', 'done', 'cancelado'].includes(o.status)) return false;
+          if (['done', 'cancelado'].includes(o.status)) return false;
         } else if (filterMode === 'month') {
           const d = new Date(o.createdAt || 0);
           if (d.getMonth() !== currM || d.getFullYear() !== currY) return false;
