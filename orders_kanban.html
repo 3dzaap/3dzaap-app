@@ -945,25 +945,32 @@
             updatedOrder.status = newStatus;
             if (newStatus === 'enviado' && !updatedOrder._partialShipped) {
               if (window.openShippingModal) {
-                window.openShippingModal(
-                  updatedOrder, 
-                  async (shippedOrder) => {
-                    const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
-                    if (idx > -1) orders[idx] = shippedOrder;
-                    renderKanban();
-                    try {
-                      await DB.saveOrder(shippedOrder);
-                      showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-                    } catch(e) {
-                      showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                try {
+                  window.openShippingModal(
+                    updatedOrder, 
+                    async (shippedOrder) => {
+                      const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
+                      if (idx > -1) orders[idx] = shippedOrder;
+                      renderKanban();
+                      try {
+                        await DB.saveOrder(shippedOrder);
+                        showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                      } catch(e) {
+                        showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                      }
+                    },
+                    () => {
+                      // Canceled Shipping Modal after skipping printing
+                      order.status = oldStatus;
+                      renderKanban();
                     }
-                  },
-                  () => {
-                    // Canceled Shipping Modal after skipping printing
-                    order.status = oldStatus;
-                    renderKanban();
-                  }
-                );
+                  );
+                } catch(err) {
+                  order.status = oldStatus;
+                  renderKanban();
+                  showToast('Erro ao abrir modal de envios: ' + err.message, 'err');
+                  console.error(err);
+                }
                 return;
               }
             }
@@ -988,34 +995,41 @@
         renderKanban();
 
         if (window.openShippingModal) {
-          window.openShippingModal(
-            order, 
-            async (updatedOrder) => {
-              // Check if there are still pending items to print
-              if (_hasPendingItems(updatedOrder)) {
-                updatedOrder.status = 'printing';
-              } else {
-                updatedOrder.status = newStatus;
-              }
-              
-              // Apply changes to global array
-              const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
-              if (idx > -1) orders[idx] = updatedOrder;
+          try {
+            window.openShippingModal(
+              order, 
+              async (updatedOrder) => {
+                // Check if there are still pending items to print
+                if (_hasPendingItems(updatedOrder)) {
+                  updatedOrder.status = 'printing';
+                } else {
+                  updatedOrder.status = newStatus;
+                }
+                
+                // Apply changes to global array
+                const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+                if (idx > -1) orders[idx] = updatedOrder;
 
-              renderKanban();
-              try {
-                await DB.saveOrder(updatedOrder);
-                showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
-              } catch(e) {
-                showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                renderKanban();
+                try {
+                  await DB.saveOrder(updatedOrder);
+                  showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                } catch(e) {
+                  showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                }
+              },
+              () => {
+                // Cancelled
+                order.status = oldStatus;
+                renderKanban();
               }
-            },
-            () => {
-              // Cancelled
-              order.status = oldStatus;
-              renderKanban();
-            }
-          );
+            );
+          } catch(err) {
+            order.status = oldStatus;
+            renderKanban();
+            showToast('Erro interno ao abrir modal: ' + err.message, 'err');
+            console.error(err);
+          }
           return;
         }
       }
