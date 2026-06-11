@@ -907,6 +907,7 @@
     function _hasPendingItems(order) {
       if (!order.items || !order.items.length) return false;
       return order.items.some(it => {
+        if (it.tech === 'service') return false;
         const skipped = it.printSkipped;
         return !skipped && !_itemFullyPrinted(it);
       });
