@@ -2272,10 +2272,9 @@
     // ── STATS ──────────────────────────────
     function updateStats() {
       const total = orders.length;
-      const finalStates = ['done', 'enviado'];
+      const progressStates = ['orcamento', 'modelagem', 'validacao', 'aprovado', 'fila', 'printing'];
       const progress = orders.filter(o =>
-        !finalStates.includes(o.status) ||
-        (finalStates.includes(o.status) && o.paymentStatus === 'pendente')
+        progressStates.includes(o.status) || !o.status
       ).length;
       const pending = orders.filter(o => (o.paymentStatus || 'pendente') === 'pendente');
       const paid = orders.filter(o => o.paymentStatus === 'pago');

@@ -491,26 +491,18 @@ const DB = {
     await _ensureCompany();
 
     if (filter === 'active') {
-      // Duas queries simples em paralelo — filtradas no servidor
-      // Q1: todos os pedidos que NÃO estão em estado final
-      // Q2: pedidos finalizados/enviados COM pagamento pendente
-      const [q1, q2] = await Promise.all([
-        _sb.from('orders').select('*')
-          .eq('company_id', _companyId)
-          .not('status', 'in', '(done,enviado)')
-          .order('order_numeric', { ascending: false }),
-        _sb.from('orders').select('*')
-          .eq('company_id', _companyId)
-          .in('status', ['done', 'enviado'])
-          .eq('payment_status', 'pendente')
-          .order('order_numeric', { ascending: false }),
-      ]);
-      if (q1.error) throw q1.error;
-      if (q2.error) throw q2.error;
-      // Fundir e reordenar por order_numeric descendente
-      const merged = [...(q1.data || []), ...(q2.data || [])];
-      merged.sort((a, b) => (b.order_numeric || 0) - (a.order_numeric || 0));
-      return merged.map(_mapOrderFromDB);
+      // Pedidos que estão ANTES do estado enviado (não finalizados), independente do mês
+      // ou seja: orcamento, modelagem, validacao, aprovado, fila, printing
+      // E também incluímos pedidos finalizados SE o pagamento estiver pendente (para não os perder de vista)?
+      // O utilizador pediu: "pedidos que estão antes do estado enviado, mesmo que seja de outro mês"
+      const { data, error } = await _sb.from('orders')
+        .select('*')
+        .eq('company_id', _companyId)
+        .in('status', ['orcamento', 'modelagem', 'validacao', 'aprovado', 'fila', 'printing', '']) // null/empty fallbacks
+        .order('order_numeric', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(_mapOrderFromDB);
     }
 
     let query = _sb.from('orders').select('*').eq('company_id', _companyId);
