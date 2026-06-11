@@ -486,6 +486,7 @@
         if (hasPending) {
           updatedOrder.status = 'printing';
         }
+        updatedOrder._partialShipped = true;
         
         // Grava
         if (onSaveOverride) {

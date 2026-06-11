@@ -932,6 +932,38 @@
       // Moving OUT of printing to a later column → check if all items are printed
       if (oldStatus === 'printing' && _isAdvancingFrom(oldStatus, newStatus) && _hasPendingItems(order)) {
         order.status = newStatus;
+        order._onSaveOverride = async (updatedOrder) => {
+          if (_hasPendingItems(updatedOrder)) {
+            updatedOrder.status = 'printing';
+            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+            if (idx > -1) orders[idx] = updatedOrder;
+            renderKanban();
+            await DB.saveOrder(updatedOrder);
+          } else {
+            updatedOrder.status = newStatus;
+            if (newStatus === 'enviado' && !updatedOrder._partialShipped) {
+              if (window.openShippingModal) {
+                window.openShippingModal(updatedOrder, async (shippedOrder) => {
+                  const idx = orders.findIndex(o => String(o.id) === String(shippedOrder.id));
+                  if (idx > -1) orders[idx] = shippedOrder;
+                  renderKanban();
+                  try {
+                    await DB.saveOrder(shippedOrder);
+                    showToast('<i class="ph-bold ph-check-circle"></i> Envio registado.', 'ok');
+                  } catch(e) {
+                    showToast('<i class="ph-bold ph-warning"></i> Erro ao guardar envio.', 'err');
+                  }
+                });
+                return;
+              }
+            }
+            // Fallback ou outro status
+            const idx = orders.findIndex(o => String(o.id) === String(updatedOrder.id));
+            if (idx > -1) orders[idx] = updatedOrder;
+            renderKanban();
+            await DB.saveOrder(updatedOrder);
+          }
+        };
         openPrinterModal(order, oldStatus, 'exit');
         return;
       }
