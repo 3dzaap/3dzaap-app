@@ -136,6 +136,7 @@
 <script>
 let _customers = [];
 let _authMap = {};
+let _companyLastActivity = {};
 
 async function initPage() {
   initThemeToggle();
@@ -176,6 +177,21 @@ async function loadCustomers() {
       }
     } catch (_) { }
 
+    _companyLastActivity = {};
+    try {
+      const { data: actData, error: actErr } = await _adminSb()
+        .from('user_activity')
+        .select('company_id, last_visited_at')
+        .order('last_visited_at', { ascending: false });
+      if (!actErr && actData) {
+        actData.forEach(row => {
+          if (!_companyLastActivity[row.company_id] || new Date(row.last_visited_at) > new Date(_companyLastActivity[row.company_id])) {
+            _companyLastActivity[row.company_id] = row.last_visited_at;
+          }
+        });
+      }
+    } catch (_) { }
+
     renderCustomersTable(_customers);
     document.getElementById('customersCount').textContent = _customers.length;
   } catch(e) {
@@ -185,9 +201,16 @@ async function loadCustomers() {
 }
 
 function getCompanyLastAccess(c) {
-  if (!c.owner_id) return null;
-  const u = _authMap[c.owner_id];
-  return u?.last_sign_in_at || null;
+  let maxDate = null;
+  if (typeof _companyLastActivity !== 'undefined' && _companyLastActivity[c.id]) {
+    maxDate = new Date(_companyLastActivity[c.id]);
+  }
+  
+  if (c.owner_id && _authMap[c.owner_id] && _authMap[c.owner_id].last_sign_in_at) {
+    const d = new Date(_authMap[c.owner_id].last_sign_in_at);
+    if (!maxDate || d > maxDate) maxDate = d;
+  }
+  return maxDate ? maxDate.toISOString() : null;
 }
 
 function renderCustomersTable(data) {

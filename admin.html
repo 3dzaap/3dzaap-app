@@ -1073,8 +1073,9 @@ let _auditLog      = [];
 let _currentTab    = 'customers';
 let _currentAdminEmail = '';
 let _authMap       = {}; // userId → auth metadata (email, last_sign_in_at, …)
-let _trialActivity = {}; // companyId → { userId → { modules: string[] } }
-let _moduleCounts = {}; // module → Set of user_ids
+let _trialActivity = {}; // company_id → user_id → { modules: [] }
+let _moduleCounts  = {}; // module_name → set of user_ids
+let _companyLastActivity = {}; // company_id -> last_visited_at
 let _tooltipEl     = null; // shared floating tooltip DOM element
 
 // ══════════════════════════════════════════════════════════
@@ -1561,9 +1562,16 @@ function filterCustomers() {
  * Requires _authMap to be populated (done in loadCustomers).
  */
 function getCompanyLastAccess(c) {
-  if (!c.owner_id) return null;
-  const u = _authMap[c.owner_id];
-  return u?.last_sign_in_at || null;
+  let maxDate = null;
+  if (typeof _companyLastActivity !== 'undefined' && _companyLastActivity[c.id]) {
+    maxDate = new Date(_companyLastActivity[c.id]);
+  }
+  
+  if (c.owner_id && _authMap[c.owner_id] && _authMap[c.owner_id].last_sign_in_at) {
+    const d = new Date(_authMap[c.owner_id].last_sign_in_at);
+    if (!maxDate || d > maxDate) maxDate = d;
+  }
+  return maxDate ? maxDate.toISOString() : null;
 }
 
 /**
@@ -1596,6 +1604,7 @@ function fmtRelativeTime(isoStr) {
 async function loadUserActivity() {
   _trialActivity = {};
   _moduleCounts = {};
+  _companyLastActivity = {};
 
   try {
     const { data, error } = await _adminSb()
@@ -1606,6 +1615,11 @@ async function loadUserActivity() {
     if (error) throw error;
 
     (data || []).forEach(row => {
+      // populate company max activity
+      if (!_companyLastActivity[row.company_id] || new Date(row.last_visited_at) > new Date(_companyLastActivity[row.company_id])) {
+        _companyLastActivity[row.company_id] = row.last_visited_at;
+      }
+
       if (!_trialActivity[row.company_id]) _trialActivity[row.company_id] = {};
       if (!_trialActivity[row.company_id][row.user_id])
         _trialActivity[row.company_id][row.user_id] = { modules: [] };
