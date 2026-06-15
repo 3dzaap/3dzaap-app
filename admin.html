@@ -1440,13 +1440,21 @@ function renderCustomersTable(data) {
 
     const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
 
-    // ── Bandeira do País (via config.currency) ───────────
+    // ── Bandeira do País (via config.currency ou lang) ───────────
     let flag = '🇵🇹'; // Default
-    const curr = (c.config && c.config.currency) ? c.config.currency.toUpperCase() : 'EUR';
-    if (curr === 'BRL') flag = '🇧🇷';
-    else if (curr === 'USD') flag = '🇺🇸';
-    else if (curr === 'GBP') flag = '🇬🇧';
-    else if (curr === 'EUR') flag = '🇪🇺';
+    const curr = (c.config && c.config.currency) ? c.config.currency.toUpperCase() : '';
+    const lang = (c.config && c.config.lang) ? c.config.lang.toLowerCase() : '';
+    
+    if (curr === 'BRL' || lang === 'pt-br') flag = '🇧🇷';
+    else if (curr === 'USD' || lang === 'en-us') flag = '🇺🇸';
+    else if (curr === 'GBP' || lang === 'en-gb') flag = '🇬🇧';
+    else if (lang.startsWith('es')) flag = '🇪🇸';
+    else if (curr === 'EUR' && lang && lang !== 'pt-pt') flag = '🇪🇺';
+    
+    const ownerEmail = (_authMap[c.owner_id]?.email || '').toLowerCase();
+    if (ownerEmail.endsWith('.br') || ownerEmail.includes('.com.br')) flag = '🇧🇷';
+
+    const displayCurr = curr || 'EUR';
 
     // ── Último Acesso (via owner_id → _authMap) ──────────
     const lastAccess    = getCompanyLastAccess(c);
@@ -1468,7 +1476,7 @@ function renderCustomersTable(data) {
     return `<tr>
       <td>
         <div style="font-weight:800;color:var(--dark);font-size:.9rem">
-          <span title="Moeda: ${curr}" style="cursor:help">${flag}</span> ${escH(c.name)}
+          <span title="Moeda: ${displayCurr}" style="cursor:help">${flag}</span> ${escH(c.name)}
         </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
           ${escH(c.slug)} • Owner: <span class="mono">${_authMap[c.owner_id]?.email ? escH(_authMap[c.owner_id].email) : c.id.slice(0,8)+'...'}</span>
