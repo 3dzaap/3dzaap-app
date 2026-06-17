@@ -100,6 +100,22 @@ serve(async (req) => {
 
     // 6. Criar ou obter cliente no Stripe
     let customerId = company?.stripe_customer_id;
+    
+    if (customerId) {
+      try {
+        const existingCustomer = await stripe.customers.retrieve(customerId);
+        if (existingCustomer.deleted) {
+           customerId = null; // Cliente apagado no Stripe
+        }
+      } catch (err) {
+        if (err.message && err.message.includes('No such customer')) {
+           customerId = null; // Cliente não existe no Stripe
+        } else {
+           throw err; // Outro erro, por exemplo, de rede ou API
+        }
+      }
+    }
+
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: company?.config?.email || '',
