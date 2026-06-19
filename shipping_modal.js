@@ -89,6 +89,13 @@ window.openShippingModal = function(order, onSaveCallback, onCancelCallback) {
     if (onCancelCallback) onCancelCallback();
     return;
   }
+
+  // Se o pedido apenas tiver serviços ou repasses, ignoramos a modal e prosseguimos
+  const onlyNonPhysical = order.items.every(it => it.tech === 'service' || it.tech === 'repasse');
+  if (onlyNonPhysical) {
+    if (onSaveCallback) onSaveCallback(order);
+    return;
+  }
   
   _SM_order = JSON.parse(JSON.stringify(order)); // clone
   _SM_onSave = onSaveCallback;
@@ -104,8 +111,8 @@ window.openShippingModal = function(order, onSaveCallback, onCancelCallback) {
   let hasShippable = false;
 
   _SM_order.items.forEach((it, idx) => {
-    // Serviços (portes, modelagem) não são enviados
-    if (it.tech === 'service') return;
+    // Serviços (portes, modelagem) e repasses não são enviados fisicamente
+    if (it.tech === 'service' || it.tech === 'repasse') return;
 
     const totalQty = parseInt(it.quantity || it.qty || 1);
     const printedQty = _SM_itemPrintedQty(it);
