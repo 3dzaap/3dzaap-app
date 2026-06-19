@@ -1375,10 +1375,11 @@
                     <div class="section-title-icon" style="background:var(--orange-g);color:var(--orange)"><i class="ph-bold ph-sketch-logo"></i></div>
                     <span data-i18n="calc.sections.project">Mesa</span>
                   </div>
-                  <div style="display: flex; gap: 8px;">
+                  <div style="display: flex; gap: 8px; align-items: center;">
                     <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto; background: var(--bg-card-s); border-style: solid;" onclick="document.getElementById('input3mf').click()">
                       <i class="ph-bold ph-file-arrow-up"></i> <span data-i18n="calc.buttons.import_3mf">Importar .3mf</span>
                     </button>
+                    <i class="ph-fill ph-info" style="color: var(--muted); cursor: help; font-size: 1.15rem;" title="Para funcionar, é preciso:&#10;- Fatiar o modelo em um slicer compatível&#10;- Exportar o gcode&#10;- Importar o .3mf exportado"></i>
                     <input type="file" id="input3mf" style="display:none" accept=".3mf" onchange="handle3MFUpload(this)">
                     <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto;" onclick="addMesa()">
                       <span><i class="ph-bold ph-plus"></i></span> <span data-i18n="calc.buttons.add_mesa">Adicionar Mesa</span>
