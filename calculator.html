@@ -2870,6 +2870,7 @@ function _render() {
   setLine('resTaxCost', 'rowTaxCost', r.taxCost);
 
   const eduState = document.getElementById('calcEduState');
+  const eduStateAdv = document.getElementById('calcEduStateAdv');
   const heroCard = document.getElementById('priceHeroCard');
   const finPanel = document.querySelector('.finance-panel');
   const breakdown = document.querySelector('.breakdown-list');
@@ -2886,7 +2887,13 @@ function _render() {
   const actionsMini = document.querySelector('.mini-actions');
 
   if (r.finalPrice === 0) {
-    if (eduState) eduState.style.display = 'flex';
+    if (_calcMode === 'advanced') {
+      if (eduState) eduState.style.display = 'none';
+      if (eduStateAdv) eduStateAdv.style.display = 'flex';
+    } else {
+      if (eduState) eduState.style.display = 'flex';
+      if (eduStateAdv) eduStateAdv.style.display = 'none';
+    }
     if (heroCard) heroCard.style.display = 'none';
     if (finPanel) finPanel.style.display = 'none';
     if (breakdown) breakdown.style.display = 'none';
@@ -2898,6 +2905,7 @@ function _render() {
     if (actionsMini) actionsMini.style.display = 'none';
   } else {
     if (eduState) eduState.style.display = 'none';
+    if (eduStateAdv) eduStateAdv.style.display = 'none';
     if (heroCard) heroCard.style.display = 'block';
     if (finPanel) finPanel.style.display = 'flex';
     if (breakdown) breakdown.style.display = 'flex';
