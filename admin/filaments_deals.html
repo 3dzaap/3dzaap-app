@@ -4,7 +4,7 @@
 <link rel="icon" type="image/jpeg" href="../logo.jpg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin 3DZAAP — Filamentos Hot Deals</title>
+<title>Admin 3DZAAP — Motor Live de Filamentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
     position: absolute;
     top: 16px;
     right: 16px;
-    background: #ff4757;
+    background: var(--admin-blue);
     color: white;
     font-weight: 800;
     font-size: 0.75rem;
@@ -53,14 +53,18 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3);
+  }
+  .deal-badge.cache {
+    background: var(--admin-success);
+    box-shadow: 0 4px 10px rgba(0, 200, 117, 0.3);
   }
   .deal-title {
     font-size: 1.1rem;
     font-weight: 800;
     color: var(--dark);
     margin-bottom: 4px;
-    padding-right: 70px; /* space for badge */
+    padding-right: 70px;
   }
   .deal-meta {
     font-size: 0.8rem;
@@ -79,22 +83,18 @@
     flex: 1;
   }
   .price-now {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 800;
     color: var(--admin-blue);
   }
-  .price-old {
-    font-size: 0.85rem;
-    color: var(--muted);
-    text-decoration: line-through;
-  }
   .store-info {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--muted);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    font-weight: 700;
   }
 </style>
 </head>
@@ -116,34 +116,45 @@
     <div class="adm-page" id="adminContent" style="display:none">
       <div class="adm-page-header">
         <div>
-          <h1><i class="ph-bold ph-fire" style="color: #ff4757"></i> Hot Deals: Filamentos</h1>
-          <div class="adm-page-sub">Oportunidades de preço detetadas automaticamente nas últimas 24 horas</div>
-        </div>
-        <button class="btn btn-primary" onclick="loadDeals()"><i class="ph-bold ph-arrows-clockwise"></i> Atualizar</button>
-      </div>
-
-      <div class="admin-toolbar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-        <div class="admin-search-wrap" style="flex:1; min-width:200px">
-          <span class="admin-search-icon"><i class="ph-bold ph-magnifying-glass"></i></span>
-          <input class="admin-search form-input" id="searchDeals" placeholder="Pesquisar material, marca ou cor…" oninput="filterDeals()">
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap">
-          <select class="form-select" id="filterMaterial" onchange="filterDeals()" style="width:auto">
-            <option value="">Todos os materiais</option>
-            <option value="PLA">PLA</option>
-            <option value="PETG">PETG</option>
-            <option value="ABS">ABS</option>
-            <option value="TPU">TPU</option>
-          </select>
+          <h1><i class="ph-bold ph-magnifying-glass" style="color: var(--admin-blue)"></i> Pesquisa Live: Filamentos</h1>
+          <div class="adm-page-sub">Consulta em tempo real aos melhores preços agregados (Zoom/Buscapé)</div>
         </div>
       </div>
 
-      <div id="loadingDeals" style="text-align: center; padding: 40px; color: var(--muted); font-weight: 500;">
-        A procurar oportunidades no mercado...
+      <div class="ad-card" style="margin-bottom: 24px; padding: 20px;">
+        <form id="liveSearchForm" style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap" onsubmit="event.preventDefault(); doLiveSearch();">
+          <div style="flex: 1; min-width: 150px">
+            <label class="form-label">Material</label>
+            <select class="form-select" id="searchMat" required>
+              <option value="PLA">PLA</option>
+              <option value="PETG">PETG</option>
+              <option value="ABS">ABS</option>
+              <option value="TPU">TPU</option>
+            </select>
+          </div>
+          <div style="flex: 2; min-width: 200px">
+            <label class="form-label">Cor Desejada</label>
+            <input type="text" class="form-input" id="searchColor" placeholder="Ex: Preto, Branco, Silk Ouro..." required>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary" id="btnSearch">
+              <i class="ph-bold ph-magnifying-glass"></i> Procurar Melhores Preços
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div id="loadingDeals" style="text-align: center; padding: 40px; color: var(--muted); font-weight: 500; display:none">
+        <i class="ph-bold ph-spinner ph-spin" style="font-size: 2rem; color: var(--admin-blue); margin-bottom: 12px; display:inline-block"></i>
+        <br>
+        A rastrear o mercado em tempo real...
       </div>
 
       <div class="deal-grid" id="dealsGrid">
         <!-- Renderizado via JS -->
+        <div style="grid-column: 1/-1; text-align:center; padding:48px; color:var(--muted); background:var(--bg-card); border-radius:12px; border: 1px dashed var(--border)">
+          Utilize o formulário acima para pesquisar os melhores preços no mercado.
+        </div>
       </div>
       
     </div>
@@ -156,102 +167,84 @@
 <script src="admin-core.js"></script>
 <script src="admin-sidebar.js"></script>
 <script>
-let _deals = [];
-
 async function initPage() {
   initThemeToggle();
   AdminSidebar.init();
   checkAdminAccess(async () => {
     document.getElementById('adminContent').style.display = 'block';
-    await loadDeals();
   });
 }
 
-async function loadDeals() {
-  const grid = document.getElementById('dealsGrid');
+async function doLiveSearch() {
+  const mat = document.getElementById('searchMat').value;
+  const col = document.getElementById('searchColor').value.trim();
+  const btn = document.getElementById('btnSearch');
   const loader = document.getElementById('loadingDeals');
-  
+  const grid = document.getElementById('dealsGrid');
+
+  if (!mat || !col) return;
+
+  btn.disabled = true;
   grid.innerHTML = '';
   loader.style.display = 'block';
 
   try {
-    const { data, error } = await _adminSb()
-      .from('filaments_deals')
-      .select('*')
-      .eq('is_hot_deal', true)
-      .order('discount_percentage', { ascending: false });
+    const { data, error } = await _adminSb().functions.invoke('search-filament-live', {
+      body: { material: mat, color: col }
+    });
 
     if (error) throw error;
-    _deals = data || [];
-    renderDeals(_deals);
+    
     loader.style.display = 'none';
+    renderDeals(data);
 
   } catch(e) {
-    console.error('loadDeals err:', e);
-    showToast('Erro ao carregar ofertas: ' + e.message, 'err');
-    loader.innerHTML = 'Erro ao carregar os dados. Verifique a consola.';
+    console.error('search err:', e);
+    showToast('Erro ao procurar ofertas: ' + (e.message || "Erro de rede"), 'err');
+    loader.style.display = 'none';
+    grid.innerHTML = '<div style="color:var(--danger)">Erro na pesquisa. Tente novamente.</div>';
+  } finally {
+    btn.disabled = false;
   }
 }
 
 function renderDeals(data) {
   const grid = document.getElementById('dealsGrid');
+  const results = data.results || [];
   
-  if (!data.length) {
-    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:48px; color:var(--muted); background:var(--bg-card); border-radius:12px">Nenhuma oferta identificada de momento. Os preços estão acima da média.</div>';
+  if (!results.length) {
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:48px; color:var(--muted); background:var(--bg-card); border-radius:12px">Nenhuma oferta encontrada para esta pesquisa.</div>';
     return;
   }
 
-  grid.innerHTML = data.map(deal => {
-    const currencySym = deal.currency === 'EUR' ? '€' : (deal.currency === 'BRL' ? 'R$' : deal.currency);
-    const weightKg = deal.weight_g / 1000;
-    
+  const isCache = data.source === 'cache';
+  const badgeClass = isCache ? 'deal-badge cache' : 'deal-badge';
+  const badgeText = isCache ? '<i class="ph-bold ph-lightning"></i> Da Cache' : '<i class="ph-bold ph-globe"></i> Pesquisa Live';
+
+  grid.innerHTML = results.map((deal, idx) => {
     return `
       <div class="deal-card">
-        <div class="deal-badge"><i class="ph-bold ph-trend-down"></i> ${deal.discount_percentage}% OFF</div>
-        <div class="deal-title">${deal.name}</div>
-        <div class="deal-meta">
-          <span style="color:var(--admin-blue); font-weight:700">${deal.material}</span> • 
-          ${deal.color ? deal.color + ' • ' : ''} 
-          ${deal.brand || 'Sem Marca'} • ${weightKg}kg
-        </div>
+        <div class="${badgeClass}">${idx === 0 ? '🏆 Melhor Preço' : `#${idx+1} Opção`}</div>
+        <div class="deal-title" style="margin-top: 10px">${deal.title}</div>
         
-        <div class="deal-price-box">
+        <div class="deal-price-box" style="margin-top: 16px">
           <div>
-            <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Preço Atual</div>
-            <div class="price-now">${currencySym} ${deal.current_price.toFixed(2)}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Média 30 Dias</div>
-            <div class="price-old">${currencySym} ${deal.avg_price_30d.toFixed(2)} / kg</div>
+            <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Preço Encontrado</div>
+            <div class="price-now">R$ ${deal.price.toFixed(2)}</div>
           </div>
         </div>
         
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: auto">
           <div class="store-info">
-            <i class="ph-bold ph-storefront"></i> ${deal.store_name}
+            <i class="ph-bold ph-storefront"></i> ${deal.store}
           </div>
-          <a href="${deal.product_url}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">
-            Ver Oferta <i class="ph-bold ph-arrow-square-out"></i>
+          <a href="${deal.link}" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">
+            Comprar <i class="ph-bold ph-arrow-square-out"></i>
           </a>
         </div>
       </div>
     `;
   }).join('');
-}
-
-function filterDeals() {
-  const q = document.getElementById('searchDeals').value.toLowerCase();
-  const material = document.getElementById('filterMaterial').value;
-  
-  const filtered = _deals.filter(d => {
-    const matchQ = !q || (d.name && d.name.toLowerCase().includes(q)) || 
-                   (d.brand && d.brand.toLowerCase().includes(q)) || 
-                   (d.color && d.color.toLowerCase().includes(q));
-    const matchMat = !material || d.material === material;
-    return matchQ && matchMat;
-  });
-  
-  renderDeals(filtered);
 }
 
 window.addEventListener('DOMContentLoaded', initPage);
