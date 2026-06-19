@@ -774,6 +774,49 @@
   .mode-btn { font-size: .7rem; padding: 7px 6px; }
 }
 
+.fast-tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.fast-tooltip-container .fast-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: var(--dark);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: pre-line;
+  width: max-content;
+  max-width: 250px;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  line-height: 1.5;
+  text-align: left;
+}
+.fast-tooltip-container .fast-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--dark) transparent;
+}
+.fast-tooltip-container:hover .fast-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(8px);
+}
 </style>
 
 <style>
@@ -1376,7 +1419,13 @@
                     <span data-i18n="calc.sections.project">Mesa</span>
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center;">
-                    <i class="ph-bold ph-info" style="color: var(--muted); cursor: help; font-size: 1.15rem;" title="Para funcionar, é preciso:&#10;- Fatiar o modelo em um slicer compatível&#10;- Exportar o gcode&#10;- Importar o .3mf exportado"></i>
+                    <div class="fast-tooltip-container">
+                      <i class="ph-bold ph-info" style="color: var(--muted); cursor: help; font-size: 1.15rem;"></i>
+                      <div class="fast-tooltip">Para funcionar, é preciso:
+- Fatiar o modelo num slicer compatível
+- Exportar o gcode
+- Importar o .3mf exportado</div>
+                    </div>
                     <button class="btn-add-part" style="margin:0; padding: 4px 12px; font-size:0.8rem; width: auto; background: var(--bg-card-s); border-style: solid;" onclick="document.getElementById('input3mf').click()">
                       <i class="ph-bold ph-file-arrow-up"></i> <span data-i18n="calc.buttons.import_3mf">Importar .3mf</span>
                     </button>
