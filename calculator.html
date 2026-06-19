@@ -3981,8 +3981,10 @@ async function processBambuMetadata(zip, sliceInfoFile) {
       if (usedG > 0) {
         const matMatch = findBestMaterialMatch(type, color);
         newMesa.parts.push({
+        const colorName = getClosestColorName(color);
+        newMesa.parts.push({
           id: Date.now() + Math.random(),
-          name: `${type} (${color})`,
+          name: `${type} (${colorName})`,
           materialId: matMatch ? matMatch.id : '',
           weight: usedG,
           qty: 1,
@@ -4086,53 +4088,74 @@ function finishImport() {
   if (typeof showToast === 'function') showToast(`<i class="ph-bold ph-check-circle"></i> Importação concluída!`, 'ok');
 }
 
+function hexToRgb(h) {
+  h = (h || '').replace('#', '');
+  if (h.length === 3) return { r: parseInt(h[0]+h[0], 16), g: parseInt(h[1]+h[1], 16), b: parseInt(h[2]+h[2], 16) };
+  if (h.length === 6) return { r: parseInt(h.substring(0,2), 16), g: parseInt(h.substring(2,4), 16), b: parseInt(h.substring(4,6), 16) };
+  return { r: 0, g: 0, b: 0 };
+}
+
+function colorDistance(hex1, hex2) {
+  const c1 = hexToRgb(hex1);
+  const c2 = hexToRgb(hex2);
+  return Math.sqrt(Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2));
+}
+
+function getClosestColorName(hex) {
+  const colors = [
+    { name: 'Preto', hex: '000000' },
+    { name: 'Branco', hex: 'FFFFFF' },
+    { name: 'Vermelho', hex: 'FF0000' },
+    { name: 'Verde', hex: '00FF00' },
+    { name: 'Azul', hex: '0000FF' },
+    { name: 'Amarelo', hex: 'FFFF00' },
+    { name: 'Ciano', hex: '00FFFF' },
+    { name: 'Magenta', hex: 'FF00FF' },
+    { name: 'Cinza', hex: '808080' },
+    { name: 'Laranja', hex: 'FFA500' },
+    { name: 'Roxo', hex: '800080' },
+    { name: 'Rosa', hex: 'FFC0CB' },
+    { name: 'Castanho', hex: '8B4513' },
+    { name: 'Dourado', hex: 'FFD700' },
+    { name: 'Prata', hex: 'C0C0C0' },
+    { name: 'Bege', hex: 'F5F5DC' }
+  ];
+  let minDiff = Infinity;
+  let bestMatch = hex;
+  for (const c of colors) {
+    const d = colorDistance(hex, c.hex);
+    if (d < minDiff) {
+      minDiff = d;
+      bestMatch = c.name;
+    }
+  }
+  return bestMatch;
+}
+
 function findBestMaterialMatch(type, colorHex) {
   if (typeof _filaments === 'undefined' || !_filaments || _filaments.length === 0) return null;
   const t = (type || '').toLowerCase();
-  const hex = (colorHex || '').toLowerCase().replace('#','');
   
-  // 1. Exact Match (Type + Hex)
-  const exact = _filaments.find(f => 
-    f && f.type?.toLowerCase() === t && 
-    (f.colorHex || '').toLowerCase().replace('#','') === hex
-  );
-  if (exact) return exact;
+  const sameType = _filaments.filter(f => f && f.type?.toLowerCase() === t);
+  if (sameType.length === 0) return null;
 
-  // 2. Try to match by name keywords
-  const colorMap = {
-    'black':  ['preto', 'black', 'dark', 'charcoal', '000000', '010101'],
-    'white':  ['branco', 'white', 'snow', 'ivory', 'ffffff', 'fffffe'],
-    'red':    ['vermelho', 'red', 'scarlet', 'crimson', 'ff0000'],
-    'blue':   ['azul', 'blue', 'navy', 'cyan', '0000ff'],
-    'green':  ['verde', 'green', 'lime', 'olive', '00ff00'],
-    'yellow': ['amarelo', 'yellow', 'gold', 'ffff00'],
-    'grey':   ['cinza', 'grey', 'gray', 'silver', '808080'],
-    'orange': ['laranja', 'orange', 'ffa500'],
-    'purple': ['roxo', 'purple', 'violet', 'magenta', '800080'],
-    'pink':   ['rosa', 'pink', 'ffc0cb']
-  };
+  let bestMatch = null;
+  let minDiff = Infinity;
 
-  // Find which group this hex belongs to (approximate)
-  let detectedColor = null;
-  for (const [color, keywords] of Object.entries(colorMap)) {
-    if (keywords.includes(hex)) {
-      detectedColor = color;
-      break;
+  for (const f of sameType) {
+    if (f.colorHex) {
+      const d = colorDistance(colorHex, f.colorHex);
+      if (d < minDiff) {
+        minDiff = d;
+        bestMatch = f;
+      }
     }
   }
 
-  if (detectedColor) {
-    const keywords = colorMap[detectedColor];
-    const nameMatch = _filaments.find(f => {
-      if (!f || f.type?.toLowerCase() !== t) return false;
-      const n = (f.name || '').toLowerCase();
-      return keywords.some(k => n.includes(k));
-    });
-    if (nameMatch) return nameMatch;
+  if (minDiff < 150 && bestMatch) {
+    return bestMatch;
   }
 
-  // 3. Fallback to same type but ONLY if there's only one filament of that type
-  const sameType = _filaments.filter(f => f && f.type?.toLowerCase() === t);
   if (sameType.length === 1) return sameType[0];
 
   return null; 
