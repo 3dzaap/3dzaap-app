@@ -786,8 +786,9 @@
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(5px);
-  background: var(--dark);
-  color: #fff;
+  background: var(--bg-card-s);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 0.75rem;
@@ -810,7 +811,17 @@
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: transparent transparent var(--dark) transparent;
+  border-color: transparent transparent var(--border) transparent;
+}
+.fast-tooltip-container .fast-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--bg-card-s) transparent;
 }
 .fast-tooltip-container:hover .fast-tooltip {
   visibility: visible;
