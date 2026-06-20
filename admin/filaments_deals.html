@@ -189,8 +189,9 @@ async function doLiveSearch() {
   loader.style.display = 'block';
 
   try {
+    const locale = window.i18n ? window.i18n.currentLocale : (localStorage.getItem('3dzaap_lang') || 'pt-PT');
     const { data, error } = await _adminSb().functions.invoke('search-filament-live', {
-      body: { material: mat, color: col }
+      body: { material: mat, color: col, locale: locale }
     });
 
     if (error) throw error;
