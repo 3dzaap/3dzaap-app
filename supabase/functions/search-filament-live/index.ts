@@ -100,9 +100,12 @@ serve(async (req) => {
       // geramos um mock fallback para o desenvolvimento não parar.
       if (results.length === 0) {
          console.warn("O Scraping falhou (possível bloqueio JS/Cloudflare). Usando dados Mock para continuar...");
+         const mlLink = `https://lista.mercadolivre.com.br/filamento-${material.toLowerCase()}-${color.toLowerCase().replace(/\s+/g, '-')}`;
+         const amzLink = `https://www.amazon.com.br/s?k=filamento+${material.toLowerCase()}+${color.toLowerCase().replace(/\s+/g, '+')}`;
+         
          results = [
-           { title: `Filamento ${material.toUpperCase()} ${color} 1kg - Loja Teste 1`, link: searchUrl, price: 110.90, store: "Mercado Livre via Zoom" },
-           { title: `Filamento ${material.toUpperCase()} 3D Fila ${color}`, link: searchUrl, price: 115.50, store: "Amazon via Zoom" },
+           { title: `Filamento ${material.toUpperCase()} ${color} 1kg - Loja Teste 1`, link: mlLink, price: 110.90, store: "Mercado Livre via Zoom" },
+           { title: `Filamento ${material.toUpperCase()} 3D Fila ${color}`, link: amzLink, price: 115.50, store: "Amazon via Zoom" },
            { title: `Rolo ${material.toUpperCase()} ${color} Esun`, link: searchUrl, price: 125.00, store: "Kabum via Zoom" }
          ];
       }
