@@ -10,6 +10,7 @@ const corsHeaders = {
 interface SearchRequest {
   material: string;
   color: string;
+  locale?: string;
 }
 
 serve(async (req) => {
@@ -19,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { material, color } = await req.json() as SearchRequest;
+    const { material, color, locale } = await req.json() as SearchRequest;
 
     if (!material || !color) {
       return new Response(JSON.stringify({ error: "Material e cor são obrigatórios" }), {
