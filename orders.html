@@ -1585,20 +1585,19 @@
     }
 
     function recalculateItem(rowId) {
-      const row = document.querySelector(`.item-row[data-id="${rowId}"]`);
-      if (!row) return;
+      const it = _items.find(i => i._id === rowId);
+      if (!it) return;
 
-      const description = row.querySelector('input[placeholder="Descrição…"]').value;
-      const materialId = row.querySelector('.item-select').value;
-      const weight = parseFloat(row.querySelector('input[min="0"]').value) || 0;
+      const description = it.description || 'Item do Pedido';
+      const mat = (it.materials && it.materials.length > 0) ? it.materials[0] : null;
+      const materialId = mat ? (mat.filamentId || '') : '';
+      const weight = mat ? (parseFloat(mat.weightG) || 0) : 0;
 
-      const it = _items.find(i => i._id === rowId) || {};
-      
       // Prefer using the preserved config from the original calculation
       const loadData = (it.config && it.config._orig_inputs) ? { ...it.config._orig_inputs } : {
-        printName: description || 'Item do Pedido',
+        printName: description,
         weight: weight,
-        tech: _isResinMaterial(materialId) ? 'resin' : 'fdm',
+        tech: it.tech || 'fdm',
         materialId: materialId,
         time: it.printTime || 0
       };
@@ -1607,6 +1606,7 @@
       loadData.printName = description;
       loadData.weight = weight;
       loadData.materialId = materialId;
+      if (it.tech) loadData.tech = it.tech;
 
       localStorage.setItem('3dzaap_calc_load', JSON.stringify(loadData));
       window.location.href = 'calculator.html?from=order_line';
