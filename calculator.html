@@ -1144,23 +1144,53 @@
 /* Marketplace Result Cards */
 .mp-results-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
   margin-top: 15px;
 }
 @media (max-width: 600px) { .mp-results-container { grid-template-columns: 1fr; } }
 
-.mp-res-card {
+.mp-res-card-compact {
   background: var(--bg-card);
   backdrop-filter: var(--blur);
   border: 1.5px solid var(--border);
   border-radius: var(--rm);
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-  animation: fadeUp .5s var(--ease) both;
+  padding: 14px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.mp-res-card-compact:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 12px var(--shadow-sm);
+  transform: translateY(-2px);
+}
+.mp-comp-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mp-comp-price {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--dark);
+}
+.mp-comp-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--blue-g);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .mp-res-badge {
@@ -2865,7 +2895,7 @@ function computeResults(i) {
   const taxCost = preTaxPrice * ((i.taxesPct || 0) / 100);
   
   const finalPrice = preTaxPrice + taxCost;
-  const operationalCost = baseCost + failureCost + indirectCost + laborCost + extraCostsTotal;
+  const operationalCost = baseCost + failureCost + indirectCost + laborCost + extraCostsTotal + taxCost;
   const productionCost = operationalCost;
 
   const validTime = machineTime > 0 ? machineTime : 1;
@@ -3378,6 +3408,7 @@ function renderMarketplaceCards(baseResult) {
     return;
   }
   
+  window._lastMpResults = [];
   let html = '';
   selectedMarketplaces.forEach(mp => {
     let totalFixed = mp.fixedFee || 0;
@@ -3402,35 +3433,40 @@ function renderMarketplaceCards(baseResult) {
     const profitAmount = netReceived - baseResult.productionCost;
     const realMarginPct = mpFinalPrice > 0 ? (profitAmount / mpFinalPrice) * 100 : 0;
     
+    window._lastMpResults.push({
+      mp, totalPct, totalFixed, mpFinalPrice, platformFee, netReceived, profitAmount, realMarginPct
+    });
+    
     html += `
-      <div class="mp-res-card">
-        <span class="mp-res-badge">${totalPct}% + ${fmtCurrency(totalFixed)}</span>
-        <div class="card-watermark"><i class="ph-bold ph-storefront"></i></div>
-        <div class="mp-res-title">Preço sugerido em ${mp.name}</div>
-        <div class="mp-res-val">${fmtCurrency(mpFinalPrice)}</div>
-        
-        <div class="mp-res-details">
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Taxa Plataforma</span>
-            <span class="mp-det-val warning">-${fmtCurrency(platformFee)}</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Líquido Recebido</span>
-            <span class="mp-det-val info">${fmtCurrency(netReceived)}</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Margem Real</span>
-            <span class="mp-det-val success">${realMarginPct.toFixed(1)}%</span>
-          </div>
-          <div class="mp-det-item">
-            <span class="mp-det-lbl">Lucro Líquido</span>
-            <span class="mp-det-val success">${fmtCurrency(profitAmount)}</span>
-          </div>
-        </div>
+      <div class="mp-res-card-compact" onclick="openMPResultsModal(${window._lastMpResults.length - 1})">
+        <div class="mp-comp-name"><i class="ph-bold ph-storefront"></i> ${escAttr(mp.name)}</div>
+        <div class="mp-comp-price">${fmtCurrency(mpFinalPrice)}</div>
+        <div class="mp-comp-badge">${totalPct}% + ${fmtCurrency(totalFixed)}</div>
       </div>
     `;
   });
   container.innerHTML = html;
+}
+
+function openMPResultsModal(idx) {
+  const data = window._lastMpResults[idx];
+  if (!data) return;
+  document.getElementById('mpResDetTitle').textContent = data.mp.name;
+  document.getElementById('mpResDetPrice').textContent = fmtCurrency(data.mpFinalPrice);
+  document.getElementById('mpResDetBadge').textContent = `${data.totalPct}% + ${fmtCurrency(data.totalFixed)}`;
+  document.getElementById('mpResDetFee').textContent = '-' + fmtCurrency(data.platformFee);
+  document.getElementById('mpResDetNet').textContent = fmtCurrency(data.netReceived);
+  document.getElementById('mpResDetMargin').textContent = data.realMarginPct.toFixed(1) + '%';
+  document.getElementById('mpResDetProfit').textContent = fmtCurrency(data.profitAmount);
+  
+  const m = document.getElementById('mpResultsDetailsOverlay');
+  m.style.display = 'flex';
+  setTimeout(() => m.classList.add('show'), 10);
+}
+function closeMPResultsModal() {
+  const m = document.getElementById('mpResultsDetailsOverlay');
+  m.classList.remove('show');
+  setTimeout(() => m.style.display = 'none', 300);
 }
 
 function sendWhatsApp() {
@@ -4330,5 +4366,44 @@ function findBestPrinterMatch(modelName) {
   </div>
 </div>
 <script>Sidebar.init();</script>
+
+<!-- Marketplace Result Details Modal -->
+<div class="modal-overlay" id="mpResultsDetailsOverlay" onclick="if(event.target===this)closeMPResultsModal()">
+  <div class="modal" style="max-width:450px; background:var(--bg-card); backdrop-filter:var(--blur); border:1.5px solid var(--border); border-radius:var(--rl);">
+    <div class="modal-header" style="padding:18px 22px; border-bottom:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div class="modal-title" style="font-size:1.05rem; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:10px;">
+        <i class="ph-bold ph-storefront" style="color:var(--blue)"></i>
+        <span id="mpResDetTitle">Detalhes Marketplace</span>
+      </div>
+      <button class="modal-close" onclick="closeMPResultsModal()"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:22px;">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Preço Sugerido</div>
+        <div id="mpResDetPrice" style="font-size:2rem; font-weight:800; font-family:var(--mono); color:var(--blue);">R$ 0,00</div>
+        <div id="mpResDetBadge" style="display:inline-block; margin-top:8px; font-size:0.75rem; font-weight:700; padding:4px 12px; background:var(--blue-g); color:var(--blue); border-radius:20px;">10% + R$ 5,00</div>
+      </div>
+      <div class="mp-res-details" style="border-top:1px solid var(--border); padding-top:16px;">
+        <div class="mp-det-item">
+          <span class="mp-det-lbl">Taxa Plataforma</span>
+          <span class="mp-det-val warning" id="mpResDetFee">-R$ 0,00</span>
+        </div>
+        <div class="mp-det-item">
+          <span class="mp-det-lbl">Líquido Recebido</span>
+          <span class="mp-det-val info" id="mpResDetNet">R$ 0,00</span>
+        </div>
+        <div class="mp-det-item">
+          <span class="mp-det-lbl">Margem Real</span>
+          <span class="mp-det-val success" id="mpResDetMargin">0%</span>
+        </div>
+        <div class="mp-det-item">
+          <span class="mp-det-lbl">Lucro Líquido</span>
+          <span class="mp-det-val success" id="mpResDetProfit">R$ 0,00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
