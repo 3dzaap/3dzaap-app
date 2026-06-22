@@ -231,7 +231,7 @@ function renderDeals(data) {
         <div class="deal-price-box" style="margin-top: 16px">
           <div>
             <div style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">Preço Encontrado</div>
-            <div class="price-now">R$ ${deal.price.toFixed(2)}</div>
+            <div class="price-now">${window.parent && window.parent.fmtCurrency ? window.parent.fmtCurrency(deal.price) : 'R$ ' + deal.price.toFixed(2)}</div>
           </div>
         </div>
         

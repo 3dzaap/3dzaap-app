@@ -1143,54 +1143,37 @@
 
 /* Marketplace Result Cards */
 .mp-results-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 15px;
 }
-@media (max-width: 600px) { .mp-results-container { grid-template-columns: 1fr; } }
 
 .mp-res-card-compact {
   background: var(--bg-card);
   backdrop-filter: var(--blur);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--rm);
-  padding: 14px;
+  padding: 10px 16px;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
-  position: relative;
 }
 .mp-res-card-compact:hover {
   border-color: var(--blue);
-  box-shadow: 0 4px 12px var(--shadow-sm);
+  background: var(--bg-card-hover, rgba(0,0,0,0.02));
   transform: translateY(-2px);
 }
 .mp-comp-name {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--dark);
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-.mp-comp-price {
-  font-family: var(--mono);
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--dark);
-}
-.mp-comp-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--blue);
-  background: var(--blue-g);
-  padding: 2px 8px;
-  border-radius: 12px;
+  gap: 8px;
 }
 
 .mp-res-badge {
@@ -1529,7 +1512,7 @@
               </div>
               <div class="fields-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="field">
-                  <label>Valor Hora (€/h)</label>
+                  <label>Valor Hora (<span class="curr-sym">€</span>/h)</label>
                   <input type="number" id="laborRate" value="10" step="0.5" min="0" class="inp" oninput="liveCalc()">
                 </div>
                 <div class="field">
@@ -1547,11 +1530,11 @@
               </div>
               <div class="fields-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="field">
-                  <label>Ficheiro STL (€)</label>
+                  <label>Ficheiro STL (<span class="curr-sym">€</span>)</label>
                   <input type="number" id="extraStlCost" value="0" step="0.1" min="0" class="inp" oninput="liveCalc()">
                 </div>
                 <div class="field">
-                  <label data-i18n="calc.adv_packaging_label">Embalagem (€)</label>
+                  <label data-i18n="calc.adv_packaging_label">Embalagem (<span class="curr-sym">€</span>)</label>
                   <input type="number" id="packagingCost" value="0" step="0.1" min="0" class="inp" oninput="liveCalc()">
                 </div>
                 <div class="field full" style="grid-column: 1 / -1;">
@@ -3438,10 +3421,8 @@ function renderMarketplaceCards(baseResult) {
     });
     
     html += `
-      <div class="mp-res-card-compact" onclick="openMPResultsModal(${window._lastMpResults.length - 1})">
+      <div class="mp-res-card-compact" onclick="openMPResultsModal(${window._lastMpResults.length - 1})" title="Ver simulação para ${escAttr(mp.name)}">
         <div class="mp-comp-name"><i class="ph-bold ph-storefront"></i> ${escAttr(mp.name)}</div>
-        <div class="mp-comp-price">${fmtCurrency(mpFinalPrice)}</div>
-        <div class="mp-comp-badge">${totalPct}% + ${fmtCurrency(totalFixed)}</div>
       </div>
     `;
   });
@@ -3835,7 +3816,7 @@ function copyResults(){
     row('Custo base (p/un.):',   r.baseCost.toFixed(2)),
     row(`+ Falhas (${i.failureRate}%):`,  r.failureCost.toFixed(2)),
     row(`+ Indiretos (${i.indirectCosts}%):`, r.indirectCost.toFixed(2)),
-    row(`+ Margem (${i.profitMargin}%):`, r.profitMargin.toFixed(2)),
+    row(`+ Margem (${i.profitMargin}%):`, r.marginCost.toFixed(2)),
     '─'.repeat(42),
     row('Preço unitário:',       r.unitPrice.toFixed(2)),
     row(`PREÇO FINAL (×${i.qty||1}):`, r.finalPrice.toFixed(2)),
