@@ -2873,7 +2873,7 @@ async function loadPartners() {
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">A carregar parceiros...</td></tr>';
   
   try {
-    const { data, error } = await _sb.from('partners').select('*').order('created_at', { ascending: false });
+    const { data, error } = await _adminSb().from('partners').select('*').order('created_at', { ascending: false });
     if(error) throw error;
     _allPartners = data || [];
     renderPartners(_allPartners);
@@ -2985,11 +2985,11 @@ async function savePartner() {
 
   try {
     if(id) {
-      const { error } = await _sb.from('partners').update(payload).eq('id', id);
+      const { error } = await _adminSb().from('partners').update(payload).eq('id', id);
       if(error) throw error;
       showToast('Parceiro atualizado.', 'ok');
     } else {
-      const { error } = await _sb.from('partners').insert(payload);
+      const { error } = await _adminSb().from('partners').insert(payload);
       if(error) throw error;
       showToast('Parceiro criado!', 'ok');
     }
@@ -3003,7 +3003,7 @@ async function savePartner() {
 function deletePartnerConfirm(id, name) {
   showConfirm('Excluir Parceiro', `Tem certeza que deseja remover o parceiro <strong>${name}</strong>? Esta ação não afetará os usuários que já assinaram, mas removerá o link dele.`, async () => {
     try {
-      const { error } = await _sb.from('partners').delete().eq('id', id);
+      const { error } = await _adminSb().from('partners').delete().eq('id', id);
       if(error) throw error;
       showToast('Parceiro removido.', 'ok');
       loadPartners();
