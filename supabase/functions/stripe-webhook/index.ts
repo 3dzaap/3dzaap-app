@@ -84,6 +84,27 @@ serve(async (req) => {
               trial_ends_at: new Date(subscription.current_period_end * 1000).toISOString()
             })
             .eq('id', companyId);
+
+          // Verificar se veio de um afiliado
+          const affiliateRef = session.subscription_data?.metadata?.affiliateRef || session.metadata?.affiliateRef;
+          if (affiliateRef) {
+            // Chama uma RPC (Remote Procedure Call) ou fazemos em duas etapas.
+            // Para ser simples e direto, pegamos a contagem atual e incrementamos.
+            const { data: partner } = await supabaseAdmin
+              .from('partners')
+              .select('id, referral_count')
+              .eq('ref_code', affiliateRef)
+              .single();
+
+            if (partner) {
+              await supabaseAdmin
+                .from('partners')
+                .update({ referral_count: partner.referral_count + 1 })
+                .eq('id', partner.id);
+              
+              console.log(`[Afiliado] Incrementado contador para parceiro: ${affiliateRef} (+1)`);
+            }
+          }
         }
         break;
       }

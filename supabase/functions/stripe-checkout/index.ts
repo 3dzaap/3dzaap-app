@@ -55,7 +55,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { plan, companyId, currency: forcedCurrency } = await req.json()
+    const { plan, companyId, currency: forcedCurrency, affiliateRef } = await req.json()
 
     // 1. Ligar ao Supabase Admin
     const supabaseAdmin = createClient(
@@ -129,25 +129,49 @@ serve(async (req) => {
         .eq('id', companyId);
     }
 
+    // 6.5. Verificar afiliado/parceiro e preparar desconto se aplicável
+    let stripeCouponId = undefined;
+    if (affiliateRef) {
+      const { data: partner } = await supabaseAdmin
+        .from('partners')
+        .select('stripe_coupon_id')
+        .eq('ref_code', affiliateRef)
+        .single();
+      
+      if (partner && partner.stripe_coupon_id) {
+        stripeCouponId = partner.stripe_coupon_id;
+      }
+    }
+
+
     // 7. Criar sessão de Checkout
     const origin = req.headers.get('origin') || 'https://3dzaap.com';
-    const session = await stripe.checkout.sessions.create({
+    
+    const checkoutOptions: any = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      allow_promotion_codes: true,
+      allow_promotion_codes: true, // Ainda permite que o utilizador insira um cupom manualmente
       tax_id_collection: { enabled: true },
       customer_update: {
         name: 'auto',
         address: 'auto'
       },
-      metadata: { companyId, plan },
+      metadata: { companyId, plan, affiliateRef: affiliateRef || '' },
       success_url: `${origin}/settings.html?tab=assinatura&status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/settings.html?tab=assinatura&status=cancel`,
       subscription_data: {
-        metadata: { companyId, plan }
+        metadata: { companyId, plan, affiliateRef: affiliateRef || '' }
       }
-    });
+    };
+
+    if (stripeCouponId) {
+      checkoutOptions.discounts = [{ coupon: stripeCouponId }];
+      checkoutOptions.allow_promotion_codes = false; // Stripe não permite allow_promotion_codes junto com discounts array
+    }
+
+    const session = await stripe.checkout.sessions.create(checkoutOptions);
+
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

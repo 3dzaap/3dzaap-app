@@ -412,11 +412,14 @@ async function finishOnboarding() {
     else if (locale === 'en-US') forcedCurrency = 'usd';
     else if (locale === 'en-GB') forcedCurrency = 'gbp';
 
+    const affiliateRef = localStorage.getItem('affiliate_ref');
+
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
         plan: fullPlanId, 
         companyId: company.id,
-        currency: forcedCurrency
+        currency: forcedCurrency,
+        affiliateRef: affiliateRef
       }
     });
 

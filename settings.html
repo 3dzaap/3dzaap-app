@@ -564,6 +564,7 @@
           <button class="settings-nav-btn" data-tab="notificacoes"><i class="ph-bold ph-bell"></i> <span data-i18n="settings.tabs.notifs">Notificações</span></button>
           <button class="settings-nav-btn" data-tab="equipa"><i class="ph-bold ph-user"></i> <span data-i18n="settings.tabs.team">Utilizador</span></button>
           <button class="settings-nav-btn" data-tab="assinatura"><i class="ph-bold ph-credit-card"></i> <span data-i18n="settings.tabs.sub">Assinatura</span></button>
+          <button class="settings-nav-btn" data-tab="parceiros"><i class="ph-bold ph-megaphone"></i> <span data-i18n="settings.tabs.partners">Parceiros</span></button>
         </nav>
 
         <!-- CONTENT PANELS -->
@@ -982,6 +983,55 @@
               </div>
             </div>
           </div>
+          </div>
+
+          <!-- TAB: PARCEIROS -->
+          <div class="settings-panel" id="tab-parceiros" style="display:none">
+            <div class="settings-card">
+              <div class="settings-card-title"><span data-i18n="settings.partners.title"><i class="ph-bold ph-megaphone"></i> Programa de Parceiros</span></div>
+              
+              <div id="partnerLoading" style="text-align:center; padding: 40px; color: var(--muted);">
+                A carregar os seus dados de parceria...
+              </div>
+
+              <div id="partnerNotActive" style="display:none; text-align:center; padding: 40px;">
+                <div style="font-size:3rem; color:var(--muted); margin-bottom:16px"><i class="ph-bold ph-handshake"></i></div>
+                <h3 style="margin-bottom:8px">Ainda não é um parceiro 3DZAAP</h3>
+                <p style="color:var(--muted); max-width:400px; margin:0 auto; line-height:1.5;">O nosso programa de afiliados permite-lhe ganhar recompensas ao recomendar a 3DZAAP. Se tem interesse em tornar-se parceiro, entre em contacto connosco.</p>
+                <div style="margin-top:24px;">
+                  <a href="mailto:parcerias@3dzaap.com" class="btn btn-primary"><i class="ph-bold ph-envelope-simple"></i> Falar com a Equipa</a>
+                </div>
+              </div>
+
+              <div id="partnerActive" style="display:none;">
+                <div class="kpi-grid" style="margin-bottom:24px">
+                  <div class="kpi-card" style="flex:1">
+                    <div class="kpi-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-users"></i></div>
+                    <div class="kpi-body">
+                      <div class="kpi-lbl">Indicações Bem-sucedidas</div>
+                      <div class="kpi-val" id="partnerReferrals">0</div>
+                    </div>
+                  </div>
+                  <div class="kpi-card" style="flex:2">
+                    <div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="ph-bold ph-gift"></i></div>
+                    <div class="kpi-body">
+                      <div class="kpi-lbl">A sua Recompensa</div>
+                      <div class="kpi-val" id="partnerRewardRule" style="font-size:1.1rem;margin-top:4px">-</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group full">
+                  <label class="form-label">O seu Link de Afiliado</label>
+                  <div style="display:flex;gap:8px">
+                    <input type="text" id="partnerLink" class="form-input" readonly style="font-family:monospace; font-size:14px; background:var(--bg-hover);">
+                    <button class="btn btn-primary" onclick="copyPartnerLink()"><i class="ph-bold ph-copy"></i> Copiar</button>
+                  </div>
+                  <div class="form-hint" style="margin-top:8px">Partilhe este link. Qualquer utilizador que se registar através dele será contabilizado como sua indicação quando assinar um plano pago.</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -1222,6 +1272,7 @@ function wireEvents() {
       if (tabId === 'notificacoes') {
         if (typeof initPushUI === 'function') initPushUI();
       }
+      if (tabId === 'parceiros') loadPartnerData();
     });
   });
 
@@ -1739,11 +1790,14 @@ async function startCheckout(planId) {
     else if (locale === 'en-US') forcedCurrency = 'usd';
     else if (locale === 'en-GB') forcedCurrency = 'gbp';
     
+    const affiliateRef = localStorage.getItem('affiliate_ref');
+
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
         plan: fullPlanId, 
         companyId: _session.companyId,
-        currency: forcedCurrency
+        currency: forcedCurrency,
+        affiliateRef: affiliateRef
       }
     });
     
@@ -2005,6 +2059,49 @@ async function executeDeleteSelfAccount() {
     if(document.getElementById('notifStockLow')) document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
     if(document.getElementById('notifFollowUp')) document.getElementById('notifFollowUp').checked = cfg.notifFollowUp !== false;
     if(document.getElementById('notifWeeklyRev')) document.getElementById('notifWeeklyRev').checked = cfg.notifWeeklyRev !== false;
+  }
+
+  // ----------------------------------------------------
+  // PARTNERS (AFILIADOS)
+  // ----------------------------------------------------
+  async function loadPartnerData() {
+    const loader = document.getElementById('partnerLoading');
+    const panelInactive = document.getElementById('partnerNotActive');
+    const panelActive = document.getElementById('partnerActive');
+    
+    if(!_session || !_session.companyId) return;
+
+    loader.style.display = 'block';
+    panelInactive.style.display = 'none';
+    panelActive.style.display = 'none';
+
+    try {
+      const { data, error } = await _sb.from('partners').select('*').eq('company_id', _session.companyId).single();
+      loader.style.display = 'none';
+      
+      if(error || !data) {
+        panelInactive.style.display = 'block';
+      } else {
+        panelActive.style.display = 'block';
+        document.getElementById('partnerReferrals').textContent = data.referral_count || 0;
+        document.getElementById('partnerRewardRule').textContent = data.reward_rule || 'Em análise';
+        document.getElementById('partnerLink').value = `https://app.3dzaap.com/?ref=${data.ref_code}`;
+      }
+    } catch(e) {
+      console.error(e);
+      loader.style.display = 'none';
+      panelInactive.style.display = 'block';
+    }
+  }
+
+  function copyPartnerLink() {
+    const input = document.getElementById('partnerLink');
+    if(!input || !input.value) return;
+    navigator.clipboard.writeText(input.value).then(() => {
+      showToast('Link copiado para a área de transferência!', 'ok');
+    }).catch(err => {
+      showToast('Erro ao copiar link', 'err');
+    });
   }
 
 </script>

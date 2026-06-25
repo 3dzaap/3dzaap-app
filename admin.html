@@ -612,6 +612,9 @@
           <button class="admin-tab" onclick="switchTab('audit')" role="tab" id="tab-btn-audit">
             <i class="ph-bold ph-eye"></i> Auditoria
           </button>
+          <button class="admin-tab" onclick="switchTab('partners')" role="tab" id="tab-btn-partners">
+            <i class="ph-bold ph-megaphone"></i> Parceiros
+          </button>
         </div>
 
         <!-- ══════════════════════════════════════════════
@@ -982,6 +985,41 @@
           </div>
         </div>
 
+        <!-- ══════════════════════════════════════════════
+             TAB: PARCEIROS E AFILIADOS
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-partners">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <i class="ph-bold ph-magnifying-glass admin-search-icon"></i>
+              <input type="text" id="partnerSearchInput" class="admin-search" placeholder="Procurar parceiro..." onkeyup="filterPartners()">
+            </div>
+            <div class="admin-toolbar-filters">
+              <button class="btn btn-primary btn-sm" onclick="openPartnerModal()"><i class="ph-bold ph-plus"></i> Novo Parceiro</button>
+            </div>
+          </div>
+          <div class="ad-card" style="margin-top:16px">
+            <div class="ad-card-body table-wrap" style="padding:0">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Parceiro</th>
+                    <th>Código (Ref)</th>
+                    <th>Cupom (Stripe)</th>
+                    <th>Regra de Recompensa</th>
+                    <th>ID da Empresa</th>
+                    <th>Indicações</th>
+                    <th style="text-align:right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="partnersTableBody">
+                  <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">A carregar parceiros...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /adminContent -->
     </div><!-- /page -->
   </div><!-- /main -->
@@ -1033,6 +1071,49 @@
     <div class="confirm-btns">
       <button class="btn btn-ghost" style="flex:1" onclick="closeDeleteModal()">Cancelar</button>
       <button class="btn btn-danger" style="flex:1" id="deleteConfirmBtn" disabled onclick="deleteCustomer()">EXCLUIR TUDO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Novo/Editar Parceiro
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="partnerModalOverlay" onclick="if(event.target===this)closePartnerModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title" id="partnerModalTitle"><i class="ph-bold ph-megaphone"></i> Novo Parceiro</div>
+      <button class="modal-close" onclick="closePartnerModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pId">
+      <div class="form-group">
+        <label class="form-label">Nome do Parceiro <span class="hint">*</span></label>
+        <input type="text" id="pName" class="form-input" placeholder="Ex: DI3D">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Código (Ref) <span class="hint">*</span></label>
+        <input type="text" id="pRefCode" class="form-input" placeholder="Ex: di3d">
+        <div class="form-hint" style="margin-top:4px">O link será: app.3dzaap.com/?ref=<strong>codigo</strong></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cupom Stripe (Opcional)</label>
+        <input type="text" id="pCoupon" class="form-input" placeholder="ID do cupom criado no Stripe">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Empresa vinculada no 3DZAAP (Opcional)</label>
+        <select id="pCompanyId" class="form-input">
+          <option value="">-- Nenhuma empresa vinculada --</option>
+        </select>
+        <div class="form-hint" style="margin-top:4px">Para que o parceiro possa ver os resultados no próprio painel. Apenas empresas que ainda não são parceiras aparecerão aqui.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Regra de Recompensa (Opcional)</label>
+        <input type="text" id="pReward" class="form-input" placeholder="Ex: 1 ano grátis a cada 10 assinaturas">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePartnerModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePartner()">Salvar Parceiro</button>
     </div>
   </div>
 </div>
@@ -2713,6 +2794,7 @@ function switchTab(name) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-btn-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
+  if(name === 'partners') loadPartners();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2779,6 +2861,157 @@ function closeConfirm() { document.getElementById('confirmOverlay').classList.re
 //  HELPERS
 // ══════════════════════════════════════════════════════════
 function setText(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; }
+
+// ══════════════════════════════════════════════════════════
+//  PARCEIROS E AFILIADOS
+// ══════════════════════════════════════════════════════════
+let _allPartners = [];
+
+async function loadPartners() {
+  const tbody = document.getElementById('partnersTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">A carregar parceiros...</td></tr>';
+  
+  try {
+    const { data, error } = await _sb.from('partners').select('*').order('created_at', { ascending: false });
+    if(error) throw error;
+    _allPartners = data || [];
+    renderPartners(_allPartners);
+  } catch(e) {
+    showToast('Erro ao carregar parceiros: ' + e.message, 'err');
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger)">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPartners(list) {
+  const tbody = document.getElementById('partnersTableBody');
+  if(!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">Nenhum parceiro encontrado.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td style="font-weight:600">${escapeHtml(p.name)}</td>
+      <td><span class="bc-type-info">${escapeHtml(p.ref_code)}</span></td>
+      <td>${p.stripe_coupon_id ? `<span class="bc-type-success">${escapeHtml(p.stripe_coupon_id)}</span>` : '<span style="color:var(--muted)">-</span>'}</td>
+      <td>${escapeHtml(p.reward_rule || '-')}</td>
+      <td style="font-family:monospace;font-size:11px">${p.company_id || '<span style="color:var(--muted)">Não vinculado</span>'}</td>
+      <td style="font-weight:600;color:var(--admin-blue)">${p.referral_count} indicações</td>
+      <td style="text-align:right">
+        <button class="btn-table" onclick="editPartner('${p.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
+        <button class="btn-table danger" onclick="deletePartnerConfirm('${p.id}', '${escapeHtml(p.name)}')"><i class="ph-bold ph-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterPartners() {
+  const term = (document.getElementById('partnerSearchInput')?.value || '').toLowerCase();
+  const filtered = _allPartners.filter(p => 
+    (p.name || '').toLowerCase().includes(term) || 
+    (p.ref_code || '').toLowerCase().includes(term) ||
+    (p.company_id || '').toLowerCase().includes(term)
+  );
+  renderPartners(filtered);
+}
+
+function populateCompanySelect(selectedId = null) {
+  const sel = document.getElementById('pCompanyId');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Nenhuma empresa vinculada --</option>';
+  
+  const usedCompanyIds = _allPartners.map(p => p.company_id).filter(Boolean);
+
+  _customers.forEach(c => {
+    if(c.id === selectedId || !usedCompanyIds.includes(c.id)) {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name + (c.slug ? ` (${c.slug})` : '');
+      if(c.id === selectedId) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function openPartnerModal() {
+  document.getElementById('pId').value = '';
+  document.getElementById('pName').value = '';
+  document.getElementById('pRefCode').value = '';
+  document.getElementById('pCoupon').value = '';
+  document.getElementById('pReward').value = '';
+  populateCompanySelect(null);
+  document.getElementById('partnerModalTitle').innerHTML = '<i class="ph-bold ph-megaphone"></i> Novo Parceiro';
+  document.getElementById('partnerModalOverlay').classList.add('open');
+}
+
+function closePartnerModal() {
+  document.getElementById('partnerModalOverlay').classList.remove('open');
+}
+
+function editPartner(id) {
+  const p = _allPartners.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pName').value = p.name || '';
+  document.getElementById('pRefCode').value = p.ref_code || '';
+  document.getElementById('pCoupon').value = p.stripe_coupon_id || '';
+  document.getElementById('pReward').value = p.reward_rule || '';
+  populateCompanySelect(p.company_id);
+  document.getElementById('partnerModalTitle').innerHTML = '<i class="ph-bold ph-megaphone"></i> Editar Parceiro';
+  document.getElementById('partnerModalOverlay').classList.add('open');
+}
+
+async function savePartner() {
+  const id = document.getElementById('pId').value;
+  const name = document.getElementById('pName').value.trim();
+  const refCode = document.getElementById('pRefCode').value.trim();
+  const coupon = document.getElementById('pCoupon').value.trim() || null;
+  const companyId = document.getElementById('pCompanyId').value.trim() || null;
+  const reward = document.getElementById('pReward').value.trim() || null;
+
+  if(!name || !refCode) {
+    showToast('Nome e Código são obrigatórios.', 'err');
+    return;
+  }
+
+  const payload = { 
+    name, 
+    ref_code: refCode, 
+    stripe_coupon_id: coupon, 
+    company_id: companyId,
+    reward_rule: reward 
+  };
+
+  try {
+    if(id) {
+      const { error } = await _sb.from('partners').update(payload).eq('id', id);
+      if(error) throw error;
+      showToast('Parceiro atualizado.', 'ok');
+    } else {
+      const { error } = await _sb.from('partners').insert(payload);
+      if(error) throw error;
+      showToast('Parceiro criado!', 'ok');
+    }
+    closePartnerModal();
+    loadPartners();
+  } catch(e) {
+    showToast('Erro ao salvar: ' + e.message, 'err');
+  }
+}
+
+function deletePartnerConfirm(id, name) {
+  showConfirm('Excluir Parceiro', `Tem certeza que deseja remover o parceiro <strong>${name}</strong>? Esta ação não afetará os usuários que já assinaram, mas removerá o link dele.`, async () => {
+    try {
+      const { error } = await _sb.from('partners').delete().eq('id', id);
+      if(error) throw error;
+      showToast('Parceiro removido.', 'ok');
+      loadPartners();
+    } catch(e) {
+      showToast('Erro: ' + e.message, 'err');
+    }
+  });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   checkAdminAccess();

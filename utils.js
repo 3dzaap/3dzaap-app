@@ -369,3 +369,13 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('[PWA] SW registration failed:', err));
   });
 }
+
+// Affiliate Tracking
+(function trackAffiliate() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get('ref');
+  if (ref) {
+    localStorage.setItem('affiliate_ref', ref);
+    console.log('[3DZAAP] Affiliate ref saved:', ref);
+  }
+})();
