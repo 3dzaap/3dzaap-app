@@ -2892,15 +2892,15 @@ function renderPartners(list) {
   
   tbody.innerHTML = list.map(p => `
     <tr>
-      <td style="font-weight:600">${escapeHtml(p.name)}</td>
-      <td><span class="bc-type-info">${escapeHtml(p.ref_code)}</span></td>
-      <td>${p.stripe_coupon_id ? `<span class="bc-type-success">${escapeHtml(p.stripe_coupon_id)}</span>` : '<span style="color:var(--muted)">-</span>'}</td>
-      <td>${escapeHtml(p.reward_rule || '-')}</td>
+      <td style="font-weight:600">${escH(p.name)}</td>
+      <td><span class="bc-type-info">${escH(p.ref_code)}</span></td>
+      <td>${p.stripe_coupon_id ? `<span class="bc-type-success">${escH(p.stripe_coupon_id)}</span>` : '<span style="color:var(--muted)">-</span>'}</td>
+      <td>${escH(p.reward_rule || '-')}</td>
       <td style="font-family:monospace;font-size:11px">${p.company_id || '<span style="color:var(--muted)">Não vinculado</span>'}</td>
       <td style="font-weight:600;color:var(--admin-blue)">${p.referral_count} indicações</td>
       <td style="text-align:right">
         <button class="btn-table" onclick="editPartner('${p.id}')"><i class="ph-bold ph-pencil-simple"></i></button>
-        <button class="btn-table danger" onclick="deletePartnerConfirm('${p.id}', '${escapeHtml(p.name)}')"><i class="ph-bold ph-trash"></i></button>
+        <button class="btn-table danger" onclick="deletePartnerConfirm('${p.id}', '${escH(p.name)}')"><i class="ph-bold ph-trash"></i></button>
       </td>
     </tr>
   `).join('');
