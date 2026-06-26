@@ -987,49 +987,78 @@
 
           <!-- TAB: PARCEIROS -->
           <div class="settings-panel" id="tab-parceiros" style="display:none">
-            <div class="settings-card">
-              <div class="settings-card-title"><span data-i18n="settings.partners.title"><i class="ph-bold ph-megaphone"></i> Programa de Parceiros</span></div>
+            
+            <div id="partnerLoading" style="text-align:center; padding: 60px; color: var(--muted);">
+              <i class="ph-bold ph-spinner ph-spin" style="font-size: 2rem; margin-bottom: 12px; color: var(--admin-blue);"></i>
+              <div>A carregar os seus dados de parceria...</div>
+            </div>
+
+            <!-- NÃO PARCEIRO -->
+            <div id="partnerNotActive" style="display:none;">
+              <div style="background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(59,130,246,0.15) 100%); border: 1px solid rgba(59,130,246,0.2); border-radius: 16px; padding: 48px 32px; text-align: center; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--admin-blue) 0%, #60a5fa 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 2.5rem; box-shadow: 0 8px 20px rgba(37,99,235,0.3); transform: rotate(-5deg);">
+                  <i class="ph-bold ph-handshake"></i>
+                </div>
+                <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 16px; color: var(--text-color);">Ainda não é um parceiro 3DZAAP?</h2>
+                <p style="color: var(--muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 32px;">O nosso programa de afiliados é exclusivo e permite-lhe ganhar recompensas incríveis ao recomendar a plataforma. Quer fazer parte deste ecossistema?</p>
+                <a href="mailto:parcerias@3dzaap.com" class="btn btn-primary" style="padding: 12px 24px; font-size: 1.05rem; border-radius: 12px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(37,99,235,0.2);"><i class="ph-bold ph-envelope-simple"></i> Falar com a Equipa de Parcerias</a>
+              </div>
+            </div>
+
+            <!-- PARCEIRO ATIVO -->
+            <div id="partnerActive" style="display:none; max-width: 800px; margin: 0 auto;">
               
-              <div id="partnerLoading" style="text-align:center; padding: 40px; color: var(--muted);">
-                A carregar os seus dados de parceria...
+              <!-- Premium Hero Card -->
+              <div style="position: relative; overflow: hidden; border-radius: 20px; background: linear-gradient(135deg, var(--admin-blue) 0%, #1e40af 100%); color: white; padding: 32px; margin-bottom: 24px; box-shadow: 0 12px 32px -8px rgba(37,99,235,0.4);">
+                <!-- Abstract BG shapes -->
+                <div style="position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+                <div style="position: absolute; bottom: -30%; left: -5%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+                
+                <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap;">
+                  <div>
+                    <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; margin-bottom: 8px; font-weight: 600;"><i class="ph-bold ph-star"></i> Parceiro Oficial</div>
+                    <h2 style="font-size: 2rem; font-weight: 800; margin: 0 0 8px 0;">Painel de Afiliado</h2>
+                    <p style="opacity: 0.9; margin: 0; max-width: 400px; line-height: 1.5;">Acompanhe o impacto das suas indicações e desbloqueie as suas recompensas.</p>
+                  </div>
+                  <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 16px 24px; border-radius: 16px; text-align: center; min-width: 180px;">
+                    <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">A Sua Recompensa</div>
+                    <div id="partnerRewardRule" style="font-size: 1.15rem; font-weight: 700;">-</div>
+                  </div>
+                </div>
               </div>
 
-              <div id="partnerNotActive" style="display:none; text-align:center; padding: 40px;">
-                <div style="font-size:3rem; color:var(--muted); margin-bottom:16px"><i class="ph-bold ph-handshake"></i></div>
-                <h3 style="margin-bottom:8px">Ainda não é um parceiro 3DZAAP</h3>
-                <p style="color:var(--muted); max-width:400px; margin:0 auto; line-height:1.5;">O nosso programa de afiliados permite-lhe ganhar recompensas ao recomendar a 3DZAAP. Se tem interesse em tornar-se parceiro, entre em contacto connosco.</p>
-                <div style="margin-top:24px;">
-                  <a href="mailto:parcerias@3dzaap.com" class="btn btn-primary"><i class="ph-bold ph-envelope-simple"></i> Falar com a Equipa</a>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                
+                <!-- KPI Card: Indicações -->
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px -8px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
+                  <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(37,99,235,0.1); color: var(--admin-blue); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                    <i class="ph-bold ph-trend-up"></i>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 4px; font-weight: 500;">Assinaturas Geradas</div>
+                    <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerReferrals">0</div>
+                  </div>
+                </div>
+
+                <!-- Action Card: Link -->
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: center;">
+                  <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; font-weight: 500;"><i class="ph-bold ph-link"></i> O seu Link de Partilha</div>
+                  <div style="display:flex; gap:8px;">
+                    <input type="text" id="partnerLink" readonly style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-color); font-family: var(--mono); font-size: 0.9rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--admin-blue)'" onblur="this.style.borderColor='var(--border-color)'">
+                    <button class="btn btn-primary" onclick="copyPartnerLink()" style="border-radius: 10px; padding: 0 20px;"><i class="ph-bold ph-copy"></i> Copiar</button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Dica -->
+              <div style="background: rgba(34,197,94,0.05); border: 1px dashed rgba(34,197,94,0.3); border-radius: 12px; padding: 16px; display: flex; gap: 12px; align-items: flex-start;">
+                <div style="color: #22c55e; font-size: 1.2rem; margin-top: 2px;"><i class="ph-bold ph-lightbulb"></i></div>
+                <div style="font-size: 0.9rem; color: var(--muted); line-height: 1.5;">
+                  <strong style="color: var(--text-color);">Dica de Sucesso:</strong> Partilhe este link na sua bio das redes sociais ou envie diretamente para clientes que necessitem de uma plataforma profissional. Quando eles assinarem usando o seu link, o nosso sistema contabiliza automaticamente a indicação a seu favor.
                 </div>
               </div>
 
-              <div id="partnerActive" style="display:none;">
-                <div class="kpi-grid" style="margin-bottom:24px">
-                  <div class="kpi-card" style="flex:1">
-                    <div class="kpi-icon" style="background:var(--blue-g);color:var(--blue)"><i class="ph-bold ph-users"></i></div>
-                    <div class="kpi-body">
-                      <div class="kpi-lbl">Indicações Bem-sucedidas</div>
-                      <div class="kpi-val" id="partnerReferrals">0</div>
-                    </div>
-                  </div>
-                  <div class="kpi-card" style="flex:2">
-                    <div class="kpi-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="ph-bold ph-gift"></i></div>
-                    <div class="kpi-body">
-                      <div class="kpi-lbl">A sua Recompensa</div>
-                      <div class="kpi-val" id="partnerRewardRule" style="font-size:1.1rem;margin-top:4px">-</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-group full">
-                  <label class="form-label">O seu Link de Afiliado</label>
-                  <div style="display:flex;gap:8px">
-                    <input type="text" id="partnerLink" class="form-input" readonly style="font-family:monospace; font-size:14px; background:var(--bg-hover);">
-                    <button class="btn btn-primary" onclick="copyPartnerLink()"><i class="ph-bold ph-copy"></i> Copiar</button>
-                  </div>
-                  <div class="form-hint" style="margin-top:8px">Partilhe este link. Qualquer utilizador que se registar através dele será contabilizado como sua indicação quando assinar um plano pago.</div>
-                </div>
-              </div>
             </div>
           </div>
 
