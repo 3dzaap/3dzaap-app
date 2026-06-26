@@ -1102,7 +1102,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Empresa vinculada no 3DZAAP (Opcional)</label>
-        <select id="pCompanyId" class="form-input">
+        <select id="pCompanyId" class="form-input" onchange="autoFillPartnerName()">
           <option value="">-- Nenhuma empresa vinculada --</option>
         </select>
         <div class="form-hint" style="margin-top:4px">Para que o parceiro possa ver os resultados no próprio painel. Apenas empresas que ainda não são parceiras aparecerão aqui.</div>
@@ -2933,6 +2933,17 @@ function populateCompanySelect(selectedId = null) {
       sel.appendChild(opt);
     }
   });
+}
+
+function autoFillPartnerName() {
+  const sel = document.getElementById('pCompanyId');
+  const nameInput = document.getElementById('pName');
+  if (sel && sel.value && nameInput && !nameInput.value.trim()) {
+    const company = _customers.find(c => c.id === sel.value);
+    if (company) {
+      nameInput.value = company.name;
+    }
+  }
 }
 
 function openPartnerModal() {
