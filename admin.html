@@ -1088,6 +1088,13 @@
     <div class="modal-body">
       <input type="hidden" id="pId">
       <div class="form-group">
+        <label class="form-label">Empresa vinculada no 3DZAAP (Opcional)</label>
+        <select id="pCompanyId" class="form-input" onchange="autoFillPartnerName()">
+          <option value="">-- Nenhuma empresa vinculada --</option>
+        </select>
+        <div class="form-hint" style="margin-top:4px">Para que o parceiro possa ver os resultados no próprio painel. Apenas empresas que ainda não são parceiras aparecerão aqui.</div>
+      </div>
+      <div class="form-group">
         <label class="form-label">Nome do Parceiro <span class="hint">*</span></label>
         <input type="text" id="pName" class="form-input" placeholder="Ex: DI3D">
       </div>
@@ -1099,13 +1106,6 @@
       <div class="form-group">
         <label class="form-label">Cupom Stripe (Opcional)</label>
         <input type="text" id="pCoupon" class="form-input" placeholder="ID do cupom criado no Stripe">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Empresa vinculada no 3DZAAP (Opcional)</label>
-        <select id="pCompanyId" class="form-input" onchange="autoFillPartnerName()">
-          <option value="">-- Nenhuma empresa vinculada --</option>
-        </select>
-        <div class="form-hint" style="margin-top:4px">Para que o parceiro possa ver os resultados no próprio painel. Apenas empresas que ainda não são parceiras aparecerão aqui.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Regra de Recompensa (Opcional)</label>
@@ -2938,10 +2938,17 @@ function populateCompanySelect(selectedId = null) {
 function autoFillPartnerName() {
   const sel = document.getElementById('pCompanyId');
   const nameInput = document.getElementById('pName');
-  if (sel && sel.value && nameInput && !nameInput.value.trim()) {
+  const refInput = document.getElementById('pRefCode');
+  
+  if (sel && sel.value) {
     const company = _customers.find(c => c.id === sel.value);
     if (company) {
-      nameInput.value = company.name;
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.value = company.name;
+      }
+      if (refInput && !refInput.value.trim()) {
+        refInput.value = company.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      }
     }
   }
 }
