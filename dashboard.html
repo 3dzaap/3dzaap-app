@@ -1926,13 +1926,27 @@ async function loadBroadcasts() {
     if (error) return; // 403 / tabela inexistente — silent fail
     if (!data || !data.length) return;
 
-    // Filtrar pelo target (all, trial, past_due, pro, business)
-    const relevant = data.filter(b => {
-      if (b.target === 'all') return true;
-      if (b.target === plan)  return true;
-      // past_due: não temos info de subscription no dashboard — skip para não mostrar errado
-      return false;
-    });
+    // Filtrar pelo target (all, trial, past_due, pro, business, partners)
+    const relevant = [];
+    let isPartner = null;
+
+    for (const b of data) {
+      if (b.target === 'all') { relevant.push(b); continue; }
+      if (b.target === plan)  { relevant.push(b); continue; }
+      
+      if (b.target === 'partners') {
+        if (isPartner === null) {
+          try {
+             // Verificar se a empresa tem registo na tabela partners
+             const { data: pData } = await _sb.from('partners').select('id').eq('company_id', state.company.id).single();
+             isPartner = !!pData;
+          } catch(e) {
+             isPartner = false;
+          }
+        }
+        if (isPartner) relevant.push(b);
+      }
+    }
 
     if (!relevant.length) return;
 
