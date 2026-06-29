@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-PT" data-theme="light">
+<head>
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Ferramentas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('3dzaap_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+.tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 24px;
+  box-shadow: var(--sh);
+  display: flex;
+  flex-direction: column;
+}
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.tool-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r);
+  background: rgba(59,143,212,0.1);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+.tool-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.tool-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.tool-body {
+  flex: 1;
+}
+.result-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-lite);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--blue);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
+</head>
+<body class="loading">
+
+<div class="app-layout">
+  <button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
+  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
+  <main class="main-content">
+    <div class="top-nav">
+      <div class="nav-left">
+        <h1 class="page-title"><i class="ph-bold ph-wrench"></i> <span data-i18n="tools.title">Ferramentas Maker</span></h1>
+      </div>
+      <div class="nav-right">
+        <div class="user-menu" id="userMenuBtn">
+          <div class="user-avatar" id="userAvatar">Maker</div>
+          <div class="user-info-text">
+            <div class="user-name" id="userName">Bem-vindo</div>
+            <div class="user-role" id="userRole">Maker</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="page-header" style="margin-bottom: 20px;">
+        <p class="text-muted">Um conjunto de ferramentas rápidas para facilitar o seu dia a dia na impressão 3D.</p>
+      </div>
+
+      <div class="tools-grid">
+        <!-- REDIMENSIONAMENTO -->
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon"><i class="ph-bold ph-arrows-out"></i></div>
+            <div>
+              <div class="tool-title">Redimensionamento</div>
+              <div class="tool-desc">Calcular percentagem de escala (Slicer).</div>
+            </div>
+          </div>
+          <div class="tool-body">
+            <div class="form-group">
+              <label class="form-label">Tamanho Atual (ex: mm)</label>
+              <input type="number" id="calcOrig" class="form-input" placeholder="Ex: 150" oninput="calcScale()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tamanho Desejado (ex: mm)</label>
+              <input type="number" id="calcDest" class="form-input" placeholder="Ex: 200" oninput="calcScale()">
+            </div>
+            <div class="result-box" id="calcResult">-- %</div>
+          </div>
+        </div>
+
+        <!-- CONVERSOR CM/MM -->
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon"><i class="ph-bold ph-ruler"></i></div>
+            <div>
+              <div class="tool-title">Conversor de Unidades</div>
+              <div class="tool-desc">Alternar rapidamente entre CM e MM.</div>
+            </div>
+          </div>
+          <div class="tool-body">
+            <div class="form-group">
+              <label class="form-label">Centímetros (cm)</label>
+              <input type="number" id="convCm" class="form-input" placeholder="Ex: 10" oninput="convFromCm()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Milímetros (mm)</label>
+              <input type="number" id="convMm" class="form-input" placeholder="Ex: 100" oninput="convFromMm()">
+            </div>
+          </div>
+        </div>
+
+        <!-- ZIP TO 3MF -->
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon"><i class="ph-bold ph-file-zip"></i></div>
+            <div>
+              <div class="tool-title">Conversor ZIP para 3MF</div>
+              <div class="tool-desc">Muda a extensão sem enviar para o servidor.</div>
+            </div>
+          </div>
+          <div class="tool-body">
+            <div class="form-group" style="margin-top: 10px;">
+              <label class="btn btn-outline" style="width: 100%; justify-content: center; cursor: pointer;">
+                <i class="ph-bold ph-upload-simple"></i> Escolher Ficheiro .zip
+                <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="convertZipTo3mf()">
+              </label>
+            </div>
+            <div class="result-box" style="font-size: 1rem; flex-direction: column; gap: 8px;" id="zipResult">
+              <div style="color:var(--text-muted);font-weight:500;font-size:0.9rem">Aguardando ficheiro...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
+<script src="sidebar.js?v=1.3"></script>
+
+<script>
+async function initPage() {
+  const sess = await Auth.getSession();
+  if(!sess) { window.location.href = 'auth.html'; return; }
+  Sidebar.setSession(sess);
+  document.body.classList.remove('loading');
+}
+initPage();
+
+// Calculator logic
+function calcScale() {
+  const orig = parseFloat(document.getElementById('calcOrig').value);
+  const dest = parseFloat(document.getElementById('calcDest').value);
+  const res = document.getElementById('calcResult');
+  
+  if (orig && dest && orig > 0) {
+    const scale = (dest / orig) * 100;
+    res.textContent = scale.toFixed(2) + '%';
+  } else {
+    res.textContent = '-- %';
+  }
+}
+
+// Converter logic
+function convFromCm() {
+  const cm = parseFloat(document.getElementById('convCm').value);
+  const mmInput = document.getElementById('convMm');
+  if (!isNaN(cm)) {
+    mmInput.value = cm * 10;
+  } else {
+    mmInput.value = '';
+  }
+}
+function convFromMm() {
+  const mm = parseFloat(document.getElementById('convMm').value);
+  const cmInput = document.getElementById('convCm');
+  if (!isNaN(mm)) {
+    cmInput.value = mm / 10;
+  } else {
+    cmInput.value = '';
+  }
+}
+
+// ZIP to 3MF Logic (Client-Side)
+function convertZipTo3mf() {
+  const fileInput = document.getElementById('zipFile');
+  const resultBox = document.getElementById('zipResult');
+  
+  if (!fileInput.files || fileInput.files.length === 0) return;
+  
+  const file = fileInput.files[0];
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    resultBox.innerHTML = '<span style="color:var(--danger)">Erro: O ficheiro deve ser um .zip</span>';
+    return;
+  }
+
+  const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
+  const newName = baseName + '.3mf';
+  
+  // Create object URL and trigger download
+  const blob = new Blob([file], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  
+  resultBox.innerHTML = `
+    <div style="color:var(--success)"><i class="ph-bold ph-check-circle"></i> Convertido com sucesso!</div>
+    <a href="${url}" download="${newName}" class="btn btn-primary btn-sm" style="margin-top:8px;text-decoration:none">
+      Descarregar ${newName}
+    </a>
+  `;
+}
+</script>
+</body>
+</html>

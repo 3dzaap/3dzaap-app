@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-PT" data-theme="light">
+<head>
+<link rel="icon" type="image/jpeg" href="logo.jpg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DZAAP — Wiki Maker Global</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('3dzaap_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* WIKI HEADER & TABS */
+.wiki-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.wiki-tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-card);
+  padding: 6px;
+  border-radius: var(--rm);
+  border: 1px solid var(--border);
+}
+.wiki-tab {
+  padding: 8px 16px;
+  border-radius: var(--r);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.wiki-tab.active {
+  background: var(--blue-g);
+  color: var(--blue);
+}
+.wiki-search {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+}
+.wiki-search input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: var(--rm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: var(--f);
+  font-size: 1rem;
+}
+.wiki-search i {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+/* WIKI CARDS */
+.wiki-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.wiki-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--rm);
+  padding: 20px;
+  transition: all 0.2s var(--ease);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.wiki-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lg);
+  border-color: rgba(59,143,212,0.4);
+}
+.wcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.wcard-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wcard-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 100px;
+}
+.badge-cat { color: var(--blue); background: rgba(59,143,212,0.1); }
+.badge-slicer { color: var(--orange); background: rgba(245,148,58,0.1); }
+
+.wcard-fav {
+  color: var(--subtle);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.wcard-fav:hover { color: #f43f5e; }
+.wcard-fav.active { color: #f43f5e; }
+
+.wcard-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+.wcard-author {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.wcard-printers {
+  font-size: 0.85rem;
+  color: var(--subtle);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wcard-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.stars {
+  display: flex;
+  gap: 4px;
+  color: var(--amber);
+  font-size: 1.1rem;
+}
+.stars i { cursor: pointer; transition: transform 0.1s; }
+.stars i:hover { transform: scale(1.2); }
+.rating-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.view-btn {
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* MODAL WIKI */
+.modal-lg .modal-content { max-width: 900px; height: 90vh; display: flex; flex-direction: column; }
+.modal-lg .modal-body { flex: 1; overflow-y: auto; padding-right: 8px; }
+
+/* DYNAMIC FORM (SLICER) */
+.slicer-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.slicer-tab {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--r);
+}
+.slicer-tab.active {
+  background: var(--blue-g);
+  color: var(--blue);
+}
+.slicer-section {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.slicer-section.active {
+  display: grid;
+}
+
+.wiki-editor {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-family: var(--f);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: var(--bg-body);
+  resize: vertical;
+}
+
+/* PRINTER MULTI-SELECT */
+.printers-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-body);
+}
+.printer-chk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  background: var(--bg-card);
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.printer-chk:has(input:checked) {
+  border-color: var(--blue);
+  background: var(--blue-g);
+  color: var(--blue);
+}
+</style>
+</head>
+<body class="loading">
+
+<div class="app-layout">
+  <button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
+  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
+  <main class="main-content">
+    <div class="top-nav">
+      <div class="nav-left">
+        <h1 class="page-title"><i class="ph-bold ph-book-bookmark"></i> <span data-i18n="wiki.title">Wiki Maker</span></h1>
+      </div>
+      <div class="nav-right">
+        <div class="user-menu" id="userMenuBtn">
+          <div class="user-avatar" id="userAvatar">Maker</div>
+          <div class="user-info-text">
+            <div class="user-name" id="userName">Bem-vindo</div>
+            <div class="user-role" id="userRole">Maker</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="page-header" style="margin-bottom: 24px;">
+        <p class="text-muted">A sua base de conhecimento global. Partilhe e descubra as melhores configurações de slicers da comunidade 3DZAAP.</p>
+      </div>
+
+      <div class="wiki-controls">
+        <div class="wiki-tabs">
+          <div class="wiki-tab active" onclick="setTab('all', this)">Todas as Dicas</div>
+          <div class="wiki-tab" onclick="setTab('mine', this)">Minhas Dicas</div>
+          <div class="wiki-tab" onclick="setTab('fav', this)">Favoritos <i class="ph-bold ph-heart"></i></div>
+        </div>
+        <div class="wiki-search">
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <input type="text" id="searchInput" placeholder="Pesquisar por Slicer, Categoria ou Título..." oninput="filterWiki()">
+        </div>
+        <button class="btn btn-primary" onclick="openWikiModal()" style="margin-left:auto">
+          <i class="ph-bold ph-plus"></i> Publicar Dica
+        </button>
+      </div>
+
+      <div id="wikiLoading" style="text-align:center;padding:40px;color:var(--text-muted)">
+        <i class="ph-bold ph-spinner ph-spin" style="font-size:2rem"></i>
+      </div>
+      
+      <div class="wiki-grid" id="wikiGrid" style="display:none">
+        <!-- Injetado via JS -->
+      </div>
+      
+      <div id="wikiEmpty" style="display:none;text-align:center;padding:60px 20px;border:2px dashed var(--border);border-radius:var(--rl)">
+        <i class="ph-bold ph-book-open" style="font-size:3rem;color:var(--subtle);margin-bottom:16px"></i>
+        <h3 style="color:var(--text-main);margin-bottom:8px">Nenhum artigo encontrado</h3>
+        <p style="color:var(--text-muted);margin-bottom:24px">Tente ajustar a sua pesquisa ou seja o primeiro a partilhar uma dica brilhante!</p>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Modal Criar/Editar Wiki -->
+<div class="modal-overlay modal-lg" id="wikiModalOverlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="wikiModalTitle"><i class="ph-bold ph-file-text"></i> Publicar Dica no Wiki</h2>
+      <button class="modal-close" onclick="closeWikiModal()"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="wId">
+      
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="form-group" style="flex:2;min-width:250px">
+          <label class="form-label">Título da Dica <span class="hint">*</span></label>
+          <input type="text" id="wTitle" class="form-input" placeholder="Ex: Perfil Speed PLA para X1C">
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label class="form-label">Categoria <span class="hint">*</span></label>
+          <select id="wCategory" class="form-input">
+            <option value="Configuração (Perfil)">Configuração (Perfil)</option>
+            <option value="Dica / Truque">Dica / Truque</option>
+            <option value="Troubleshooting">Troubleshooting</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label class="form-label">Slicer Alvo <span class="hint">*</span></label>
+          <select id="wSlicer" class="form-input" onchange="renderSlicerForm()">
+            <option value="Bambu Studio">Bambu Studio</option>
+            <option value="Orca Slicer">Orca Slicer</option>
+            <option value="Anycubic Slicer Next">Anycubic Slicer Next</option>
+            <option value="FlashPrint (Creator 5)">FlashPrint (Creator 5)</option>
+            <option value="Luban (Snapmaker U1)">Luban (Snapmaker U1)</option>
+            <option value="Geral (Sem Slicer)">Geral (Sem Slicer específico)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Impressoras Compatíveis (Opcional)</label>
+        <div class="form-hint" style="margin-bottom:8px">Quais impressoras da sua frota são compatíveis com esta configuração?</div>
+        <div class="printers-grid" id="printersList">
+          <!-- Carregado via JS -->
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+      <h3 style="font-size:1.1rem;margin-bottom:12px">Configurações Exatas do Slicer</h3>
+      <div id="slicerFormContainer">
+        <!-- Renderizado dinamicamente pelo JS -->
+      </div>
+
+      <div class="form-group" style="margin-top:24px">
+        <label class="form-label">Anotações Adicionais / Dicas</label>
+        <textarea id="wContent" class="wiki-editor" placeholder="Descreva o motivo desta configuração, qual o tipo de peça ideal para ela, etc..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between">
+      <button class="btn btn-danger btn-ghost" id="btnDeleteWiki" style="display:none" onclick="deleteWiki()"><i class="ph-bold ph-trash"></i> Apagar</button>
+      <div style="display:flex;gap:12px;margin-left:auto">
+        <button class="btn btn-ghost" onclick="closeWikiModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveWiki()">Publicar no Wiki</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
+<script src="sidebar.js?v=1.3"></script>
+
+<script>
+let currentUser = null;
+let currentProfile = null;
+let allEntries = [];
+let allFavorites = [];
+let allRatings = [];
+let userPrinters = [];
+let currentFilterTab = 'all';
+
+// JSON SCHEMA ENGINE para os SLICERS
+const SLICER_SCHEMAS = {
+  "Bambu Studio": {
+    "Quality": ["Layer height", "Initial layer height", "Line width"],
+    "Strength": ["Wall loops", "Top shell layers", "Bottom shell layers", "Sparse infill density", "Sparse infill pattern"],
+    "Speed": ["Initial layer speed", "Outer wall speed", "Inner wall speed", "Sparse infill speed"],
+    "Support": ["Enable support", "Support type", "Top Z distance", "Bottom Z distance"]
+  },
+  "Orca Slicer": {
+    "Quality": ["Layer height", "Initial layer height", "Line width", "Ironing pattern"],
+    "Strength": ["Wall loops", "Top shell layers", "Bottom shell layers", "Sparse infill density", "Sparse infill pattern"],
+    "Speed": ["Initial layer speed", "Outer wall speed", "Inner wall speed", "Sparse infill speed"],
+    "Support": ["Enable support", "Support type", "Top Z distance", "Bottom Z distance"]
+  },
+  "Anycubic Slicer Next": {
+    "Quality": ["Layer height", "Line width"],
+    "Strength": ["Wall line count", "Top layers", "Bottom layers", "Infill density", "Infill pattern"],
+    "Speed": ["Print speed", "Wall speed", "Infill speed"],
+    "Support": ["Generate Support", "Support structure", "Z Distance"]
+  },
+  "FlashPrint (Creator 5)": {
+    "General": ["Layer Height", "First Layer Height", "Base Print Speed"],
+    "Shells": ["Perimeter Shells", "Top Solid Layers", "Bottom Solid Layers"],
+    "Infill": ["Fill Density", "Fill Pattern"],
+    "Supports": ["Enable Support", "Support Type", "Space to Model (Z)"]
+  },
+  "Luban (Snapmaker U1)": {
+    "Quality": ["Layer Height", "Initial Layer Height", "Line Width"],
+    "Shell": ["Wall Line Count", "Top Layers", "Bottom Layers"],
+    "Infill": ["Infill Density", "Infill Pattern"],
+    "Speed": ["Print Speed", "Travel Speed"],
+    "Support": ["Generate Support", "Support Placement", "Support Overhang Angle"]
+  }
+};
+
+async function initPage() {
+  const sess = await Auth.getSession();
+  if(!sess) { window.location.href = 'auth.html'; return; }
+  currentUser = sess.user;
+  Sidebar.setSession(sess);
+  
+  // Buscar nome do utilizador atual (para exibir no author se necessário)
+  const { data: prof } = await _sb.from('profiles').select('full_name').eq('id', currentUser.id).single();
+  currentProfile = prof;
+  
+  document.body.classList.remove('loading');
+  
+  await Promise.all([
+    loadPrinters(),
+    loadWikiData()
+  ]);
+}
+initPage();
+
+async function loadPrinters() {
+  const { data, error } = await _sb.from('printers').select('id, name').order('name');
+  if(!error && data) {
+    userPrinters = data;
+    const grid = document.getElementById('printersList');
+    grid.innerHTML = data.map(p => `
+      <label class="printer-chk">
+        <input type="checkbox" value="${p.name}" class="chk-printer">
+        ${p.name}
+      </label>
+    `).join('');
+  }
+}
+
+async function loadWikiData() {
+  document.getElementById('wikiLoading').style.display = 'block';
+  document.getElementById('wikiGrid').style.display = 'none';
+  document.getElementById('wikiEmpty').style.display = 'none';
+
+  // 1. Fetch entries (with profile name if possible, mas vamos simplificar se der erro de join)
+  // Como profiles está noutro schema às vezes, fazemos fetch simples e tentamos join manual ou exibimos ID.
+  const { data: entries, error: errE } = await _sb.from('wiki_entries')
+    .select('*, profiles:user_id(full_name)')
+    .order('created_at', { ascending: false });
+
+  // 2. Fetch favorites for this user
+  const { data: favs, error: errF } = await _sb.from('wiki_favorites')
+    .select('entry_id')
+    .eq('user_id', currentUser.id);
+
+  // 3. Fetch ratings (we need avg per entry, and user's rating)
+  const { data: ratings, error: errR } = await _sb.from('wiki_ratings').select('*');
+
+  document.getElementById('wikiLoading').style.display = 'none';
+
+  if (errE) { console.error(errE); showToast('Erro ao carregar o Wiki', 'err'); return; }
+
+  allEntries = entries || [];
+  allFavorites = (favs || []).map(f => f.entry_id);
+  allRatings = ratings || [];
+
+  filterWiki();
+}
+
+function setTab(tab, element) {
+  document.querySelectorAll('.wiki-tab').forEach(t => t.classList.remove('active'));
+  element.classList.add('active');
+  currentFilterTab = tab;
+  filterWiki();
+}
+
+function filterWiki() {
+  const term = document.getElementById('searchInput').value.toLowerCase();
+  
+  let filtered = allEntries;
+  
+  if (currentFilterTab === 'mine') {
+    filtered = filtered.filter(e => e.user_id === currentUser.id);
+  } else if (currentFilterTab === 'fav') {
+    filtered = filtered.filter(e => allFavorites.includes(e.id));
+  }
+  
+  if(term) {
+    filtered = filtered.filter(e => 
+      e.title.toLowerCase().includes(term) || 
+      (e.content && e.content.toLowerCase().includes(term)) ||
+      e.category.toLowerCase().includes(term) ||
+      e.slicer_name.toLowerCase().includes(term)
+    );
+  }
+  
+  renderWiki(filtered);
+}
+
+function renderWiki(entries) {
+  const grid = document.getElementById('wikiGrid');
+  const empty = document.getElementById('wikiEmpty');
+
+  if (entries.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  entries.forEach(item => {
+    // Calculo do Rating
+    const entryRatings = allRatings.filter(r => r.entry_id === item.id);
+    let avg = 0;
+    if(entryRatings.length > 0) {
+      const sum = entryRatings.reduce((acc, r) => acc + r.rating, 0);
+      avg = Math.round((sum / entryRatings.length) * 10) / 10;
+    }
+    const myRatingObj = entryRatings.find(r => r.user_id === currentUser.id);
+    const myRating = myRatingObj ? myRatingObj.rating : 0;
+    const isFav = allFavorites.includes(item.id);
+    
+    let starsHtml = '';
+    for(let i=1; i<=5; i++){
+      const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph';
+      starsHtml += `<i class="${activeClass} ph-star" onclick="rateEntry('${item.id}', ${i}, event)"></i>`;
+    }
+
+    const author = item.profiles ? item.profiles.full_name : 'Maker Anónimo';
+    const isOwner = item.user_id === currentUser.id;
+    
+    // Printers compat
+    const prtText = (item.printers_compat && item.printers_compat.length > 0) 
+      ? item.printers_compat.join(', ') 
+      : 'Qualquer Impressora';
+
+    grid.innerHTML += `
+      <div class="wiki-card" onclick="openWikiModal('${item.id}', ${isOwner})">
+        <div class="wcard-top">
+          <div class="wcard-badges">
+            <span class="wcard-badge badge-cat">${item.category}</span>
+            <span class="wcard-badge badge-slicer">${item.slicer_name}</span>
+          </div>
+          <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" onclick="toggleFavorite('${item.id}', event)"></i>
+        </div>
+        
+        <h3 class="wcard-title">${item.title}</h3>
+        <div class="wcard-author">por ${author}</div>
+        
+        <div class="wcard-printers"><i class="ph-bold ph-printer"></i> ${prtText}</div>
+        
+        <div class="wcard-stats">
+          <div class="stars">${starsHtml}</div>
+          <span class="rating-text">${avg > 0 ? avg : 'S/ Classific.'} (${entryRatings.length})</span>
+          ${isOwner ? '<button class="view-btn">Editar</button>' : '<button class="view-btn">Ver Dica</button>'}
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ==========================================
+// RATING & FAVORITES
+// ==========================================
+async function toggleFavorite(entryId, e) {
+  e.stopPropagation();
+  const isFav = allFavorites.includes(entryId);
+  try {
+    if (isFav) {
+      await _sb.from('wiki_favorites').delete().eq('entry_id', entryId).eq('user_id', currentUser.id);
+      allFavorites = allFavorites.filter(id => id !== entryId);
+      showToast('Removido dos favoritos', 'success');
+    } else {
+      await _sb.from('wiki_favorites').insert([{entry_id: entryId, user_id: currentUser.id}]);
+      allFavorites.push(entryId);
+      showToast('Adicionado aos favoritos', 'success');
+    }
+    filterWiki(); // re-render
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao atualizar favorito', 'err');
+  }
+}
+
+async function rateEntry(entryId, rating, e) {
+  e.stopPropagation();
+  try {
+    const existing = allRatings.find(r => r.entry_id === entryId && r.user_id === currentUser.id);
+    if(existing) {
+      await _sb.from('wiki_ratings').update({rating: rating}).eq('id', existing.id);
+      existing.rating = rating;
+    } else {
+      const { data } = await _sb.from('wiki_ratings').insert([{entry_id: entryId, user_id: currentUser.id, rating: rating}]).select().single();
+      if(data) allRatings.push(data);
+    }
+    showToast(`Avaliado com ${rating} estrelas!`, 'success');
+    filterWiki();
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao avaliar', 'err');
+  }
+}
+
+// ==========================================
+// MODAL & DYNAMIC FORM
+// ==========================================
+function openWikiModal(id = null, isOwner = true) {
+  document.getElementById('wikiModalOverlay').classList.add('open');
+  
+  // Limpar form
+  document.getElementById('wId').value = '';
+  document.getElementById('wTitle').value = '';
+  document.getElementById('wCategory').value = 'Configuração (Perfil)';
+  document.getElementById('wSlicer').value = 'Bambu Studio';
+  document.getElementById('wContent').value = '';
+  document.querySelectorAll('.chk-printer').forEach(chk => chk.checked = false);
+  
+  if(id) {
+    const entry = allEntries.find(e => e.id === id);
+    if(entry) {
+      document.getElementById('wikiModalTitle').innerHTML = isOwner ? '<i class="ph-bold ph-pencil"></i> Editar Dica' : '<i class="ph-bold ph-eye"></i> Visualizar Dica';
+      document.getElementById('wId').value = entry.id;
+      document.getElementById('wTitle').value = entry.title;
+      
+      const catOpt = Array.from(document.getElementById('wCategory').options).find(o => o.value === entry.category);
+      if(catOpt) document.getElementById('wCategory').value = entry.category;
+      
+      const slicerOpt = Array.from(document.getElementById('wSlicer').options).find(o => o.value === entry.slicer_name);
+      if(slicerOpt) document.getElementById('wSlicer').value = entry.slicer_name;
+      
+      document.getElementById('wContent').value = entry.content || '';
+      
+      if(entry.printers_compat) {
+        entry.printers_compat.forEach(p => {
+          const chk = document.querySelector(`.chk-printer[value="${p}"]`);
+          if(chk) chk.checked = true;
+        });
+      }
+      
+      renderSlicerForm(entry.content_json);
+      
+      if(isOwner) {
+        document.getElementById('btnDeleteWiki').style.display = 'flex';
+        toggleFormState(false);
+      } else {
+        document.getElementById('btnDeleteWiki').style.display = 'none';
+        toggleFormState(true); // Read-only
+      }
+    }
+  } else {
+    document.getElementById('wikiModalTitle').innerHTML = '<i class="ph-bold ph-file-text"></i> Publicar Dica no Wiki';
+    document.getElementById('btnDeleteWiki').style.display = 'none';
+    toggleFormState(false);
+    renderSlicerForm();
+  }
+}
+
+function toggleFormState(readonly) {
+  const inputs = document.getElementById('wikiModalOverlay').querySelectorAll('input, select, textarea');
+  inputs.forEach(i => {
+    if(i.id === 'searchInput') return; // ignora se houver algum erro de selecao
+    i.disabled = readonly;
+  });
+  
+  const footBtns = document.getElementById('wikiModalOverlay').querySelectorAll('.modal-footer .btn-primary');
+  footBtns.forEach(btn => btn.style.display = readonly ? 'none' : 'flex');
+}
+
+function closeWikiModal() {
+  document.getElementById('wikiModalOverlay').classList.remove('open');
+}
+
+// MOTOR DINAMICO DO SLICER
+function renderSlicerForm(savedData = {}) {
+  const slicer = document.getElementById('wSlicer').value;
+  const container = document.getElementById('slicerFormContainer');
+  container.innerHTML = '';
+  
+  const schema = SLICER_SCHEMAS[slicer];
+  if(!schema) {
+    container.innerHTML = '<div class="text-muted">Nenhum parâmetro estruturado para este slicer. Use as anotações abaixo.</div>';
+    return;
+  }
+
+  // Criar Abas
+  const tabsDiv = document.createElement('div');
+  tabsDiv.className = 'slicer-tabs';
+  
+  const sectionsDiv = document.createElement('div');
+  sectionsDiv.className = 'slicer-sections';
+
+  let first = true;
+  for (const [sectionName, fields] of Object.entries(schema)) {
+    // Aba
+    const tabBtn = document.createElement('div');
+    tabBtn.className = `slicer-tab ${first ? 'active' : ''}`;
+    tabBtn.textContent = sectionName;
+    
+    // Secção
+    const sectionBody = document.createElement('div');
+    sectionBody.className = `slicer-section ${first ? 'active' : ''}`;
+    sectionBody.id = `sec_${sectionName.replace(/\s+/g,'')}`;
+    
+    // Interatividade da aba
+    tabBtn.onclick = () => {
+      tabsDiv.querySelectorAll('.slicer-tab').forEach(t => t.classList.remove('active'));
+      sectionsDiv.querySelectorAll('.slicer-section').forEach(s => s.classList.remove('active'));
+      tabBtn.classList.add('active');
+      sectionBody.classList.add('active');
+    };
+    
+    tabsDiv.appendChild(tabBtn);
+    
+    // Campos
+    fields.forEach(f => {
+      const fieldId = `dyn_${sectionName}_${f}`;
+      const val = savedData[sectionName] ? (savedData[sectionName][f] || '') : '';
+      
+      sectionBody.innerHTML += `
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" style="font-size:0.85rem">${f}</label>
+          <input type="text" class="form-input dyn-input" data-section="${sectionName}" data-field="${f}" value="${val}" placeholder="Valor...">
+        </div>
+      `;
+    });
+    
+    sectionsDiv.appendChild(sectionBody);
+    first = false;
+  }
+
+  container.appendChild(tabsDiv);
+  container.appendChild(sectionsDiv);
+}
+
+function getSlicerJson() {
+  const inputs = document.querySelectorAll('.dyn-input');
+  const json = {};
+  inputs.forEach(inp => {
+    const sec = inp.getAttribute('data-section');
+    const f = inp.getAttribute('data-field');
+    const val = inp.value.trim();
+    if(val) {
+      if(!json[sec]) json[sec] = {};
+      json[sec][f] = val;
+    }
+  });
+  return json;
+}
+
+// SAVE / DELETE
+async function saveWiki() {
+  const id = document.getElementById('wId').value;
+  const title = document.getElementById('wTitle').value.trim();
+  const cat = document.getElementById('wCategory').value;
+  const slicer = document.getElementById('wSlicer').value;
+  const content = document.getElementById('wContent').value.trim();
+  
+  const selPrinters = Array.from(document.querySelectorAll('.chk-printer:checked')).map(c => c.value);
+  const contentJson = getSlicerJson();
+
+  if(!title) {
+    showToast('O título é obrigatório', 'err');
+    return;
+  }
+
+  const payload = {
+    title,
+    category: cat,
+    slicer_name: slicer,
+    printers_compat: selPrinters,
+    content_json: contentJson,
+    content,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    if(id) {
+      const { error } = await _sb.from('wiki_entries').update(payload).eq('id', id);
+      if(error) throw error;
+      showToast('Artigo atualizado!');
+    } else {
+      payload.user_id = currentUser.id;
+      const { error } = await _sb.from('wiki_entries').insert([payload]);
+      if(error) throw error;
+      showToast('Artigo publicado!');
+    }
+    closeWikiModal();
+    loadWikiData();
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao salvar', 'err');
+  }
+}
+
+async function deleteWiki() {
+  if(!confirm('Tem a certeza que deseja apagar esta dica?')) return;
+  const id = document.getElementById('wId').value;
+  try {
+    const { error } = await _sb.from('wiki_entries').delete().eq('id', id);
+    if(error) throw error;
+    showToast('Artigo apagado', 'success');
+    closeWikiModal();
+    loadWikiData();
+  } catch(err) {
+    console.error(err);
+    showToast('Erro ao apagar', 'err');
+  }
+}
+
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type==='err' ? 'var(--danger)' : 'var(--success)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
