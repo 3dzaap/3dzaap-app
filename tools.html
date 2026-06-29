@@ -84,27 +84,41 @@
 </head>
 <body class="loading">
 
-<div class="app-layout">
-  <button class="mob-toggle" onclick="toggleSidebar()"><i class="ph-bold ph-list"></i></button>
-  <div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+<div class="bg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
 
-  <main class="main-content">
-    <div class="top-nav">
-      <div class="nav-left">
-        <h1 class="page-title"><i class="ph-bold ph-wrench"></i> <span data-i18n="tools.title">Ferramentas Maker</span></h1>
-      </div>
-      <div class="nav-right">
-        <div class="user-menu" id="userMenuBtn">
-          <div class="user-avatar" id="userAvatar">Maker</div>
-          <div class="user-info-text">
-            <div class="user-name" id="userName">Bem-vindo</div>
-            <div class="user-role" id="userRole">Maker</div>
+<button class="mob-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sideOverlay" onclick="toggleSidebar()"></div>
+
+<div class="layout">
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbarTitle"><i class="ph-bold ph-wrench"></i> <span data-i18n="tools.title">Ferramentas Maker</span></div>
+      <div class="topbar-actions">
+        <div class="topbar-notif" onclick="showToast(window.i18n && window.i18n.getNestedTranslation ? window.i18n.getNestedTranslation('dash.no_notifs') : 'Sem notificações por agora','')">
+          <i class="ph-bold ph-bell"></i>
+        </div>
+        <div class="global-ctrls" id="globalCtrls">
+          <button id="topbarThemeToggle" onclick="Sidebar.toggleTheme()" title="Alternar Tema" class="gc-btn"><i class="ph-bold ph-moon"></i></button>
+          <select id="topbarLangSelect" class="gc-select" onchange="window.i18n && window.i18n.setLanguage(this.value)">
+            <option value="pt-PT">🇵🇹 pt PT</option>
+            <option value="pt-BR">🇧🇷 pt BR</option>
+            <option value="en-US">🇺🇸 en US</option>
+          </select>
+          <div class="gc-help-wrap">
+            <button id="topbarHelpBtn" class="gc-btn gc-help-btn" onclick="event.stopPropagation(); var p=document.getElementById('topbarHelpPopover'); p.style.display = p.style.display==='block'?'none':'block';">?</button>
+            <div id="topbarHelpPopover" class="gc-popover" style="display:none">
+              <div class="gc-popover-title">Contacte-nos</div>
+              <a href="mailto:suporte@3dzaap.com" class="gc-popover-item"><i class="ph-bold ph-envelope"></i> suporte@3dzaap.com</a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="content-wrapper">
+    <div class="page" id="mainContent">
+      <div class="content-wrapper">
       <div class="page-header" style="margin-bottom: 20px;">
         <p class="text-muted">Um conjunto de ferramentas rápidas para facilitar o seu dia a dia na impressão 3D.</p>
       </div>
@@ -177,7 +191,7 @@
 
       </div>
     </div>
-  </main>
+  </div>
 </div>
 
 <script src="utils.js"></script>
