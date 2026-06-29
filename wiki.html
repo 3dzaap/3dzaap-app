@@ -340,12 +340,7 @@
         <div class="form-group" style="flex:1;min-width:150px">
           <label class="form-label">Slicer Alvo <span class="hint">*</span></label>
           <select id="wSlicer" class="form-input" onchange="renderSlicerForm()">
-            <option value="Bambu Studio">Bambu Studio</option>
-            <option value="Orca Slicer">Orca Slicer</option>
-            <option value="Anycubic Slicer Next">Anycubic Slicer Next</option>
-            <option value="FlashPrint (Creator 5)">FlashPrint (Creator 5)</option>
-            <option value="Luban (Snapmaker U1)">Luban (Snapmaker U1)</option>
-            <option value="Geral (Sem Slicer)">Geral (Sem Slicer específico)</option>
+            <option value="Geral (Sem Slicer)">A carregar slicers...</option>
           </select>
         </div>
       </div>
@@ -396,39 +391,8 @@ let userPrinters = [];
 let currentFilterTab = 'all';
 
 // JSON SCHEMA ENGINE para os SLICERS
-const SLICER_SCHEMAS = {
-  "Bambu Studio": {
-    "Quality": ["Layer height", "Initial layer height", "Line width"],
-    "Strength": ["Wall loops", "Top shell layers", "Bottom shell layers", "Sparse infill density", "Sparse infill pattern"],
-    "Speed": ["Initial layer speed", "Outer wall speed", "Inner wall speed", "Sparse infill speed"],
-    "Support": ["Enable support", "Support type", "Top Z distance", "Bottom Z distance"]
-  },
-  "Orca Slicer": {
-    "Quality": ["Layer height", "Initial layer height", "Line width", "Ironing pattern"],
-    "Strength": ["Wall loops", "Top shell layers", "Bottom shell layers", "Sparse infill density", "Sparse infill pattern"],
-    "Speed": ["Initial layer speed", "Outer wall speed", "Inner wall speed", "Sparse infill speed"],
-    "Support": ["Enable support", "Support type", "Top Z distance", "Bottom Z distance"]
-  },
-  "Anycubic Slicer Next": {
-    "Quality": ["Layer height", "Line width"],
-    "Strength": ["Wall line count", "Top layers", "Bottom layers", "Infill density", "Infill pattern"],
-    "Speed": ["Print speed", "Wall speed", "Infill speed"],
-    "Support": ["Generate Support", "Support structure", "Z Distance"]
-  },
-  "FlashPrint (Creator 5)": {
-    "General": ["Layer Height", "First Layer Height", "Base Print Speed"],
-    "Shells": ["Perimeter Shells", "Top Solid Layers", "Bottom Solid Layers"],
-    "Infill": ["Fill Density", "Fill Pattern"],
-    "Supports": ["Enable Support", "Support Type", "Space to Model (Z)"]
-  },
-  "Luban (Snapmaker U1)": {
-    "Quality": ["Layer Height", "Initial Layer Height", "Line Width"],
-    "Shell": ["Wall Line Count", "Top Layers", "Bottom Layers"],
-    "Infill": ["Infill Density", "Infill Pattern"],
-    "Speed": ["Print Speed", "Travel Speed"],
-    "Support": ["Generate Support", "Support Placement", "Support Overhang Angle"]
-  }
-};
+// JSON SCHEMA ENGINE para os SLICERS (Carregado dinamicamente)
+let SLICER_SCHEMAS = {};
 
 async function initPage() {
   const sess = await Auth.getSession();
@@ -443,11 +407,40 @@ async function initPage() {
   document.body.classList.remove('loading');
   
   await Promise.all([
+    loadSlicerSchemas(),
     loadPrinters(),
     loadWikiData()
   ]);
 }
 initPage();
+
+async function loadSlicerSchemas() {
+  try {
+    const { data, error } = await _sb.from('slicer_schemas').select('*').order('name');
+    if (error) throw error;
+    
+    SLICER_SCHEMAS = {};
+    const select = document.getElementById('wSlicer');
+    if (select) {
+      select.innerHTML = '';
+      if (data && data.length > 0) {
+        data.forEach(s => {
+          SLICER_SCHEMAS[s.name] = s.schema_json;
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = s.name;
+          select.appendChild(opt);
+        });
+      }
+      const optGeral = document.createElement('option');
+      optGeral.value = 'Geral (Sem Slicer)';
+      optGeral.textContent = 'Geral (Sem Slicer específico)';
+      select.appendChild(optGeral);
+    }
+  } catch(e) {
+    console.error('Erro ao carregar Slicer Schemas', e);
+  }
+}
 
 async function loadPrinters() {
   const { data, error } = await _sb.from('printers').select('id, name').order('name');

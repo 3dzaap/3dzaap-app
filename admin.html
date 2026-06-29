@@ -615,6 +615,9 @@
           <button class="admin-tab" onclick="switchTab('partners')" role="tab" id="tab-btn-partners">
             <i class="ph-bold ph-megaphone"></i> Parceiros
           </button>
+          <button class="admin-tab" onclick="switchTab('slicers')" role="tab" id="tab-btn-slicers">
+            <i class="ph-bold ph-sliders"></i> Slicers
+          </button>
         </div>
 
         <!-- ══════════════════════════════════════════════
@@ -1021,6 +1024,37 @@
           </div>
         </div>
 
+        <!-- ══════════════════════════════════════════════
+             TAB: SLICERS E WIKI
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-slicers">
+          <div class="admin-toolbar">
+            <div class="admin-search-wrap">
+              <i class="ph-bold ph-magnifying-glass admin-search-icon"></i>
+              <input type="text" id="slicerSearchInput" class="admin-search" placeholder="Procurar slicer..." onkeyup="filterSlicers()">
+            </div>
+            <div class="admin-toolbar-filters">
+              <button class="btn btn-primary btn-sm" onclick="openSlicerModal()"><i class="ph-bold ph-plus"></i> Novo Slicer</button>
+            </div>
+          </div>
+          <div class="ad-card" style="margin-top:16px">
+            <div class="ad-card-body table-wrap" style="padding:0">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nome do Slicer</th>
+                    <th>Data de Criação</th>
+                    <th style="text-align:right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="slicersTableBody">
+                  <tr><td colspan="3" style="text-align:center;padding:32px;color:var(--muted)">A carregar slicers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /adminContent -->
     </div><!-- /page -->
   </div><!-- /main -->
@@ -1079,6 +1113,37 @@
 <!-- ══════════════════════════════════════════════════════════
      MODAL — Novo/Editar Parceiro
 ══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════
+     MODAL — Slicer Form
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="slicerModalOverlay" onclick="if(event.target===this)closeSlicerModal()">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title" id="slicerModalTitle"><i class="ph-bold ph-sliders"></i> Slicer</div>
+      <button class="modal-close" onclick="closeSlicerModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="slId">
+      <div class="form-group">
+        <label class="form-label">Nome do Slicer <span class="hint">*</span></label>
+        <input type="text" id="slName" class="form-input" placeholder="Ex: PrusaSlicer">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Esquema JSON (Categorias e Parâmetros) <span class="hint">*</span></label>
+        <div class="form-hint" style="margin-bottom:8px">Formato esperado: <code>{"Aba": ["Campo 1", "Campo 2"]}</code></div>
+        <textarea id="slJson" class="form-input mono" style="min-height:200px; resize:vertical; font-size:0.85rem;" placeholder='{\n  "Quality": ["Layer height", "Line width"]\n}'></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between">
+      <button class="btn btn-danger btn-ghost" id="btnDeleteSlicer" style="display:none" onclick="deleteSlicer()"><i class="ph-bold ph-trash"></i> Apagar</button>
+      <div style="display:flex;gap:12px;margin-left:auto">
+        <button class="btn btn-ghost" onclick="closeSlicerModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSlicer()">Salvar Slicer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="partnerModalOverlay" onclick="if(event.target===this)closePartnerModal()">
   <div class="modal" style="max-width:500px">
     <div class="modal-header">
@@ -2796,6 +2861,7 @@ function switchTab(name) {
   document.getElementById('tab-btn-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
   if(name === 'partners') loadPartners();
+  if(name === 'slicers') loadSlicers();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2862,6 +2928,137 @@ function closeConfirm() { document.getElementById('confirmOverlay').classList.re
 //  HELPERS
 // ══════════════════════════════════════════════════════════
 function setText(id, val) { const e = document.getElementById(id); if(e) e.textContent = val; }
+
+// ══════════════════════════════════════════════════════════
+//  SLICERS E WIKI
+// ══════════════════════════════════════════════════════════
+let _allSlicers = [];
+
+async function loadSlicers() {
+  const tbody = document.getElementById('slicersTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--muted)">A carregar slicers...</td></tr>';
+  
+  try {
+    const { data, error } = await _adminSb().from('slicer_schemas').select('*').order('created_at', { ascending: false });
+    if(error) throw error;
+    _allSlicers = data || [];
+    renderSlicers(_allSlicers);
+  } catch(e) {
+    showToast('Erro ao carregar slicers: ' + e.message, 'err');
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--danger)">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderSlicers(arr) {
+  const tbody = document.getElementById('slicersTableBody');
+  if(!tbody) return;
+  if(arr.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:32px;color:var(--muted)">Nenhum slicer encontrado.</td></tr>';
+    return;
+  }
+  let h = '';
+  arr.forEach(s => {
+    const d = new Date(s.created_at).toLocaleDateString('pt-PT');
+    h += `
+      <tr>
+        <td style="font-weight:700;color:var(--dark)">${s.name}</td>
+        <td style="font-size:0.85rem;color:var(--muted)">${d}</td>
+        <td style="text-align:right">
+          <button class="btn btn-ghost btn-sm" onclick="openSlicerModal('${s.id}')">Editar</button>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = h;
+}
+
+function filterSlicers() {
+  const q = (document.getElementById('slicerSearchInput').value || '').toLowerCase();
+  const f = _allSlicers.filter(s => s.name.toLowerCase().includes(q));
+  renderSlicers(f);
+}
+
+function openSlicerModal(id = null) {
+  document.getElementById('slicerModalOverlay').classList.add('open');
+  const dId = document.getElementById('slId');
+  const dName = document.getElementById('slName');
+  const dJson = document.getElementById('slJson');
+  const btnDel = document.getElementById('btnDeleteSlicer');
+  
+  if(id) {
+    const s = _allSlicers.find(x => x.id === id);
+    if(s) {
+      document.getElementById('slicerModalTitle').innerHTML = '<i class="ph-bold ph-sliders"></i> Editar Slicer';
+      dId.value = s.id;
+      dName.value = s.name;
+      dJson.value = JSON.stringify(s.schema_json, null, 2);
+      btnDel.style.display = 'inline-flex';
+    }
+  } else {
+    document.getElementById('slicerModalTitle').innerHTML = '<i class="ph-bold ph-sliders"></i> Novo Slicer';
+    dId.value = '';
+    dName.value = '';
+    dJson.value = '{\n  "Quality": ["Layer height", "Line width"]\n}';
+    btnDel.style.display = 'none';
+  }
+}
+
+function closeSlicerModal() {
+  document.getElementById('slicerModalOverlay').classList.remove('open');
+}
+
+async function saveSlicer() {
+  const id = document.getElementById('slId').value;
+  const name = document.getElementById('slName').value.trim();
+  const jsonStr = document.getElementById('slJson').value.trim();
+  
+  if(!name) { showToast('Nome é obrigatório', 'err'); return; }
+  
+  let parsedJson = {};
+  try {
+    parsedJson = JSON.parse(jsonStr);
+  } catch(e) {
+    showToast('O formato JSON é inválido. Corrija-o antes de salvar.', 'err');
+    return;
+  }
+  
+  const payload = {
+    name: name,
+    schema_json: parsedJson,
+    updated_at: new Date().toISOString()
+  };
+  
+  try {
+    if(id) {
+      const { error } = await _adminSb().from('slicer_schemas').update(payload).eq('id', id);
+      if(error) throw error;
+      showToast('Slicer atualizado!');
+    } else {
+      const { error } = await _adminSb().from('slicer_schemas').insert([payload]);
+      if(error) throw error;
+      showToast('Slicer criado!');
+    }
+    closeSlicerModal();
+    loadSlicers();
+  } catch(e) {
+    showToast('Erro ao salvar slicer: ' + e.message, 'err');
+  }
+}
+
+async function deleteSlicer() {
+  if(!confirm('Tem certeza que deseja apagar este slicer da base de dados? Isso pode quebrar formulários existentes no wiki.')) return;
+  const id = document.getElementById('slId').value;
+  try {
+    const { error } = await _adminSb().from('slicer_schemas').delete().eq('id', id);
+    if(error) throw error;
+    showToast('Slicer apagado!', 'success');
+    closeSlicerModal();
+    loadSlicers();
+  } catch(e) {
+    showToast('Erro ao apagar: ' + e.message, 'err');
+  }
+}
 
 // ══════════════════════════════════════════════════════════
 //  PARCEIROS E AFILIADOS
