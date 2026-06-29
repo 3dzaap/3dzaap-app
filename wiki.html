@@ -419,7 +419,7 @@ let SLICER_SCHEMAS = {};
 async function initPage() {
   const sess = await Auth.getSession();
   if(!sess) { window.location.href = 'auth.html'; return; }
-  currentUser = sess.user;
+  currentUser = { id: sess.user_id, email: sess.email };
   Sidebar.setSession(sess);
   
   // Buscar nome do utilizador atual (para exibir no author se necessário)
