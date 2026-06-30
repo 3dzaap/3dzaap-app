@@ -19,6 +19,8 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="utils.js"></script>
+<script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* WIKI HEADER & TABS */
@@ -332,10 +334,10 @@
 </div>
 
 <!-- Modal Criar/Editar Wiki -->
-<div class="modal-overlay modal-lg" id="wikiModalOverlay">
-  <div class="modal-content">
+<div class="modal-overlay modal-lg" id="wikiModalOverlay" onclick="if(event.target===this)closeWikiModal()">
+  <div class="modal">
     <div class="modal-header">
-      <h2 id="wikiModalTitle"><i class="ph-bold ph-file-text"></i> <span data-i18n="wiki.modal.title_add">Publicar Dica no Wiki</span></h2>
+      <div class="modal-title" id="wikiModalTitle"><i class="ph-bold ph-file-text"></i> <span data-i18n="wiki.modal.title_add">Publicar Dica no Wiki</span></div>
       <button class="modal-close" onclick="closeWikiModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
@@ -395,6 +397,8 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="sidebar.js?v=1.3"></script>
+<script>Sidebar.init();</script>
 <script>
 let currentUser = null;
 let currentProfile = null;
