@@ -418,12 +418,15 @@ let SLICER_SCHEMAS = {};
 async function initPage() {
   const sess = await Auth.getSession();
   if(!sess) { window.location.href = 'auth.html'; return; }
-  currentUser = { id: sess.user_id, email: sess.email };
-  Sidebar.setSession(sess);
+  currentUser = { id: sess.user_id, email: sess.email, fname: sess.fname, lname: sess.lname };
   
-  // Buscar nome do utilizador atual (para exibir no author se necessário)
-  const { data: prof } = await _sb.from('profiles').select('full_name').eq('id', currentUser.id).single();
-  currentProfile = prof;
+  const fullName = (sess.fname && sess.lname)
+    ? sess.fname + ' ' + sess.lname
+    : sess.fname || sess.lname
+    || sess.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  currentProfile = { full_name: fullName };
+  
+  Sidebar.setSession(sess);
   
   document.body.classList.remove('loading');
   
@@ -438,7 +441,10 @@ initPage();
 async function loadSlicerSchemas() {
   try {
     const { data, error } = await _sb.from('slicer_schemas').select('*').order('name');
-    if (error) throw error;
+    if (error) {
+      console.warn('slicer_schemas table might not exist yet, ignoring.', error);
+      return;
+    }
     
     SLICER_SCHEMAS = {};
     const select = document.getElementById('wSlicer');
@@ -459,21 +465,26 @@ async function loadSlicerSchemas() {
       select.appendChild(optGeral);
     }
   } catch(e) {
-    console.error('Erro ao carregar Slicer Schemas', e);
+    console.warn('Erro ao carregar Slicer Schemas', e);
   }
 }
 
 async function loadPrinters() {
-  const { data, error } = await _sb.from('printers').select('id, name').order('name');
+  const { data, error } = await _sb.from('printers').select('id, brand, model, custom_name').order('brand');
   if(!error && data) {
-    userPrinters = data;
+    userPrinters = data.map(p => {
+      const pName = p.custom_name || (p.brand + ' ' + p.model);
+      return { id: p.id, name: pName };
+    });
     const grid = document.getElementById('printersList');
-    grid.innerHTML = data.map(p => `
+    grid.innerHTML = userPrinters.map(p => `
       <label class="printer-chk">
         <input type="checkbox" value="${p.name}" class="chk-printer">
         ${p.name}
       </label>
     `).join('');
+  } else if (error) {
+    console.warn('Erro ao carregar printers:', error);
   }
 }
 
@@ -482,23 +493,10 @@ async function loadWikiData() {
   document.getElementById('wikiGrid').style.display = 'none';
   document.getElementById('wikiEmpty').style.display = 'none';
 
-  // 1. Fetch entries (with profile name if possible, mas vamos simplificar se der erro de join)
-  // Como profiles está noutro schema às vezes, fazemos fetch simples e tentamos join manual ou exibimos ID.
+  // 1. Fetch entries
   const { data: entries, error: errE } = await _sb.from('wiki_entries')
     .select('*')
     .order('created_at', { ascending: false });
-
-  // Buscar profiles (manual join) para evitar erro de FK no PostgREST
-  if (entries && entries.length > 0) {
-    const userIds = [...new Set(entries.map(e => e.user_id))];
-    const { data: profs } = await _sb.from('profiles').select('id, full_name').in('id', userIds);
-    if (profs) {
-      entries.forEach(e => {
-        const p = profs.find(pr => pr.id === e.user_id);
-        if (p) e.profiles = { full_name: p.full_name };
-      });
-    }
-  }
 
   // 2. Fetch favorites for this user
   const { data: favs, error: errF } = await _sb.from('wiki_favorites')
@@ -581,7 +579,7 @@ function renderWiki(entries) {
       starsHtml += `<i class="${activeClass} ph-star" onclick="rateEntry('${item.id}', ${i}, event)"></i>`;
     }
 
-    const author = item.profiles ? item.profiles.full_name : 'Maker Anónimo';
+    const author = item.author_name || 'Maker Anónimo';
     const isOwner = item.user_id === currentUser.id;
     
     // Printers compat
@@ -835,6 +833,7 @@ async function saveWiki() {
       showToast(t('wiki.msg.succ_save', 'Dica guardada com sucesso!'));
     } else {
       payload.user_id = currentUser.id;
+      payload.author_name = currentProfile ? currentProfile.full_name : (currentUser.fname || 'Maker Anónimo');
       const { error } = await _sb.from('wiki_entries').insert([payload]);
       if(error) throw error;
       showToast(t('wiki.msg.succ_save', 'Dica guardada com sucesso!'));

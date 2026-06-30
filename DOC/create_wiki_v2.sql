@@ -13,6 +13,21 @@ CREATE TABLE IF NOT EXISTS public.wiki_entries (
 ALTER TABLE public.wiki_entries ADD COLUMN IF NOT EXISTS slicer_name TEXT DEFAULT 'Geral';
 ALTER TABLE public.wiki_entries ADD COLUMN IF NOT EXISTS printers_compat TEXT[] DEFAULT array[]::TEXT[];
 ALTER TABLE public.wiki_entries ADD COLUMN IF NOT EXISTS content_json JSONB DEFAULT '{}'::JSONB;
+ALTER TABLE public.wiki_entries ADD COLUMN IF NOT EXISTS author_name TEXT DEFAULT 'Maker Anónimo';
+
+-----------------------------------------
+-- 1.5. SLICER SCHEMAS
+-----------------------------------------
+CREATE TABLE IF NOT EXISTS public.slicer_schemas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL UNIQUE,
+    schema_json JSONB DEFAULT '{}'::JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.slicer_schemas ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone authenticated can view slicer_schemas" ON public.slicer_schemas;
+CREATE POLICY "Anyone authenticated can view slicer_schemas" ON public.slicer_schemas FOR SELECT USING (auth.role() = 'authenticated');
 
 -- RLS Configuration for Entries
 ALTER TABLE public.wiki_entries ENABLE ROW LEVEL SECURITY;
