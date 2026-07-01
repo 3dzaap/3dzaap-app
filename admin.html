@@ -197,7 +197,8 @@
 .s-manual   { background: rgba(139,92,246,.14); color: var(--admin-purple); border-color: rgba(139,92,246,.25); }
 
 /* ── Admin Table ────────────────────────────────────────── */
-.admin-table { font-size: .83rem; }
+.table-wrap { overflow-x: auto; width: 100%; }
+.admin-table { font-size: .83rem; width: 100%; min-width: 900px; }
 .admin-table thead th:first-child { border-radius: 0; }
 .admin-table tbody td { padding: 12px 14px; }
 
@@ -1626,7 +1627,7 @@ function renderCustomersTable(data) {
           <span title="Moeda: ${displayCurr}" style="cursor:help">${flag}</span> ${escH(c.name)}
         </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-          ${escH(c.slug)} • Owner: <span class="mono">${_authMap[c.owner_id]?.email ? escH(_authMap[c.owner_id].email) : c.id.slice(0,8)+'...'}</span>
+          Owner: <span class="mono">${_authMap[c.owner_id]?.email ? escH(_authMap[c.owner_id].email) : c.id.slice(0,8)+'...'}</span>
         </div>
       </td>
       <td>
