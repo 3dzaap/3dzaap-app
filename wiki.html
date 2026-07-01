@@ -206,9 +206,12 @@
 }
 .slicer-section {
   display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+}
+.slicer-section.active {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px 0;
 }
 .modal-lg .modal-content {
   background: var(--bg-body);
