@@ -1723,8 +1723,8 @@ function renderPricing(locale) {
   
   // Normalized Price Values (from landing page)
   const PRICES = {
-    monthly: { starter: 9.90,  pro: 19.90, business: 39.90 },
-    annual:  { starter: 7.90,  pro: 15.90, business: 31.90 }
+    monthly: { starter: 0,  pro: 19.90, business: 39.90 },
+    annual:  { starter: 0,  pro: 15.90, business: 31.90 }
   };
   
   let multiplier = 1;
@@ -1808,6 +1808,24 @@ async function startCheckout(planId) {
   const oldText = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="ph-bold ph-circle-notch ph-spin"></i> A processar...';
+  
+  if (planId === 'starter') {
+    try {
+      showToast('<i class="ph-bold ph-circle-notch ph-spin"></i> A atualizar plano...', 'ok');
+      const { error } = await _sb.rpc('update_company_plan', { p_company_id: _session.companyId, p_plan: 'starter' });
+      if (error) throw error;
+      
+      showToast('<i class="ph-bold ph-check-circle"></i> Plano alterado para Starter com sucesso!', 'ok');
+      setTimeout(() => window.location.reload(), 1500);
+      return;
+    } catch(e) {
+      console.error(e);
+      showToast('Erro ao alterar plano: ' + e.message, 'err');
+      btn.disabled = false;
+      btn.innerHTML = oldText;
+      return;
+    }
+  }
   
   try {
     showToast('<i class="ph-bold ph-shield-check"></i> A ligar ao Stripe de forma segura...', 'ok');
