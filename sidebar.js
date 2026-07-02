@@ -42,8 +42,8 @@ const Sidebar = (() => {
         { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '<i class="ph-bold ph-palette"></i>', label: 'Materiais' },
         { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '<i class="ph-bold ph-printer"></i>', label: 'Impressoras' },
         { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '<i class="ph-bold ph-archive"></i>', label: 'BackOffice',  lockId: 'navLockBackoffice' },
-        { id: 'tools', i18nKey: 'nav.tools', href: 'tools.html', icon: '<i class="ph-bold ph-wrench"></i>', label: 'Ferramentas', superAdmin: true },
-        { id: 'wiki',  i18nKey: 'nav.wiki',  href: 'wiki.html',  icon: '<i class="ph-bold ph-book-bookmark"></i>', label: 'Wiki', superAdmin: true },
+        { id: 'tools', i18nKey: 'nav.tools', href: 'tools.html', icon: '<i class="ph-bold ph-wrench"></i>', label: 'Ferramentas' },
+        { id: 'wiki',  i18nKey: 'nav.wiki',  href: 'wiki.html',  icon: '<i class="ph-bold ph-book-bookmark"></i>', label: 'Wiki' },
       ]
     },
     {
