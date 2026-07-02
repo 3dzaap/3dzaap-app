@@ -180,7 +180,7 @@
 }
 
 /* MODAL WIKI */
-.modal-lg .modal-content { max-width: 900px; height: 90vh; display: flex; flex-direction: column; }
+.modal-lg .modal { max-width: 900px; height: 90vh; display: flex; flex-direction: column; }
 .modal-lg .modal-body { flex: 1; overflow-y: auto; padding-right: 8px; }
 
 /* DYNAMIC FORM (SLICER) */
@@ -213,14 +213,7 @@
   gap: 16px;
   padding: 16px 0;
 }
-.modal-lg .modal-content {
-  background: var(--bg-body);
-  width: 100%; max-width: 800px;
-  border-radius: var(--rl);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  display: flex; flex-direction: column;
-  max-height: 90vh;
-}
+
 .modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
@@ -376,6 +369,7 @@
             <option value="Guia">Guia Passo a Passo</option>
             <option value="Outro">Outro</option>
           </select>
+        </div>
       </div>
 
       <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
@@ -413,7 +407,7 @@
 
       <div class="form-group" style="margin-top:24px">
         <label class="form-label" data-i18n="wiki.modal.content">Anotações Adicionais / Dicas</label>
-        <textarea id="wContent" class="wiki-editor" data-i18n="[placeholder]wiki.modal.content_ph" placeholder="Descreva o motivo desta configuração, qual o tipo de peça ideal para ela, etc..."></textarea>
+        <textarea id="wContent" class="form-input form-textarea wiki-editor" style="width:100%; min-height:120px;" data-i18n="[placeholder]wiki.modal.content_ph" placeholder="Detalhes sobre a calibração, notas adicionais..."></textarea>
       </div>
       
       <div id="wMediaContainer"></div>
