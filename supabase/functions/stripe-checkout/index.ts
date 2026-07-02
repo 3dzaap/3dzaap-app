@@ -151,7 +151,6 @@ serve(async (req) => {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      allow_promotion_codes: true, // Ainda permite que o utilizador insira um cupom manualmente
       tax_id_collection: { enabled: true },
       customer_update: {
         name: 'auto',
@@ -167,7 +166,9 @@ serve(async (req) => {
 
     if (stripeCouponId) {
       checkoutOptions.discounts = [{ coupon: stripeCouponId }];
-      checkoutOptions.allow_promotion_codes = false; // Stripe não permite allow_promotion_codes junto com discounts array
+      checkoutOptions.allow_promotion_codes = false;
+    } else {
+      checkoutOptions.allow_promotion_codes = true;
     }
 
     const session = await stripe.checkout.sessions.create(checkoutOptions);
