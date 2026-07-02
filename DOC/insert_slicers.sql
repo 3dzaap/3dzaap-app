@@ -7,8 +7,12 @@ INSERT INTO public.slicer_schemas (name, schema_json) VALUES
   "Quality": [
     "Layer height",
     "Initial layer height",
-    "Line width",
-    "Seam position"
+    "Line width (Outer wall)",
+    "Line width (Inner wall)",
+    "Seam position",
+    "Wall generator (Classic/Arachne)",
+    "Ironing Type",
+    "Ironing Flow"
   ],
   "Strength": [
     "Wall loops",
@@ -16,27 +20,39 @@ INSERT INTO public.slicer_schemas (name, schema_json) VALUES
     "Bottom shell layers",
     "Sparse infill density",
     "Sparse infill pattern",
-    "Infill combination"
+    "Infill combination",
+    "Infill/wall overlap"
   ],
   "Speed": [
     "Initial layer speed",
     "Outer wall speed",
     "Inner wall speed",
     "Sparse infill speed",
+    "Top surface speed",
     "Travel speed",
-    "Acceleration (normal/outer wall)"
+    "Normal printing acceleration"
   ],
   "Support": [
     "Enable support",
-    "Support type (normal/tree)",
+    "Support type (Normal/Tree)",
+    "Support style (Snug/Default)",
+    "Threshold angle",
     "Top Z distance",
-    "Bottom Z distance",
-    "Support interface"
+    "Base pattern spacing",
+    "Top interface layers"
   ],
-  "Cooling": [
-    "Min print speed",
-    "Fan speed",
-    "Bridge fan speed"
+  "Others (Brim, etc)": [
+    "Brim type",
+    "Brim width",
+    "Prime tower width",
+    "Fuzzy skin"
+  ],
+  "Filament (Overrides)": [
+    "Nozzle temperature",
+    "Bed temperature (Textured PEI)",
+    "Max volumetric speed",
+    "Flow ratio",
+    "Cooling overhang threshold"
   ]
 }'::jsonb),
 
@@ -44,16 +60,19 @@ INSERT INTO public.slicer_schemas (name, schema_json) VALUES
   "Quality": [
     "Layer height",
     "Initial layer height",
-    "Line width",
+    "Line width (Outer/Inner)",
     "Seam position",
-    "Precision / Resolution"
+    "Scarf joint seam",
+    "Precise wall",
+    "Wall generator (Classic/Arachne)",
+    "Ironing Type"
   ],
   "Strength": [
     "Wall loops",
-    "Top surface skin layers",
-    "Bottom surface skin layers",
+    "Top/Bottom shell layers",
     "Sparse infill density",
     "Sparse infill pattern",
+    "Infill combination",
     "Infill/wall overlap"
   ],
   "Speed": [
@@ -62,19 +81,28 @@ INSERT INTO public.slicer_schemas (name, schema_json) VALUES
     "Inner wall speed",
     "Infill speed",
     "Travel speed",
-    "Acceleration"
+    "Acceleration (Normal/Outer)"
   ],
   "Support": [
     "Enable support",
-    "Support style",
+    "Support style (Snug/Default)",
+    "Support type (Normal/Tree)",
     "Top Z distance",
-    "Bottom Z distance",
     "Support interface pattern"
   ],
-  "Cooling": [
-    "Fan speed",
-    "Overhang fan speed",
-    "Min print speed"
+  "Others (Brim, etc)": [
+    "Brim type",
+    "Brim width",
+    "Make overhangs printable",
+    "Fuzzy skin"
+  ],
+  "Filament (Overrides)": [
+    "Nozzle temperature",
+    "Bed temperature",
+    "Flow ratio",
+    "Pressure advance",
+    "Max volumetric speed",
+    "Cooling overhang threshold"
   ]
 }'::jsonb),
 

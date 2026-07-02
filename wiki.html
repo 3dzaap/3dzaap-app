@@ -376,6 +376,19 @@
             <option value="Guia">Guia Passo a Passo</option>
             <option value="Outro">Outro</option>
           </select>
+      </div>
+
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div class="form-group" style="flex:1;min-width:150px">
+          <label class="form-label">Visibilidade <span class="hint">*</span></label>
+          <select id="wIsPublic" class="form-input">
+            <option value="false">🔒 Privado (Apenas a minha empresa)</option>
+            <option value="true">🌍 Público (Toda a comunidade)</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2;min-width:250px">
+          <label class="form-label">Link de Referência (Opcional)</label>
+          <input type="url" id="wExternalLink" class="form-input" placeholder="Ex: https://youtube.com/watch?v=..." oninput="previewMedia()">
         </div>
       </div>
 
@@ -402,6 +415,8 @@
         <label class="form-label" data-i18n="wiki.modal.content">Anotações Adicionais / Dicas</label>
         <textarea id="wContent" class="wiki-editor" data-i18n="[placeholder]wiki.modal.content_ph" placeholder="Descreva o motivo desta configuração, qual o tipo de peça ideal para ela, etc..."></textarea>
       </div>
+      
+      <div id="wMediaContainer"></div>
     </div>
     <div class="modal-footer" style="display:flex;justify-content:space-between">
       <button class="btn btn-danger btn-ghost" id="btnDeleteWiki" style="display:none" onclick="deleteWiki()"><i class="ph-bold ph-trash"></i> <span data-i18n="wiki.modal.delete">Apagar</span></button>
@@ -443,7 +458,7 @@ async function initPage() {
     ? sess.fname + ' ' + sess.lname
     : sess.fname || sess.lname
     || sess.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  currentProfile = { full_name: fullName };
+  currentProfile = { full_name: fullName, company_id: sess.companyId };
   
   Sidebar.setSession(sess);
   
@@ -606,10 +621,19 @@ function renderWiki(entries) {
       ? item.printers_compat.join(', ') 
       : 'Qualquer Impressora';
 
+    const visibilityBadge = item.is_public 
+      ? '<span class="wcard-badge" style="background:rgba(16, 185, 129, 0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2)"><i class="ph-bold ph-globe"></i> Público</span>'
+      : '<span class="wcard-badge" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2)"><i class="ph-bold ph-lock-key"></i> Privado</span>';
+
+    const extLinkBtn = item.external_link
+      ? `<a href="${item.external_link}" target="_blank" onclick="event.stopPropagation()" class="view-btn" style="background:transparent; border:1px solid var(--border); color:var(--text-main); margin-right:8px;" title="Ver Fonte (Link Externo)"><i class="ph-bold ph-link"></i></a>`
+      : '';
+
     grid.innerHTML += `
       <div class="wiki-card" onclick="openWikiModal('${item.id}', ${isOwner})">
         <div class="wcard-top">
           <div class="wcard-badges">
+            ${visibilityBadge}
             <span class="wcard-badge badge-cat">${item.category}</span>
             <span class="wcard-badge badge-slicer">${item.slicer_name}</span>
           </div>
@@ -624,6 +648,7 @@ function renderWiki(entries) {
         <div class="wcard-stats">
           <div class="stars">${starsHtml}</div>
           <span class="rating-text">${avg > 0 ? avg : 'S/ Classific.'} (${entryRatings.length})</span>
+          ${extLinkBtn}
           ${isOwner ? '<button class="view-btn">Editar</button>' : '<button class="view-btn">Ver Dica</button>'}
         </div>
       </div>
@@ -683,8 +708,11 @@ function openWikiModal(id = null, isOwner = true) {
   document.getElementById('wId').value = '';
   document.getElementById('wTitle').value = '';
   document.getElementById('wCategory').value = 'Configuração (Perfil)';
+  document.getElementById('wIsPublic').value = 'false';
+  document.getElementById('wExternalLink').value = '';
   document.getElementById('wSlicer').value = 'Bambu Studio';
   document.getElementById('wContent').value = '';
+  document.getElementById('wMediaContainer').innerHTML = '';
   document.querySelectorAll('.chk-printer').forEach(chk => chk.checked = false);
   
   if(id) {
@@ -693,6 +721,8 @@ function openWikiModal(id = null, isOwner = true) {
       document.getElementById('wikiModalTitle').innerHTML = isOwner ? '<i class="ph-bold ph-pencil"></i> Editar Dica' : '<i class="ph-bold ph-eye"></i> Visualizar Dica';
       document.getElementById('wId').value = entry.id;
       document.getElementById('wTitle').value = entry.title;
+      document.getElementById('wIsPublic').value = entry.is_public ? 'true' : 'false';
+      document.getElementById('wExternalLink').value = entry.external_link || '';
       
       const catOpt = Array.from(document.getElementById('wCategory').options).find(o => o.value === entry.category);
       if(catOpt) document.getElementById('wCategory').value = entry.category;
@@ -710,6 +740,7 @@ function openWikiModal(id = null, isOwner = true) {
       }
       
       renderSlicerForm(entry.content_json);
+      previewMedia();
       
       if(isOwner) {
         document.getElementById('btnDeleteWiki').style.display = 'flex';
@@ -819,6 +850,52 @@ function getSlicerJson() {
   return json;
 }
 
+function getEmbedIframe(url) {
+  if (!url) return '';
+  
+  let embedUrl = '';
+  
+  if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
+    const videoId = url.includes('youtu.be/') ? url.split('youtu.be/')[1].split('?')[0] : new URL(url).searchParams.get('v');
+    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    return `<iframe width="100%" height="315" src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="border-radius:8px; margin-top:16px;"></iframe>`;
+  }
+  
+  if (url.includes('instagram.com/p/') || url.includes('instagram.com/reel/')) {
+    embedUrl = url.split('?')[0] + '/embed';
+    return `<iframe width="100%" height="400" src="${embedUrl}" frameborder="0" scrolling="no" allowtransparency="true" style="border-radius:8px; margin-top:16px;"></iframe>`;
+  }
+  
+  if (url.includes('tiktok.com/')) {
+    const videoId = url.split('/video/')[1]?.split('?')[0];
+    if (videoId) {
+        return `<iframe width="100%" height="600" src="https://www.tiktok.com/embed/v2/${videoId}" frameborder="0" allow="fullscreen" style="border-radius:8px; margin-top:16px;"></iframe>`;
+    }
+  }
+  
+  if (url.includes('twitch.tv/videos/')) {
+    const videoId = url.split('videos/')[1]?.split('?')[0];
+    return `<iframe src="https://player.twitch.tv/?video=${videoId}&parent=${window.location.hostname}&autoplay=false" frameborder="0" allowfullscreen="true" scrolling="no" height="378" width="100%" style="border-radius:8px; margin-top:16px;"></iframe>`;
+  }
+
+  return `<div style="margin-top:16px; padding:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-size:0.85rem; color:var(--text-main);">
+              <i class="ph-bold ph-link" style="margin-right:4px;"></i> Material de Apoio Externo
+            </div>
+            <a href="${url}" target="_blank" class="btn btn-primary btn-sm">Abrir Link Original</a>
+          </div>`;
+}
+
+function previewMedia() {
+    const url = document.getElementById('wExternalLink').value.trim();
+    const container = document.getElementById('wMediaContainer');
+    if(url) {
+        container.innerHTML = getEmbedIframe(url);
+    } else {
+        container.innerHTML = '';
+    }
+}
+
 // SAVE / DELETE
 async function saveWiki() {
   const id = document.getElementById('wId').value;
@@ -835,6 +912,9 @@ async function saveWiki() {
     return;
   }
 
+  const isPublic = document.getElementById('wIsPublic').value === 'true';
+  const extLink = document.getElementById('wExternalLink').value.trim();
+
   const payload = {
     title,
     category: cat,
@@ -842,6 +922,8 @@ async function saveWiki() {
     printers_compat: selPrinters,
     content_json: contentJson,
     content,
+    is_public: isPublic,
+    external_link: extLink || null,
     updated_at: new Date().toISOString()
   };
 
@@ -852,6 +934,7 @@ async function saveWiki() {
       showToast(t('wiki.msg.succ_save', 'Dica guardada com sucesso!'));
     } else {
       payload.user_id = currentUser.id;
+      payload.company_id = currentProfile ? currentProfile.company_id : null;
       payload.author_name = currentProfile ? currentProfile.full_name : (currentUser.fname || 'Maker Anónimo');
       const { error } = await _sb.from('wiki_entries').insert([payload]);
       if(error) throw error;
