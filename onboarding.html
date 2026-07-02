@@ -249,10 +249,10 @@ const STATE = {
   busy: false
 };
 const PRICES_MAP = {
-  'eur': { sym: '€', starter:{monthly:9.9, yearly:7.9}, pro:{monthly:19.9, yearly:15.9}, business:{monthly:39.9, yearly:31.9} },
-  'brl': { sym: 'R$', starter:{monthly:49.9, yearly:39.9}, pro:{monthly:99.9, yearly:79.9}, business:{monthly:199.9, yearly:159.9} },
-  'usd': { sym: '$', starter:{monthly:10.9, yearly:8.9}, pro:{monthly:21.9, yearly:17.9}, business:{monthly:44.9, yearly:35.9} },
-  'gbp': { sym: '£', starter:{monthly:8.9, yearly:7.9}, pro:{monthly:17.9, yearly:14.9}, business:{monthly:34.9, yearly:27.9} }
+  'eur': { sym: '€', starter:{monthly:0, yearly:0}, pro:{monthly:19.9, yearly:15.9}, business:{monthly:39.9, yearly:31.9} },
+  'brl': { sym: 'R$', starter:{monthly:0, yearly:0}, pro:{monthly:99.9, yearly:79.9}, business:{monthly:199.9, yearly:159.9} },
+  'usd': { sym: '$', starter:{monthly:0, yearly:0}, pro:{monthly:21.9, yearly:17.9}, business:{monthly:44.9, yearly:35.9} },
+  'gbp': { sym: '£', starter:{monthly:0, yearly:0}, pro:{monthly:17.9, yearly:14.9}, business:{monthly:34.9, yearly:27.9} }
 };
 
 function getPricingConfig() {
@@ -340,7 +340,7 @@ function renderPlans() {
   
   const t = (k) => window.i18n ? window.i18n.getNestedTranslation(k) : null;
   const isAnn = STATE.billing === 'yearly';
-  const plans = ['trial', 'starter', 'pro', 'business'];
+  const plans = ['starter', 'pro', 'business'];
   const pricing = getPricingConfig();
   
   container.innerHTML = '';
@@ -392,11 +392,20 @@ async function finishOnboarding() {
       config
     });
 
-    // 2. Se escolheu o plano trial gratuito, segue o fluxo normal
-    if (STATE.plan === 'trial') {
+    // 2. Se escolheu um plano gratuito, segue o fluxo normal sem Stripe
+    if (STATE.plan === 'trial' || STATE.plan === 'starter') {
       document.getElementById('onboardingPanel').style.display = 'none';
       document.getElementById('successPanel').style.display = 'block';
       document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
+      
+      // Update plan to starter if it was selected instead of trial
+      if (STATE.plan === 'starter') {
+        try {
+          if (typeof _sb !== 'undefined') {
+            await _sb.rpc('update_company_plan', { p_company_id: company.id, p_plan: 'starter' });
+          }
+        } catch(e) { console.error('Error upgrading to starter:', e); }
+      }
       return;
     }
 

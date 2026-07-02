@@ -2604,7 +2604,7 @@ function criarPedido() {
 
   // Feature gating check for orders
   const plan = (_sessionData?.plan || localStorage.getItem('3dzaap_user_plan') || 'trial').replace('_ano', '');
-  if (!['trial', 'pro', 'business'].includes(plan)) {
+  if (!['trial', 'starter', 'starter_ano', 'pro', 'pro_ano', 'business', 'business_ano'].includes(plan)) {
     if (typeof UI !== 'undefined' && UI.showFeatureGate) {
       UI.showFeatureGate('orders');
     } else {

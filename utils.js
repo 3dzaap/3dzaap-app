@@ -217,7 +217,7 @@ var UI = {
 
     var planLabels = window.PLAN_LABELS || { starter:'Starter', pro:'Pro', business:'Business' };
     var sym = window.getCurrency ? window.getCurrency() : '€';
-    var planPrices = window.PLAN_PRICES || { starter: sym + ' 9.90', pro: sym + ' 19.90', business: sym + ' 39.90' };
+    var planPrices = window.PLAN_PRICES || { starter: sym + ' 0.00', pro: sym + ' 19.90', business: sym + ' 39.90' };
 
     var plansHtml = '<div class="gate-plans">' +
       cfg.plans.map(function(p) {

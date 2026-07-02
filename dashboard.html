@@ -873,7 +873,7 @@ const PLAN_FEATURES = {
 
 const PLAN_LABELS = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
 const PLAN_PRICES = { 
-  starter: (window.getCurrency ? window.getCurrency() : '€') + '9,90/mês', 
+  starter: (window.getCurrency ? window.getCurrency() : '€') + '0,00/mês', 
   pro: (window.getCurrency ? window.getCurrency() : '€') + '19,90/mês', 
   business: (window.getCurrency ? window.getCurrency() : '€') + '39,90/mês' 
 };
@@ -1800,10 +1800,52 @@ function applyFeatureGating() {
     }
   });
 
-  // Starter: redirecionar para calculadora se tentar aceder ao dashboard
-  if (plan === 'starter') {
+  // Starter: Blur nas métricas financeiras (Estratégia Freemium PLG)
+  if (plan === 'starter' || plan === 'starter_ano') {
+    // Esconder o banner antigo que bloqueava tudo
     const banner = document.getElementById('starterBanner');
-    if (banner) banner.style.display = '';
+    if (banner) banner.style.display = 'none';
+
+    // Blur nos cartões financeiros
+    const financialCards = [
+      document.querySelector('.stat-card-v2:nth-child(1)'), // Cash flow
+      document.querySelector('.health-card'), // Health score
+      ...document.querySelectorAll('.health-breakdown') // Health breakdown
+    ];
+
+    financialCards.forEach(card => {
+      if (!card) return;
+      card.style.position = 'relative';
+      // Blur no conteúdo interno
+      Array.from(card.children).forEach(child => {
+        if (!child.classList.contains('freemium-overlay')) {
+          child.style.filter = 'blur(6px)';
+          child.style.pointerEvents = 'none';
+          child.style.userSelect = 'none';
+          child.style.opacity = '0.5';
+        }
+      });
+
+      // Adicionar o overlay
+      if (!card.querySelector('.freemium-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'freemium-overlay';
+        overlay.style.position = 'absolute';
+        overlay.style.inset = '0';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '10';
+        overlay.style.background = 'rgba(255,255,255,0.1)';
+        overlay.innerHTML = `
+          <i class="ph-bold ph-lock-key" style="font-size:2rem; color:var(--orange); margin-bottom:12px;"></i>
+          <span style="font-weight:700; color:var(--dark); margin-bottom:8px;">Funcionalidade Pro</span>
+          <button class="btn btn-sm btn-orange" onclick="window.location.href='settings.html?tab=assinatura'" style="box-shadow:0 4px 14px rgba(245,148,58,.25);">Desbloquear</button>
+        `;
+        card.appendChild(overlay);
+      }
+    });
   }
 }
 

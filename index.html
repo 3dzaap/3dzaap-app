@@ -722,18 +722,18 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
         <span class="pname" data-i18n="pricing.starter.name">Starter</span>
         <div class="pamt-wrap">
           <span class="pcur" id="curr-s">€</span>
-          <span class="pamt" id="sp">9.90</span>
+          <span class="pamt" id="sp">0</span>
           <span class="pper" data-i18n="pricing.per_month">/mês</span>
         </div>
-        <p class="pdesc" data-i18n="pricing.starter.desc">Calculadora e Filamentos.</p>
+        <p class="pdesc" data-i18n="pricing.starter.desc">O seu primeiro passo gratuito na gestão.</p>
         <ul class="pfeatures">
-          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora Ilimitada</span></li>
-          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Gestão de Materiais</span></li>
-          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.2">Catálogo de Máquinas</span></li>
-          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.3">Exportação de Dados</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.0">Calculadora de Precisão</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.1">Até 5 Pedidos e Clientes</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.2">Gestão de Materiais (Até 5)</span></li>
+          <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.3">Acesso Limitado ao Dashboard</span></li>
           <li class="pfeature"><span>✓</span> <span data-i18n="pricing.starter.features.4">Temas Claro/Escuro</span></li>
         </ul>
-        <a href="auth.html?mode=signup&plan=starter" class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Escolher Starter</a>
+        <a href="auth.html?mode=signup&plan=starter" class="btn btn-g pbtn" data-i18n="pricing.starter.cta">Começar Grátis</a>
       </div>
 
       <div class="pcard gc fu">
@@ -923,7 +923,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
 
 <script src="i18n.js"></script>
 <script>
-const PRICES={monthly:{starter:9.90,pro:19.90,business:39.90},annual:{starter:7.90,pro:15.90,business:31.90}};
+const PRICES={monthly:{starter:0,pro:19.90,business:39.90},annual:{starter:0,pro:15.90,business:31.90}};
 const LOCALE_FMT={'pt-PT':{sym:'€',mult:1,locale:'pt-PT'},'es':{sym:'€',mult:1,locale:'es-ES'},'en-US':{sym:'$',mult:1,locale:'en-US'},'en':{sym:'$',mult:1,locale:'en-US'},'pt-BR':{sym:'R$',mult:5,locale:'pt-BR'},'en-GB':{sym:'£',mult:1,locale:'en-GB'},'en-EU':{sym:'€',mult:1,locale:'en-EU'}, 'fr':{sym:'€',mult:1,locale:'fr-FR'}, 'de':{sym:'€',mult:1,locale:'de-DE'}};
 
 function _updatePricingDisplay(){

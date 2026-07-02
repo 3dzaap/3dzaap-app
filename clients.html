@@ -467,6 +467,14 @@ async function lookupAddress() {
 }
 
 function openClientModal(id = null) {
+  if (!id && session && session.plan && session.plan.startsWith('starter')) {
+    if (clients.length >= (Sidebar.PLAN_LIMITS['starter'].clients || 5)) {
+      if (window.Sidebar && Sidebar.showPaywall) {
+        Sidebar.showPaywall('Clientes', 'Atingiu o limite de 5 clientes no plano Gratuito. Faça upgrade para o plano Pro para adicionar clientes ilimitados e criar campanhas de venda.');
+      }
+      return;
+    }
+  }
   _editClId = id;
   const title = document.getElementById('clientModalTitle');
   

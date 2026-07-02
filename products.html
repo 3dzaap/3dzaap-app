@@ -685,6 +685,14 @@ function onTechChange() {
 }
 
 function openProductModal(id = null) {
+  if (!id && session && session.plan && session.plan.startsWith('starter')) {
+    if (products.length >= (Sidebar.PLAN_LIMITS['starter'].products || 5)) {
+      if (window.Sidebar && Sidebar.showPaywall) {
+        Sidebar.showPaywall('Produtos', 'Atingiu o limite de 5 produtos no plano Gratuito. Faça upgrade para o plano Pro para criar catálogos ilimitados e vender mais.');
+      }
+      return;
+    }
+  }
   _editPrId = id;
   const title = document.getElementById('productModalTitle');
   const btnDel = document.getElementById('btnDeleteProduct');

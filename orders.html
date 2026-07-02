@@ -2729,6 +2729,14 @@
     };
 
     function openModal(id = null) {
+      if (!id && session && session.plan && session.plan.startsWith('starter')) {
+        if (orders.length >= (Sidebar.PLAN_LIMITS['starter'].orders || 5)) {
+          if (window.Sidebar && Sidebar.showPaywall) {
+            Sidebar.showPaywall('Pedidos', 'Atingiu o limite de 5 pedidos no plano Gratuito. Faça upgrade para o plano Pro para criar pedidos ilimitados e organizar todas as suas vendas.');
+          }
+          return;
+        }
+      }
       if (id) clearUnread(id);
       editingId = id;
       _items = [];

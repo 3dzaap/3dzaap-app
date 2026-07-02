@@ -299,8 +299,8 @@ const Sidebar = (() => {
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
     trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    starter:      { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
-    starter_ano:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, clients:false, products:false, financial:false, backoffice:false, settings:false },
+    starter:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:false },
+    starter_ano:  { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:false },
     pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
     pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
     business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
@@ -308,13 +308,13 @@ const Sidebar = (() => {
   };
 
   const PLAN_LIMITS = {
-    trial:        { materials: 10,   printers: 1    },
-    starter:      { materials: 10,   printers: 1    },
-    starter_ano:  { materials: 10,   printers: 1    },
-    pro:          { materials: null, printers: null },
-    pro_ano:      { materials: null, printers: null },
-    business:     { materials: null, printers: null },
-    business_ano: { materials: null, printers: null },
+    trial:        { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
+    starter:      { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
+    starter_ano:  { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
+    pro:          { materials: null, printers: null, orders: null, clients: null, products: null },
+    pro_ano:      { materials: null, printers: null, orders: null, clients: null, products: null },
+    business:     { materials: null, printers: null, orders: null, clients: null, products: null },
+    business_ano: { materials: null, printers: null, orders: null, clients: null, products: null },
   };
 
   const LOCK_LABELS = { orders:'Pro+', clients:'Pro+', products:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
@@ -415,8 +415,33 @@ const Sidebar = (() => {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // ── PAYWALL / UPSELL (Freemium) ───────────────────────────
+  function showPaywall(featureName, message) {
+    const defaultMsg = `Atingiu o limite do plano Gratuito para ${featureName}. Faça upgrade para o plano Pro para remover limites e expandir o seu negócio.`;
+    const html = `
+      <div id="freemiumPaywall" class="modal-overlay" style="z-index:99999; display:flex;">
+        <div class="modal" style="max-width: 450px; text-align:center; padding:32px 24px;">
+          <div style="font-size:3rem; color:var(--orange); margin-bottom:16px;">
+            <i class="ph-bold ph-lock-key"></i>
+          </div>
+          <h3 style="margin-bottom:12px; font-size:1.4rem;">Desbloqueie o Pro</h3>
+          <p style="color:var(--muted); margin-bottom:24px; font-size:1rem; line-height:1.5;">
+            ${message || defaultMsg}
+          </p>
+          <div style="display:flex; gap:12px; justify-content:center;">
+            <button class="btn btn-outline" onclick="document.getElementById('freemiumPaywall').remove();">Cancelar</button>
+            <button class="btn btn-orange" onclick="window.location.href='settings.html?tab=assinatura'" style="box-shadow:0 4px 14px rgba(245,148,58,.25);">
+              <i class="ph-bold ph-star"></i> Ver Planos
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+
   // ── PUBLIC API ────────────────────────────────────────────
-  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, exitImpersonate, PLAN_FEATURES, PLAN_LIMITS, updateBadges: _checkUnreadNotifications };
+  return { init, setSession, toggle, close, toggleTheme, _toggleHelp, _toggleUserMenu, _closeUserMenu, _doLogout, exitImpersonate, PLAN_FEATURES, PLAN_LIMITS, updateBadges: _checkUnreadNotifications, showPaywall };
 
 })();
 
