@@ -1035,7 +1035,7 @@
                       <i class="ph-bold ph-users-three"></i>
                     </div>
                     <div>
-                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Em Descoberta (Starter)</div>
+                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="settings.partners.active.starter_lbl">Em Descoberta (Starter)</div>
                       <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerStarter">0</div>
                     </div>
                   </div>
@@ -1046,7 +1046,7 @@
                       <i class="ph-bold ph-check-circle"></i>
                     </div>
                     <div>
-                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Objetivos Alcançados (Ativos)</div>
+                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="settings.partners.active.pro_lbl">Objetivos Alcançados (Ativos)</div>
                       <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerPro">0</div>
                     </div>
                   </div>
@@ -1054,10 +1054,10 @@
 
                 <!-- Lista de Registos Recentes -->
                 <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
-                  <div style="font-size: 1rem; font-weight: 700; color: var(--text-color); margin-bottom: 16px;"><i class="ph-bold ph-list-dashes"></i> Últimas Inscrições no seu Ecossistema</div>
+                  <div style="font-size: 1rem; font-weight: 700; color: var(--text-color); margin-bottom: 16px;"><i class="ph-bold ph-list-dashes"></i> <span data-i18n="settings.partners.active.recent_title">Últimas Inscrições no seu Ecossistema</span></div>
                   <div id="partnerLeadsList" style="display: flex; flex-direction: column; gap: 8px;">
                     <!-- Preenchido via JS -->
-                    <div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;">A carregar dados...</div>
+                    <div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;" data-i18n="settings.partners.active.loading_leads">A carregar dados...</div>
                   </div>
                 </div>
 
@@ -2164,18 +2164,23 @@ async function executeDeleteSelfAccount() {
             const leadsList = document.getElementById('partnerLeadsList');
             leadsList.innerHTML = '';
             if(!statsData.recent_leads || statsData.recent_leads.length === 0) {
-              leadsList.innerHTML = '<div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;">Ainda não tem inscrições. Partilhe o seu link!</div>';
+              const noLeadsText = (window.i18n && window.i18n.t) ? window.i18n.t('settings.partners.active.no_leads') : 'Ainda não tem inscrições. Partilhe o seu link!';
+              leadsList.innerHTML = `<div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;">${noLeadsText}</div>`;
             } else {
+              const memberLbl = (window.i18n && window.i18n.t) ? window.i18n.t('settings.partners.active.member') : 'Membro';
+              const statusProLbl = (window.i18n && window.i18n.t) ? window.i18n.t('settings.partners.active.status_pro') : 'Objetivo Alcançado';
+              const statusStarterLbl = (window.i18n && window.i18n.t) ? window.i18n.t('settings.partners.active.status_starter') : 'Em Descoberta';
+
               statsData.recent_leads.forEach(lead => {
                 const date = new Date(lead.created_at).toLocaleDateString();
                 const isPro = lead.plan === 'pro' || lead.plan === 'business';
                 const statusColor = isPro ? '#22c55e' : '#eab308';
                 const statusIcon = isPro ? 'ph-check-circle' : 'ph-users-three';
-                const statusText = isPro ? 'Objetivo Alcançado' : 'Em Descoberta';
+                const statusText = isPro ? statusProLbl : statusStarterLbl;
                 
                 leadsList.innerHTML += `
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
-                    <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color);">Membro #${lead.id} <span style="font-size:0.8rem; font-weight:400; color:var(--muted); margin-left:8px;">${date}</span></div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color);">${memberLbl} #${lead.id} <span style="font-size:0.8rem; font-weight:400; color:var(--muted); margin-left:8px;">${date}</span></div>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: ${statusColor};">
                       <i class="ph-bold ${statusIcon}"></i> ${statusText}
                     </div>
