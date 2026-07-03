@@ -1174,6 +1174,10 @@
         <input type="text" id="pCoupon" class="form-input" placeholder="ID do cupom criado no Stripe">
       </div>
       <div class="form-group">
+        <label class="form-label">Desconto do Link (%)</label>
+        <input type="number" id="pDiscount" class="form-input" placeholder="Ex: 20">
+      </div>
+      <div class="form-group">
         <label class="form-label">Regra de Recompensa (Opcional)</label>
         <input type="text" id="pReward" class="form-input" placeholder="Ex: 1 ano grátis a cada 10 assinaturas">
       </div>
@@ -3157,6 +3161,7 @@ function openPartnerModal() {
   document.getElementById('pName').value = '';
   document.getElementById('pRefCode').value = '';
   document.getElementById('pCoupon').value = '';
+  document.getElementById('pDiscount').value = '';
   document.getElementById('pReward').value = '';
   populateCompanySelect(null);
   document.getElementById('partnerModalTitle').innerHTML = '<i class="ph-bold ph-megaphone"></i> Novo Parceiro';
@@ -3174,6 +3179,7 @@ function editPartner(id) {
   document.getElementById('pName').value = p.name || '';
   document.getElementById('pRefCode').value = p.ref_code || '';
   document.getElementById('pCoupon').value = p.stripe_coupon_id || '';
+  document.getElementById('pDiscount').value = p.discount_percentage || '';
   document.getElementById('pReward').value = p.reward_rule || '';
   populateCompanySelect(p.company_id);
   document.getElementById('partnerModalTitle').innerHTML = '<i class="ph-bold ph-megaphone"></i> Editar Parceiro';
@@ -3185,6 +3191,8 @@ async function savePartner() {
   const name = document.getElementById('pName').value.trim();
   const refCode = document.getElementById('pRefCode').value.trim();
   const coupon = document.getElementById('pCoupon').value.trim() || null;
+  const discountStr = document.getElementById('pDiscount').value.trim();
+  const discount = discountStr ? parseFloat(discountStr) : 0;
   const companyId = document.getElementById('pCompanyId').value.trim() || null;
   const reward = document.getElementById('pReward').value.trim() || null;
 
@@ -3197,6 +3205,7 @@ async function savePartner() {
     name, 
     ref_code: refCode, 
     stripe_coupon_id: coupon, 
+    discount_percentage: discount,
     company_id: companyId,
     reward_rule: reward 
   };
