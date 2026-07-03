@@ -1027,16 +1027,37 @@
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 24px;">
-                
-                <!-- KPI Card: Indicações -->
-                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px -8px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'">
-                  <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(37,99,235,0.1); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                    <i class="ph-bold ph-trend-up"></i>
+                <!-- Gamified KPIs -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                  <!-- Starter Leads -->
+                  <div style="background: rgba(234,179,8,0.05); border: 1px solid rgba(234,179,8,0.2); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px;">
+                    <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(234,179,8,0.1); color: #eab308; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                      <i class="ph-bold ph-users-three"></i>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Em Descoberta (Starter)</div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerStarter">0</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 4px; font-weight: 500;" data-i18n="settings.partners.active.referrals_lbl">Assinaturas Geradas</div>
-                    <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerReferrals">0</div>
+
+                  <!-- Pro/Business Conversions -->
+                  <div style="background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.2); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 20px;">
+                    <div style="width: 56px; height: 56px; border-radius: 14px; background: rgba(34,197,94,0.1); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                      <i class="ph-bold ph-check-circle"></i>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Objetivos Alcançados (Ativos)</div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--text-color); line-height: 1;" id="partnerPro">0</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Lista de Registos Recentes -->
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                  <div style="font-size: 1rem; font-weight: 700; color: var(--text-color); margin-bottom: 16px;"><i class="ph-bold ph-list-dashes"></i> Últimas Inscrições no seu Ecossistema</div>
+                  <div id="partnerLeadsList" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Preenchido via JS -->
+                    <div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;">A carregar dados...</div>
                   </div>
                 </div>
 
@@ -2130,9 +2151,40 @@ async function executeDeleteSelfAccount() {
         panelInactive.style.display = 'block';
       } else {
         panelActive.style.display = 'block';
-        document.getElementById('partnerReferrals').textContent = data.referral_count || 0;
         document.getElementById('partnerRewardRule').textContent = data.reward_rule || 'Em análise';
         document.getElementById('partnerLink').value = `https://app.3dzaap.com/?ref=${data.ref_code}`;
+        
+        // Load stats from gamification function
+        try {
+          const { data: statsData } = await _sb.rpc('get_partner_stats', { p_ref_code: data.ref_code });
+          if(statsData) {
+            document.getElementById('partnerStarter').textContent = statsData.starter_count || 0;
+            document.getElementById('partnerPro').textContent = statsData.pro_count || 0;
+            
+            const leadsList = document.getElementById('partnerLeadsList');
+            leadsList.innerHTML = '';
+            if(!statsData.recent_leads || statsData.recent_leads.length === 0) {
+              leadsList.innerHTML = '<div style="font-size: 0.9rem; color: var(--muted); padding: 12px; text-align: center;">Ainda não tem inscrições. Partilhe o seu link!</div>';
+            } else {
+              statsData.recent_leads.forEach(lead => {
+                const date = new Date(lead.created_at).toLocaleDateString();
+                const isPro = lead.plan === 'pro' || lead.plan === 'business';
+                const statusColor = isPro ? '#22c55e' : '#eab308';
+                const statusIcon = isPro ? 'ph-check-circle' : 'ph-users-three';
+                const statusText = isPro ? 'Objetivo Alcançado' : 'Em Descoberta';
+                
+                leadsList.innerHTML += `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-color);">Membro #${lead.id} <span style="font-size:0.8rem; font-weight:400; color:var(--muted); margin-left:8px;">${date}</span></div>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: ${statusColor};">
+                      <i class="ph-bold ${statusIcon}"></i> ${statusText}
+                    </div>
+                  </div>
+                `;
+              });
+            }
+          }
+        } catch(e) { console.error('Erro a carregar stats do parceiro:', e); }
       }
     } catch(e) {
       console.error(e);

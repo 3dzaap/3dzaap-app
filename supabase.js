@@ -79,7 +79,7 @@ const Auth = {
   /**
    * Cria a empresa para um utilizador já autenticado (Email confirmado ou Social)
    */
-  async completeOnboarding({ userId, companyName, slug, plan, config, signature, logo, initFilament, initPrinter }) {
+  async completeOnboarding({ userId, companyName, slug, plan, config, signature, logo, initFilament, initPrinter, affiliateRef }) {
     if (!userId) {
       const { data: { user } } = await _sb.auth.getUser();
       userId = user?.id;
@@ -112,7 +112,8 @@ const Auth = {
           p_plan:      plan || 'trial',
           p_config:    config || {},
           p_signature: signature || null,
-          p_logo_url:  logo || null
+          p_logo_url:  logo || null,
+          p_affiliate_ref: affiliateRef || null
         });
 
       if (!rpcErr && rpcData?.length) {
@@ -131,7 +132,8 @@ const Auth = {
             config:         config || {},
             signature:      signature || null,
             logo_url:       logo || null,
-            trial_ends_at:  trialEndsAt.toISOString()
+            trial_ends_at:  trialEndsAt.toISOString(),
+            affiliate_ref:  affiliateRef || null
           })
           .select()
           .single();

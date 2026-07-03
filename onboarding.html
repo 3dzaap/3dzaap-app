@@ -382,6 +382,8 @@ async function finishOnboarding() {
   try {
     const config = { filamentPrice:25, printerPrice:600, printerLife:5000, electricityPrice:0.22, profitMargin:30, failureRate:5 };
     
+    const affiliateRef = localStorage.getItem('affiliate_ref');
+
     // 1. Cria a empresa sempre como 'trial' na DB para evitar bypass de pagamento
     const company = await Auth.completeOnboarding({
       userId: STATE.user.id,
@@ -389,7 +391,8 @@ async function finishOnboarding() {
       slug: document.getElementById('companySlug').value.trim(),
       country: document.getElementById('companyCountry').value,
       plan: 'trial',
-      config
+      config,
+      affiliateRef
     });
 
     // 2. Se escolheu um plano gratuito, segue o fluxo normal sem Stripe
