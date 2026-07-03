@@ -1638,6 +1638,7 @@
       if (!ok) return;
       const session = await Auth.getSession();
       if (!session) return;
+      window.session = session;
       loadCfg(session);
       const fullName = (session.fname && session.lname)
         ? session.fname + ' ' + session.lname
