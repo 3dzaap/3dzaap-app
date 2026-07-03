@@ -1020,9 +1020,15 @@
                     <h2 style="font-size: 2rem; font-weight: 800; margin: 0 0 8px 0;" data-i18n="settings.partners.active.title">Painel de Afiliado</h2>
                     <p style="opacity: 0.9; margin: 0; max-width: 400px; line-height: 1.5;" data-i18n="settings.partners.active.subtitle">Acompanhe o impacto das suas indicações e desbloqueie as suas recompensas.</p>
                   </div>
-                  <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 16px 24px; border-radius: 16px; text-align: center; min-width: 180px;">
-                    <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: white;" data-i18n="settings.partners.active.reward_lbl">A Sua Recompensa</div>
-                    <div id="partnerRewardRule" style="font-size: 1.15rem; font-weight: 700; color: white;">-</div>
+                  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 16px 24px; border-radius: 16px; text-align: center; min-width: 140px; flex: 1;">
+                      <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: white;" data-i18n="settings.partners.active.reward_lbl">A Sua Recompensa</div>
+                      <div id="partnerRewardRule" style="font-size: 1.15rem; font-weight: 700; color: white;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 16px 24px; border-radius: 16px; text-align: center; min-width: 140px; flex: 1;">
+                      <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; color: white;" data-i18n="settings.partners.active.discount_lbl">Desconto do Link</div>
+                      <div id="partnerDiscount" style="font-size: 1.15rem; font-weight: 700; color: white;">-</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2152,6 +2158,7 @@ async function executeDeleteSelfAccount() {
       } else {
         panelActive.style.display = 'block';
         document.getElementById('partnerRewardRule').textContent = data.reward_rule || 'Em análise';
+        document.getElementById('partnerDiscount').textContent = data.discount_percentage ? `${data.discount_percentage}%` : '0%';
         document.getElementById('partnerLink').value = `https://app.3dzaap.com/?ref=${data.ref_code}`;
         
         // Load stats from gamification function
