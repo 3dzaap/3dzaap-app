@@ -2540,6 +2540,7 @@ async function loadCompanyDefaults(){
       });
       if(c.calc_history) {
         calcHistory = Array.isArray(c.calc_history) ? c.calc_history : [];
+        if(typeof renderHistory === 'function') renderHistory();
       }
     }
   }catch(e){}
