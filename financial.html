@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="supabase.js"></script>
+<script src="ai_service.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
@@ -520,18 +521,16 @@
           </table>
         </div>
         
-        <div class="fin-card intelligence-card">
-          <div class="fin-card-title"><i class="ph-bold ph-lightbulb"></i> <span data-i18n="financial.card_intelligence">Inteligência Financeira</span></div>
-          <div class="int-grid">
-             <div style="height:140px; position:relative; width:140px">
-               <canvas id="suggestionChart"></canvas>
-             </div>
-             <div>
-               <p class="suggestion-desc" data-i18n="financial.suggestion_desc" style="margin-bottom:12px;">Com base em boas práticas, sugerimos a seguinte distribuição do seu lucro líquido:</p>
-               <ul class="suggestion-list" id="suggestionList">
-                 <!-- Sugestões injetadas via JS -->
-               </ul>
-             </div>
+        <div class="fin-card intelligence-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div class="fin-card-title"><i class="ph-bold ph-lightbulb"></i> <span>Inteligência Financeira (IA)</span></div>
+            <div id="aiReportContainer">
+              <p class="suggestion-desc" style="margin-bottom:12px;">Descubra como otimizar a saúde da sua gráfica neste período.</p>
+              <div style="text-align:center; padding: 20px 0;">
+                <button id="btnGenAIReport" class="btn btn-primary" onclick="generateAIFinancialReport()" style="width:100%; max-width: 280px; background:linear-gradient(135deg, #a855f7, #3b82f6); border:none; color:#fff;"><i class="ph-bold ph-sparkle"></i> Gerar Análise de Saúde (IA)</button>
+              </div>
+              <div id="aiReportContent" style="display:none; font-size: 0.85rem; line-height: 1.6; color: var(--dark); padding: 16px; background: var(--bg-card-s); border-radius: 12px; border: 1px solid var(--border);"></div>
+            </div>
           </div>
         </div>
 
@@ -1429,80 +1428,52 @@ async function renderYearlyChart() {
 }
 
 function renderFinancialSuggestions(profit, reinvestFund = 0) {
-  const container = document.getElementById('suggestionList');
-  if (!container) return;
-  
-  if (profit <= 0) {
-    container.innerHTML = `<li style="font-size:0.8rem; color:var(--muted); padding:20px; text-align:center">Registe lucro positivo neste período para ver sugestões de distribuição estratégica.</li>`;
-    if (suggestionChart) suggestionChart.destroy();
-    return;
-  }
-
-  // Se temos um fundo de reinvestimento calculado, usamos esse valor em vez de uma % fixa se for maior
-  const reinvestPct = Math.max(30, Math.round((reinvestFund / profit) * 100));
-  const personalPct = Math.max(10, 100 - reinvestPct - 20 - 10); // Ajuste dinâmico
-
-  const allocations = [
-    { key: 'suggestion_personal', percent: personalPct, color: '#3b8fd4', icon: 'ph-user' },
-    { key: 'suggestion_investment', percent: reinvestPct, color: '#10b981', icon: 'ph-wrench' },
-    { key: 'suggestion_working_capital', percent: 20, color: '#f59e0b', icon: 'ph-arrows-left-right' },
-    { key: 'suggestion_reserve', percent: 10, color: '#6366f1', icon: 'ph-shield-check' }
-  ];
-
-  let html = '';
-  const chartLabels = [];
-  const chartData = [];
-  const chartColors = [];
-
-  allocations.forEach(a => {
-    const val = profit * (a.percent / 100);
-    chartLabels.push(t('financial.' + a.key));
-    chartData.push(val);
-    chartColors.push(a.color);
-
-    html += `
-      <li class="suggestion-item">
-        <div class="suggestion-icon" style="background:${a.color}"><i class="ph-bold ${a.icon}"></i></div>
-        <div class="suggestion-info">
-          <span class="suggestion-name">${t('financial.' + a.key)}</span>
-          <span class="suggestion-percent">${a.percent}% — ${t('financial.suggestion_amount')}</span>
-        </div>
-        <div class="suggestion-value">${fmtCurrency(val)}</div>
-      </li>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  const ctx = document.getElementById('suggestionChart');
-  if (!ctx) return;
-  
-  if (suggestionChart) suggestionChart.destroy();
-
-  suggestionChart = new Chart(ctx.getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: chartLabels,
-      datasets: [{
-        data: chartData,
-        backgroundColor: chartColors,
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '75%',
-      plugins: { 
-        legend: { display: false },
-        tooltip: {
-          callbacks: { label: (ctx) => ` ${ctx.label}: ${fmtCurrency(ctx.raw)}` }
-        }
-      }
-    }
-  });
+  // Mantemos a função para não quebrar compatibilidade, mas a UI mudou para o Relatório IA.
+  window._fin_profit = profit;
 }
+
+async function generateAIFinancialReport() {
+  const container = document.getElementById('aiReportContent');
+  const btn = document.getElementById('btnGenAIReport');
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A gerar...';
+  
+  try {
+    // Collect data
+    const revEl = document.getElementById('kpiReceita');
+    const expEl = document.getElementById('kpiDespesas');
+    const profEl = document.getElementById('kpiBalanco');
+    
+    const revText = revEl ? revEl.innerText.replace(/[^\d.,]/g,'') : '0';
+    const expText = expEl ? expEl.innerText.replace(/[^\d.,]/g,'') : '0';
+    const profitText = profEl ? profEl.innerText.replace(/[^\d.,]/g,'') : '0';
+    
+    const ordersInPeriod = (typeof orders !== 'undefined') ? orders.filter(o => (o.date||'').slice(0,7) === _periodo) : [];
+    const printersCount = (typeof printers !== 'undefined') ? printers.length : 0;
+    
+    const data = {
+      revenue: revText || '0',
+      expenses: expText || '0',
+      profit: profitText || '0',
+      ordersCompleted: ordersInPeriod.filter(o => o.status === 'concluido' || o.status === 'enviado').length,
+      printersActive: printersCount
+    };
+    
+    const reportHTML = await window.AIService.generateFinancialReport(data);
+    
+    container.innerHTML = reportHTML;
+    container.style.display = 'block';
+    btn.style.display = 'none'; // Hide button after generating
+    
+  } catch (err) {
+    showToast('<i class="ph-bold ph-x-circle"></i> Erro ao gerar: ' + err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-sparkle"></i> Gerar Análise de Saúde (IA)';
+  }
+}
+
+
 
 function renderPrinterEfficiency(periodOrders) {
   const container = document.getElementById('printerPerformanceBody');

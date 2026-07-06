@@ -1247,6 +1247,8 @@ function loadData() {
     document.querySelector(`input[name="prefTheme"][value="${theme}"]`).checked = true;
   }
 
+
+
   // logo_url comes from companies.logo_url column (Opção B)
   if (_session.logo_url) showLogoPreview(_session.logo_url);
   if (_session.signature) showSigPreview(_session.signature);
@@ -1380,7 +1382,8 @@ async function saveAll() {
     notifFollowUp: document.getElementById('notifFollowUp').checked,
     notifWeeklyRev: document.getElementById('notifWeeklyRev').checked,
     theme: document.querySelector('input[name="prefTheme"]:checked').value,
-    themeAuto: document.getElementById('prefThemeAuto').checked
+    themeAuto: document.getElementById('prefThemeAuto').checked,
+    recEmail: document.getElementById('notifRecEmail').checked
   };
 
   try {

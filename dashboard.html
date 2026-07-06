@@ -21,6 +21,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- 3DZAAP data layer -->
 <script src="supabase.js"></script>
+<script src="ai_service.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── ESTATISTICAS V2 ────────────────── */
@@ -681,6 +682,19 @@
         <h1 id="greetingText">Bem-vindo!</h1>
         <p data-i18n="dash.greeting.summary">Aqui está o resumo da tua actividade</p>
         <div class="greeting-date" id="greetingDate"></div>
+      </div>
+
+      <!-- AI Daily Briefing Widget -->
+      <div id="aiBriefingWidget" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 20px; position: relative; overflow: hidden; animation: fadeUp .5s var(--ease) both;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+            <i class="ph-bold ph-sparkle" style="color: #a855f7;"></i> Assistente IA
+          </div>
+          <button id="btnGenBriefing" onclick="generateBriefing()" class="btn btn-sm" style="background: #a855f7; color: #fff; border: none; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;"><i class="ph-bold ph-magic-wand"></i> Gerar Briefing</button>
+        </div>
+        <div id="aiBriefingContent" style="font-size: 0.85rem; line-height: 1.5; color: var(--dark);">
+          <span style="color: var(--muted);">Clique em <strong>Gerar Briefing</strong> para obter um resumo estratégico do dia.</span>
+        </div>
       </div>
 
       <!-- Health Score Card -->
@@ -2034,6 +2048,62 @@ function dismissBroadcast(id) {
   const dismissed = JSON.parse(sessionStorage.getItem('bc_dismissed') || '[]');
   if (!dismissed.includes(id)) dismissed.push(id);
   sessionStorage.setItem('bc_dismissed', JSON.stringify(dismissed));
+}
+
+// ── AI Daily Briefing ──────────────────────────────────────────
+async function generateBriefing() {
+  const btn = document.getElementById('btnGenBriefing');
+  const container = document.getElementById('aiBriefingContent');
+  
+  if (!window.AIService) {
+    showToast('<i class="ph-bold ph-warning"></i> Serviço de IA indisponível no momento.', 'err');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A gerar...';
+  
+  try {
+    // Gather state data
+    const scoreText = document.getElementById('healthNumber').innerText || '0';
+    let pendingCount = 0;
+    let overdueCount = 0;
+    
+    // Look for pending order stats in the dashboard DOM
+    const badges = document.querySelectorAll('.card-status.s-pendente');
+    pendingCount = badges.length; // Approximate, but orders are loaded in dashboard.
+    
+    // Fallback: If global 'orders' exists, calculate accurately
+    if (typeof orders !== 'undefined' && Array.isArray(orders)) {
+      pendingCount = orders.filter(o => o.status === 'pendente' || o.status === 'imprimir' || o.status === 'pausado').length;
+      overdueCount = orders.filter(o => {
+        if (o.status === 'concluido' || o.status === 'enviado' || o.status === 'cancelado') return false;
+        if (!o.due_date) return false;
+        const due = new Date(o.due_date);
+        due.setHours(23, 59, 59, 999);
+        return due < new Date();
+      }).length;
+    }
+    
+    const printersActive = (typeof printers !== 'undefined' && Array.isArray(printers)) ? printers.filter(p => p.status === 'operacional' || p.status === 'manutencao').length : 1;
+
+    const data = {
+      healthScore: scoreText,
+      pendingOrders: pendingCount,
+      overdueOrders: overdueCount,
+      printersActive: printersActive
+    };
+
+    const htmlResponse = await window.AIService.generateDailyBriefing(data);
+    
+    container.innerHTML = htmlResponse;
+    btn.style.display = 'none'; // hide the button to leave the clean insight
+
+  } catch (err) {
+    showToast('<i class="ph-bold ph-x-circle"></i> Falha ao gerar briefing: ' + err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> Gerar Briefing';
+  }
 }
 </script>
 
