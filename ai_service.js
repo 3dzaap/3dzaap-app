@@ -5,6 +5,12 @@ const AIService = {
   // Common generic fetcher for Gemini API via Supabase Edge Function
   async callGemini(prompt, model = 'gemini-1.5-flash') {
     try {
+      // Ensure user has an active session before invoking
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) {
+        throw new Error('Sessão expirada. Por favor, recarregue a página e faça login novamente.');
+      }
+
       // Supabase client instance is globally stored as _sb
       const { data, error } = await _sb.functions.invoke('gemini-proxy', {
         body: { prompt, model }

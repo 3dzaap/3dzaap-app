@@ -14,15 +14,20 @@ serve(async (req) => {
 
   try {
     // Verificar Auth do Supabase (Apenas utilizadores autenticados podem usar a IA)
+    const authHeader = req.headers.get('Authorization')
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { global: { headers: { Authorization: authHeader || '' } } }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
     if (!user) {
-      return new Response(JSON.stringify({ error: 'Não autorizado' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 })
+      return new Response(JSON.stringify({ 
+        error: 'Não autorizado', 
+        details: authError?.message || 'No user found',
+        hasAuthHeader: !!authHeader
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 })
     }
 
     const body = await req.json()
