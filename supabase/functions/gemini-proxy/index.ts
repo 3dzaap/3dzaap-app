@@ -37,15 +37,58 @@ serve(async (req) => {
       generationConfig: { temperature: 0.7, maxOutputTokens: 800 }
     };
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    let data = await response.json();
+    
+    // Auto-healing: Se o modelo falhar (ex: descontinuado ou nome incorreto), procura o modelo correto na conta da Google
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: data.error?.message || 'Erro do Gemini' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
+      console.log("Modelo inicial falhou. A tentar auto-recuperar com a lista de modelos válidos...")
+      try {
+        const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+        const listData = await listResp.json()
+        
+        // Encontrar o primeiro modelo disponível que suporte geração de texto (generateContent)
+        const validModel = listData.models?.find((m: any) => 
+          m.supportedGenerationMethods?.includes("generateContent") && 
+          (m.name.includes("flash") || m.name.includes("pro"))
+        )
+
+        if (validModel) {
+          const newModelName = validModel.name.replace('models/', '')
+          console.log(`Auto-healing: A re-tentar com o modelo válido [${newModelName}]`)
+          const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/${newModelName}:generateContent?key=${apiKey}`;
+          
+          response = await fetch(fallbackUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          data = await response.json();
+        }
+      } catch (e) {
+        console.error("Falha no auto-healing:", e)
+      }
+    }
+
+    if (!response.ok) {
+      let availableModelsStr = ''
+      try {
+        const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+        const listData = await listResp.json()
+        const names = listData.models?.map((m: any) => m.name.replace('models/', '')) || []
+        if (names.length > 0) {
+          availableModelsStr = ` | Modelos disponíveis na sua chave: [${names.join(', ')}]`
+        }
+      } catch(e) {}
+
+      return new Response(JSON.stringify({ 
+        error: (data.error?.message || 'Erro do Gemini') + availableModelsStr 
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
     }
 
     const resultText = data.candidates[0]?.content?.parts[0]?.text || null;
