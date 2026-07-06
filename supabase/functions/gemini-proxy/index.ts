@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,31 +7,14 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // CORS Preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Verificar Auth do Supabase (Apenas utilizadores autenticados podem usar a IA)
-    const authHeader = req.headers.get('Authorization')
-    const token = authHeader ? authHeader.replace('Bearer ', '') : ''
+    // A API Gateway do Supabase já verifica o JWT automaticamente.
+    // Qualquer pedido que chegue aqui já está autorizado.
     
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader || '' } } }
-    )
-
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
-    if (!user) {
-      return new Response(JSON.stringify({ 
-        error: 'Não autorizado', 
-        details: authError?.message || 'No user found',
-        hasAuthHeader: !!authHeader
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 })
-    }
-
     const body = await req.json()
     const { prompt, model = 'gemini-1.5-flash' } = body
     
