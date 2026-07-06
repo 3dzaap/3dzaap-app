@@ -16,9 +16,9 @@ serve(async (req) => {
     // Qualquer pedido que chegue aqui já está autorizado.
     
     const body = await req.json()
-    let { prompt, model = 'gemini-1.5-flash-latest' } = body
-    if (model === 'gemini-1.5-flash') {
-      model = 'gemini-1.5-flash-latest'
+    let { prompt, model = 'gemini-pro' } = body
+    if (model.includes('flash') || model === 'gemini-1.5-pro') {
+      model = 'gemini-pro'
     }
     
     if (!prompt) {
