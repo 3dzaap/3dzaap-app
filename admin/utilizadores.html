@@ -182,6 +182,7 @@ function renderUsersTable(data) {
       <td class="mono">${fmtDate(u.joined_at)}</td>
       <td style="white-space:nowrap">
         ${saBtn}
+        <button class="btn-table" onclick="confirmResetPassword('${escH(u._email||'')}')"><i class="ph-bold ph-key"></i> Reset</button>
         <button class="btn-table danger" onclick="confirmBanUser('${escH(u.user_id||'')}','${escH(u._email||'')}','${escH(u.companies?.name||'')}')">🚫 Banir</button>
       </td>
     </tr>`;
@@ -234,6 +235,23 @@ function confirmBanUser(userId, email, companyName) {
     `De momento a ação de banir a nível de Auth necessita de ser feita na consola do Supabase ou via Edge Function.<br><br>Utilizador: <b>${email}</b><br>Empresa: <b>${companyName}</b><br><br>Podes remover da empresa manualmente ou suspender a empresa inteira nos Clientes.`,
     () => { },
     '<i class="ph-bold ph-warning-octagon"></i>'
+  );
+}
+
+function confirmResetPassword(email) {
+  openConfirm(
+    'Redefinir Password',
+    `Tem a certeza que deseja enviar um e-mail de redefinição de password para <b>${email}</b>?`,
+    async () => {
+      try {
+        const { error } = await _adminSb().auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth.html' });
+        if (error) throw error;
+        showToast('E-mail de redefinição enviado com sucesso para ' + email, 'ok');
+      } catch(e) {
+        showToast('Erro ao enviar e-mail: ' + e.message, 'err');
+      }
+    },
+    '<i class="ph-bold ph-key"></i>'
   );
 }
 
