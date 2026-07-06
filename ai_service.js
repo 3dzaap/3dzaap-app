@@ -6,7 +6,7 @@ const AIService = {
   async callGemini(prompt, model = 'gemini-1.5-flash') {
     try {
       // Supabase client instance is globally stored as _sb
-      const { data, error } = await window._sb.functions.invoke('gemini-proxy', {
+      const { data, error } = await _sb.functions.invoke('gemini-proxy', {
         body: { prompt, model }
       });
 

@@ -384,6 +384,22 @@
         </div>
       </div>
 
+      <div class="fin-card intelligence-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 20px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+              <i class="ph-bold ph-sparkle" style="color: #a855f7;"></i> Assistente Financeiro IA
+            </div>
+            <button id="btnGenAIReport" onclick="generateAIFinancialReport()" class="btn btn-sm" style="background: #a855f7; color: #fff; border: none; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;"><i class="ph-bold ph-magic-wand"></i> Analisar Saúde</button>
+          </div>
+          <div id="aiReportContainer">
+            <div id="aiReportContent" style="font-size: 0.85rem; line-height: 1.5; color: var(--dark);">
+              <span style="color: var(--muted);">Clique em <strong>Analisar Saúde</strong> para gerar um plano de otimização dos lucros deste período.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="fin-period-bar">
         <label for="periodoInput" data-i18n="financial.lbl_period" style="margin-right:4px"><i class="ph-bold ph-calendar"></i> Período:</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -520,23 +536,6 @@
             </tbody>
           </table>
         </div>
-        
-        <div class="fin-card intelligence-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; position: relative; overflow: hidden;">
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <div style="font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 8px;">
-                <i class="ph-bold ph-sparkle" style="color: #a855f7;"></i> Assistente Financeiro IA
-              </div>
-              <button id="btnGenAIReport" onclick="generateAIFinancialReport()" class="btn btn-sm" style="background: #a855f7; color: #fff; border: none; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;"><i class="ph-bold ph-magic-wand"></i> Analisar Saúde</button>
-            </div>
-            <div id="aiReportContainer">
-              <div id="aiReportContent" style="font-size: 0.85rem; line-height: 1.5; color: var(--dark);">
-                <span style="color: var(--muted);">Clique em <strong>Analisar Saúde</strong> para gerar um plano de otimização dos lucros deste período.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="fin-card">
           <div class="fin-card-title" data-i18n="financial.card_done"><i class="ph-bold ph-check-circle"></i> Pedidos Concluídos</div>
           <div id="doneStats" style="font-size:.84rem;color:var(--muted)" data-i18n="settings.team.loading">A carregar…</div>
