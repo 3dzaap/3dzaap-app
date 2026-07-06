@@ -16,7 +16,10 @@ serve(async (req) => {
     // Qualquer pedido que chegue aqui já está autorizado.
     
     const body = await req.json()
-    const { prompt, model = 'gemini-1.5-flash' } = body
+    let { prompt, model = 'gemini-1.5-flash-latest' } = body
+    if (model === 'gemini-1.5-flash') {
+      model = 'gemini-1.5-flash-latest'
+    }
     
     if (!prompt) {
       return new Response(JSON.stringify({ error: 'Prompt é obrigatório' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
