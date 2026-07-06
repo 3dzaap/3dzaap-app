@@ -5,8 +5,8 @@ const AIService = {
   // Common generic fetcher for Gemini API via Supabase Edge Function
   async callGemini(prompt, model = 'gemini-1.5-flash') {
     try {
-      // Supabase is loaded globally
-      const { data, error } = await window.supabase.functions.invoke('gemini-proxy', {
+      // Supabase client instance is globally stored as _sb
+      const { data, error } = await window._sb.functions.invoke('gemini-proxy', {
         body: { prompt, model }
       });
 
