@@ -11,21 +11,14 @@ const AIService = {
         throw new Error('Sessão expirada. Por favor, recarregue a página e faça login novamente.');
       }
 
-      // Call via fetch to read exact JSON errors
-      const response = await fetch('https://yjggsndxatezgqljlhxb.supabase.co/functions/v1/gemini-proxy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + session.access_token
-        },
-        body: JSON.stringify({ prompt, model })
+      // Supabase client instance is globally stored as _sb
+      const { data, error } = await _sb.functions.invoke('gemini-proxy', {
+        body: { prompt, model }
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error("Gemini Proxy Error Details:", data);
-        throw new Error(data.error + (data.details ? ` (${data.details})` : ''));
+      if (error) {
+        console.error("Gemini Proxy Error:", error);
+        throw new Error(error.message || 'Erro ao comunicar com o servidor de IA.');
       }
 
       if (data && data.error) {
