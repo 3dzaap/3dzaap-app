@@ -5,13 +5,34 @@
 const AIService = {
   async callGemini(prompt, model = 'gemini-2.0-flash') {
     try {
-      const { data: { session } } = await (window._sb ? window._sb.auth.getSession() : { data: { session: null } });
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      if (session && session.access_token) {
-        headers['Authorization'] = 'Bearer ' + session.access_token;
+      // Tentar preferencialmente através do SDK nativo do Supabase (que injeta headers apikey e auth automaticamente)
+      if (window._sb && window._sb.functions && typeof window._sb.functions.invoke === 'function') {
+        try {
+          const { data, error } = await window._sb.functions.invoke('gemini-proxy', {
+            body: { prompt, model }
+          });
+          if (!error && data) {
+            if (data.error) throw new Error(data.error);
+            return data.text || null;
+          }
+          if (error) {
+            console.warn("[AIService] Supabase SDK invoke retornou erro, tentando via fetch direto...", error);
+          }
+        } catch (sdkErr) {
+          console.warn("[AIService] Erro no invoke do SDK, tentando via fetch...", sdkErr);
+        }
       }
+
+      // Fallback via fetch manual incluindo obrigatoriamente apikey (anon) e Authorization
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqZ2dzbmR4YXRlemdxbGpsaHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjE0MTgsImV4cCI6MjA4OTA5NzQxOH0.zVzA2siKsix8tOK44H5U-cZK1Wdd_4u_sY1g2JgGYUA';
+      const { data: { session } } = await (window._sb ? window._sb.auth.getSession() : { data: { session: null } });
+      const token = session?.access_token || anonKey;
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': 'Bearer ' + token
+      };
 
       const response = await fetch('https://yjggsndxatezgqljlhxb.supabase.co/functions/v1/gemini-proxy', {
         method: 'POST',
