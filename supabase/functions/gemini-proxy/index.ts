@@ -24,7 +24,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Prompt é obrigatório' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
     }
 
-    // Se o cliente forneceu uma chave própria, usar essa chave; caso contrário, usar a variável de ambiente do servidor
+    // Chave API armazenada de forma segura nas variáveis de ambiente do servidor Supabase
     const apiKey = customApiKey || Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) {
        return new Response(JSON.stringify({ error: 'Chave API não configurada no servidor nem fornecida pelo cliente.' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 })

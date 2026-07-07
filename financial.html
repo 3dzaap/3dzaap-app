@@ -1608,20 +1608,11 @@ async function gerarRelatorioIA() {
       <div class="ai-content" style="font-size:0.9rem; line-height:1.6; color:var(--dark);">${resHtml}</div>
     `;
   } catch (err) {
-    if (err.isBillingError || err.message.toLowerCase().includes('prepayment') || err.message.toLowerCase().includes('billing') || err.message.toLowerCase().includes('quota') || err.message.toLowerCase().includes('créditos')) {
-      AIService.renderApiKeyPrompt(box, () => gerarRelatorioIA());
-    } else {
-      box.innerHTML = `
-        <div style="color:#ef4444; font-weight:700; display:flex; align-items:center; gap:8px;">
-          <i class="ph-bold ph-warning-circle" style="font-size:1.3rem;"></i> <span>Erro ao gerar parecer: ${err.message}</span>
-        </div>
-        <div style="margin-top:10px;">
-          <button class="btn btn-ghost btn-sm" onclick="AIService.renderApiKeyPrompt(document.getElementById('aiReportBox'), () => gerarRelatorioIA())" style="font-size:0.8rem; text-decoration:underline;">
-            🔑 Tentar com Chave API própria (Google AI Studio)
-          </button>
-        </div>
-      `;
-    }
+    box.innerHTML = `
+      <div style="color:#ef4444; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <i class="ph-bold ph-warning-circle" style="font-size:1.3rem;"></i> <span>Erro ao gerar parecer: ${err.message}</span>
+      </div>
+    `;
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> Gerar Parecer IA';
