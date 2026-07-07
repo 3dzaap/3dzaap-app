@@ -3,7 +3,7 @@
  * The API key is stored and managed securely on Supabase backend.
  */
 const AIService = {
-  async callGemini(prompt, model = 'gemini-2.0-flash') {
+  async callGemini(prompt, model = 'gemini-2.5-flash') {
     try {
       // Tentar preferencialmente através do SDK nativo do Supabase (que injeta headers apikey e auth automaticamente)
       if (window._sb && window._sb.functions && typeof window._sb.functions.invoke === 'function') {

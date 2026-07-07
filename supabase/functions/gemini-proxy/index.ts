@@ -14,10 +14,19 @@ serve(async (req) => {
     const body = await req.json()
     let { prompt, model = 'gemini-2.0-flash', customApiKey } = body
     
-    // Lista de modelos robustos em ordem de preferência
-    const fallbackModels = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-pro', 'gemini-2.0-flash-lite']
+    // Lista de modelos robustos em ordem de preferência (priorizando modelos com maior cota gratuita atual)
+    const fallbackModels = [
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-2.0-flash-lite',
+      'gemini-flash-latest',
+      'gemini-flash-lite-latest',
+      'gemini-2.0-flash',
+      'gemini-2.5-pro',
+      'gemini-3.5-flash'
+    ]
     if (!fallbackModels.includes(model)) {
-      model = 'gemini-2.0-flash'
+      model = 'gemini-2.5-flash'
     }
     
     if (!prompt) {
@@ -35,7 +44,7 @@ serve(async (req) => {
       generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
     };
 
-    // Tentar chamar com o modelo principal ou percorrer lista de fallbacks se o modelo não existir nessa chave
+    // Tentar chamar com o modelo principal ou percorrer lista de fallbacks se o modelo não existir ou exceder cota nessa chave
     let lastErrorMsg = ''
     let data = null
     let response = null
@@ -51,15 +60,16 @@ serve(async (req) => {
 
         data = await response.json();
         
-        // Se funcionou, paramos o loop!
+        // Se funcionou, paramos o loop com sucesso!
         if (response.ok) {
           break;
         }
 
-        lastErrorMsg = data.error?.message || 'Erro do Gemini API'
+        lastErrorMsg = data.error?.message || 'Erro do Gemini API: ' + testModel;
+        console.warn(`[gemini-proxy] Falha no modelo ${testModel}: ${lastErrorMsg}`);
         
-        // Se o erro for de billing (ex: créditos esgotados ou chave inválida), não adianta tentar outros modelos
-        if (lastErrorMsg.toLowerCase().includes('prepayment') || lastErrorMsg.toLowerCase().includes('billing') || lastErrorMsg.toLowerCase().includes('quota') || response.status === 403 || response.status === 429) {
+        // Se a chave for inválida (401), não adianta tentar outros modelos
+        if (response.status === 401 || lastErrorMsg.toLowerCase().includes('api key not valid')) {
           break;
         }
       } catch (e) {
