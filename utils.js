@@ -291,6 +291,7 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
     });
   }
 
+  let printContainer = null;
   try {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({
@@ -300,138 +301,130 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       ...(customOpts.jsPDF || {})
     });
 
-    const pageElements = [];
+    // Cria contêiner offscreen no DOM real para que html2canvas calcule estilos e alturas sem erros de parser CSS
+    printContainer = document.createElement('div');
+    printContainer.style.position = 'fixed';
+    printContainer.style.left = '-9999px';
+    printContainer.style.top = '0';
+    printContainer.style.width = '794px';
+    printContainer.style.background = '#ffffff';
+    printContainer.style.zIndex = '-9999';
+    document.body.appendChild(printContainer);
 
-    // Primeiro renderizamos/paramos no onclone para criar páginas A4 perfeitamente paginadas
-    const tempCanvas = await window.html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      onclone: (clonedDoc) => {
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (!clonedElement) return;
-        clonedElement.remove();
+    const clonedSource = element.cloneNode(true);
+    // Remove tags style/script internas que possam confundir o analisador CSS do html2canvas
+    clonedSource.querySelectorAll('style, script').forEach(s => s.remove());
 
-        const body = clonedDoc.body;
-        body.innerHTML = '';
-        body.style.margin = '0';
-        body.style.padding = '0';
-        body.style.background = '#ffffff';
-
-        // Estilos globais para PDF de alto contraste
-        const pdfStyle = clonedDoc.createElement('style');
-        pdfStyle.innerHTML = `
-          * { box-sizing: border-box; }
-          body { background: #ffffff !important; color: #0f172a !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; }
-          p, span, div, li, td, th { color: #0f172a !important; line-height: 1.65; }
-          h1, h2, h3, h4 { color: #4f46e5 !important; margin-top: 18px; margin-bottom: 10px; page-break-after: avoid; }
-        `;
-        clonedDoc.head.appendChild(pdfStyle);
-
-        // Garante que containers internos usem o tema claro correto
-        clonedElement.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
-          el.style.background = '#ffffff';
-          el.style.color = '#1e293b';
-          el.style.flex = 'unset';
-        });
-
-        clonedElement.querySelectorAll('*').forEach(el => {
-          const bg = el.style.background || '';
-          if (bg.includes('rgba(255, 255, 255') || bg.includes('rgba(255,255,255')) {
-            el.style.background = '#f8fafc';
-            el.style.border = '1px solid #cbd5e1';
-          }
-        });
-
-        // Coleta blocos lógicos para paginação inteligente sem cortar texto
-        const blocks = [];
-        Array.from(clonedElement.children).forEach(child => {
-          if (child.classList && child.classList.contains('ai-report-body')) {
-            Array.from(child.children).forEach(sub => blocks.push(sub));
-          } else {
-            blocks.push(child);
-          }
-        });
-
-        const createPage = () => {
-          const page = clonedDoc.createElement('div');
-          page.style.width = '794px';
-          page.style.minHeight = '1123px';
-          page.style.maxHeight = '1123px';
-          page.style.padding = '42px 48px 65px 48px';
-          page.style.background = '#ffffff';
-          page.style.position = 'relative';
-          page.style.overflow = 'hidden';
-          body.appendChild(page);
-          pageElements.push(page);
-          return page;
-        };
-
-        let currentPage = createPage();
-        let contentArea = clonedDoc.createElement('div');
-        contentArea.style.width = '100%';
-        currentPage.appendChild(contentArea);
-
-        for (const block of blocks) {
-          contentArea.appendChild(block);
-          // Altura útil impressa da folha A4 (aprox 1010px)
-          if (contentArea.scrollHeight > 1010 && contentArea.children.length > 1) {
-            contentArea.removeChild(block);
-            currentPage = createPage();
-            contentArea = clonedDoc.createElement('div');
-            contentArea.style.width = '100%';
-            currentPage.appendChild(contentArea);
-            contentArea.appendChild(block);
-          }
-        }
-
-        // Adiciona rodapé executivo e numeração em cada folha
-        pageElements.forEach((pg, idx) => {
-          const footer = clonedDoc.createElement('div');
-          footer.style.position = 'absolute';
-          footer.style.bottom = '22px';
-          footer.style.left = '48px';
-          footer.style.right = '48px';
-          footer.style.display = 'flex';
-          footer.style.justifyContent = 'space-between';
-          footer.style.alignItems = 'center';
-          footer.style.fontSize = '11px';
-          footer.style.color = '#64748b';
-          footer.style.borderTop = '1px solid #e2e8f0';
-          footer.style.paddingTop = '10px';
-          footer.innerHTML = `
-            <span style="font-weight: 600;">3DZAAP — Relatório Executivo & Diagnóstico Operacional</span>
-            <span>Página ${idx + 1} de ${pageElements.length}</span>
-          `;
-          pg.appendChild(footer);
-        });
-      },
-      ...(customOpts.html2canvas || {})
+    // Converte cartões e textos para visual claro e limpo de impressão
+    clonedSource.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
+      el.style.background = '#ffffff';
+      el.style.color = '#1e293b';
     });
 
-    // Se a paginação inteligente detectou páginas A4 separadas, renderiza cada uma na folha A4
-    if (pageElements.length > 0) {
-      for (let i = 0; i < pageElements.length; i++) {
-        if (i > 0) pdf.addPage();
-        const pageCanvas = await window.html2canvas(pageElements[i], {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          ...(customOpts.html2canvas || {})
-        });
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    clonedSource.querySelectorAll('*').forEach(el => {
+      el.style.color = '#0f172a';
+      const bg = el.style.background || '';
+      if (bg.includes('rgba(255, 255, 255') || bg.includes('rgba(255,255,255')) {
+        el.style.background = '#f8fafc';
+        el.style.border = '1px solid #cbd5e1';
       }
-    } else {
-      // Fallback para documentos simples que cabem em uma página
-      const imgData = tempCanvas.toDataURL('image/jpeg', 0.98);
-      pdf.addImage(imgData, 'JPEG', 0, 0, 210, (tempCanvas.height * 210) / tempCanvas.width);
+    });
+
+    clonedSource.querySelectorAll('h1, h2, h3, h4').forEach(el => {
+      el.style.color = '#4f46e5';
+      el.style.marginTop = '18px';
+      el.style.marginBottom = '10px';
+    });
+
+    // Coleta blocos lógicos para paginação sem cortar linhas ou parágrafos
+    const blocks = [];
+    Array.from(clonedSource.children).forEach(child => {
+      if (child.classList && child.classList.contains('ai-report-body')) {
+        Array.from(child.children).forEach(sub => blocks.push(sub));
+      } else {
+        blocks.push(child);
+      }
+    });
+
+    const pageElements = [];
+    const createPage = () => {
+      const page = document.createElement('div');
+      page.style.width = '794px';
+      page.style.minHeight = '1123px';
+      page.style.maxHeight = '1123px';
+      page.style.padding = '42px 48px 65px 48px';
+      page.style.background = '#ffffff';
+      page.style.color = '#0f172a';
+      page.style.position = 'relative';
+      page.style.overflow = 'hidden';
+      page.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      page.style.boxSizing = 'border-box';
+      printContainer.appendChild(page);
+      pageElements.push(page);
+      return page;
+    };
+
+    let currentPage = createPage();
+    let contentArea = document.createElement('div');
+    contentArea.style.width = '100%';
+    currentPage.appendChild(contentArea);
+
+    for (const block of blocks) {
+      contentArea.appendChild(block);
+      // 1010px é a altura útil máxima imprimível em uma folha A4
+      if (contentArea.scrollHeight > 1010 && contentArea.children.length > 1) {
+        contentArea.removeChild(block);
+        currentPage = createPage();
+        contentArea = document.createElement('div');
+        contentArea.style.width = '100%';
+        currentPage.appendChild(contentArea);
+        contentArea.appendChild(block);
+      }
+    }
+
+    // Adiciona rodapé executivo e numeração de página
+    pageElements.forEach((pg, idx) => {
+      const footer = document.createElement('div');
+      footer.style.position = 'absolute';
+      footer.style.bottom = '22px';
+      footer.style.left = '48px';
+      footer.style.right = '48px';
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'space-between';
+      footer.style.alignItems = 'center';
+      footer.style.fontSize = '11px';
+      footer.style.color = '#64748b';
+      footer.style.borderTop = '1px solid #e2e8f0';
+      footer.style.paddingTop = '10px';
+      footer.innerHTML = `
+        <span style="font-weight: 600;">3DZAAP — Relatório Executivo & Diagnóstico Operacional</span>
+        <span>Página ${idx + 1} de ${pageElements.length}</span>
+      `;
+      pg.appendChild(footer);
+    });
+
+    // Renderiza cada folha A4 com html2canvas de forma independente
+    for (let i = 0; i < pageElements.length; i++) {
+      if (i > 0) pdf.addPage();
+      const pageCanvas = await window.html2canvas(pageElements[i], {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        ...(customOpts.html2canvas || {})
+      });
+      const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
     }
 
     pdf.save(filename || 'documento.pdf');
   } catch (err) {
     console.error('[3DZAAP] Erro ao gerar PDF:', err);
     throw err;
+  } finally {
+    if (printContainer && printContainer.parentNode) {
+      printContainer.parentNode.removeChild(printContainer);
+    }
   }
 }
 
