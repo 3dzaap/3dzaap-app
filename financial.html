@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="supabase.js"></script>
+<script src="ai_service.js?v=2.5"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
 /* ── Estilos específicos desta página ─────────────────────── */
@@ -543,6 +544,16 @@
                </ul>
              </div>
           </div>
+          <div style="margin-top: 18px; border-top: 1.5px solid var(--border, rgba(0,0,0,0.08)); padding-top: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="font-size: 0.85rem; color: var(--subtle); display: flex; align-items: center; gap: 6px;">
+              <i class="ph-bold ph-sparkle" style="color: #a855f7; font-size: 1.1rem;"></i> <strong>Parecer com Inteligência Artificial:</strong>
+            </div>
+            <button class="btn" onclick="gerarRelatorioIA()" id="btnGerarIA" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #fff; border: none; font-weight: 700; padding: 7px 16px; border-radius: 8px; font-size: 0.84rem; cursor: pointer; box-shadow: 0 4px 14px rgba(168,85,247,0.3); transition: transform 0.15s, opacity 0.15s; display: flex; align-items: center; gap: 6px;">
+              <i class="ph-bold ph-magic-wand"></i> Gerar Parecer IA
+            </button>
+          </div>
+          <div id="aiReportBox" style="display: none; margin-top: 14px; padding: 16px; background: rgba(168, 85, 247, 0.04); border: 1.5px solid rgba(168, 85, 247, 0.25); border-radius: 12px; font-size: 0.88rem; line-height: 1.5; color: var(--dark);">
+          </div>
         </div>
       </div>
 
@@ -1036,6 +1047,14 @@ function renderAll() {
 
   // Lucro Líquido Real = Faturado (Pago) - Custo de Produção Real - Despesas Manuais
   const balanco = pago - prodCostPagos - totalExp;
+
+  window._lastFinStats = {
+    revenue: pago,
+    expenses: prodCostPagos + totalExp,
+    profit: balanco,
+    ordersCompleted: pagos.length,
+    printersActive: printers.length || 4
+  };
 
   // CÁLCULO FUNDO REINVESTIMENTO (Amortização teórica baseada no tempo de impressão dos pedidos do mês)
   const avgAmortRate = printers.length 
@@ -1586,6 +1605,46 @@ document.addEventListener('DOMContentLoaded', function() {
   var btn = document.getElementById('topbarThemeToggle');
   if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
+
+async function gerarRelatorioIA() {
+  const btn = document.getElementById('btnGerarIA');
+  const box = document.getElementById('aiReportBox');
+  if (!btn || !box || !window.AIService) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A analisar dados com IA...';
+  box.style.display = 'block';
+  box.innerHTML = '<div style="display:flex; align-items:center; gap:10px; color:var(--muted);"><i class="ph-bold ph-spinner ph-spin" style="font-size:1.3rem;"></i> <span>A gerar parecer financeiro exclusivo e recomendações estratégicas 3DZAAP...</span></div>';
+
+  try {
+    const stats = window._lastFinStats || {
+      revenue: 0,
+      expenses: 0,
+      profit: 0,
+      ordersCompleted: 0,
+      printersActive: 4
+    };
+
+    const resHtml = await AIService.generateFinancialReport(stats);
+
+    box.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:1.5px solid rgba(168,85,247,0.2); padding-bottom:10px;">
+        <span style="font-weight:800; color:#a855f7; display:flex; align-items:center; gap:6px; font-size:0.95rem;"><i class="ph-bold ph-magic-wand"></i> Parecer Estratégico 3DZAAP AI</span>
+        <button onclick="document.getElementById('aiReportBox').style.display='none'" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem;"><i class="ph-bold ph-x"></i></button>
+      </div>
+      <div class="ai-content" style="font-size:0.9rem; line-height:1.6; color:var(--dark);">${resHtml}</div>
+    `;
+  } catch (err) {
+    box.innerHTML = `
+      <div style="color:#ef4444; font-weight:700; display:flex; align-items:center; gap:8px;">
+        <i class="ph-bold ph-warning-circle" style="font-size:1.3rem;"></i> <span>Erro ao gerar parecer: ${err.message}</span>
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> Gerar Parecer IA';
+  }
+}
 </script>
 </body>
 </html>

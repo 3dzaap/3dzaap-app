@@ -25,6 +25,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
+<script src="ai_service.js?v=2.5"></script>
 <script src="utils.js"></script>
 <script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
@@ -273,6 +274,19 @@
             <span>Receita Acumulada:</span>
             <strong style="color:var(--purple); font-family:var(--mono); font-size:0.95rem;" id="champRevVal">€ 0,00</strong>
           </div>
+        </div>
+      </div>
+
+      <!-- AI Catalog Insights Widget -->
+      <div id="aiCatalogWidget" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(59, 130, 246, 0.08)); border: 1.5px solid rgba(168, 85, 247, 0.28); border-radius: 16px; padding: 16px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+          <div style="font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 8px; font-size: 0.98rem;">
+            <i class="ph-bold ph-sparkle" style="color: #a855f7;"></i> Análise Inteligente do Catálogo (3DZAAP AI)
+          </div>
+          <button id="btnGenCatalogAI" onclick="gerarAnaliseCatalogoIA()" class="btn btn-sm" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168,85,247,0.3);"><i class="ph-bold ph-magic-wand"></i> ✨ Gerar Análise do Catálogo</button>
+        </div>
+        <div id="aiCatalogContent" style="font-size: 0.88rem; line-height: 1.6; color: var(--dark);">
+          <span style="color: var(--muted);">Clique em <strong>✨ Gerar Análise do Catálogo</strong> para receber recomendações estratégicas sobre precificação e estoque da sua farm.</span>
         </div>
       </div>
 
@@ -1166,6 +1180,67 @@ function calculateProduct(id) {
 
 function applyFeatureGating() {
   // Common gating logic
+}
+
+async function gerarAnaliseCatalogoIA() {
+  const btn = document.getElementById('btnGenCatalogAI');
+  const container = document.getElementById('aiCatalogContent');
+  if (!btn || !container || !window.AIService) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A analisar catálogo...';
+
+  try {
+    const activeProducts = products.filter(p => !p.archived);
+    const totalCount = activeProducts.length;
+    
+    let sumPrice = 0, sumMargin = 0, countMargin = 0;
+    activeProducts.forEach(p => {
+      const pr = parseFloat(p.price) || 0;
+      sumPrice += pr;
+      const mg = parseFloat(p.margin || (p.config && p.config.margin));
+      if (!isNaN(mg) && mg > 0) {
+        sumMargin += mg;
+        countMargin++;
+      }
+    });
+
+    const avgPrice = totalCount > 0 ? (sumPrice / totalCount).toFixed(2) : '0.00';
+    const avgMargin = countMargin > 0 ? Math.round(sumMargin / countMargin) : 55;
+
+    // Contagem de peças sem giro
+    const orderItemsCount = {};
+    if (typeof orders !== 'undefined' && Array.isArray(orders)) {
+      orders.forEach(o => {
+        if (Array.isArray(o.items)) {
+          o.items.forEach(it => {
+            if (it.productId) orderItemsCount[it.productId] = (orderItemsCount[it.productId] || 0) + (it.qty || 1);
+          });
+        }
+      });
+    }
+    const stagnantCount = activeProducts.filter(p => !orderItemsCount[p.id]).length;
+
+    const bestSellerName = document.getElementById('champVolName')?.innerText || 'N/A';
+    const topEfficiencyName = document.getElementById('champEffName')?.innerText || 'N/A';
+
+    const catalogData = {
+      totalProducts: totalCount,
+      avgPrice: avgPrice,
+      avgMargin: avgMargin,
+      stagnantCount: stagnantCount,
+      bestSeller: bestSellerName,
+      topEfficiency: topEfficiencyName
+    };
+
+    const resHtml = await AIService.generateCatalogInsights(catalogData);
+    container.innerHTML = resHtml;
+    btn.style.display = 'none';
+  } catch (err) {
+    showToast('Falha na análise IA: ' + err.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> ✨ Gerar Análise do Catálogo';
+  }
 }
 </script>
 </body>
