@@ -379,7 +379,8 @@
           <h1 data-i18n="financial.title"><i class="ph-bold ph-currency-dollar"></i> Financeiro</h1>
           <p data-i18n="financial.subtitle">Relatório de receitas e desempenho por período</p>
         </div>
-        <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="page-header-actions" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-primary" onclick="openFinancialAIModal()" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; border: none; font-weight: 700; padding: 8px 18px; border-radius: 20px; box-shadow: 0 4px 14px rgba(168,85,247,0.3);"><i class="ph-bold ph-magic-wand"></i> ✨ Relatório & Comparativo IA</button>
           <button class="btn btn-ghost" onclick="exportCSVExtrato()" data-i18n="financial.btn_csv_extrato">📊 Exportar Extrato (CSV)</button>
         </div>
       </div>
@@ -537,22 +538,10 @@
              <div style="height:140px; position:relative; width:140px">
                <canvas id="suggestionChart"></canvas>
              </div>
-             <div>
                <p class="suggestion-desc" data-i18n="financial.suggestion_desc" style="margin-bottom:12px;">Com base em boas práticas, sugerimos a seguinte distribuição do seu lucro líquido:</p>
                <ul class="suggestion-list" id="suggestionList">
-                 <!-- Sugestões injetadas via JS -->
                </ul>
              </div>
-          </div>
-          <div style="margin-top: 18px; border-top: 1.5px solid var(--border, rgba(0,0,0,0.08)); padding-top: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="font-size: 0.85rem; color: var(--subtle); display: flex; align-items: center; gap: 6px;">
-              <i class="ph-bold ph-sparkle" style="color: #a855f7; font-size: 1.1rem;"></i> <strong>Parecer com Inteligência Artificial:</strong>
-            </div>
-            <button class="btn" onclick="gerarRelatorioIA()" id="btnGerarIA" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #fff; border: none; font-weight: 700; padding: 7px 16px; border-radius: 8px; font-size: 0.84rem; cursor: pointer; box-shadow: 0 4px 14px rgba(168,85,247,0.3); transition: transform 0.15s, opacity 0.15s; display: flex; align-items: center; gap: 6px;">
-              <i class="ph-bold ph-magic-wand"></i> Gerar Parecer IA
-            </button>
-          </div>
-          <div id="aiReportBox" style="display: none; margin-top: 14px; padding: 16px; background: rgba(168, 85, 247, 0.04); border: 1.5px solid rgba(168, 85, 247, 0.25); border-radius: 12px; font-size: 0.88rem; line-height: 1.5; color: var(--dark);">
           </div>
         </div>
       </div>
@@ -1606,43 +1595,108 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btn) btn.innerHTML = theme === 'dark' ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
 });
 
-async function gerarRelatorioIA() {
-  const btn = document.getElementById('btnGerarIA');
-  const box = document.getElementById('aiReportBox');
-  if (!btn || !box || !window.AIService) return;
+<!-- Financial AI Modal -->
+<div id="aiFinancialModalOverlay" class="modal-overlay" onclick="if(event.target===this)closeFinancialAIModal()">
+  <div class="modal" style="max-width: 760px;" onclick="event.stopPropagation()">
+    <div class="modal-header" style="background: linear-gradient(135deg, #1e293b, #312e81);">
+      <div class="modal-title" style="color: #fff;"><i class="ph-bold ph-sparkle" style="color: #a855f7;"></i> Relatório Mensal & Comparativo Estratégico (3DZAAP AI)</div>
+      <button class="modal-close" onclick="closeFinancialAIModal()" style="color: #fff;"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding: 24px; max-height: 72vh; overflow-y: auto;">
+      <div id="aiFinancialModalBadge" style="display:none; margin-bottom: 16px; padding: 10px 14px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; font-size: 0.82rem; color: #10b981; font-weight: 600;">
+        <i class="ph-bold ph-check-circle"></i> Exibindo relatório financeiro salvo desta semana (economia de tokens ativada — 1x por semana).
+      </div>
+      <div id="aiFinancialModalContent" style="font-size: 0.92rem; line-height: 1.65; color: var(--dark);">
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.78rem; color: var(--subtle);"><i class="ph-bold ph-shield-check"></i> Análise de CFO gerada pela IA do 3DZAAP</span>
+      <button class="btn btn-primary" onclick="closeFinancialAIModal()">Fechar Relatório</button>
+    </div>
+  </div>
+</div>
 
-  btn.disabled = true;
-  btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> A analisar dados com IA...';
-  box.style.display = 'block';
-  box.innerHTML = '<div style="display:flex; align-items:center; gap:10px; color:var(--muted);"><i class="ph-bold ph-spinner ph-spin" style="font-size:1.3rem;"></i> <span>A gerar parecer financeiro exclusivo e recomendações estratégicas 3DZAAP...</span></div>';
+<script>
+function closeFinancialAIModal() {
+  const overlay = document.getElementById('aiFinancialModalOverlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+async function openFinancialAIModal() {
+  const overlay = document.getElementById('aiFinancialModalOverlay');
+  const container = document.getElementById('aiFinancialModalContent');
+  const badge = document.getElementById('aiFinancialModalBadge');
+  if (!overlay || !container) return;
+
+  overlay.classList.add('open');
+
+  // Check Weekly Cache
+  const cached = window.AIService?.getWeeklyCache('financial');
+  if (cached && cached.html) {
+    badge.style.display = 'block';
+    container.innerHTML = cached.html;
+    return;
+  }
+
+  badge.style.display = 'none';
+  container.innerHTML = `
+    <div style="padding: 40px 20px; text-align: center; color: var(--muted);">
+      <i class="ph-bold ph-spinner ph-spin" style="font-size: 2.2rem; color: #a855f7; margin-bottom: 14px; display: inline-block;"></i>
+      <div style="font-weight: 700; font-size: 1.05rem; color: var(--dark);">A elaborar Relatório Mensal Comparativo com IA...</div>
+      <div style="font-size: 0.85rem; margin-top: 6px;">A comparar receitas, custos de filamento e margem líquida com os meses anteriores.</div>
+    </div>
+  `;
 
   try {
     const stats = window._lastFinStats || {
       revenue: 0,
       expenses: 0,
       profit: 0,
-      ordersCompleted: 0,
-      printersActive: 4
+      ordersCompleted: 0
     };
 
-    const resHtml = await AIService.generateFinancialReport(stats);
+    const periodInput = document.getElementById('periodoInput')?.value || '';
+    const periodLabel = document.getElementById('periodoLabel')?.innerText || (periodInput || 'Mês Atual');
 
-    box.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:1.5px solid rgba(168,85,247,0.2); padding-bottom:10px;">
-        <span style="font-weight:800; color:#a855f7; display:flex; align-items:center; gap:6px; font-size:0.95rem;"><i class="ph-bold ph-magic-wand"></i> Parecer Estratégico 3DZAAP AI</span>
-        <button onclick="document.getElementById('aiReportBox').style.display='none'" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem;"><i class="ph-bold ph-x"></i></button>
-      </div>
-      <div class="ai-content" style="font-size:0.9rem; line-height:1.6; color:var(--dark);">${resHtml}</div>
-    `;
+    // Montar histórico comparativo dos últimos 3 meses a partir das listas locais se disponíveis
+    const historyMonths = [];
+    if (typeof orders !== 'undefined' && Array.isArray(orders) && typeof expenses !== 'undefined' && Array.isArray(expenses)) {
+      const now = new Date();
+      for (let i = 1; i <= 3; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const yyyymm = d.toISOString().slice(0, 7);
+        let mRev = 0;
+        let mExp = 0;
+
+        orders.forEach(o => {
+          if (o.created_at && o.created_at.startsWith(yyyymm) && ['concluido', 'enviado', 'pago'].includes(o.status)) {
+            mRev += Number(o.total_price || o.price || 0);
+          }
+        });
+        expenses.forEach(e => {
+          if (e.date && e.date.startsWith(yyyymm)) {
+            mExp += Number(e.amount || 0);
+          }
+        });
+
+        historyMonths.push({
+          label: yyyymm,
+          revenue: mRev,
+          expenses: mExp,
+          profit: mRev - mExp
+        });
+      }
+    }
+
+    const htmlResponse = await window.AIService.generateFinancialComparativeModal(periodLabel, stats, historyMonths);
+    window.AIService.setWeeklyCache('financial', htmlResponse);
+    container.innerHTML = htmlResponse;
   } catch (err) {
-    box.innerHTML = `
-      <div style="color:#ef4444; font-weight:700; display:flex; align-items:center; gap:8px;">
-        <i class="ph-bold ph-warning-circle" style="font-size:1.3rem;"></i> <span>Erro ao gerar parecer: ${err.message}</span>
+    container.innerHTML = `
+      <div style="color: #ef4444; font-weight: 700; padding: 20px;">
+        <i class="ph-bold ph-warning-circle" style="font-size: 1.5rem;"></i> Falha ao gerar relatório financeiro: ${err.message}
       </div>
     `;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> Gerar Parecer IA';
   }
 }
 </script>
