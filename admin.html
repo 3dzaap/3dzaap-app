@@ -1112,19 +1112,26 @@
                 </div>
               </div>
               <div class="ad-card-body" style="padding: 20px;">
-                <div style="margin-bottom: 16px;">
-                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
-                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
-                    <span style="font-weight:600; font-size:0.88rem; color:var(--dark);">Backend Seguro (Supabase Edge Function)</span>
-                  </div>
-                  <div style="font-size:0.82rem; color:var(--muted);">
-                    A chave principal está protegida no servidor via segredo <code>GEMINI_API_KEY</code>.
+                <div style="margin-bottom: 14px;">
+                  <label class="form-label" style="font-weight: 600; display: block; margin-bottom: 6px;">Chave API Personalizada (Substitui chave do servidor)</label>
+                  <input type="password" id="adminApiKeyInput" class="form-input mono" placeholder="Ex: AIzaSy... ou AQ.Ab8..." style="font-size: 0.85rem;" />
+                  <div class="form-hint" style="margin-top: 6px; font-size: 0.82rem; color: var(--subtle);">
+                    Deixe em branco para utilizar a chave segura padrão do Supabase (<code>GEMINI_API_KEY</code>).
                   </div>
                 </div>
 
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                  <button class="btn btn-primary btn-sm" style="flex: 1; justify-content: center;" onclick="saveCustomApiKeyAdmin()">
+                    <i class="ph-bold ph-floppy-disk"></i> Salvar Chave
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="clearCustomApiKeyAdmin()" title="Limpar chave personalizada">
+                    <i class="ph-bold ph-arrow-counter-clockwise"></i> Limpar
+                  </button>
+                </div>
+
                 <div style="padding-top: 14px; border-top: 1px dashed var(--border);">
-                  <button class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;" onclick="testGeminiConnectionAdmin()">
-                    <i class="ph-bold ph-lightning"></i> Testar Conexão com Gemini Agora
+                  <button class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;" onclick="testGeminiConnectionAdmin()">
+                    <i class="ph-bold ph-lightning" style="color: #10b981;"></i> Testar Conexão com Gemini Agora
                   </button>
                   <div id="aiTestResultAdmin" style="margin-top: 12px; font-size: 0.85rem; display: none;"></div>
                 </div>
@@ -3368,6 +3375,29 @@ function initAIControlPanel() {
     const currentMode = localStorage.getItem('3dzaap_ai_cache_mode') || 'weekly';
     select.value = currentMode;
   }
+  const keyInput = document.getElementById('adminApiKeyInput');
+  if (keyInput && window.AIService) {
+    keyInput.value = window.AIService.getCustomApiKey();
+  }
+}
+
+function saveCustomApiKeyAdmin() {
+  const keyInput = document.getElementById('adminApiKeyInput');
+  if (!keyInput) return;
+  const val = keyInput.value.trim();
+  if (window.AIService) {
+    window.AIService.setCustomApiKey(val);
+  }
+  showToast(val ? 'Chave API Gemini personalizada salva com sucesso!' : 'Chave limpa. Utilizando chave padrão do servidor.', 'ok');
+}
+
+function clearCustomApiKeyAdmin() {
+  const keyInput = document.getElementById('adminApiKeyInput');
+  if (keyInput) keyInput.value = '';
+  if (window.AIService) {
+    window.AIService.setCustomApiKey('');
+  }
+  showToast('Chave personalizada removida. A usar chave do servidor.', 'ok');
 }
 
 function changeAICacheMode(val) {

@@ -73,12 +73,25 @@ const AIService = {
     } catch (e) {}
   },
 
+  getCustomApiKey() {
+    return localStorage.getItem('3dzaap_gemini_custom_key') || '';
+  },
+
+  setCustomApiKey(key) {
+    if (key && key.trim()) {
+      localStorage.setItem('3dzaap_gemini_custom_key', key.trim());
+    } else {
+      localStorage.removeItem('3dzaap_gemini_custom_key');
+    }
+  },
+
   async callGemini(prompt, model = 'gemini-2.5-flash') {
     try {
+      const customApiKey = this.getCustomApiKey();
       if (window._sb && window._sb.functions && typeof window._sb.functions.invoke === 'function') {
         try {
           const { data, error } = await window._sb.functions.invoke('gemini-proxy', {
-            body: { prompt, model }
+            body: { prompt, model, customApiKey }
           });
           if (!error && data) {
             if (data.error) throw new Error(data.error);
@@ -106,7 +119,7 @@ const AIService = {
       const response = await fetch('https://yjggsndxatezgqljlhxb.supabase.co/functions/v1/gemini-proxy', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ prompt, model })
+        body: JSON.stringify({ prompt, model, customApiKey })
       });
 
       const data = await response.json();
@@ -124,31 +137,138 @@ const AIService = {
   },
 
   async generateExecutiveDashboardModal(data) {
+    const healthNum = Number(data.healthScore) || 59;
+    const headerHtml = `
+      <div style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08)); border: 1px solid rgba(168,85,247,0.25); border-radius: 14px; padding: 20px; margin-bottom: 22px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #a855f7; text-transform: uppercase; letter-spacing: 0.05em;"><i class="ph-bold ph-heartbeat"></i> Saúde Operacional (Health Score)</div>
+            <div style="font-size: 2.1rem; font-weight: 800; color: var(--dark); line-height: 1.1;">
+              ${healthNum} <span style="font-size: 1rem; color: var(--muted); font-weight: 600;">/ 100</span>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 180px;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 6px;">
+              <span>Índice de Saúde Operacional</span>
+              <span>${healthNum}%</span>
+            </div>
+            <div style="height: 10px; background: rgba(0,0,0,0.08); border-radius: 10px; overflow: hidden;">
+              <div style="width: ${Math.min(100, Math.max(0, healthNum))}%; background: linear-gradient(90deg, #6366f1, #a855f7); height: 100%; border-radius: 10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 1px solid rgba(168,85,247,0.15); padding-top: 14px;">
+          <div style="background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Em Produção</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #6366f1;">${data.pendingOrders || 0}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Em Atraso</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: ${Number(data.overdueOrders) > 0 ? '#ef4444' : '#10b981'};">${data.overdueOrders || 0}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Máquinas Ativas</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981;">${data.printersActive || 1}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
     const prompt = `
 Você é o Chief Operating Officer (COO) e Consultor Executivo Sênior especializado em fazendas de impressão 3D e manufatura digital.
-O dono da empresa abriu o Parecer Geral da Empresa no Dashboard. Preciso de um relatório executivo PROFUNDO, ANALÍTICO E ESTRATÉGICO com base nos dados atuais e gerais da gráfica.
+O dono da empresa abriu o Parecer Geral da Empresa no Dashboard. Preciso de um relatório executivo PROFUNDO, ANALÍTICO E ESTRATÉGICO com base nos dados reais da gráfica.
 
-DADOS OPERACIONAIS DA EMPRESA:
-- Saúde Operacional (Health Score): ${data.healthScore} / 100
-- Total de Pedidos Pendentes / Em Produção: ${data.pendingOrders}
-- Pedidos Atrasados: ${data.overdueOrders}
-- Máquinas Ativas / Operacionais: ${data.printersActive}
-- Total de Clientes Cadastrados: ${data.clientsCount || 'N/A'}
-- Total de Produtos na Biblioteca: ${data.productsCount || 'N/A'}
+DADOS OPERACIONAIS CONFIRMADOS DA EMPRESA:
+- Saúde Operacional Confirmada (Health Score): ${healthNum} / 100
+- Total de Pedidos Pendentes / Em Produção: ${data.pendingOrders || 0}
+- Pedidos Atrasados: ${data.overdueOrders || 0}
+- Máquinas Ativas / Operacionais: ${data.printersActive || 1}
+- Total de Clientes Cadastrados: ${data.clientsCount || 0}
+- Total de Produtos na Biblioteca: ${data.productsCount || 0}
 
-A sua resposta deve ser em HTML limpo, moderno e muito bem estruturado, usando cabeçalhos, destaques em negrito (<strong>) e listas (<ul>, <li>).
+IMPORTANTE: O Health Score atual é EXATAMENTE ${healthNum}/100. Analise com base neste número real.
+A sua resposta deve ser em HTML limpo, moderno e muito bem estruturado, usando cabeçalhos (<h4>), destaques em negrito (<strong>) e listas (<ul>, <li>).
 NÃO use a tag <markdown> ou blocos de código. NÃO inclua saudações clichê.
 
 ESTRUTURA OBRIGATÓRIA DO PARECER:
-1. <div style="margin-bottom:18px;"><h4 style="color:#6366f1; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i class="ph-bold ph-chart-polar"></i> 1. Diagnóstico Global da Operação</h4><p>Análise aprofundada sobre a saúde geral, equilíbrio entre capacidade instalada (${data.printersActive} máquinas) e carga de trabalho (${data.pendingOrders} pedidos).</p></div>
-2. <div style="margin-bottom:18px;"><h4 style="color:#a855f7; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i class="ph-bold ph-warning-circle"></i> 2. Análise de Riscos e Gargalos</h4><p>Avaliação detalhada dos riscos (incluindo impacto dos ${data.overdueOrders} pedidos em atraso) e eficiência de entrega.</p></div>
-3. <div><h4 style="color:#10b981; margin-bottom:8px; display:flex; align-items:center; gap:6px;"><i class="ph-bold ph-target"></i> 3. Plano Executivo de Ação Recomendado</h4><ul style="padding-left:18px; line-height:1.7;"> Três (3) estratégias avançadas e detalhadas para escalar produtividade e satisfação do cliente na farm.</ul></div>
+1. <div style="margin-bottom:18px;"><h4 style="color:#6366f1; margin-bottom:8px;"><i class="ph-bold ph-chart-polar"></i> 1. Diagnóstico Global da Operação (Score ${healthNum}/100)</h4><p>Análise aprofundada sobre a saúde geral, equilíbrio entre capacidade instalada (${data.printersActive} máquinas) e carga de trabalho (${data.pendingOrders} pedidos).</p></div>
+2. <div style="margin-bottom:18px;"><h4 style="color:#a855f7; margin-bottom:8px;"><i class="ph-bold ph-warning-circle"></i> 2. Análise de Riscos e Gargalos</h4><p>Avaliação detalhada dos riscos operacionais e eficiência das entregas.</p></div>
+3. <div style="background: rgba(16,185,129,0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 10px;"><h4 style="color:#10b981; margin-bottom:8px;"><i class="ph-bold ph-target"></i> 3. Plano Executivo de Ação Recomendado</h4><ul style="padding-left:18px; line-height:1.7;"> Três (3) estratégias avançadas e detalhadas para escalar produtividade e satisfação do cliente na farm.</ul></div>
     `;
 
-    return await this.callGemini(prompt);
+    try {
+      const aiResponse = await this.callGemini(prompt);
+      return headerHtml + (aiResponse || '<div style="padding: 16px; color: var(--muted);">Parecer em processamento.</div>');
+    } catch (err) {
+      return headerHtml + `<div style="padding: 16px; color: #ef4444;">Não foi possível carregar a análise textual complementar (${err.message}).</div>`;
+    }
   },
 
   async generateFinancialComparativeModal(periodLabel, currentMonth, historyMonths) {
+    const rev = Number(currentMonth.revenue || 0);
+    const exp = Number(currentMonth.expenses || 0);
+    const profit = Number(currentMonth.profit || 0);
+    const margin = rev > 0 ? ((profit / rev) * 100).toFixed(1) : '0.0';
+
+    const maxVal = Math.max(rev, exp, Math.abs(profit), 100);
+    const revPct = Math.min(100, Math.round((rev / maxVal) * 100));
+    const expPct = Math.min(100, Math.round((exp / maxVal) * 100));
+    const profitPct = Math.min(100, Math.round((Math.abs(profit) / maxVal) * 100));
+
+    const headerHtml = `
+      <div style="background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.08)); border: 1px solid rgba(59,130,246,0.25); border-radius: 14px; padding: 20px; margin-bottom: 22px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;">
+          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Receita Paga</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #3b82f6;">€ ${rev.toFixed(2)}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Custos & Despesas</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #ef4444;">€ ${exp.toFixed(2)}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Lucro Líquido</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: ${profit >= 0 ? '#10b981' : '#ef4444'};">€ ${profit.toFixed(2)}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Margem Líquida</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #10b981;">${margin}%</div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(59,130,246,0.15); padding-top: 14px;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: var(--dark); margin-bottom: 10px;"><i class="ph-bold ph-chart-bar"></i> Gráfico Estrutural do Período (${periodLabel})</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 2px;">
+                <span>Faturamento</span><span>€ ${rev.toFixed(2)}</span>
+              </div>
+              <div style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 6px; overflow: hidden;">
+                <div style="width: ${revPct}%; background: #3b82f6; height: 100%;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 2px;">
+                <span>Custos</span><span>€ ${exp.toFixed(2)}</span>
+              </div>
+              <div style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 6px; overflow: hidden;">
+                <div style="width: ${expPct}%; background: #ef4444; height: 100%;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-bottom: 2px;">
+                <span>Lucro Líquido</span><span>€ ${profit.toFixed(2)}</span>
+              </div>
+              <div style="height: 8px; background: rgba(0,0,0,0.06); border-radius: 6px; overflow: hidden;">
+                <div style="width: ${profitPct}%; background: #10b981; height: 100%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
     const historyText = historyMonths.map(m => 
       `• ${m.label}: Faturamento € ${m.revenue.toFixed(2)} | Despesas € ${m.expenses.toFixed(2)} | Lucro Líquido € ${m.profit.toFixed(2)}`
     ).join('\n');
@@ -158,10 +278,10 @@ Você é o Chief Financial Officer (CFO) e Consultor Financeiro Sênior de uma e
 Forneça um RELATÓRIO MENSAL COMPARATIVO COMPLETO E PROFUNDO entre o mês selecionado (${periodLabel}) e o histórico dos meses anteriores.
 
 MÊS SELECIONADO (${periodLabel}):
-- Faturamento / Receita Paga: € ${currentMonth.revenue.toFixed(2)}
-- Custos de Produção e Despesas: € ${currentMonth.expenses.toFixed(2)}
-- Lucro Líquido Real: € ${currentMonth.profit.toFixed(2)}
-- Pedidos Concluídos: ${currentMonth.ordersCompleted}
+- Faturamento / Receita Paga: € ${rev.toFixed(2)}
+- Custos de Produção e Despesas: € ${exp.toFixed(2)}
+- Lucro Líquido Real: € ${profit.toFixed(2)}
+- Pedidos Concluídos: ${currentMonth.ordersCompleted || 0}
 
 HISTÓRICO COMPARATIVO DOS MESES ANTERIORES:
 ${historyText || 'Sem dados históricos anteriores suficientes para comparar.'}
@@ -171,11 +291,16 @@ NÃO use blocos de código nem <markdown>.
 
 ESTRUTURA OBRIGATÓRIA DO RELATÓRIO FINANCEIRO:
 1. <div style="margin-bottom:18px;"><h4 style="color:#a855f7; margin-bottom:8px;"><i class="ph-bold ph-trend-up"></i> 1. Análise Comparativa do Desempenho (${periodLabel})</h4><p>Análise profunda comparando o faturamento, custos e evolução da margem de lucro em relação aos meses anteriores.</p></div>
-2. <div style="margin-bottom:18px;"><h4 style="color:#3b82f6; margin-bottom:8px;"><i class="ph-bold ph-scales"></i> 2. Eficiência de Custos e Margem Líquida</h4><p>Avaliação sobre a estrutura de gastos (filamento, resina, manutenção, despesas operacionais) e se a margem líquida está saudável para o setor de impressão 3D.</p></div>
-3. <div><h4 style="color:#10b981; margin-bottom:8px;"><i class="ph-bold ph-rocket-launch"></i> 3. Diretrizes de Crescimento e Precificação</h4><ul style="padding-left:18px; line-height:1.7;">Três (3) recomendações estratégicas acionáveis para aumentar o lucro líquido e otimizar preços ou contratos recorrentes.</ul></div>
+2. <div style="margin-bottom:18px;"><h4 style="color:#3b82f6; margin-bottom:8px;"><i class="ph-bold ph-scales"></i> 2. Eficiência de Custos e Margem Líquida</h4><p>Avaliação sobre a estrutura de gastos e margem líquida (${margin}%).</p></div>
+3. <div style="background: rgba(16,185,129,0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 10px;"><h4 style="color:#10b981; margin-bottom:8px;"><i class="ph-bold ph-rocket-launch"></i> 3. Ação Executiva e Oportunidade de Lucro</h4><ul style="padding-left:18px; line-height:1.7;">Três (3) recomendações estratégicas acionáveis para aumentar a rentabilidade e otimizar margens.</ul></div>
     `;
 
-    return await this.callGemini(prompt);
+    try {
+      const aiResponse = await this.callGemini(prompt);
+      return headerHtml + (aiResponse || '<div style="padding: 16px; color: var(--muted);">Análise comparativa em processamento.</div>');
+    } catch (err) {
+      return headerHtml + `<div style="padding: 16px; color: #ef4444;">Não foi possível carregar o parecer textual (${err.message}).</div>`;
+    }
   }
 };
 
