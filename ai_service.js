@@ -39,7 +39,7 @@ const AIService = {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.version === 'v4_pdf_ready' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
+      if (parsed && parsed.version === 'v5_real_dashboard_sync' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
         return parsed;
       }
     } catch (e) {
@@ -53,7 +53,7 @@ const AIService = {
     if (!html || typeof html !== 'string' || html.trim().length < 50) return;
     try {
       const payload = {
-        version: 'v4_pdf_ready',
+        version: 'v5_real_dashboard_sync',
         period: getCachePeriodKey(),
         html: html
       };

@@ -318,11 +318,45 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
           clonedElement.style.boxShadow = 'none';
           clonedElement.style.display = 'block';
 
+          // Estilos globais para PDF (garantir alto contraste em fundo branco)
+          const pdfStyle = clonedDoc.createElement('style');
+          pdfStyle.innerHTML = `
+            :root {
+              --dark: #0f172a !important;
+              --muted: #475569 !important;
+              --subtle: #64748b !important;
+            }
+            body, #${elementId} {
+              background: #ffffff !important;
+              color: #0f172a !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            }
+            #${elementId} p, #${elementId} span, #${elementId} div, #${elementId} li, #${elementId} td, #${elementId} th {
+              color: #0f172a !important;
+            }
+            #${elementId} h1, #${elementId} h2, #${elementId} h3, #${elementId} h4 {
+              color: #4f46e5 !important;
+            }
+            #${elementId} [style*="color: #6366f1"], #${elementId} [style*="color: #a855f7"] {
+              color: #4f46e5 !important;
+            }
+          `;
+          clonedDoc.head.appendChild(pdfStyle);
+
           // Garante que containers internos usem o tema claro correto
           clonedElement.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
             el.style.background = '#ffffff';
             el.style.color = '#1e293b';
             el.style.flex = 'unset';
+          });
+
+          // Converte cartões escuros ou translúcidos do tema escuro em cartões claros com borda elegante
+          clonedElement.querySelectorAll('*').forEach(el => {
+            const bg = el.style.background || '';
+            if (bg.includes('rgba(255, 255, 255') || bg.includes('rgba(255,255,255')) {
+              el.style.background = '#f8fafc';
+              el.style.border = '1px solid #cbd5e1';
+            }
           });
         }
       },
