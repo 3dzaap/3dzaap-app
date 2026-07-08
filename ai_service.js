@@ -39,7 +39,7 @@ const AIService = {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 20) {
+      if (parsed && parsed.version === 'v4_pdf_ready' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
         return parsed;
       }
     } catch (e) {
@@ -50,9 +50,10 @@ const AIService = {
 
   setWeeklyCache(reportType, html) {
     if (this.getCacheMode() === 'disabled') return;
-    if (!html || typeof html !== 'string' || html.trim().length < 20) return;
+    if (!html || typeof html !== 'string' || html.trim().length < 50) return;
     try {
       const payload = {
+        version: 'v4_pdf_ready',
         period: getCachePeriodKey(),
         html: html
       };
@@ -383,3 +384,28 @@ Liste 4 estratégias financeiras e de precificação práticas para otimizar mar
 };
 
 window.AIService = AIService;
+
+window.exportAIReportToPDF = async function(elementId, filename) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  const btn = window.event?.currentTarget;
+  const oldHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Gerando PDF...';
+  }
+  try {
+    if (typeof downloadPDF === 'function') {
+      await downloadPDF(elementId, filename || 'Relatorio_Estrategico_3DZAAP_AI.pdf');
+    } else {
+      window.print();
+    }
+  } catch (e) {
+    console.error("Erro ao exportar PDF:", e);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = oldHtml;
+    }
+  }
+};

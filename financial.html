@@ -1096,9 +1096,10 @@ function renderAll() {
 
   window._lastFinStats = {
     revenue: pago,
-    expenses: totalExp,
-    profit: pago - totalExp,
-    ordersCompleted: periodOrders.filter(o => ['concluido', 'enviado', 'pago'].includes(o.status)).length
+    expenses: prodCostPagos + totalExp,
+    profit: balanco,
+    ordersCompleted: pagos.length,
+    printersActive: (typeof printers !== 'undefined' ? printers.length : 1)
   };
 
   // Render Expense Table
@@ -1619,7 +1620,10 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="modal-footer" style="justify-content: space-between; align-items: center;">
       <span style="font-size: 0.78rem; color: var(--subtle);"><i class="ph-bold ph-shield-check"></i> Análise de CFO gerada pela IA do 3DZAAP</span>
-      <button class="btn btn-primary" onclick="closeFinancialAIModal()">Fechar Relatório</button>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" onclick="exportAIReportToPDF('aiFinancialModalContent', 'Relatorio_CFO_Financeiro_3DZAAP.pdf')"><i class="ph-bold ph-file-pdf" style="color: #ef4444; font-size: 1.1rem;"></i> Exportar PDF</button>
+        <button class="btn btn-primary" onclick="closeFinancialAIModal()">Fechar Relatório</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1687,7 +1691,7 @@ async function openFinancialAIModal() {
     const parseEurText = (id) => {
       const el = document.getElementById(id);
       if (!el) return 0;
-      const txt = (el.innerText || el.textContent || '').replace(/[^\d,-]/g, '').replace(',', '.');
+      const txt = (el.innerText || el.textContent || '').replace(/[^\d.,-]/g, '').replace(',', '.');
       return Number(txt) || 0;
     };
     let stats = window._lastFinStats;

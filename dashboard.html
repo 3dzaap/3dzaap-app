@@ -2097,7 +2097,10 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
     <div class="modal-footer" style="justify-content: space-between; align-items: center;">
       <span style="font-size: 0.78rem; color: var(--subtle);"><i class="ph-bold ph-shield-check"></i> Análise executiva gerada pela IA do 3DZAAP</span>
-      <button class="btn btn-primary" onclick="closeExecutiveAIModal()">Fechar Parecer</button>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" onclick="exportAIReportToPDF('aiExecutiveModalContent', 'Relatorio_Executivo_3DZAAP.pdf')"><i class="ph-bold ph-file-pdf" style="color: #ef4444; font-size: 1.1rem;"></i> Exportar PDF</button>
+        <button class="btn btn-primary" onclick="closeExecutiveAIModal()">Fechar Parecer</button>
+      </div>
     </div>
   </div>
 </div>
