@@ -10,13 +10,23 @@ function getCurrentWeekKey() {
   return `${now.getFullYear()}-W${week}`;
 }
 
+function cleanAIOutput(text) {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text.replace(/```(?:html|xml)?\s*\n?/gi, '').replace(/```/g, '');
+  cleaned = cleaned.replace(/<!DOCTYPE[^>]*>/gi, '')
+                   .replace(/<\/?html[^>]*>/gi, '')
+                   .replace(/<\/?body[^>]*>/gi, '')
+                   .replace(/<head>[\s\S]*?<\/head>/gi, '');
+  return cleaned.trim();
+}
+
 const AIService = {
   getWeeklyCache(reportType) {
     try {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.week === getCurrentWeekKey() && parsed.html) {
+      if (parsed && parsed.week === getCurrentWeekKey() && parsed.html && parsed.html.length > 20) {
         return parsed;
       }
     } catch (e) {
@@ -26,11 +36,11 @@ const AIService = {
   },
 
   setWeeklyCache(reportType, html) {
+    if (!html || typeof html !== 'string' || html.trim().length < 20) return;
     try {
       const payload = {
         week: getCurrentWeekKey(),
-        timestamp: new Date().toISOString(),
-        html
+        html: html
       };
       localStorage.setItem(`3dzaap_ai_cache_${reportType}`, JSON.stringify(payload));
     } catch (e) {
@@ -47,7 +57,8 @@ const AIService = {
           });
           if (!error && data) {
             if (data.error) throw new Error(data.error);
-            return data.text || null;
+            const cleaned = cleanAIOutput(data.text);
+            if (cleaned) return cleaned;
           }
           if (error) {
             console.warn("[AIService] Supabase SDK invoke retornou erro, tentando via fetch direto...", error);
@@ -80,7 +91,7 @@ const AIService = {
         throw new Error(errMsg);
       }
 
-      return data ? data.text : null;
+      return cleanAIOutput(data ? data.text : null);
     } catch (err) {
       console.error("AIService Error:", err);
       throw err;

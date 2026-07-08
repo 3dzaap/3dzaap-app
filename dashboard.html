@@ -2117,11 +2117,12 @@ async function openExecutiveAIModal() {
 
   // Check Weekly Cache
   const cached = window.AIService?.getWeeklyCache('dashboard');
-  if (cached && cached.html) {
+  if (cached && cached.html && cached.html.length > 20) {
     badge.style.display = 'block';
     container.innerHTML = cached.html;
     return;
   }
+  localStorage.removeItem('3dzaap_ai_cache_dashboard');
 
   badge.style.display = 'none';
   container.innerHTML = `

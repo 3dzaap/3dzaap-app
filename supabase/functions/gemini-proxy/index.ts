@@ -38,7 +38,7 @@ serve(async (req) => {
 
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+      generationConfig: { temperature: 0.7, maxOutputTokens: 3000 }
     };
 
     let lastErrorMsg = ''

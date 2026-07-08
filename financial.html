@@ -1640,11 +1640,12 @@ async function openFinancialAIModal() {
 
   // Check Weekly Cache
   const cached = window.AIService?.getWeeklyCache('financial');
-  if (cached && cached.html) {
+  if (cached && cached.html && cached.html.length > 20) {
     badge.style.display = 'block';
     container.innerHTML = cached.html;
     return;
   }
+  localStorage.removeItem('3dzaap_ai_cache_financial');
 
   badge.style.display = 'none';
   container.innerHTML = `
