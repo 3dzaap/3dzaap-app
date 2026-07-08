@@ -3,8 +3,12 @@
  * Includes Weekly Caching to save API tokens (1 report generation per week per user).
  */
 
-function getCurrentWeekKey() {
+function getCachePeriodKey() {
+  const mode = localStorage.getItem('3dzaap_ai_cache_mode') || 'weekly';
   const now = new Date();
+  if (mode === 'daily') {
+    return now.toISOString().slice(0, 10);
+  }
   const onejan = new Date(now.getFullYear(), 0, 1);
   const week = Math.ceil((((now - onejan) / 86400000) + onejan.getDay() + 1) / 7);
   return `${now.getFullYear()}-W${week}`;
@@ -21,12 +25,21 @@ function cleanAIOutput(text) {
 }
 
 const AIService = {
+  getCacheMode() {
+    return localStorage.getItem('3dzaap_ai_cache_mode') || 'weekly';
+  },
+
+  setCacheMode(mode) {
+    localStorage.setItem('3dzaap_ai_cache_mode', mode);
+  },
+
   getWeeklyCache(reportType) {
+    if (this.getCacheMode() === 'disabled') return null;
     try {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.week === getCurrentWeekKey() && parsed.html && parsed.html.length > 20) {
+      if (parsed && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 20) {
         return parsed;
       }
     } catch (e) {
@@ -36,16 +49,28 @@ const AIService = {
   },
 
   setWeeklyCache(reportType, html) {
+    if (this.getCacheMode() === 'disabled') return;
     if (!html || typeof html !== 'string' || html.trim().length < 20) return;
     try {
       const payload = {
-        week: getCurrentWeekKey(),
+        period: getCachePeriodKey(),
         html: html
       };
       localStorage.setItem(`3dzaap_ai_cache_${reportType}`, JSON.stringify(payload));
     } catch (e) {
       console.warn("Error saving AI cache:", e);
     }
+  },
+
+  clearWeeklyCache(reportType) {
+    try {
+      if (reportType) {
+        localStorage.removeItem(`3dzaap_ai_cache_${reportType}`);
+      } else {
+        localStorage.removeItem('3dzaap_ai_cache_dashboard');
+        localStorage.removeItem('3dzaap_ai_cache_financial');
+      }
+    } catch (e) {}
   },
 
   async callGemini(prompt, model = 'gemini-2.5-flash') {

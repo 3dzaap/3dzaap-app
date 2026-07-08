@@ -619,6 +619,9 @@
           <button class="admin-tab" onclick="switchTab('slicers')" role="tab" id="tab-btn-slicers">
             <i class="ph-bold ph-sliders"></i> Slicers
           </button>
+          <button class="admin-tab" onclick="switchTab('ai_control')" role="tab" id="tab-btn-ai_control" style="border-left: 1px solid rgba(168,85,247,0.3); color: #a855f7;">
+            <i class="ph-bold ph-brain"></i> IA & LLM
+          </button>
         </div>
 
         <!-- ══════════════════════════════════════════════
@@ -1050,6 +1053,121 @@
                 </thead>
                 <tbody id="slicersTableBody">
                   <tr><td colspan="3" style="text-align:center;padding:32px;color:var(--muted)">A carregar slicers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             TAB: GESTÃO E CONTROLE DE IA & LLM (3DZAAP AI)
+        ══════════════════════════════════════════════ -->
+        <div class="admin-panel" id="tab-ai_control">
+          <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+              <i class="ph-bold ph-brain" style="color: #a855f7;"></i> Centro de Controlo de Inteligência Artificial & Economia de Tokens
+            </h2>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-top: 4px;">
+              Gerencie limites de geração por utilizador, zere contagens de relatórios em cache e administre a API Key do Google Gemini.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+            <!-- Card 1: Controle de Limite / Economia de Tokens -->
+            <div class="ad-card" style="border-left: 4px solid #a855f7;">
+              <div class="ad-card-header" style="padding: 18px 20px; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                  <i class="ph-bold ph-timer" style="color: #a855f7; font-size: 1.2rem;"></i> Frequência & Limite por Utilizador
+                </div>
+              </div>
+              <div class="ad-card-body" style="padding: 20px;">
+                <div style="margin-bottom: 16px;">
+                  <label class="form-label" style="font-weight: 600; display: block; margin-bottom: 6px;">Regra de Caching de Relatórios IA</label>
+                  <select id="aiCacheModeSelect" class="form-input" onchange="changeAICacheMode(this.value)">
+                    <option value="weekly">1x por Semana (Recomendado — Economia Máxima de Tokens)</option>
+                    <option value="daily">1x por Dia (Atualiza a cada 24 horas)</option>
+                    <option value="disabled">Sem Limite / Modo Teste (Gera sempre ao vivo, sem cache)</option>
+                  </select>
+                  <div class="form-hint" style="margin-top: 6px; font-size: 0.82rem; color: var(--subtle);">
+                    Define com que frequência os utilizadores podem solicitar chamadas à API do Gemini antes de exibir o relatório em cache.
+                  </div>
+                </div>
+
+                <div style="padding-top: 14px; border-top: 1px dashed var(--border);">
+                  <div style="font-weight: 600; font-size: 0.88rem; color: var(--dark); margin-bottom: 8px;">
+                    Zerar Contagem de Testes
+                  </div>
+                  <button class="btn btn-danger btn-sm" style="width: 100%; justify-content: center;" onclick="resetAllAICacheAdmin()">
+                    <i class="ph-bold ph-trash"></i> Zerar Contagem & Limpar Cache Semanal Agora
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Gestão de API Key Gemini -->
+            <div class="ad-card" style="border-left: 4px solid #10b981;">
+              <div class="ad-card-header" style="padding: 18px 20px; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                  <i class="ph-bold ph-key" style="color: #10b981; font-size: 1.2rem;"></i> Chave API Google Gemini
+                </div>
+              </div>
+              <div class="ad-card-body" style="padding: 20px;">
+                <div style="margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                    <span style="font-weight:600; font-size:0.88rem; color:var(--dark);">Backend Seguro (Supabase Edge Function)</span>
+                  </div>
+                  <div style="font-size:0.82rem; color:var(--muted);">
+                    A chave principal está protegida no servidor via segredo <code>GEMINI_API_KEY</code>.
+                  </div>
+                </div>
+
+                <div style="padding-top: 14px; border-top: 1px dashed var(--border);">
+                  <button class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;" onclick="testGeminiConnectionAdmin()">
+                    <i class="ph-bold ph-lightning"></i> Testar Conexão com Gemini Agora
+                  </button>
+                  <div id="aiTestResultAdmin" style="margin-top: 12px; font-size: 0.85rem; display: none;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Módulos de Relatórios Ativos -->
+          <div class="ad-card">
+            <div class="ad-card-header" style="padding: 18px 20px; border-bottom: 1px solid var(--border);">
+              <div style="font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px;">
+                <i class="ph-bold ph-stack" style="color: #6366f1; font-size: 1.2rem;"></i> Módulos de Inteligência Artificial Ativos
+              </div>
+            </div>
+            <div class="ad-card-body" style="padding: 20px;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Módulo do SaaS</th>
+                    <th>Tipo de Relatório IA</th>
+                    <th>Abertura</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Dashboard Geral</strong></td>
+                    <td>Parecer Executivo de COO (Diagnóstico, Riscos & Plano)</td>
+                    <td>Modal Corporativa</td>
+                    <td><span class="badge badge-success">Ativo & Cache Semanal</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Financeiro</strong></td>
+                    <td>Relatório Mensal & Comparativo (CFO Analysis)</td>
+                    <td>Modal Corporativa</td>
+                    <td><span class="badge badge-success">Ativo & Cache Semanal</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Produtos / Catálogo</strong></td>
+                    <td>N/A — KPIs em 2 Níveis (Sem IA)</td>
+                    <td>N/A</td>
+                    <td><span class="badge" style="background:#64748b;color:#fff;">Desativado</span></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -2868,6 +2986,7 @@ function switchTab(name) {
   document.getElementById('tab-' + name)?.classList.add('active');
   if(name === 'partners') loadPartners();
   if(name === 'slicers') loadSlicers();
+  if(name === 'ai_control') initAIControlPanel();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3240,10 +3359,59 @@ function deletePartnerConfirm(id, name) {
   });
 }
 
+// ══════════════════════════════════════════════════════════
+//  CONTROLO E ADMINISTRAÇÃO DA INTELIGÊNCIA ARTIFICIAL (3DZAAP AI)
+// ══════════════════════════════════════════════════════════
+function initAIControlPanel() {
+  const select = document.getElementById('aiCacheModeSelect');
+  if (select) {
+    const currentMode = localStorage.getItem('3dzaap_ai_cache_mode') || 'weekly';
+    select.value = currentMode;
+  }
+}
+
+function changeAICacheMode(val) {
+  localStorage.setItem('3dzaap_ai_cache_mode', val);
+  showToast('Regra de Caching de IA alterada para: ' + val, 'ok');
+}
+
+function resetAllAICacheAdmin() {
+  try {
+    localStorage.removeItem('3dzaap_ai_cache_dashboard');
+    localStorage.removeItem('3dzaap_ai_cache_financial');
+    showToast('Contagem e Caches de Inteligência Artificial zerados com sucesso!', 'ok');
+  } catch (e) {
+    showToast('Erro ao zerar cache: ' + e.message, 'err');
+  }
+}
+
+async function testGeminiConnectionAdmin() {
+  const resultBox = document.getElementById('aiTestResultAdmin');
+  if (!resultBox) return;
+
+  resultBox.style.display = 'block';
+  resultBox.innerHTML = '<span style="color:var(--muted);"><i class="ph-bold ph-spinner ph-spin"></i> A testar conexão segura com Gemini Edge Function...</span>';
+
+  try {
+    if (!window.AIService) {
+      throw new Error('Serviço AIService não carregado.');
+    }
+    const resp = await window.AIService.callGemini('Responda apenas com a frase exata: Conexao Gemini OK');
+    resultBox.innerHTML = `<div style="padding: 10px 12px; background: rgba(16,185,129,0.12); border-left: 3px solid #10b981; border-radius: 6px; color: #065f46;">
+      <strong><i class="ph-bold ph-check-circle"></i> Conexão OK!</strong> Resposta da IA: <em>"${resp}"</em>
+    </div>`;
+  } catch (e) {
+    resultBox.innerHTML = `<div style="padding: 10px 12px; background: rgba(239,68,68,0.12); border-left: 3px solid #ef4444; border-radius: 6px; color: #991b1b;">
+      <strong><i class="ph-bold ph-x-circle"></i> Falha no Teste:</strong> ${e.message || e}
+    </div>`;
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   checkAdminAccess();
 });
 </script>
+<script src="ai_service.js"></script>
 <script src="i18n.js"></script>
 </body>
 </html>
