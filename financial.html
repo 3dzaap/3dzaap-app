@@ -1094,6 +1094,13 @@ function renderAll() {
   animateValue('kpiDespesas', 0, totalExp, 800);
   document.getElementById('kpiDespesasSub').textContent = `${periodExps.length} despesa${periodExps.length !== 1 ? 's' : ''}`;
 
+  window._lastFinStats = {
+    revenue: pago,
+    expenses: totalExp,
+    profit: pago - totalExp,
+    ordersCompleted: periodOrders.filter(o => ['concluido', 'enviado', 'pago'].includes(o.status)).length
+  };
+
   // Render Expense Table
   const trArr = periodExps.sort((a,b) => new Date(b.date) - new Date(a.date));
   const eTable = document.getElementById('expTable');
