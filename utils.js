@@ -292,79 +292,7 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
   }
 
   try {
-    const canvas = await window.html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      onclone: (clonedDoc) => {
-        const clonedElement = clonedDoc.getElementById(elementId);
-        if (clonedElement) {
-          // Remove do fluxo para evitar destruição de conteúdo ao limpar o body
-          clonedElement.remove();
-
-          const body = clonedDoc.body;
-          body.innerHTML = '';
-          body.style.margin = '0';
-          body.style.padding = '20px';
-          body.style.background = '#ffffff';
-          body.style.color = '#1e293b';
-          body.style.width = '700px';
-          body.appendChild(clonedElement);
-
-          clonedElement.style.width = '100%';
-          clonedElement.style.position = 'relative';
-          clonedElement.style.background = '#ffffff';
-          clonedElement.style.color = '#1e293b';
-          clonedElement.style.boxShadow = 'none';
-          clonedElement.style.display = 'block';
-
-          // Estilos globais para PDF (garantir alto contraste em fundo branco)
-          const pdfStyle = clonedDoc.createElement('style');
-          pdfStyle.innerHTML = `
-            :root {
-              --dark: #0f172a !important;
-              --muted: #475569 !important;
-              --subtle: #64748b !important;
-            }
-            body, #${elementId} {
-              background: #ffffff !important;
-              color: #0f172a !important;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-            }
-            #${elementId} p, #${elementId} span, #${elementId} div, #${elementId} li, #${elementId} td, #${elementId} th {
-              color: #0f172a !important;
-            }
-            #${elementId} h1, #${elementId} h2, #${elementId} h3, #${elementId} h4 {
-              color: #4f46e5 !important;
-            }
-            #${elementId} [style*="color: #6366f1"], #${elementId} [style*="color: #a855f7"] {
-              color: #4f46e5 !important;
-            }
-          `;
-          clonedDoc.head.appendChild(pdfStyle);
-
-          // Garante que containers internos usem o tema claro correto
-          clonedElement.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
-            el.style.background = '#ffffff';
-            el.style.color = '#1e293b';
-            el.style.flex = 'unset';
-          });
-
-          // Converte cartões escuros ou translúcidos do tema escuro em cartões claros com borda elegante
-          clonedElement.querySelectorAll('*').forEach(el => {
-            const bg = el.style.background || '';
-            if (bg.includes('rgba(255, 255, 255') || bg.includes('rgba(255,255,255')) {
-              el.style.background = '#f8fafc';
-              el.style.border = '1px solid #cbd5e1';
-            }
-          });
-        }
-      },
-      ...(customOpts.html2canvas || {})
-    });
-
     const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -372,20 +300,132 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       ...(customOpts.jsPDF || {})
     });
 
-    const imgWidth = 210; // Largura da folha A4 em mm
-    const pageHeight = 295; // Altura da folha A4 em mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
+    const pageElements = [];
 
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    // Primeiro renderizamos/paramos no onclone para criar páginas A4 perfeitamente paginadas
+    const tempCanvas = await window.html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById(elementId);
+        if (!clonedElement) return;
+        clonedElement.remove();
 
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+        const body = clonedDoc.body;
+        body.innerHTML = '';
+        body.style.margin = '0';
+        body.style.padding = '0';
+        body.style.background = '#ffffff';
+
+        // Estilos globais para PDF de alto contraste
+        const pdfStyle = clonedDoc.createElement('style');
+        pdfStyle.innerHTML = `
+          * { box-sizing: border-box; }
+          body { background: #ffffff !important; color: #0f172a !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; }
+          p, span, div, li, td, th { color: #0f172a !important; line-height: 1.65; }
+          h1, h2, h3, h4 { color: #4f46e5 !important; margin-top: 18px; margin-bottom: 10px; page-break-after: avoid; }
+        `;
+        clonedDoc.head.appendChild(pdfStyle);
+
+        // Garante que containers internos usem o tema claro correto
+        clonedElement.querySelectorAll('.rcpt-body, .rcpt-card').forEach(el => {
+          el.style.background = '#ffffff';
+          el.style.color = '#1e293b';
+          el.style.flex = 'unset';
+        });
+
+        clonedElement.querySelectorAll('*').forEach(el => {
+          const bg = el.style.background || '';
+          if (bg.includes('rgba(255, 255, 255') || bg.includes('rgba(255,255,255')) {
+            el.style.background = '#f8fafc';
+            el.style.border = '1px solid #cbd5e1';
+          }
+        });
+
+        // Coleta blocos lógicos para paginação inteligente sem cortar texto
+        const blocks = [];
+        Array.from(clonedElement.children).forEach(child => {
+          if (child.classList && child.classList.contains('ai-report-body')) {
+            Array.from(child.children).forEach(sub => blocks.push(sub));
+          } else {
+            blocks.push(child);
+          }
+        });
+
+        const createPage = () => {
+          const page = clonedDoc.createElement('div');
+          page.style.width = '794px';
+          page.style.minHeight = '1123px';
+          page.style.maxHeight = '1123px';
+          page.style.padding = '42px 48px 65px 48px';
+          page.style.background = '#ffffff';
+          page.style.position = 'relative';
+          page.style.overflow = 'hidden';
+          body.appendChild(page);
+          pageElements.push(page);
+          return page;
+        };
+
+        let currentPage = createPage();
+        let contentArea = clonedDoc.createElement('div');
+        contentArea.style.width = '100%';
+        currentPage.appendChild(contentArea);
+
+        for (const block of blocks) {
+          contentArea.appendChild(block);
+          // Altura útil impressa da folha A4 (aprox 1010px)
+          if (contentArea.scrollHeight > 1010 && contentArea.children.length > 1) {
+            contentArea.removeChild(block);
+            currentPage = createPage();
+            contentArea = clonedDoc.createElement('div');
+            contentArea.style.width = '100%';
+            currentPage.appendChild(contentArea);
+            contentArea.appendChild(block);
+          }
+        }
+
+        // Adiciona rodapé executivo e numeração em cada folha
+        pageElements.forEach((pg, idx) => {
+          const footer = clonedDoc.createElement('div');
+          footer.style.position = 'absolute';
+          footer.style.bottom = '22px';
+          footer.style.left = '48px';
+          footer.style.right = '48px';
+          footer.style.display = 'flex';
+          footer.style.justifyContent = 'space-between';
+          footer.style.alignItems = 'center';
+          footer.style.fontSize = '11px';
+          footer.style.color = '#64748b';
+          footer.style.borderTop = '1px solid #e2e8f0';
+          footer.style.paddingTop = '10px';
+          footer.innerHTML = `
+            <span style="font-weight: 600;">3DZAAP — Relatório Executivo & Diagnóstico Operacional</span>
+            <span>Página ${idx + 1} de ${pageElements.length}</span>
+          `;
+          pg.appendChild(footer);
+        });
+      },
+      ...(customOpts.html2canvas || {})
+    });
+
+    // Se a paginação inteligente detectou páginas A4 separadas, renderiza cada uma na folha A4
+    if (pageElements.length > 0) {
+      for (let i = 0; i < pageElements.length; i++) {
+        if (i > 0) pdf.addPage();
+        const pageCanvas = await window.html2canvas(pageElements[i], {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          ...(customOpts.html2canvas || {})
+        });
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+      }
+    } else {
+      // Fallback para documentos simples que cabem em uma página
+      const imgData = tempCanvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, (tempCanvas.height * 210) / tempCanvas.width);
     }
 
     pdf.save(filename || 'documento.pdf');
