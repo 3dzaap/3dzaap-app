@@ -1684,12 +1684,21 @@ async function openFinancialAIModal() {
   `;
 
   try {
-    const stats = window._lastFinStats || {
-      revenue: 0,
-      expenses: 0,
-      profit: 0,
-      ordersCompleted: 0
+    const parseEurText = (id) => {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      const txt = (el.innerText || el.textContent || '').replace(/[^\d,-]/g, '').replace(',', '.');
+      return Number(txt) || 0;
     };
+    let stats = window._lastFinStats;
+    if (!stats || (!stats.revenue && !stats.expenses)) {
+      stats = {
+        revenue: parseEurText('kpiPago'),
+        expenses: parseEurText('kpiDespesas'),
+        profit: parseEurText('kpiBalanco'),
+        ordersCompleted: 0
+      };
+    }
 
     const periodInput = document.getElementById('periodoInput')?.value || '';
     const periodLabel = document.getElementById('periodoLabel')?.innerText || (periodInput || 'Mês Atual');
