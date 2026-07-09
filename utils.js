@@ -341,18 +341,18 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
             }
           });
 
-          // Previne quebra de linha/texto ao meio empurrando elementos que cruzam a marca de página (983px)
-          const pageBreakPx = 983; // altura de 1 página A4 para largura 700px
+          // Previne quebra de linha/texto ao meio empurrando elementos que cruzam a marca de página (990px)
+          const pageBreakPx = 990; // altura exata de 1 página A4 para largura 700px (700 * 297 / 210)
           const blocks = clonedElement.querySelectorAll('.rcpt-card, h1, h2, h3, h4, p, ul, table');
           blocks.forEach(block => {
             const top = block.offsetTop;
             const bottom = top + block.offsetHeight;
             const pageIdx = Math.floor(top / pageBreakPx);
             const nextBreakY = (pageIdx + 1) * pageBreakPx;
-            const safeMargin = 45;
+            const safeBottom = nextBreakY - 45;
 
-            if (top < nextBreakY && bottom > (nextBreakY - safeMargin)) {
-              const pushDown = nextBreakY - top + 30;
+            if (bottom > safeBottom && top < nextBreakY) {
+              const pushDown = (nextBreakY - top) + 35;
               const currentMarginTop = parseInt(block.style.marginTop || '0', 10);
               block.style.marginTop = `${currentMarginTop + pushDown}px`;
             }
@@ -363,7 +363,6 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
     });
 
     const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -371,20 +370,30 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       ...(customOpts.jsPDF || {})
     });
 
-    const imgWidth = 210; // Largura da folha A4 em mm
-    const pageHeight = 295; // Altura da folha A4 em mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
+    // Fatia o canvas em páginas A4 discretas exatas sem sobreposição ou repetição de linhas
+    const sliceWidth = canvas.width;
+    const sliceHeight = Math.floor(canvas.width * (297 / 210));
+    const totalPages = Math.ceil(canvas.height / sliceHeight);
 
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) pdf.addPage();
 
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = sliceWidth;
+      pageCanvas.height = sliceHeight;
+      const ctx = pageCanvas.getContext('2d');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, sliceWidth, sliceHeight);
+
+      ctx.drawImage(
+        canvas,
+        0, page * sliceHeight, sliceWidth, sliceHeight,
+        0, 0, sliceWidth, sliceHeight
+      );
+
+      const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(pageImgData, 'JPEG', 0, 0, 210, 297);
     }
 
     pdf.save(filename || 'documento.pdf');
