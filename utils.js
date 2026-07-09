@@ -341,26 +341,6 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
             }
           });
 
-          // Previne corte de texto verificando apenas elementos atômicos pequenos (< 300px de altura)
-          // Isso evita empurrar blocos gigantes (como listas inteiras) e criar espaços em branco
-          const pageBreakPx = 1026; // altura útil por página (267mm de conteúdo para 182mm de largura)
-          const atomicBlocks = clonedElement.querySelectorAll('.rcpt-card, h1, h2, h3, h4, p, li, tr');
-          atomicBlocks.forEach(block => {
-            const h = block.offsetHeight;
-            if (h > 0 && h < 300) {
-              const top = block.offsetTop;
-              const bottom = top + h;
-              const pageIdx = Math.floor(top / pageBreakPx);
-              const nextBreakY = (pageIdx + 1) * pageBreakPx;
-              const safeBottom = nextBreakY - 40;
-
-              if (bottom > safeBottom && top < nextBreakY) {
-                const pushDown = (nextBreakY - top) + 20;
-                const currentMarginTop = parseInt(block.style.marginTop || '0', 10);
-                block.style.marginTop = `${currentMarginTop + pushDown}px`;
-              }
-            }
-          });
         }
       },
       ...(customOpts.html2canvas || {})
@@ -374,43 +354,75 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       ...(customOpts.jsPDF || {})
     });
 
-    // Fatiamento com Margens Executivas (14mm topo/esquerda/direita, 16mm rodapé)
-    const printWidthMm = 182; // 210mm - 28mm margens laterais
-    const printHeightMm = 267; // 297mm - 30mm margens superior/inferior
-    const sliceHeight = Math.floor(canvas.width * (printHeightMm / printWidthMm));
-    const totalPages = Math.ceil(canvas.height / sliceHeight);
+    // Fatiamento Inteligente por Pixel (Smart Pixel-Level Whitespace Slicer)
+    // Garante que o corte da folha SEMPRE ocorra em uma linha horizontal 100% branca entre parágrafos ou linhas de texto
+    const printWidthMm = 182; // 210mm - 28mm margens laterais (14mm de cada lado)
+    const printHeightMm = 267; // 297mm - 30mm margens superior/inferior (15mm topo, 15mm rodapé)
+    const targetSliceHeight = Math.floor(canvas.width * (printHeightMm / printWidthMm));
 
-    // Dimensões em pixels do canvas final de folha A4 completa
+    // Dimensões em pixels do canvas final da folha A4 completa
     const a4WidthPx = Math.floor(canvas.width * (210 / printWidthMm));
     const a4HeightPx = Math.floor(canvas.width * (297 / printWidthMm));
     const leftMarginPx = Math.floor(canvas.width * (14 / printWidthMm));
-    const topMarginPx = Math.floor(canvas.width * (14 / printWidthMm));
+    const topMarginPx = Math.floor(canvas.width * (15 / printWidthMm));
 
-    for (let page = 0; page < totalPages; page++) {
+    const mainCtx = canvas.getContext('2d');
+    const isRowWhite = (y) => {
+      if (y < 0 || y >= canvas.height) return true;
+      const rowData = mainCtx.getImageData(0, y, canvas.width, 1).data;
+      for (let x = 0; x < canvas.width; x += 4) {
+        const r = rowData[x * 4];
+        const g = rowData[x * 4 + 1];
+        const b = rowData[x * 4 + 2];
+        if (r < 240 || g < 240 || b < 240) return false;
+      }
+      return true;
+    };
+
+    const findCleanCutY = (targetY, minY) => {
+      if (targetY >= canvas.height) return canvas.height;
+      for (let y = targetY; y >= minY; y--) {
+        if (isRowWhite(y) && isRowWhite(y - 1) && isRowWhite(y - 2) && isRowWhite(y - 3)) {
+          return y;
+        }
+      }
+      return targetY; // fallback
+    };
+
+    let currentY = 0;
+    let pageNum = 0;
+    const slices = [];
+
+    while (currentY < canvas.height) {
+      const targetY = currentY + targetSliceHeight;
+      const cutY = (targetY >= canvas.height) ? canvas.height : findCleanCutY(targetY, currentY + Math.floor(targetSliceHeight * 0.4));
+      slices.push({ startY: currentY, sliceH: cutY - currentY });
+      currentY = cutY;
+    }
+
+    for (let page = 0; page < slices.length; page++) {
       if (page > 0) pdf.addPage();
+      const { startY, sliceH } = slices[page];
 
       const pageCanvas = document.createElement('canvas');
       pageCanvas.width = a4WidthPx;
       pageCanvas.height = a4HeightPx;
       const ctx = pageCanvas.getContext('2d');
 
-      // Fundo 100% branco para toda a folha A4
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, a4WidthPx, a4HeightPx);
 
-      // Desenha o conteúdo fatiado centralizado dentro das margens (esquerda 14mm, topo 14mm)
       ctx.drawImage(
         canvas,
-        0, page * sliceHeight, canvas.width, sliceHeight,
-        leftMarginPx, topMarginPx, canvas.width, sliceHeight
+        0, startY, canvas.width, sliceH,
+        leftMarginPx, topMarginPx, canvas.width, sliceH
       );
 
-      // Rodapé executivo na margem inferior
       ctx.fillStyle = '#64748b';
       ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillText('3DZAAP — Relatório Executivo & Diagnóstico Operacional', leftMarginPx, a4HeightPx - Math.floor(topMarginPx * 0.55));
       ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillText(`Página ${page + 1} de ${totalPages}`, a4WidthPx - leftMarginPx - 145, a4HeightPx - Math.floor(topMarginPx * 0.55));
+      ctx.fillText(`Página ${page + 1} de ${slices.length}`, a4WidthPx - leftMarginPx - 145, a4HeightPx - Math.floor(topMarginPx * 0.55));
 
       const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
       pdf.addImage(pageImgData, 'JPEG', 0, 0, 210, 297);
