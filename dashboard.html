@@ -2205,8 +2205,21 @@ async function openExecutiveAIModal() {
       printersActive = state.printers.filter(p => p.status === 'operacional').length || state.printers.length || 1;
     }
 
-    const clientsCount = (typeof state !== 'undefined' && Array.isArray(state.clients)) ? state.clients.length : ((typeof clients !== 'undefined' && Array.isArray(clients)) ? clients.length : 0);
-    const productsCount = (typeof state !== 'undefined' && Array.isArray(state.products)) ? state.products.length : ((typeof products !== 'undefined' && Array.isArray(products)) ? products.length : 0);
+    let clientsCount = 0;
+    let productsCount = 0;
+    try {
+      const cls = await window.DB?.getClients();
+      clientsCount = Array.isArray(cls) ? cls.length : 0;
+    } catch (e) {
+      clientsCount = (typeof state !== 'undefined' && Array.isArray(state.clients)) ? state.clients.length : ((typeof clients !== 'undefined' && Array.isArray(clients)) ? clients.length : 0);
+    }
+
+    try {
+      const prds = await window.DB?.getProducts();
+      productsCount = Array.isArray(prds) ? prds.length : 0;
+    } catch (e) {
+      productsCount = (typeof state !== 'undefined' && Array.isArray(state.products)) ? state.products.length : ((typeof products !== 'undefined' && Array.isArray(products)) ? products.length : 0);
+    }
 
     const data = {
       healthScore: scoreText,
