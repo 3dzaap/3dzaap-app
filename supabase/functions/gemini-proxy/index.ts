@@ -12,18 +12,18 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    let { prompt, model = 'gemini-2.5-flash', customApiKey } = body
+    let { prompt, model = 'gemini-2.5-flash-lite', customApiKey } = body
     
-    // Lista de modelos robustos em ordem de preferência (priorizando modelos com maior cota gratuita atual)
+    // Lista de modelos robustos em ordem de preferência (priorizando o modelo mais econômico)
     const fallbackModels = [
-      'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
-      'gemini-2.0-flash',
+      'gemini-2.5-flash',
       'gemini-2.0-flash-lite',
+      'gemini-2.0-flash',
       'gemini-1.5-flash'
     ]
     if (!fallbackModels.includes(model)) {
-      model = 'gemini-2.5-flash'
+      model = 'gemini-2.5-flash-lite'
     }
     
     if (!prompt) {

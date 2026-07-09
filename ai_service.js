@@ -86,7 +86,7 @@ const AIService = {
     }
   },
 
-  async callGemini(prompt, model = 'gemini-2.5-flash') {
+  async callGemini(prompt, model = 'gemini-2.5-flash-lite') {
     try {
       const customApiKey = this.getCustomApiKey();
       if (window._sb && window._sb.functions && typeof window._sb.functions.invoke === 'function') {
