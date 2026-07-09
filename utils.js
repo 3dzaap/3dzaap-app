@@ -341,20 +341,24 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
             }
           });
 
-          // Previne quebra de linha/texto ao meio empurrando elementos que cruzam a marca de página (990px)
-          const pageBreakPx = 990; // altura exata de 1 página A4 para largura 700px (700 * 297 / 210)
-          const blocks = clonedElement.querySelectorAll('.rcpt-card, h1, h2, h3, h4, p, ul, table');
-          blocks.forEach(block => {
-            const top = block.offsetTop;
-            const bottom = top + block.offsetHeight;
-            const pageIdx = Math.floor(top / pageBreakPx);
-            const nextBreakY = (pageIdx + 1) * pageBreakPx;
-            const safeBottom = nextBreakY - 45;
+          // Previne corte de texto verificando apenas elementos atômicos pequenos (< 300px de altura)
+          // Isso evita empurrar blocos gigantes (como listas inteiras) e criar espaços em branco
+          const pageBreakPx = 1026; // altura útil por página (267mm de conteúdo para 182mm de largura)
+          const atomicBlocks = clonedElement.querySelectorAll('.rcpt-card, h1, h2, h3, h4, p, li, tr');
+          atomicBlocks.forEach(block => {
+            const h = block.offsetHeight;
+            if (h > 0 && h < 300) {
+              const top = block.offsetTop;
+              const bottom = top + h;
+              const pageIdx = Math.floor(top / pageBreakPx);
+              const nextBreakY = (pageIdx + 1) * pageBreakPx;
+              const safeBottom = nextBreakY - 40;
 
-            if (bottom > safeBottom && top < nextBreakY) {
-              const pushDown = (nextBreakY - top) + 35;
-              const currentMarginTop = parseInt(block.style.marginTop || '0', 10);
-              block.style.marginTop = `${currentMarginTop + pushDown}px`;
+              if (bottom > safeBottom && top < nextBreakY) {
+                const pushDown = (nextBreakY - top) + 20;
+                const currentMarginTop = parseInt(block.style.marginTop || '0', 10);
+                block.style.marginTop = `${currentMarginTop + pushDown}px`;
+              }
             }
           });
         }
@@ -370,27 +374,43 @@ async function downloadPDF(elementId, filename, customOpts = {}) {
       ...(customOpts.jsPDF || {})
     });
 
-    // Fatia o canvas em páginas A4 discretas exatas sem sobreposição ou repetição de linhas
-    const sliceWidth = canvas.width;
-    const sliceHeight = Math.floor(canvas.width * (297 / 210));
+    // Fatiamento com Margens Executivas (14mm topo/esquerda/direita, 16mm rodapé)
+    const printWidthMm = 182; // 210mm - 28mm margens laterais
+    const printHeightMm = 267; // 297mm - 30mm margens superior/inferior
+    const sliceHeight = Math.floor(canvas.width * (printHeightMm / printWidthMm));
     const totalPages = Math.ceil(canvas.height / sliceHeight);
+
+    // Dimensões em pixels do canvas final de folha A4 completa
+    const a4WidthPx = Math.floor(canvas.width * (210 / printWidthMm));
+    const a4HeightPx = Math.floor(canvas.width * (297 / printWidthMm));
+    const leftMarginPx = Math.floor(canvas.width * (14 / printWidthMm));
+    const topMarginPx = Math.floor(canvas.width * (14 / printWidthMm));
 
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) pdf.addPage();
 
       const pageCanvas = document.createElement('canvas');
-      pageCanvas.width = sliceWidth;
-      pageCanvas.height = sliceHeight;
+      pageCanvas.width = a4WidthPx;
+      pageCanvas.height = a4HeightPx;
       const ctx = pageCanvas.getContext('2d');
 
+      // Fundo 100% branco para toda a folha A4
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, sliceWidth, sliceHeight);
+      ctx.fillRect(0, 0, a4WidthPx, a4HeightPx);
 
+      // Desenha o conteúdo fatiado centralizado dentro das margens (esquerda 14mm, topo 14mm)
       ctx.drawImage(
         canvas,
-        0, page * sliceHeight, sliceWidth, sliceHeight,
-        0, 0, sliceWidth, sliceHeight
+        0, page * sliceHeight, canvas.width, sliceHeight,
+        leftMarginPx, topMarginPx, canvas.width, sliceHeight
       );
+
+      // Rodapé executivo na margem inferior
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('3DZAAP — Relatório Executivo & Diagnóstico Operacional', leftMarginPx, a4HeightPx - Math.floor(topMarginPx * 0.55));
+      ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(`Página ${page + 1} de ${totalPages}`, a4WidthPx - leftMarginPx - 145, a4HeightPx - Math.floor(topMarginPx * 0.55));
 
       const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
       pdf.addImage(pageImgData, 'JPEG', 0, 0, 210, 297);
