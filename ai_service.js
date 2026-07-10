@@ -39,7 +39,7 @@ const AIService = {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.version === 'v6_real_counts_sync' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
+      if (parsed && parsed.version === 'v7_dashboard_fidelity' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
         return parsed;
       }
     } catch (e) {
@@ -53,7 +53,7 @@ const AIService = {
     if (!html || typeof html !== 'string' || html.trim().length < 50) return;
     try {
       const payload = {
-        version: 'v6_real_counts_sync',
+        version: 'v7_dashboard_fidelity',
         period: getCachePeriodKey(),
         html: html
       };
@@ -193,8 +193,8 @@ const AIService = {
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 1px solid rgba(168,85,247,0.15); padding-top: 14px;">
           <div style="background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Em Produção</div>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #6366f1;">${data.pendingOrders || 0}</div>
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Total Pedidos</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #6366f1;">${data.totalOrders !== undefined ? data.totalOrders : (data.pendingOrders || 0)}</div>
           </div>
           <div style="background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 10px; text-align: center;">
             <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Em Atraso</div>
@@ -213,27 +213,31 @@ const AIService = {
 Você é o Chief Operating Officer (COO) e Consultor Executivo Sênior especializado em fazendas de impressão 3D (3D Print Farm).
 Escreva um RELATÓRIO EXECUTIVO EXTREMAMENTE COMPLETO, DETALHADO E APROFUNDADO para o proprietário da empresa.
 
-DADOS REAIS DA OPERAÇÃO:
+DADOS REAIS DA OPERAÇÃO NO DASHBOARD:
 - Saúde Operacional Atual (Health Score): ${healthNum} / 100
-- Pedidos Pendentes em Produção: ${data.pendingOrders || 0}
+- Total de Pedidos Registrados: ${data.totalOrders !== undefined ? data.totalOrders : (data.pendingOrders || 0)}
+- Pedidos Ativos / Em Produção: ${data.pendingOrders || 0}
 - Pedidos em Atraso: ${data.overdueOrders || 0}
+- Faturamento Atual no Dashboard: ${data.revenueText || '€ 0,00'}
 - Máquinas Operacionais na Gráfica: ${data.printersActive || 1}
-- Clientes Cadastrados: ${data.clientsCount || 0}
-- Produtos Cadastrados: ${data.productsCount || 0}
+- Clientes Ativos (Cadastros ou Pedidos): ${data.clientsCount || 0}
+- Portfólio / Modelos Impressos: ${data.productsCount || 0}
 
-REGRAS DE FORMATAÇÃO:
+REGRAS DE FIDELIDADE AOS DADOS:
+- Seja 100% fiel aos números acima. NÃO afirme que o usuário tem "ausência de clientes" ou "0 produtos" ou "operação parada" se os números acima mostrarem que há pedidos, clientes ou faturamento registrados.
 - Responda apenas em HTML limpo utilizando tags <h4>, <p>, <strong>, <ul> e <li>.
 - NÃO utilize a tag <markdown> nem blocos de código ou cores de texto fixas brancas.
-- VOCÊ DEVE OBRIGATORIAMENTE DESENVOLVER TODOS OS 3 TÓPICOS ABAIXO COM PROFUNDIDADE (NÃO SEJA CURTO NEM GENÉRICO):
+
+VOCÊ DEVE OBRIGATORIAMENTE DESENVOLVER TODOS OS 3 TÓPICOS ABAIXO COM PROFUNDIDADE:
 
 <h4>1. Diagnóstico do Health Score (${healthNum}/100) e Desempenho Operacional</h4>
-Explique em pelo menos 2 parágrafos detalhados por que o Health Score da gráfica está em ${healthNum}/100. Analise a relação entre a capacidade instalada (${data.printersActive} máquina(s)) e o fluxo atual de pedidos. Se a fila estiver baixa ou zerada, explique os riscos de ociosidade de máquinas e subutilização do capital investido.
+Explique em pelo menos 2 parágrafos detalhados o desempenho da gráfica que reflete a nota ${healthNum}/100. Analise o fluxo de pedidos (${data.totalOrders || data.pendingOrders || 0} pedido(s)), faturamento (${data.revenueText || 'N/A'}), clientes (${data.clientsCount || 0}) e a relação com a capacidade instalada (${data.printersActive} máquina(s)).
 
 <h4>2. Pontos Críticos e Gargalos Operacionais</h4>
-Apresente uma lista detalhada com 3 a 4 pontos críticos reais que uma farm de impressão 3D nesse estágio precisa monitorar com urgência (ex: tempo ocioso das impressoras, desperdício de filamento/resina em falhas, previsibilidade de demanda, manutenção preventiva e controle de margem de contribuição).
+Apresente uma lista detalhada com 3 a 4 pontos críticos reais baseados nos dados acima para monitoramento urgente da operação.
 
 <h4>3. Plano Executivo de Ação Recomendado (Com Sugestões Práticas)</h4>
-Apresente 4 ações estratégicas concretas e aplicáveis imediatamente para o proprietário escalar a produção e elevar o Health Score acima de 85/100 nas próximas semanas.
+Apresente 4 ações estratégicas concretas e aplicáveis imediatamente para o proprietário escalar a produção e elevar o Health Score acima de 85/100.
     `;
 
     try {
