@@ -1691,18 +1691,34 @@ async function openFinancialAIModal() {
     const parseEurText = (id) => {
       const el = document.getElementById(id);
       if (!el) return 0;
-      const txt = (el.innerText || el.textContent || '').replace(/[^\d.,-]/g, '').replace(',', '.');
+      let txt = (el.innerText || el.textContent || '').trim();
+      txt = txt.replace(/[^0-9.,-]/g, '');
+      if (!txt) return 0;
+      if (txt.includes(',')) {
+        txt = txt.replace(/\./g, '').replace(',', '.');
+      }
       return Number(txt) || 0;
     };
-    let stats = window._lastFinStats;
-    if (!stats || (!stats.revenue && !stats.expenses)) {
-      stats = {
-        revenue: parseEurText('kpiPago'),
-        expenses: parseEurText('kpiDespesas'),
-        profit: parseEurText('kpiBalanco'),
-        ordersCompleted: 0
-      };
+
+    let revVal = parseEurText('kpiPago');
+    if (revVal === 0) revVal = parseEurText('kpiTotal');
+    let expVal = parseEurText('kpiDespesas');
+    let profitVal = parseEurText('kpiBalanco');
+
+    // Se a leitura do DOM der zero mas houver pedidos na memória, calcular diretamente
+    const currentPeriod = document.getElementById('periodoInput')?.value || '';
+    if (revVal === 0 && typeof orders !== 'undefined' && Array.isArray(orders)) {
+      const periodOrders = currentPeriod ? orders.filter(o => (o.createdAt || o.created_at || o.date || '').slice(0, 7) === currentPeriod) : orders;
+      revVal = periodOrders.reduce((s,o) => s + Number(o.total || o.total_price || o.price || 0), 0);
     }
+
+    let stats = window._lastFinStats || {};
+    stats = {
+      revenue: stats.revenue || revVal,
+      expenses: stats.expenses || expVal,
+      profit: (stats.profit !== undefined && stats.profit !== 0) ? stats.profit : (profitVal || (revVal - expVal)),
+      ordersCompleted: stats.ordersCompleted || 0
+    };
 
     const periodInput = document.getElementById('periodoInput')?.value || '';
     const periodLabel = document.getElementById('periodoLabel')?.innerText || (periodInput || 'Mês Atual');
@@ -1718,13 +1734,14 @@ async function openFinancialAIModal() {
         let mExp = 0;
 
         orders.forEach(o => {
-          if (o.created_at && o.created_at.startsWith(yyyymm) && ['concluido', 'enviado', 'pago'].includes(o.status)) {
-            mRev += Number(o.total_price || o.price || 0);
+          const oDate = (o.createdAt || o.created_at || o.date || '');
+          if (oDate.startsWith(yyyymm)) {
+            mRev += Number(o.total || o.total_price || o.price || 0);
           }
         });
         expenses.forEach(e => {
           if (e.date && e.date.startsWith(yyyymm)) {
-            mExp += Number(e.amount || 0);
+            mExp += Number(e.value || e.amount || 0);
           }
         });
 

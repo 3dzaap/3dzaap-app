@@ -39,7 +39,7 @@ const AIService = {
       const stored = localStorage.getItem(`3dzaap_ai_cache_${reportType}`);
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed && parsed.version === 'v7_dashboard_fidelity' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
+      if (parsed && parsed.version === 'v8_cfo_fidelity' && parsed.period === getCachePeriodKey() && parsed.html && parsed.html.length > 50) {
         return parsed;
       }
     } catch (e) {
@@ -53,7 +53,7 @@ const AIService = {
     if (!html || typeof html !== 'string' || html.trim().length < 50) return;
     try {
       const payload = {
-        version: 'v7_dashboard_fidelity',
+        version: 'v8_cfo_fidelity',
         period: getCachePeriodKey(),
         html: html
       };
@@ -363,13 +363,14 @@ MÊS SELECIONADO (${periodLabel}):
 HISTÓRICO COMPARATIVO DOS MESES ANTERIORES:
 ${historyText || 'Sem dados históricos anteriores suficientes para comparar.'}
 
-REGRAS DE FORMATAÇÃO:
+REGRAS DE FIDELIDADE AO FATURAMENTO:
+- Seja 100% fiel aos números acima. Se o Faturamento / Receita Paga for maior que zero (€ ${rev.toFixed(2)}), NÃO diga que a empresa teve faturamento zero ou ausência de receita.
 - Responda em HTML limpo usando <h4>, <p>, <strong>, <ul> e <li>.
 - NÃO gere cartões com fundo branco nem texto branco. O texto deve ser legível.
 - DESENVOLVA COMPLETAMENTE TODOS OS 3 TÓPICOS ABAIXO:
 
 <h4>1. Análise Comparativa de Faturamento e Receitas (${periodLabel})</h4>
-Analise o desempenho da receita no período de ${periodLabel}. Compare com os meses anteriores e explique o comportamento do faturamento.
+Analise o desempenho da receita (€ ${rev.toFixed(2)}) no período de ${periodLabel}. Compare com os meses anteriores e explique o comportamento do faturamento.
 
 <h4>2. Estrutura de Custos, Despesas e Margem Líquida (${margin}%)</h4>
 Faça uma avaliação crítica sobre os custos da farm (filamento, resina, tempo de máquina, energia) e avalie se a margem líquida atual está saudável.
