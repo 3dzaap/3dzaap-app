@@ -81,8 +81,77 @@
   min-height: 60px;
   display: flex;
   align-items: center;
+  justify-content: center;
+}
 .featured-tool-card {
   grid-column: 1 / -1;
+}
+.tools-nav-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 24px;
+  padding: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow-x: auto;
+  box-shadow: var(--sh);
+}
+.tools-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border-radius: var(--r);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tools-nav-tab i {
+  font-size: 1.15rem;
+  transition: transform 0.2s ease;
+}
+.tools-nav-tab:hover {
+  color: var(--text-main);
+  background: var(--bg-lite);
+}
+.tools-nav-tab:hover i {
+  transform: scale(1.15);
+}
+.tools-nav-tab.active {
+  background: linear-gradient(135deg, rgba(59,143,212,0.14) 0%, rgba(139,92,246,0.14) 100%);
+  color: var(--blue);
+  box-shadow: 0 2px 8px rgba(59,143,212,0.12);
+}
+.tools-nav-tab.active i {
+  color: #8b5cf6;
+}
+.tool-pane {
+  display: none;
+  animation: fadeInPane 0.25s ease-out;
+}
+.tool-pane.active {
+  display: block;
+}
+.tool-pane-focused {
+  max-width: 720px;
+  margin: 0 auto;
+}
+@keyframes fadeInPane {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .tool-embed-bar {
   display: flex;
@@ -167,95 +236,123 @@
         </div>
       </div>
 
-      <div class="tools-grid">
-        <!-- 3DSVG EMBED (SVG para 3D Interativo) -->
-        <div class="tool-card featured-tool-card">
-          <div class="tool-embed-bar">
-            <div class="tool-header" style="margin-bottom: 0;">
-              <div class="tool-icon" style="background: rgba(139,92,246,0.15); color: #8b5cf6;"><i class="ph-bold ph-cube"></i></div>
-              <div>
-                <div class="tool-title" data-i18n="tools.3dsvg.title">3DSVG Studio — Transformar SVG em 3D</div>
-                <div class="tool-desc" data-i18n="tools.3dsvg.desc">Converta logótipos e vetores SVG em objetos 3D com extrusão, profundidade e texturas interativas (incorporado do 3dsvg.design).</div>
+      <!-- BARRA DE TABS DE NAVEGAÇÃO -->
+      <div class="tools-nav-tabs" role="tablist">
+        <button type="button" class="tools-nav-tab active" data-tab="svg3d" onclick="switchToolTab('svg3d')">
+          <i class="ph-bold ph-cube"></i>
+          <span data-i18n="tools.svg3d.title">3DSVG Studio (SVG para 3D)</span>
+        </button>
+        <button type="button" class="tools-nav-tab" data-tab="scale" onclick="switchToolTab('scale')">
+          <i class="ph-bold ph-arrows-out"></i>
+          <span data-i18n="tools.scale.title">Calculadora de Escala</span>
+        </button>
+        <button type="button" class="tools-nav-tab" data-tab="conv" onclick="switchToolTab('conv')">
+          <i class="ph-bold ph-ruler"></i>
+          <span data-i18n="tools.conv.title">Conversor Rápido (cm ↔ mm)</span>
+        </button>
+        <button type="button" class="tools-nav-tab" data-tab="zip" onclick="switchToolTab('zip')">
+          <i class="ph-bold ph-file-zip"></i>
+          <span data-i18n="tools.zip.title">ZIP para 3MF</span>
+        </button>
+      </div>
+
+      <div class="tools-panes">
+        <!-- PANE 1: 3DSVG STUDIO (EMBED) -->
+        <div class="tool-pane active" id="pane-svg3d">
+          <div class="tool-card featured-tool-card">
+            <div class="tool-embed-bar">
+              <div class="tool-header" style="margin-bottom: 0;">
+                <div class="tool-icon" style="background: rgba(139,92,246,0.15); color: #8b5cf6;"><i class="ph-bold ph-cube"></i></div>
+                <div>
+                  <div class="tool-title" data-i18n="tools.3dsvg.title">3DSVG Studio — Transformar SVG em 3D</div>
+                  <div class="tool-desc" data-i18n="tools.3dsvg.desc">Converta logótipos e vetores SVG em objetos 3D com extrusão, profundidade e texturas interativas (incorporado do 3dsvg.design).</div>
+                </div>
+              </div>
+              <div class="tool-embed-bar-actions">
+                <button type="button" class="btn btn-outline btn-sm" onclick="reloadSvg3D()"><i class="ph-bold ph-arrows-clockwise"></i> <span data-i18n="tools.3dsvg.reload">Recarregar</span></button>
+                <button type="button" id="btnSvgFullscreen" class="btn btn-primary btn-sm" onclick="toggleSvgFullscreen()"><i class="ph-bold ph-corners-out"></i> <span data-i18n="tools.3dsvg.fullscreen">Tela Cheia</span></button>
+                <a href="https://3dsvg.design" target="_blank" class="btn btn-outline btn-sm"><i class="ph-bold ph-arrow-square-out"></i> <span data-i18n="tools.3dsvg.newtab">Nova Aba</span></a>
               </div>
             </div>
-            <div class="tool-embed-bar-actions">
-              <button type="button" class="btn btn-outline btn-sm" onclick="reloadSvg3D()"><i class="ph-bold ph-arrows-clockwise"></i> <span data-i18n="tools.3dsvg.reload">Recarregar</span></button>
-              <button type="button" id="btnSvgFullscreen" class="btn btn-primary btn-sm" onclick="toggleSvgFullscreen()"><i class="ph-bold ph-corners-out"></i> <span data-i18n="tools.3dsvg.fullscreen">Tela Cheia</span></button>
-              <a href="https://3dsvg.design" target="_blank" class="btn btn-outline btn-sm"><i class="ph-bold ph-arrow-square-out"></i> <span data-i18n="tools.3dsvg.newtab">Nova Aba</span></a>
-            </div>
-          </div>
-          <div class="tool-body">
-            <div class="svg3d-frame-wrap" id="svg3dFrameWrap">
-              <iframe id="svg3dIframe" src="https://3dsvg.design" style="width: 100%; height: 620px; border: none; display: block;" allowfullscreen title="3DSVG Design Embed"></iframe>
+            <div class="tool-body">
+              <div class="svg3d-frame-wrap" id="svg3dFrameWrap">
+                <iframe id="svg3dIframe" src="https://3dsvg.design" style="width: 100%; height: 640px; border: none; display: block;" allowfullscreen title="3DSVG Design Embed"></iframe>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- REDIMENSIONAMENTO -->
-        <div class="tool-card">
-          <div class="tool-header">
-            <div class="tool-icon"><i class="ph-bold ph-arrows-out"></i></div>
-            <div>
-              <div class="tool-title" data-i18n="tools.scale.title">Calculadora de Escala</div>
-              <div class="tool-desc" data-i18n="tools.scale.desc">Descubra a percentagem exata para escalar a sua peça, dado o tamanho original e o tamanho desejado.</div>
+        <!-- PANE 2: REDIMENSIONAMENTO / CALCULADORA DE ESCALA -->
+        <div class="tool-pane" id="pane-scale">
+          <div class="tool-card tool-pane-focused">
+            <div class="tool-header">
+              <div class="tool-icon"><i class="ph-bold ph-arrows-out"></i></div>
+              <div>
+                <div class="tool-title" data-i18n="tools.scale.title">Calculadora de Escala</div>
+                <div class="tool-desc" data-i18n="tools.scale.desc">Descubra a percentagem exata para escalar a sua peça, dado o tamanho original e o tamanho desejado.</div>
+              </div>
             </div>
-          </div>
-          <div class="tool-body">
-            <div class="form-group">
-              <label class="form-label" data-i18n="tools.scale.orig">Tamanho Original (mm)</label>
-              <input type="number" id="calcOrig" class="form-input" placeholder="150" oninput="calcScale()">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="tools.scale.dest">Tamanho Desejado (mm)</label>
-              <input type="number" id="calcDest" class="form-input" placeholder="200" oninput="calcScale()">
-            </div>
-            <div class="result-box" id="calcResult">-- %</div>
-          </div>
-        </div>
-
-        <!-- CONVERSOR CM/MM -->
-        <div class="tool-card">
-          <div class="tool-header">
-            <div class="tool-icon"><i class="ph-bold ph-ruler"></i></div>
-            <div>
-              <div class="tool-title" data-i18n="tools.conv.title">Conversor Rápido (cm ↔ mm)</div>
-              <div class="tool-desc" data-i18n="tools.conv.desc">A impressão 3D usa milímetros, não te percas nas conversões!</div>
-            </div>
-          </div>
-          <div class="tool-body">
-            <div class="form-group">
-              <label class="form-label" data-i18n="tools.conv.cm">Centímetros (cm)</label>
-              <input type="number" id="convCm" class="form-input" placeholder="10" oninput="convFromCm()">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="tools.conv.mm">Milímetros (mm)</label>
-              <input type="number" id="convMm" class="form-input" placeholder="100" oninput="convFromMm()">
+            <div class="tool-body">
+              <div class="form-group">
+                <label class="form-label" data-i18n="tools.scale.orig">Tamanho Original (mm)</label>
+                <input type="number" id="calcOrig" class="form-input" placeholder="150" oninput="calcScale()">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="tools.scale.dest">Tamanho Desejado (mm)</label>
+                <input type="number" id="calcDest" class="form-input" placeholder="200" oninput="calcScale()">
+              </div>
+              <div class="result-box" id="calcResult">-- %</div>
             </div>
           </div>
         </div>
 
-        <!-- ZIP TO 3MF -->
-        <div class="tool-card">
-          <div class="tool-header">
-            <div class="tool-icon"><i class="ph-bold ph-file-zip"></i></div>
-            <div>
-              <div class="tool-title" data-i18n="tools.zip.title">ZIP para 3MF</div>
-              <div class="tool-desc" data-i18n="tools.zip.desc">Renomeia rapidamente um ficheiro .zip para .3mf para importar no slicer.</div>
+        <!-- PANE 3: CONVERSOR CM/MM -->
+        <div class="tool-pane" id="pane-conv">
+          <div class="tool-card tool-pane-focused">
+            <div class="tool-header">
+              <div class="tool-icon"><i class="ph-bold ph-ruler"></i></div>
+              <div>
+                <div class="tool-title" data-i18n="tools.conv.title">Conversor Rápido (cm ↔ mm)</div>
+                <div class="tool-desc" data-i18n="tools.conv.desc">A impressão 3D usa milímetros, não te percas nas conversões!</div>
+              </div>
             </div>
-          </div>
-          <div class="tool-body">
-            <div class="form-group" style="margin-top: 10px;">
-              <label class="btn btn-outline" style="width: 100%; justify-content: center; cursor: pointer;">
-                <i class="ph-bold ph-upload-simple"></i> <span data-i18n="tools.zip.btn">Escolher Ficheiro .zip</span>
-                <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="convertZipTo3mf()">
-              </label>
-            </div>
-            <div class="result-box" style="font-size: 1rem; flex-direction: column; gap: 8px;" id="zipResult">
-              <div style="color:var(--text-muted);font-weight:500;font-size:0.9rem" data-i18n="tools.zip.wait">Aguardando ficheiro...</div>
+            <div class="tool-body">
+              <div class="form-group">
+                <label class="form-label" data-i18n="tools.conv.cm">Centímetros (cm)</label>
+                <input type="number" id="convCm" class="form-input" placeholder="10" oninput="convFromCm()">
+              </div>
+              <div class="form-group">
+                <label class="form-label" data-i18n="tools.conv.mm">Milímetros (mm)</label>
+                <input type="number" id="convMm" class="form-input" placeholder="100" oninput="convFromMm()">
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- PANE 4: ZIP TO 3MF -->
+        <div class="tool-pane" id="pane-zip">
+          <div class="tool-card tool-pane-focused">
+            <div class="tool-header">
+              <div class="tool-icon"><i class="ph-bold ph-file-zip"></i></div>
+              <div>
+                <div class="tool-title" data-i18n="tools.zip.title">ZIP para 3MF</div>
+                <div class="tool-desc" data-i18n="tools.zip.desc">Renomeia rapidamente um ficheiro .zip para .3mf para importar no slicer.</div>
+              </div>
+            </div>
+            <div class="tool-body">
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="btn btn-outline" style="width: 100%; justify-content: center; cursor: pointer;">
+                  <i class="ph-bold ph-upload-simple"></i> <span data-i18n="tools.zip.btn">Escolher Ficheiro .zip</span>
+                  <input type="file" id="zipFile" accept=".zip" style="display:none" onchange="convertZipTo3mf()">
+                </label>
+              </div>
+              <div class="result-box" style="font-size: 1rem; flex-direction: column; gap: 8px;" id="zipResult">
+                <div style="color:var(--text-muted);font-weight:500;font-size:0.9rem" data-i18n="tools.zip.wait">Aguardando ficheiro...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -367,6 +464,55 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// Tool Tabs Switching Logic
+function switchToolTab(tabId) {
+  const tabs = document.querySelectorAll('.tools-nav-tab');
+  const panes = document.querySelectorAll('.tool-pane');
+  
+  tabs.forEach(t => {
+    if (t.getAttribute('data-tab') === tabId) {
+      t.classList.add('active');
+    } else {
+      t.classList.remove('active');
+    }
+  });
+  
+  panes.forEach(p => {
+    if (p.id === 'pane-' + tabId) {
+      p.classList.add('active');
+    } else {
+      p.classList.remove('active');
+    }
+  });
+  
+  try {
+    localStorage.setItem('3dzaap_active_tool_tab', tabId);
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#' + tabId);
+    } else {
+      window.location.hash = tabId;
+    }
+  } catch (e) {}
+}
+
+function initToolTabs() {
+  const hash = window.location.hash.replace('#', '');
+  const validTabs = ['svg3d', 'scale', 'conv', 'zip'];
+  let initialTab = 'svg3d';
+  if (validTabs.includes(hash)) {
+    initialTab = hash;
+  } else {
+    try {
+      const saved = localStorage.getItem('3dzaap_active_tool_tab');
+      if (validTabs.includes(saved)) {
+        initialTab = saved;
+      }
+    } catch (e) {}
+  }
+  switchToolTab(initialTab);
+}
+initToolTabs();
 </script>
 </body>
 </html>
