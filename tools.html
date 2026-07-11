@@ -81,7 +81,47 @@
   min-height: 60px;
   display: flex;
   align-items: center;
-  justify-content: center;
+.featured-tool-card {
+  grid-column: 1 / -1;
+}
+.tool-embed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.tool-embed-bar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.svg3d-frame-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-lite);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.svg3d-frame-wrap.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  border-radius: 0;
+  border: none;
+}
+.svg3d-frame-wrap.fullscreen-mode iframe {
+  height: 100vh !important;
 }
 </style>
 </head>
@@ -128,6 +168,29 @@
       </div>
 
       <div class="tools-grid">
+        <!-- 3DSVG EMBED (SVG para 3D Interativo) -->
+        <div class="tool-card featured-tool-card">
+          <div class="tool-embed-bar">
+            <div class="tool-header" style="margin-bottom: 0;">
+              <div class="tool-icon" style="background: rgba(139,92,246,0.15); color: #8b5cf6;"><i class="ph-bold ph-cube"></i></div>
+              <div>
+                <div class="tool-title" data-i18n="tools.3dsvg.title">3DSVG Studio — Transformar SVG em 3D</div>
+                <div class="tool-desc" data-i18n="tools.3dsvg.desc">Converta logótipos e vetores SVG em objetos 3D com extrusão, profundidade e texturas interativas (incorporado do 3dsvg.design).</div>
+              </div>
+            </div>
+            <div class="tool-embed-bar-actions">
+              <button type="button" class="btn btn-outline btn-sm" onclick="reloadSvg3D()"><i class="ph-bold ph-arrows-clockwise"></i> <span data-i18n="tools.3dsvg.reload">Recarregar</span></button>
+              <button type="button" id="btnSvgFullscreen" class="btn btn-primary btn-sm" onclick="toggleSvgFullscreen()"><i class="ph-bold ph-corners-out"></i> <span data-i18n="tools.3dsvg.fullscreen">Tela Cheia</span></button>
+              <a href="https://3dsvg.design" target="_blank" class="btn btn-outline btn-sm"><i class="ph-bold ph-arrow-square-out"></i> <span data-i18n="tools.3dsvg.newtab">Nova Aba</span></a>
+            </div>
+          </div>
+          <div class="tool-body">
+            <div class="svg3d-frame-wrap" id="svg3dFrameWrap">
+              <iframe id="svg3dIframe" src="https://3dsvg.design" style="width: 100%; height: 620px; border: none; display: block;" allowfullscreen title="3DSVG Design Embed"></iframe>
+            </div>
+          </div>
+        </div>
+
         <!-- REDIMENSIONAMENTO -->
         <div class="tool-card">
           <div class="tool-header">
@@ -272,6 +335,38 @@ function convertZipTo3mf() {
     </a>
   `;
 }
+
+// 3DSVG Embed Controls
+function reloadSvg3D() {
+  const iframe = document.getElementById('svg3dIframe');
+  if (iframe) {
+    iframe.src = 'https://3dsvg.design';
+  }
+}
+
+function toggleSvgFullscreen() {
+  const wrap = document.getElementById('svg3dFrameWrap');
+  const btn = document.getElementById('btnSvgFullscreen');
+  if (!wrap) return;
+
+  wrap.classList.toggle('fullscreen-mode');
+  const isFull = wrap.classList.contains('fullscreen-mode');
+
+  if (btn) {
+    btn.innerHTML = isFull 
+      ? '<i class="ph-bold ph-corners-in"></i> ' + (window.i18n && window.i18n.getNestedTranslation ? window.i18n.getNestedTranslation('tools.3dsvg.exitfull') || 'Sair Tela Cheia' : 'Sair Tela Cheia')
+      : '<i class="ph-bold ph-corners-out"></i> ' + (window.i18n && window.i18n.getNestedTranslation ? window.i18n.getNestedTranslation('tools.3dsvg.fullscreen') || 'Tela Cheia' : 'Tela Cheia');
+  }
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const wrap = document.getElementById('svg3dFrameWrap');
+    if (wrap && wrap.classList.contains('fullscreen-mode')) {
+      toggleSvgFullscreen();
+    }
+  }
+});
 </script>
 </body>
 </html>
