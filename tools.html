@@ -328,9 +328,13 @@
 
       <!-- BARRA DE TABS DE NAVEGAÇÃO -->
       <div class="tools-nav-tabs" role="tablist">
-        <button type="button" class="tools-nav-tab active" data-tab="svg3d" onclick="switchToolTab('svg3d')">
+        <button type="button" class="tools-nav-tab active" data-tab="convertio" onclick="switchToolTab('convertio')">
+          <i class="ph-bold ph-bezier-curve"></i>
+          <span data-i18n="tools.convertio.tab">1. Imagem → SVG (Convertio)</span>
+        </button>
+        <button type="button" class="tools-nav-tab" data-tab="svg3d" onclick="switchToolTab('svg3d')">
           <i class="ph-bold ph-cube"></i>
-          <span data-i18n="tools.svg3d.title">3DSVG Studio (SVG para 3D)</span>
+          <span data-i18n="tools.svg3d.tab">2. SVG → STL (3DSVG Studio)</span>
         </button>
         <button type="button" class="tools-nav-tab" data-tab="scale" onclick="switchToolTab('scale')">
           <i class="ph-bold ph-arrows-out"></i>
@@ -343,10 +347,6 @@
         <button type="button" class="tools-nav-tab" data-tab="zip" onclick="switchToolTab('zip')">
           <i class="ph-bold ph-file-zip"></i>
           <span data-i18n="tools.zip.title">ZIP para 3MF</span>
-        </button>
-        <button type="button" class="tools-nav-tab" data-tab="convertio" onclick="switchToolTab('convertio')">
-          <i class="ph-bold ph-arrows-left-right"></i>
-          <span data-i18n="tools.convertio.title">Convertio (API Nativa)</span>
         </button>
       </div>
 
@@ -452,10 +452,10 @@
           <div class="tool-card tool-pane-focused" style="max-width: 820px;">
             <div class="tool-embed-bar">
               <div class="tool-header" style="margin-bottom: 0;">
-                <div class="tool-icon" style="background: rgba(239,68,68,0.14); color: #ef4444;"><i class="ph-bold ph-arrows-left-right"></i></div>
+                <div class="tool-icon" style="background: rgba(239,68,68,0.14); color: #ef4444;"><i class="ph-bold ph-bezier-curve"></i></div>
                 <div>
-                  <div class="tool-title" data-i18n="tools.convertio.title">Convertio — Conversor Universal Maker</div>
-                  <div class="tool-desc" data-i18n="tools.convertio.desc">Converta modelos 3D (STL, OBJ, STEP, 3MF), vetores e imagens no ERP usando a API oficial Convertio.</div>
+                  <div class="tool-title" data-i18n="tools.convertio.title">Convertio — Conversor Universal para SVG</div>
+                  <div class="tool-desc" data-i18n="tools.convertio.desc">Converta imagens (PNG, JPG, WEBP), desenhos, PDFs ou vetores para o formato SVG vetorial no ERP via API oficial Convertio.</div>
                 </div>
               </div>
               <div class="tool-embed-bar-actions">
@@ -480,17 +480,17 @@
             </div>
 
             <div class="tool-body">
-              <!-- ATALHOS RÁPIDOS (PRESETS MAKER) -->
+              <!-- ATALHOS RÁPIDOS PARA SVG -->
               <div style="margin-bottom: 20px;">
-                <label class="form-label" style="margin-bottom: 10px; display: block;" data-i18n="tools.convertio.presets">Atalhos Rápidos de Conversão:</label>
+                <label class="form-label" style="margin-bottom: 10px; display: block;" data-i18n="tools.convertio.presets">Atalhos de Conversão para SVG:</label>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="convertioPresetsWrap">
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('stl', 'obj', this)"><i class="ph-bold ph-cube"></i> STL → OBJ</button>
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('obj', 'stl', this)"><i class="ph-bold ph-cube"></i> OBJ → STL</button>
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('step', 'stl', this)"><i class="ph-bold ph-gear"></i> STEP → STL</button>
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('3mf', 'stl', this)"><i class="ph-bold ph-file-3d"></i> 3MF → STL</button>
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('svg', 'dxf', this)"><i class="ph-bold ph-bezier-curve"></i> SVG → DXF</button>
-                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('png', 'svg', this)"><i class="ph-bold ph-image"></i> PNG → SVG</button>
+                  <button type="button" class="convertio-preset-pill active" onclick="selectConvertioPreset('png', 'svg', this)"><i class="ph-bold ph-image"></i> PNG → SVG</button>
                   <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('jpg', 'svg', this)"><i class="ph-bold ph-image"></i> JPG → SVG</button>
+                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('webp', 'svg', this)"><i class="ph-bold ph-image"></i> WEBP → SVG</button>
+                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('pdf', 'svg', this)"><i class="ph-bold ph-file-pdf"></i> PDF → SVG</button>
+                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('eps', 'svg', this)"><i class="ph-bold ph-bezier-curve"></i> EPS → SVG</button>
+                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('ai', 'svg', this)"><i class="ph-bold ph-paint-brush"></i> AI → SVG</button>
+                  <button type="button" class="convertio-preset-pill" onclick="selectConvertioPreset('bmp', 'svg', this)"><i class="ph-bold ph-image"></i> BMP → SVG</button>
                 </div>
               </div>
 
@@ -504,44 +504,29 @@
                     Clique para selecionar ou arraste o arquivo aqui
                   </div>
                   <div id="convertioSubLabel" style="font-size: 0.85rem; color: var(--text-muted);">
-                    Suporta arquivos 3D (STL, OBJ, STEP, 3MF), Vetores (SVG, DXF) e Imagens
+                    Suporta imagens (PNG, JPG, WEBP, BMP), arquivos PDF e vetores para converter em SVG
                   </div>
                 </div>
               </div>
 
-              <!-- SELETOR DE FORMATO DE SAÍDA -->
+              <!-- FORMATO DE SAÍDA FIXO EM SVG -->
               <div class="form-group" style="margin-top: 20px;">
-                <label class="form-label" data-i18n="tools.convertio.selecttarget">2. Formato de Saída Desejado</label>
-                <select id="convertioTargetFormat" class="form-select" style="font-size: 1rem; padding: 12px 14px; font-weight: 600;">
-                  <optgroup label="Modelos 3D & CAD">
-                    <option value="stl">STL — Stereolithography (.stl)</option>
-                    <option value="obj">OBJ — Wavefront 3D Object (.obj)</option>
-                    <option value="3mf">3MF — 3D Manufacturing Format (.3mf)</option>
-                    <option value="step">STEP — Standard for the Exchange of Product (.step / .stp)</option>
-                    <option value="dxf">DXF — AutoCAD Drawing Exchange (.dxf)</option>
-                    <option value="ply">PLY — Polygon File Format (.ply)</option>
-                  </optgroup>
-                  <optgroup label="Vetorial & Desenhos 2D">
-                    <option value="svg">SVG — Scalable Vector Graphics (.svg)</option>
-                    <option value="pdf">PDF — Documento PDF (.pdf)</option>
-                    <option value="eps">EPS — Encapsulated PostScript (.eps)</option>
-                  </optgroup>
-                  <optgroup label="Imagens & Texturas">
-                    <option value="png">PNG — Portable Network Graphics (.png)</option>
-                    <option value="jpg">JPG — JPEG Image (.jpg)</option>
-                    <option value="webp">WEBP — WebP Image (.webp)</option>
-                  </optgroup>
-                  <optgroup label="Compactados">
-                    <option value="zip">ZIP — Arquivo Compactado (.zip)</option>
-                  </optgroup>
-                </select>
+                <label class="form-label" data-i18n="tools.convertio.selecttarget">2. Formato de Saída (Fixo)</label>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r); color: #ef4444; font-weight: 700; font-size: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="ph-bold ph-bezier-curve" style="font-size: 1.4rem;"></i>
+                    <span>SVG — Scalable Vector Graphics (.svg)</span>
+                  </div>
+                  <span style="font-size: 0.78rem; background: #ef4444; color: #fff; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Vetorial / 3D Ready</span>
+                </div>
+                <input type="hidden" id="convertioTargetFormat" value="svg">
               </div>
 
               <!-- BOTÃO DE INICIAR CONVERSÃO -->
               <div style="margin-top: 24px;">
                 <button type="button" id="btnStartConvertio" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1.05rem; font-weight: 700; background: linear-gradient(135deg, #ef4444 0%, #f97316 100%); border: none;" onclick="startConvertioConversion()">
                   <i class="ph-bold ph-magic-wand"></i>
-                  <span data-i18n="tools.convertio.startbtn">Converter Agora com Convertio</span>
+                  <span data-i18n="tools.convertio.startbtn">Converter para SVG com Convertio</span>
                 </button>
               </div>
 
@@ -696,8 +681,8 @@ function switchToolTab(tabId) {
 
 function initToolTabs() {
   const hash = window.location.hash.replace('#', '');
-  const validTabs = ['svg3d', 'scale', 'conv', 'zip', 'convertio'];
-  let initialTab = 'svg3d';
+  const validTabs = ['convertio', 'svg3d', 'scale', 'conv', 'zip'];
+  let initialTab = 'convertio';
   if (validTabs.includes(hash)) {
     initialTab = hash;
   } else {
@@ -772,10 +757,6 @@ function saveConvertioApiKey() {
 function selectConvertioPreset(fromExt, toExt, el) {
   document.querySelectorAll('.convertio-preset-pill').forEach(p => p.classList.remove('active'));
   if (el) el.classList.add('active');
-  const targetSelect = document.getElementById('convertioTargetFormat');
-  if (targetSelect) {
-    targetSelect.value = toExt;
-  }
 }
 
 function handleConvertioFileSelect(event) {
@@ -792,27 +773,17 @@ function processConvertioFile(file) {
   if (subLabel) {
     const sizeKB = (file.size / 1024).toFixed(1);
     const sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(2) + ' MB' : sizeKB + ' KB';
-    subLabel.textContent = `Tamanho: ${sizeStr} — Pronto para converter`;
-  }
-
-  // Auto detect format suggestion
-  const ext = file.name.split('.').pop().toLowerCase();
-  const select = document.getElementById('convertioTargetFormat');
-  if (select) {
-    if (ext === 'stl') select.value = 'obj';
-    else if (ext === 'obj' || ext === 'step' || ext === 'stp' || ext === '3mf') select.value = 'stl';
-    else if (ext === 'svg') select.value = 'dxf';
-    else if (ext === 'png' || ext === 'jpg' || ext === 'webp') select.value = 'svg';
+    subLabel.textContent = `Tamanho: ${sizeStr} — Pronto para converter em SVG`;
   }
 }
 
 async function startConvertioConversion() {
   if (!selectedConvertioFile) {
-    alert('Por favor, selecione um arquivo primeiro para converter.');
+    alert('Por favor, selecione um arquivo primeiro para converter em SVG.');
     return;
   }
   const apiKey = getConvertioApiKey();
-  const targetFormat = document.getElementById('convertioTargetFormat').value;
+  const targetFormat = 'svg'; // Sempre SVG
   const statusArea = document.getElementById('convertioStatusArea');
   const btn = document.getElementById('btnStartConvertio');
 
@@ -822,13 +793,13 @@ async function startConvertioConversion() {
   statusArea.innerHTML = `
     <div class="convertio-progress-wrap">
       <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);">
-        <i class="ph-bold ph-spinner ph-spin" style="color: #ef4444;"></i> A enviar arquivo e iniciar conversão...
+        <i class="ph-bold ph-spinner ph-spin" style="color: #ef4444;"></i> A enviar arquivo e iniciar conversão para SVG...
       </div>
       <div class="convertio-progress-bar">
         <div class="convertio-progress-fill" style="width: 15%;"></div>
       </div>
       <div style="font-size: 0.85rem; color: var(--text-muted);">
-        Formato de destino: <strong>${targetFormat.toUpperCase()}</strong>
+        Formato de destino fixo: <strong>SVG (.svg)</strong>
       </div>
     </div>
   `;
