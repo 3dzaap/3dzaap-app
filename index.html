@@ -808,7 +808,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
             <span class="live-calc-slider-label"><i class="ph-bold ph-clock"></i> <span data-i18n="calc_hook.time">Tempo de Impressão</span></span>
             <span class="live-calc-slider-val" id="valTimeDisplay">6h 00m</span>
           </div>
-          <input type="range" class="live-calc-range" id="simTime" min="1" max="48" step="0.5" value="6">
+          <input type="range" class="live-calc-range" id="simTime" min="1" max="2880" step="1" value="360">
         </div>
 
         <!-- Peso de Filamento -->
@@ -817,7 +817,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
             <span class="live-calc-slider-label"><i class="ph-bold ph-scales"></i> <span data-i18n="calc_hook.weight">Peso da Peça (Filamento/Resina)</span></span>
             <span class="live-calc-slider-val" id="valWeightDisplay">140 g</span>
           </div>
-          <input type="range" class="live-calc-range" id="simWeight" min="10" max="800" step="10" value="140">
+          <input type="range" class="live-calc-range" id="simWeight" min="1" max="800" step="1" value="140">
         </div>
 
         <!-- Preço do Carretel 1kg -->
@@ -826,7 +826,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
             <span class="live-calc-slider-label"><i class="ph-bold ph-tag"></i> <span data-i18n="calc_hook.spool">Custo do Carretel (1 kg)</span></span>
             <span class="live-calc-slider-val" id="valSpoolDisplay">€ 18,00</span>
           </div>
-          <input type="range" class="live-calc-range" id="simSpool" min="10" max="45" step="1" value="18">
+          <input type="range" class="live-calc-range" id="simSpool" min="1" max="45" step="1" value="18">
         </div>
 
         <!-- Margem de Lucro -->
@@ -835,7 +835,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
             <span class="live-calc-slider-label"><i class="ph-bold ph-trend-up"></i> <span data-i18n="calc_hook.margin">Margem de Lucro Desejada</span></span>
             <span class="live-calc-slider-val" id="valMarginDisplay">150 %</span>
           </div>
-          <input type="range" class="live-calc-range" id="simMargin" min="50" max="300" step="10" value="150">
+          <input type="range" class="live-calc-range" id="simMargin" min="1" max="300" step="1" value="150">
         </div>
 
         <!-- Acordeão de Custos Avançados (Máquina & Eletricidade) -->
@@ -855,7 +855,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
                 <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-plug"></i> <span data-i18n="calc_hook.watts">Consumo da Impressora (Watts)</span></span>
                 <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valWattsDisplay">150 W</span>
               </div>
-              <input type="range" class="live-calc-range" id="simWatts" min="50" max="500" step="10" value="150">
+              <input type="range" class="live-calc-range" id="simWatts" min="1" max="500" step="1" value="150">
             </div>
 
             <!-- Preço kWh -->
@@ -864,7 +864,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
                 <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc_hook.kwh">Tarifa de Energia (€/kWh)</span></span>
                 <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valKwhDisplay">€ 0,18</span>
               </div>
-              <input type="range" class="live-calc-range" id="simKwh" min="0.05" max="0.60" step="0.01" value="0.18">
+              <input type="range" class="live-calc-range" id="simKwh" min="0.01" max="0.60" step="0.01" value="0.18">
             </div>
 
             <!-- Depreciação / hora -->
@@ -873,7 +873,7 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
                 <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-wrench"></i> <span data-i18n="calc_hook.deprec">Depreciação/Desgaste (€/h)</span></span>
                 <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valDeprecDisplay">€ 0,20 /h</span>
               </div>
-              <input type="range" class="live-calc-range" id="simDeprec" min="0.05" max="1.00" step="0.05" value="0.20">
+              <input type="range" class="live-calc-range" id="simDeprec" min="0.01" max="1.00" step="0.01" value="0.20">
             </div>
           </div>
         </div>
@@ -1429,15 +1429,19 @@ function updateLiveCalc() {
   const simMargin = document.getElementById('simMargin');
   if (!simTime || !simWeight || !simSpool || !simMargin) return;
 
-  const time = parseFloat(simTime.value) || 1;
+  const totalMins = parseFloat(simTime.value) || 1;
+  const time = totalMins / 60; // Horas para o motor algorítmico
   const weight = parseFloat(simWeight.value) || 10;
   const spoolPrice = parseFloat(simSpool.value) || 18;
   const margin = parseFloat(simMargin.value) || 150;
 
   // Atualizar displays dos sliders
-  const hours = Math.floor(time);
-  const mins = Math.round((time - hours) * 60);
-  const timeStr = mins > 0 ? `${hours}h ${mins}m` : `${hours}h 00m`;
+  const hours = Math.floor(totalMins / 60);
+  const mins = Math.round(totalMins % 60);
+  let timeStr = '';
+  if (hours > 0 && mins > 0) timeStr = `${hours}h ${mins}m`;
+  else if (hours > 0) timeStr = `${hours}h 00m`;
+  else timeStr = `${mins} min`;
   const valTimeEl = document.getElementById('valTimeDisplay');
   if (valTimeEl) valTimeEl.textContent = timeStr;
 
@@ -1512,7 +1516,8 @@ function toggleAdvCalcPanel() {
 }
 
 function saveSimulationAndRegister() {
-  const simTime = parseFloat(document.getElementById('simTime')?.value || 6);
+  const totalMins = parseFloat(document.getElementById('simTime')?.value || 360);
+  const simTime = totalMins / 60;
   const simWeight = parseFloat(document.getElementById('simWeight')?.value || 140);
   const simSpool = parseFloat(document.getElementById('simSpool')?.value || 18);
   const simMargin = parseFloat(document.getElementById('simMargin')?.value || 150);
