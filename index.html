@@ -1468,12 +1468,6 @@ function updateLiveCalc() {
   const valWattsEl = document.getElementById('valWattsDisplay');
   if (valWattsEl) valWattsEl.textContent = `${watts} W`;
 
-  const { sym, mult, locale } = getLiveCalcSymbol();
-  const formatMoney = val => {
-    const adjusted = val * mult;
-    return `${sym} ` + adjusted.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-
   const valKwhEl = document.getElementById('valKwhDisplay');
   if (valKwhEl) valKwhEl.textContent = formatMoney(kwh);
 
