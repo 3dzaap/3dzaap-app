@@ -91,6 +91,12 @@
 
     const items = order.items || [];
     items.forEach(it => {
+      // Ignore items that are services (e.g. Modelagem 3D, design) or repasse from printer electricity/material cost
+      const isServiceItem = it.tech === 'service' || 
+                            it.tech === 'repasse' || 
+                            (!it.weightG && !it.weight && !it.filamentId && (!it.materials || !it.materials.length) && /modelagem|servi[çc]o|design|cad|desenho/i.test(String(it.description || '')));
+      if (isServiceItem) return;
+
       // Find printed quantity
       const printedQty = (it.printRuns && it.printRuns.length) 
         ? it.printRuns.reduce((s, r) => s + (parseInt(r.qty) || 0), 0)
@@ -101,12 +107,14 @@
       totalPrintTime += timePerHour * printedQty;
 
       // Accumulate material
-      const mats = it.materials || (it.filamentId ? [{ filamentId: it.filamentId, weightG: it.weightG }] : []);
+      const mats = (it.materials && it.materials.length)
+        ? it.materials
+        : (it.filamentId || it.weightG || it.weight ? [{ filamentId: it.filamentId || '', weightG: it.weightG || it.weight }] : []);
       mats.forEach(m => {
         const fil = filaments.find(f => String(f.id) === String(m.filamentId));
-        const w = parseFloat(m.weightG) || 0;
-        if (fil && fil.price && w > 0) {
-           const pricePerGram = parseFloat(fil.price) / 1000;
+        const w = parseFloat(m.weightG || m.weight || it.weightG || it.weight) || 0;
+        if (w > 0) {
+           const pricePerGram = (fil && fil.price) ? (parseFloat(fil.price) / 1000) : 0.02; // 0.02€/g fallback (20€/kg)
            matCost += pricePerGram * w * printedQty;
            totalGrams += w * printedQty;
         }
@@ -170,8 +178,12 @@
     document.getElementById('xrMatDetails').textContent = `(${Math.round(totalGrams)}g no total)`;
     document.getElementById('xrOpDetails').textContent = `(${totalPrintTime.toFixed(1)}h a ~${hourlyCost.toFixed(3)}€/h)`;
 
+    const rawMargin = (profit / rPct) * 100;
+    const marginFormatted = (Math.abs(rawMargin - Math.round(rawMargin)) < 0.05)
+      ? Math.round(rawMargin)
+      : rawMargin.toFixed(1);
     const marginEl = document.getElementById('xrMarginPct');
-    marginEl.textContent = Math.round((profit / rPct) * 100) + '%';
+    marginEl.textContent = marginFormatted + '%';
     marginEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
 
     // Update Donut Chart CSS
