@@ -398,6 +398,255 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
   .fgrid-main {grid-template-columns: 1fr;}
   .nact .btn { display: none; } /* Hide dashboard buttons on very small nav, keep in hamburger */
 }
+
+/* ── HERO TRUST BADGES (Anti-Fricção) ── */
+.hero-trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin: -40px auto 60px;
+  position: relative;
+  z-index: 2;
+}
+.trust-badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59,143,212,0.18);
+  border-radius: 100px;
+  font-size: 0.88rem;
+  color: var(--dark);
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+}
+.trust-badge-item i { font-size: 1.15rem; }
+
+/* ── LIVE INTERACTIVE CALCULATOR (ISCA WOW) ── */
+.live-calc-section {
+  padding: 100px 0;
+  background: linear-gradient(180deg, #fff 0%, #f1f5f9 50%, #fff 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.live-calc-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 32px;
+  margin-top: 48px;
+  align-items: stretch;
+}
+.live-calc-controls {
+  background: #ffffff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 36px;
+  box-shadow: var(--sh-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.live-calc-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.live-calc-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.live-calc-slider-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.live-calc-slider-val {
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--blue);
+  background: var(--blue-g);
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(59,143,212,0.2);
+}
+.live-calc-range {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  outline: none;
+  cursor: pointer;
+}
+.live-calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(59,143,212,0.4);
+  transition: transform 0.2s;
+}
+.live-calc-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: var(--blue-d);
+}
+
+.live-calc-results {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: var(--rl);
+  padding: 38px 36px;
+  color: #ffffff;
+  box-shadow: var(--sh-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.live-calc-results::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(59,143,212,0.3) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+.res-card-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+.res-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34,197,94,0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.3);
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.res-badge-live .dot {
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+.calc-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.8);
+}
+.calc-row-val {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: #fff;
+}
+.calc-hero-price {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(59,143,212,0.4);
+  border-radius: var(--rm);
+  padding: 24px;
+  margin: 24px 0;
+  text-align: center;
+  position: relative;
+}
+.calc-hero-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.calc-hero-number {
+  font-family: var(--mono);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #38bdf8;
+  line-height: 1.1;
+  text-shadow: 0 0 25px rgba(56,189,248,0.3);
+}
+.calc-profit-badge {
+  display: inline-block;
+  margin-top: 10px;
+  background: rgba(34,197,94,0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34,197,94,0.35);
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.calc-cta-box {
+  background: linear-gradient(135deg, rgba(59,143,212,0.25), rgba(99,102,241,0.25));
+  border: 1.5px solid rgba(59,143,212,0.5);
+  border-radius: var(--rm);
+  padding: 22px;
+  text-align: center;
+}
+.btn-calc-conversion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #3B8FD4, #2563eb);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.02rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(59,143,212,0.4);
+  transition: all 0.3s;
+  text-decoration: none;
+}
+.btn-calc-conversion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(59,143,212,0.55);
+  background: linear-gradient(135deg, #60a5fa, #3b8fd4);
+}
+@media (max-width: 900px) {
+  .live-calc-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3B8FD4">
@@ -478,6 +727,11 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
       <a href="auth.html?mode=signup" class="btn btn-p btn-lg" data-i18n="hero.cta_primary">Comece a lucrar mais agora! 🚀</a>
       <a href="#features" class="btn btn-g btn-lg" data-i18n="hero.cta_secondary">Explorar Funcionalidades</a>
     </div>
+    <div class="hero-trust-badges fu d3">
+      <span class="trust-badge-item"><i class="ph-bold ph-check-circle" style="color:#22c55e"></i> <strong data-i18n="hero.trust_free">Plano Starter 100% Grátis</strong></span>
+      <span class="trust-badge-item"><i class="ph-bold ph-shield-check" style="color:var(--blue)"></i> <strong data-i18n="hero.trust_nocard">Sem Cartão de Crédito</strong></span>
+      <span class="trust-badge-item"><i class="ph-bold ph-lightning" style="color:var(--orange)"></i> <strong data-i18n="hero.trust_setup">Setup em 15 Segundos</strong></span>
+    </div>
     
     <div class="hero-visual fu d4">
       <div class="hero-mockup shadow-2xl">
@@ -531,6 +785,161 @@ footer{position:relative;z-index:10;padding:120px 0 60px;background:var(--black)
   </div>
 </section>
 
+<!-- ── LIVE INTERACTIVE CALCULATOR (ISCA MATADORA WOW) ── -->
+<section class="live-calc-section" id="simulador">
+  <div class="wrap">
+    <div class="sec-hdr fu">
+      <span class="eyebrow" style="margin-bottom:16px"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc_hook.badge">TESTE AGORA SEM CADASTRO</span></span>
+      <h2 class="stit" data-i18n="calc_hook.title">Simulador Rápido de Preço & Margem Real</h2>
+      <p class="ssub" data-i18n="calc_hook.subtitle">Movimente os controles abaixo e veja como o 3DZAAP calcula custos ocultos (energia, depreciação de máquina e falhas) para descobrir o preço justo e o lucro real da sua peça.</p>
+    </div>
+
+    <div class="live-calc-grid fu d1">
+      <!-- Controles / Sliders -->
+      <div class="live-calc-controls">
+        <h3 style="font-size:1.15rem; font-weight:800; color:var(--black); display:flex; align-items:center; gap:8px;">
+          <i class="ph-bold ph-sliders-horizontal" style="color:var(--blue);"></i>
+          <span data-i18n="calc_hook.params">Parâmetros da Sua Peça</span>
+        </h3>
+
+        <!-- Tempo de Impressão -->
+        <div class="live-calc-slider-group">
+          <div class="live-calc-slider-header">
+            <span class="live-calc-slider-label"><i class="ph-bold ph-clock"></i> <span data-i18n="calc_hook.time">Tempo de Impressão</span></span>
+            <span class="live-calc-slider-val" id="valTimeDisplay">6h 00m</span>
+          </div>
+          <input type="range" class="live-calc-range" id="simTime" min="1" max="48" step="0.5" value="6">
+        </div>
+
+        <!-- Peso de Filamento -->
+        <div class="live-calc-slider-group">
+          <div class="live-calc-slider-header">
+            <span class="live-calc-slider-label"><i class="ph-bold ph-scales"></i> <span data-i18n="calc_hook.weight">Peso da Peça (Filamento/Resina)</span></span>
+            <span class="live-calc-slider-val" id="valWeightDisplay">140 g</span>
+          </div>
+          <input type="range" class="live-calc-range" id="simWeight" min="10" max="800" step="10" value="140">
+        </div>
+
+        <!-- Preço do Carretel 1kg -->
+        <div class="live-calc-slider-group">
+          <div class="live-calc-slider-header">
+            <span class="live-calc-slider-label"><i class="ph-bold ph-tag"></i> <span data-i18n="calc_hook.spool">Custo do Carretel (1 kg)</span></span>
+            <span class="live-calc-slider-val" id="valSpoolDisplay">€ 18,00</span>
+          </div>
+          <input type="range" class="live-calc-range" id="simSpool" min="10" max="45" step="1" value="18">
+        </div>
+
+        <!-- Margem de Lucro -->
+        <div class="live-calc-slider-group">
+          <div class="live-calc-slider-header">
+            <span class="live-calc-slider-label"><i class="ph-bold ph-trend-up"></i> <span data-i18n="calc_hook.margin">Margem de Lucro Desejada</span></span>
+            <span class="live-calc-slider-val" id="valMarginDisplay">150 %</span>
+          </div>
+          <input type="range" class="live-calc-range" id="simMargin" min="50" max="300" step="10" value="150">
+        </div>
+
+        <!-- Acordeão de Custos Avançados (Máquina & Eletricidade) -->
+        <div style="border:1.5px solid var(--border); border-radius:14px; overflow:hidden; margin-top:8px;">
+          <button type="button" onclick="toggleAdvCalcPanel()" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--bg-lite); border:none; cursor:pointer; font-family:var(--f); font-weight:700; font-size:0.88rem; color:var(--blue);">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <i class="ph-bold ph-gear-six"></i>
+              <span data-i18n="calc_hook.adv_btn">Personalizar Custos da Minha Impressora (Energia & Depreciação)</span>
+            </span>
+            <i class="ph-bold ph-caret-down" id="advCalcCaret" style="transition:transform 0.3s;"></i>
+          </button>
+
+          <div id="advCalcPanel" style="display:none; padding:18px; background:#fff; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:16px;">
+            <!-- Consumo Watts -->
+            <div class="live-calc-slider-group">
+              <div class="live-calc-slider-header">
+                <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-plug"></i> <span data-i18n="calc_hook.watts">Consumo da Impressora (Watts)</span></span>
+                <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valWattsDisplay">150 W</span>
+              </div>
+              <input type="range" class="live-calc-range" id="simWatts" min="50" max="500" step="10" value="150">
+            </div>
+
+            <!-- Preço kWh -->
+            <div class="live-calc-slider-group">
+              <div class="live-calc-slider-header">
+                <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-lightning"></i> <span data-i18n="calc_hook.kwh">Tarifa de Energia (€/kWh)</span></span>
+                <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valKwhDisplay">€ 0,18</span>
+              </div>
+              <input type="range" class="live-calc-range" id="simKwh" min="0.05" max="0.60" step="0.01" value="0.18">
+            </div>
+
+            <!-- Depreciação / hora -->
+            <div class="live-calc-slider-group">
+              <div class="live-calc-slider-header">
+                <span class="live-calc-slider-label" style="font-size:0.85rem;"><i class="ph-bold ph-wrench"></i> <span data-i18n="calc_hook.deprec">Depreciação/Desgaste (€/h)</span></span>
+                <span class="live-calc-slider-val" style="font-size:0.85rem;" id="valDeprecDisplay">€ 0,20 /h</span>
+              </div>
+              <input type="range" class="live-calc-range" id="simDeprec" min="0.05" max="1.00" step="0.05" value="0.20">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultados / Orçamento Profissional -->
+      <div class="live-calc-results">
+        <div>
+          <div class="res-card-hdr">
+            <span style="font-weight:800; font-size:1.05rem; letter-spacing:0.5px; text-transform:uppercase; color:#e2e8f0;">
+              <i class="ph-bold ph-receipt"></i> <span data-i18n="calc_hook.receipt">Simulação de Orçamento</span>
+            </span>
+            <span class="res-badge-live">
+              <span class="dot"></span> <span data-i18n="calc_hook.live">Cálculo ao Vivo</span>
+            </span>
+          </div>
+
+          <div class="calc-breakdown-list">
+            <div class="calc-row">
+              <span data-i18n="calc_hook.mat_cost">Custo de Filamento/Resina</span>
+              <span class="calc-row-val" id="resMatCost">€ 2,52</span>
+            </div>
+            <div class="calc-row">
+              <span data-i18n="calc_hook.energy_cost">Custo de Eletricidade (kWh)</span>
+              <span class="calc-row-val" id="resEnergyCost">€ 0,16</span>
+            </div>
+            <div class="calc-row">
+              <span data-i18n="calc_hook.machine_cost">Depreciação & Manutenção</span>
+              <span class="calc-row-val" id="resMachineCost">€ 1,20</span>
+            </div>
+            <div class="calc-row">
+              <span data-i18n="calc_hook.fail_cost">Fundo de Risco & Falha (5%)</span>
+              <span class="calc-row-val" id="resFailCost">€ 0,19</span>
+            </div>
+            <hr style="border:none; border-top:1px dashed rgba(255,255,255,0.18); margin:4px 0;">
+            <div class="calc-row" style="color:#ffffff; font-weight:700;">
+              <span data-i18n="calc_hook.total_cost">Custo Operacional Real</span>
+              <span class="calc-row-val" id="resTotalCost" style="color:#f8fafc;">€ 4,07</span>
+            </div>
+          </div>
+
+          <!-- Preço Herói -->
+          <div class="calc-hero-price">
+            <div class="calc-hero-label" data-i18n="calc_hook.sug_price">Preço de Venda Recomendado</div>
+            <div class="calc-hero-number" id="resFinalPrice">€ 12,13</div>
+            <div class="calc-profit-badge" id="resProfitBadge">+ € 7,28 lucro líquido</div>
+          </div>
+        </div>
+
+        <!-- Chamada de Ação Matadora (Gancho para o ERP) -->
+        <div class="calc-cta-box">
+          <p style="font-size:0.92rem; font-weight:700; color:#fff; margin-bottom:12px;" data-i18n="calc_hook.cta_subtitle">
+            Gostou desta precisão? Não perca este orçamento!
+          </p>
+          <button type="button" class="btn-calc-conversion" onclick="saveSimulationAndRegister()">
+            <i class="ph-bold ph-file-pdf"></i>
+            <span data-i18n="calc_hook.cta_btn">Salvar Orçamento & Gerar PDF Profissional ➔</span>
+          </button>
+          <div style="font-size:0.76rem; color:#cbd5e1; margin-top:10px; font-weight:600;">
+            <span data-i18n="calc_hook.cta_footer">✓ Conta 100% Grátis no Plano Starter • Sem Cartão de Crédito</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- THE TWO PATHS -->
 <section class="pas">
@@ -1005,6 +1414,150 @@ window.onscroll = () => {
   if (window.scrollY > 50) n.classList.add('scrolled');
   else n.classList.remove('scrolled');
 };
+
+// ── LIVE INTERACTIVE CALCULATOR ENGINE (ISCA WOW) ──
+function getLiveCalcSymbol() {
+  const locale = localStorage.getItem('3dzaap_lang') || 'pt-PT';
+  const fmt = LOCALE_FMT[locale] || LOCALE_FMT['pt-PT'];
+  return { sym: fmt.sym || '€', mult: fmt.mult || 1, locale: fmt.locale || 'pt-PT' };
+}
+
+function updateLiveCalc() {
+  const simTime = document.getElementById('simTime');
+  const simWeight = document.getElementById('simWeight');
+  const simSpool = document.getElementById('simSpool');
+  const simMargin = document.getElementById('simMargin');
+  if (!simTime || !simWeight || !simSpool || !simMargin) return;
+
+  const time = parseFloat(simTime.value) || 1;
+  const weight = parseFloat(simWeight.value) || 10;
+  const spoolPrice = parseFloat(simSpool.value) || 18;
+  const margin = parseFloat(simMargin.value) || 150;
+
+  // Atualizar displays dos sliders
+  const hours = Math.floor(time);
+  const mins = Math.round((time - hours) * 60);
+  const timeStr = mins > 0 ? `${hours}h ${mins}m` : `${hours}h 00m`;
+  const valTimeEl = document.getElementById('valTimeDisplay');
+  if (valTimeEl) valTimeEl.textContent = timeStr;
+
+  const valWeightEl = document.getElementById('valWeightDisplay');
+  if (valWeightEl) valWeightEl.textContent = `${weight} g`;
+
+  const { sym, mult, locale } = getLiveCalcSymbol();
+  const formatMoney = val => {
+    const adjusted = val * mult;
+    return `${sym} ` + adjusted.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const valSpoolEl = document.getElementById('valSpoolDisplay');
+  if (valSpoolEl) valSpoolEl.textContent = formatMoney(spoolPrice);
+
+  const valMarginEl = document.getElementById('valMarginDisplay');
+  if (valMarginEl) valMarginEl.textContent = `${margin} %`;
+
+  // Parámetros reais personalizáveis pelo usuário (Energia e Depreciação)
+  const simWatts = document.getElementById('simWatts');
+  const simKwh = document.getElementById('simKwh');
+  const simDeprec = document.getElementById('simDeprec');
+
+  const watts = simWatts ? parseFloat(simWatts.value) || 150 : 150;
+  const kwh = simKwh ? parseFloat(simKwh.value) || 0.18 : 0.18;
+  const deprec = simDeprec ? parseFloat(simDeprec.value) || 0.20 : 0.20;
+
+  const valWattsEl = document.getElementById('valWattsDisplay');
+  if (valWattsEl) valWattsEl.textContent = `${watts} W`;
+
+  const { sym, mult, locale } = getLiveCalcSymbol();
+  const formatMoney = val => {
+    const adjusted = val * mult;
+    return `${sym} ` + adjusted.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const valKwhEl = document.getElementById('valKwhDisplay');
+  if (valKwhEl) valKwhEl.textContent = formatMoney(kwh);
+
+  const valDeprecEl = document.getElementById('valDeprecDisplay');
+  if (valDeprecEl) valDeprecEl.textContent = `${formatMoney(deprec)} /h`;
+
+  // Motor algorítmico real e preciso do 3DZAAP
+  const matCost = (weight * spoolPrice) / 1000;
+  const energyCost = (time * (watts / 1000)) * kwh;
+  const machineCost = time * deprec;
+  const failCost = (matCost + energyCost + machineCost) * 0.05; // 5% margem de falha
+  const totalCost = matCost + energyCost + machineCost + failCost;
+  const finalPrice = totalCost * (1 + margin / 100);
+  const profit = finalPrice - totalCost;
+
+  // Atualizar DOM
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = formatMoney(val);
+  };
+
+  setVal('resMatCost', matCost);
+  setVal('resEnergyCost', energyCost);
+  setVal('resMachineCost', machineCost);
+  setVal('resFailCost', failCost);
+  setVal('resTotalCost', totalCost);
+
+  const finalEl = document.getElementById('resFinalPrice');
+  if (finalEl) finalEl.textContent = formatMoney(finalPrice);
+
+  const profitEl = document.getElementById('resProfitBadge');
+  if (profitEl) profitEl.textContent = `+ ${formatMoney(profit)} lucro líquido`;
+}
+
+function toggleAdvCalcPanel() {
+  const panel = document.getElementById('advCalcPanel');
+  const caret = document.getElementById('advCalcCaret');
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'flex' : 'none';
+  if (caret) caret.style.transform = isHidden ? 'rotate(180deg)' : 'none';
+}
+
+function saveSimulationAndRegister() {
+  const simTime = parseFloat(document.getElementById('simTime')?.value || 6);
+  const simWeight = parseFloat(document.getElementById('simWeight')?.value || 140);
+  const simSpool = parseFloat(document.getElementById('simSpool')?.value || 18);
+  const simMargin = parseFloat(document.getElementById('simMargin')?.value || 150);
+
+  const simWatts = parseFloat(document.getElementById('simWatts')?.value || 150);
+  const simKwh = parseFloat(document.getElementById('simKwh')?.value || 0.18);
+  const simDeprec = parseFloat(document.getElementById('simDeprec')?.value || 0.20);
+
+  const matCost = (simWeight * simSpool) / 1000;
+  const energyCost = (simTime * (simWatts / 1000)) * simKwh;
+  const machineCost = simTime * simDeprec;
+  const totalCost = (matCost + energyCost + machineCost) * 1.05;
+  const finalPrice = totalCost * (1 + simMargin / 100);
+
+  const leadData = {
+    timeHours: simTime,
+    weightGrams: simWeight,
+    spoolPrice: simSpool,
+    marginPct: simMargin,
+    suggestedPrice: finalPrice.toFixed(2),
+    timestamp: Date.now()
+  };
+
+  try {
+    localStorage.setItem('3dzaap_lead_calc', JSON.stringify(leadData));
+  } catch(e) {}
+
+  window.location.href = 'auth.html?mode=signup&from=livecalc';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sliders = ['simTime', 'simWeight', 'simSpool', 'simMargin', 'simWatts', 'simKwh', 'simDeprec'];
+  sliders.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateLiveCalc);
+  });
+  updateLiveCalc();
+});
+window.addEventListener('languageChanged', updateLiveCalc);
 </script>
 </body>
 </html>
