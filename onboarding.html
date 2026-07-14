@@ -275,6 +275,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.i18n) {
       await window.i18n.init();
       window.i18n.translatePage();
+      
+      const locale = window.i18n.currentLocale;
+      const select = document.getElementById('companyCountry');
+      if (select) {
+        if (locale === 'pt-BR') select.value = 'br';
+        else if (locale === 'en-US') select.value = 'us';
+        else if (locale === 'en-GB') select.value = 'uk';
+        else if (locale.startsWith('es')) select.value = 'es';
+        else if (locale === 'pt-PT' || locale === 'pt') select.value = 'pt';
+        else select.value = 'other';
+      }
+
       renderPlans();
       window.addEventListener('languageChanged', renderPlans);
     }
