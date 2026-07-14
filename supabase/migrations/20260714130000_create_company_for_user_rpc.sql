@@ -11,8 +11,7 @@ CREATE OR REPLACE FUNCTION public.create_company_for_user(
   p_plan         TEXT DEFAULT 'trial',
   p_config       JSONB DEFAULT '{}',
   p_signature    TEXT DEFAULT NULL,
-  p_logo_url     TEXT DEFAULT NULL,
-  p_affiliate_ref TEXT DEFAULT NULL
+  p_logo_url     TEXT DEFAULT NULL
 )
 RETURNS SETOF public.companies
 LANGUAGE plpgsql
@@ -45,7 +44,6 @@ BEGIN
     signature,
     logo_url,
     trial_ends_at,
-    affiliate_ref,
     created_at,
     updated_at
   ) VALUES (
@@ -57,7 +55,6 @@ BEGIN
     p_signature,
     p_logo_url,
     v_trial_ends_at,
-    p_affiliate_ref,
     NOW(),
     NOW()
   )
@@ -74,7 +71,7 @@ END;
 $$;
 
 -- 2. Permissões de execução para utilizadores autenticados
-GRANT EXECUTE ON FUNCTION public.create_company_for_user(UUID, TEXT, TEXT, TEXT, JSONB, TEXT, TEXT, TEXT)
+GRANT EXECUTE ON FUNCTION public.create_company_for_user(UUID, TEXT, TEXT, TEXT, JSONB, TEXT, TEXT)
   TO authenticated;
 
 -- 3. Função para atualizar o plano (usada no onboarding para starter e nos admin)

@@ -418,14 +418,12 @@ async function finishOnboarding() {
     const planSuffix = STATE.billing === 'yearly' ? '_ano' : '';
     const fullPlanId = STATE.plan + planSuffix;
 
+
     const locale = window.i18n ? i18n.currentLocale : 'pt-PT';
     let forcedCurrency = 'eur';
     if (locale === 'pt-BR') forcedCurrency = 'brl';
     else if (locale === 'en-US') forcedCurrency = 'usd';
     else if (locale === 'en-GB') forcedCurrency = 'gbp';
-
-
-
 
     const { data, error } = await _sb.functions.invoke('stripe-checkout', {
       body: { 
@@ -436,21 +434,27 @@ async function finishOnboarding() {
       }
     });
 
-    if (error) throw error;
+    if (error) throw new Error("StripeError: " + error.message);
 
     if (data?.url) {
       window.location.href = data.url;
     } else {
-      throw new Error("Não foi possível gerar o link de pagamento.");
+      throw new Error("StripeError: Não foi possível gerar o link de pagamento.");
     }
   } catch(e) {
-    toast('Erro: ' + e.message + '. Pode subscrever mais tarde nas Definições.', 'err');
-    // Em caso de erro com o Stripe, deixa-o ir para o dashboard no plano trial para não estragar a experiência
-    setTimeout(() => {
-      document.getElementById('onboardingPanel').style.display = 'none';
-      document.getElementById('successPanel').style.display = 'block';
-      document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
-    }, 3000);
+    console.error(e);
+    if (e.message && e.message.includes('StripeError')) {
+      toast('Erro no pagamento. Pode subscrever mais tarde nas Definições.', 'err');
+      // A empresa foi criada, mas o stripe falhou. Deixa entrar no app.
+      setTimeout(() => {
+        document.getElementById('onboardingPanel').style.display = 'none';
+        document.getElementById('successPanel').style.display = 'block';
+        document.getElementById('successCompanyPill').textContent = document.getElementById('companyName').value;
+      }, 3000);
+    } else {
+      // Erro crítico na criação da empresa! Não deixa entrar.
+      toast('Erro ao criar a empresa: ' + e.message, 'err');
+    }
   } finally {
     STATE.busy = false; setBusy('finishBtn', false);
   }

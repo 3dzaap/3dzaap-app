@@ -104,6 +104,11 @@ const Auth = {
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+      if (affiliateRef) {
+        config = config || {};
+        config.affiliateRef = affiliateRef;
+      }
+
       const { data: rpcData, error: rpcErr } = await _sb
         .rpc('create_company_for_user', {
           p_user_id:   userId,
@@ -112,8 +117,7 @@ const Auth = {
           p_plan:      plan || 'trial',
           p_config:    config || {},
           p_signature: signature || null,
-          p_logo_url:  logo || null,
-          p_affiliate_ref: affiliateRef || null
+          p_logo_url:  logo || null
         });
 
       if (!rpcErr && rpcData?.length) {
@@ -132,8 +136,7 @@ const Auth = {
             config:         config || {},
             signature:      signature || null,
             logo_url:       logo || null,
-            trial_ends_at:  trialEndsAt.toISOString(),
-            affiliate_ref:  affiliateRef || null
+            trial_ends_at:  trialEndsAt.toISOString()
           })
           .select()
           .single();
