@@ -186,7 +186,7 @@ body{font-family:var(--f);color:var(--black);background:#d0e4f4;overflow-x:hidde
           <label data-i18n="onboarding.country">País</label>
           <div class="field-wrap">
             <span class="ico"><i class="ph-bold ph-globe"></i></span>
-            <select class="inp" id="companyCountry">
+            <select class="inp" id="companyCountry" onchange="handleCountryChange()">
               <option value="pt" data-i18n="onboarding.country_pt">🇵🇹 Portugal</option>
               <option value="br" data-i18n="onboarding.country_br">🇧🇷 Brasil</option>
               <option value="es" data-i18n="onboarding.country_es">🇪🇸 Espanha</option>
@@ -457,6 +457,25 @@ async function finishOnboarding() {
     }
   } finally {
     STATE.busy = false; setBusy('finishBtn', false);
+  }
+}
+}
+
+function handleCountryChange() {
+  const val = document.getElementById('companyCountry').value;
+  const langMap = {
+    'pt': 'pt-PT',
+    'br': 'pt-BR',
+    'es': 'es',
+    'us': 'en-US',
+    'uk': 'en-GB',
+    'other': 'en-US'
+  };
+  const newLang = langMap[val] || 'pt-PT';
+  if (window.i18n && window.i18n.currentLocale !== newLang) {
+    if (window.i18n.setLanguageSilent) {
+      window.i18n.setLanguageSilent(newLang);
+    }
   }
 }
 

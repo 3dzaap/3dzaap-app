@@ -328,12 +328,11 @@ const Auth = {
 
 
   async requireAuth() {
-    const { data: { session } } = await _sb.auth.getSession();
-    if (!session) {
+    const sess = await Auth.getSession();
+    if (!sess) {
       window.location.href = 'auth.html';
       return false;
     }
-    if (!_companyId) await Auth._loadCompany();
 
     // ── TRIAL EXPIRY CHECK ────────────────────────────────────
     // Se trial expirou, só permite acesso às páginas de upgrade e settings.

@@ -465,8 +465,12 @@ async function doLogin() {
   STATE.loginBusy = true;
   setBusy('loginBtn', true);
   try {
-    await Auth.login(email, pass);
-    window.location.href = 'dashboard.html';
+    const { data: { session } } = await Auth.login(email, pass);
+    if (session) {
+      await handleSession(session);
+    } else {
+      window.location.href = 'dashboard.html';
+    }
   } catch(err) {
     STATE.loginBusy = false;
     setBusy('loginBtn', false);
