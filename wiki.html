@@ -445,7 +445,7 @@ let SLICER_SCHEMAS = {};
 
 async function initPage() {
   const sess = await Auth.getSession();
-  if(!sess) { window.location.href = 'auth.html'; return; }
+  if(!sess || !sess.companyId) { window.location.href = 'auth.html'; return; }
   currentUser = { id: sess.user_id, email: sess.email, fname: sess.fname, lname: sess.lname };
   
   const fullName = (sess.fname && sess.lname)

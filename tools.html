@@ -544,7 +544,7 @@
 <script>
 async function initPage() {
   const sess = await Auth.getSession();
-  if(!sess) { window.location.href = 'auth.html'; return; }
+  if(!sess || !sess.companyId) { window.location.href = 'auth.html'; return; }
   Sidebar.setSession(sess);
   document.body.classList.remove('loading');
 }

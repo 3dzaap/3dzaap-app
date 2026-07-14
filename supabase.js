@@ -298,6 +298,14 @@ const Auth = {
       if (!error) isSuperAdmin = !!saRow;
     } catch(_) {}
 
+    // ── COMPANY GUARD ────────────────────────────────────────
+    // Se o utilizador não tem empresa associada e não é super admin,
+    // retorna null para forçar redirecionamento para auth/onboarding.
+    if (!company && !isSuperAdmin) {
+      console.info('[3DZAAP] Utilizador sem empresa associada — sessão inválida para o app.', user.id);
+      return null;
+    }
+
     return {
       user_id:     user.id,
       email:       user.email,
@@ -314,6 +322,7 @@ const Auth = {
       isSuperAdmin,
     };
   },
+
 
   async requireAuth() {
     const { data: { session } } = await _sb.auth.getSession();
