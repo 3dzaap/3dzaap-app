@@ -1129,13 +1129,14 @@ function calcHealthScore() {
     if (o.hasUnreadClientUpdate || o.has_unread_client_update) unreadUpdatesCount++;
 
     if (!isC) {
+      const isQuote = s === 'orcamento';
       // ── CASHFLOW ANALYSIS ──────────────────
-      // Se não está pago, conta como capital retido (independentemente do status)
-      if (o.paymentStatus !== 'pago') {
+      // Orçamentos não são capital retido — são leads ainda não aprovados
+      if (!isQuote && o.paymentStatus !== 'pago') {
         unpaidValue += total;
       }
-      // Valor total "em jogo" (ou está em aberto, ou está concluído mas não pago)
-      if (!isD || o.paymentStatus !== 'pago') {
+      // Valor total em pipeline só inclui pedidos aprovados (não orçamentos)
+      if (!isQuote && (!isD || o.paymentStatus !== 'pago')) {
         totalPipelineValue += total;
       }
 
@@ -1162,13 +1163,12 @@ function calcHealthScore() {
             leadTimeCount++;
           }
         }
+      } else if (isQuote) {
+        // Orçamentos: são leads, não pedidos em aberto
+        const start = new Date(o.createdAt);
+        if ((now - start) > (5 * 24 * 60 * 60 * 1000)) dormantQuotes++;
       } else {
         openCount++;
-        if (s === 'orcamento') {
-          const start = new Date(o.createdAt);
-          if ((now - start) > (5 * 24 * 60 * 60 * 1000)) dormantQuotes++;
-        }
-        
         const dueDate = o.dueDate || o.due_date;
         if (!dueDate) {
           ordersWithoutDue.push(o);
@@ -1485,12 +1485,14 @@ function renderStats() {
     (o.status || '').toLowerCase() !== 'cancelado'
   );
 
-  const totalRevenue = thisMonthOrders.reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
-  const paidRevenue  = thisMonthOrders.filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  // Orçamentos são leads — não entram em receita do mês nem em pedidos ativos
+  const confirmedOrders = thisMonthOrders.filter(o => (o.status || '').toLowerCase() !== 'orcamento');
+  const totalRevenue = confirmedOrders.reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
+  const paidRevenue  = confirmedOrders.filter(o => o.paymentStatus === 'pago').reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
   const pendingRevenue = totalRevenue - paidRevenue;
   
-  // As encomendas ativas (pipeline) independem do mês, são apenas as que não estão fechadas
-  const activeOrders = (state.orders || []).filter(o => !['concluido', 'done', 'entregue', 'cancelado', 'enviado', 'expedido'].includes((o.status || '').toLowerCase())).length;
+  // As encomendas ativas (pipeline) independem do mês, mas excluem orçamentos (leads)
+  const activeOrders = (state.orders || []).filter(o => !['orcamento', 'concluido', 'done', 'entregue', 'cancelado', 'enviado', 'expedido'].includes((o.status || '').toLowerCase())).length;
   const alertFils = (state.filaments || []).filter(f => getFilamentStatus(f) !== 'green');
   const totalAlerts = alertFils.length;
 

@@ -352,7 +352,7 @@ const Auth = {
 
     // ── AUTO-TRACK MODULE ─────────────────────────────────────
     const currentPageStr = window.location.pathname.split('/').pop() || 'index.html';
-    if (typeof DB !== 'undefined' && DB.trackModuleUsage && !['auth.html', 'index.html', 'terms.html', 'privacy.html', 'admin.html'].includes(currentPageStr)) {
+    if (typeof DB !== 'undefined' && DB.trackModuleUsage && !['auth.html', 'index.html', 'terms.html', 'privacy.html', 'admin.html', 'wiki.html', 'tools.html', 'onboarding.html'].includes(currentPageStr)) {
       const moduleName = currentPageStr.replace('.html', '');
       DB.trackModuleUsage(moduleName);
     }
