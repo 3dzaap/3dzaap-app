@@ -299,10 +299,10 @@ const Sidebar = (() => {
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
     trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    starter:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:false },
-    starter_ano:  { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:false },
-    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
-    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:false },
+    starter:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:true  },
+    starter_ano:  { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:true  },
+    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
+    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
     business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
     business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
   };
@@ -317,7 +317,7 @@ const Sidebar = (() => {
     business_ano: { materials: null, printers: null, orders: null, clients: null, products: null },
   };
 
-  const LOCK_LABELS = { orders:'Pro+', clients:'Pro+', products:'Pro+', financial:'Business', backoffice:'Pro+', settings:'Pro+', dashboard:'Pro+' };
+  const LOCK_LABELS = { orders:'Pro+', clients:'Pro+', products:'Pro+', financial:'Business', backoffice:'Pro+', dashboard:'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
