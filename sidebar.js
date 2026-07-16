@@ -28,17 +28,17 @@ const Sidebar = (() => {
     {
       section: 'Principal', i18nKey: 'nav.principal',
       items: [
-        { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '<i class="ph-bold ph-house"></i>', label: 'Início',       lockId: 'navLockDashboard' },
+        { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '<i class="ph-bold ph-house"></i>', label: 'Início' },
         { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '<i class="ph-bold ph-calculator"></i>', label: 'Calculadora' },
-        { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '<i class="ph-bold ph-package"></i>', label: 'Pedidos',      lockId: 'navLockOrders' },
-        { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '<i class="ph-bold ph-users"></i>', label: 'Clientes',     lockId: 'navLockClients' },
+        { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '<i class="ph-bold ph-package"></i>', label: 'Pedidos' },
+        { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '<i class="ph-bold ph-users"></i>', label: 'Clientes' },
         { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '<i class="ph-bold ph-currency-dollar"></i>', label: 'Financeiro',   lockId: 'navLockFinancial' },
       ]
     },
     {
       section: 'Gestão', i18nKey: 'nav.gestao',
       items: [
-        { id: 'products',   i18nKey: 'nav.products',   href: 'products.html',   icon: '<i class="ph-bold ph-folder"></i>', label: 'Produtos',     lockId: 'navLockProducts' },
+        { id: 'products',   i18nKey: 'nav.products',   href: 'products.html',   icon: '<i class="ph-bold ph-folder"></i>', label: 'Produtos' },
         { id: 'materials',  i18nKey: 'nav.materials',  href: 'materials.html',  icon: '<i class="ph-bold ph-palette"></i>', label: 'Materiais' },
         { id: 'printers',   i18nKey: 'nav.printers',   href: 'printers.html',   icon: '<i class="ph-bold ph-printer"></i>', label: 'Impressoras' },
         { id: 'backoffice', i18nKey: 'nav.backoffice', href: 'backoffice.html', icon: '<i class="ph-bold ph-archive"></i>', label: 'BackOffice',  lockId: 'navLockBackoffice' },
@@ -49,7 +49,7 @@ const Sidebar = (() => {
     {
       section: 'Conta', i18nKey: 'nav.conta',
       items: [
-        { id: 'settings', i18nKey: 'nav.settings_short', href: 'settings.html', icon: '<i class="ph-bold ph-gear"></i>', label: 'Definições', lockId: 'navLockSettings' },
+        { id: 'settings', i18nKey: 'nav.settings_short', href: 'settings.html', icon: '<i class="ph-bold ph-gear"></i>', label: 'Definições' },
         { id: 'admin',    i18nKey: 'nav.admin',           href: 'admin.html',    icon: '<i class="ph-bold ph-shield-check"></i>', label: 'Admin', superAdmin: true },
       ]
     },
@@ -298,13 +298,13 @@ const Sidebar = (() => {
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
-    trial:        { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    starter:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:true  },
-    starter_ano:  { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:false, settings:true  },
-    pro:          { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    pro_ano:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    business:     { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
-    business_ano: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  clients:true, products:true, financial:true,  backoffice:true,  settings:true  },
+    trial:        { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
+    starter:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, settings:true },
+    starter_ano:  { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, settings:true },
+    pro:          { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  settings:true },
+    pro_ano:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  settings:true },
+    business:     { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
+    business_ano: { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
   };
 
   const PLAN_LIMITS = {
@@ -317,7 +317,7 @@ const Sidebar = (() => {
     business_ano: { materials: null, printers: null, orders: null, clients: null, products: null },
   };
 
-  const LOCK_LABELS = { orders:'Pro+', clients:'Pro+', products:'Pro+', financial:'Business', backoffice:'Pro+', dashboard:'Pro+' };
+  const LOCK_LABELS = { financial:'Business', backoffice:'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;

@@ -1011,12 +1011,6 @@ async function applyFeatureGating() {
     const features = Sidebar.PLAN_FEATURES[plan] || Sidebar.PLAN_FEATURES.trial;
     const limits   = Sidebar.PLAN_LIMITS[plan]   || Sidebar.PLAN_LIMITS.trial;
 
-    // Sidebar nav locks
-    if (!features.orders)    { const el = document.getElementById('navLockOrders');    if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
-    if (!features.financial) { const el = document.getElementById('navLockFinancial'); if (el) { el.textContent = 'Business'; el.style.display = ''; } }
-    if (!features.backoffice){ const el = document.getElementById('navLockBackoffice');if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
-    if (!features.settings)  { const el = document.getElementById('navLockSettings');  if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
-    if (!features.dashboard) { const el = document.getElementById('navLockDashboard'); if (el) { el.textContent = 'Pro+';     el.style.display = ''; } }
 
     // Guardar limite para uso em saveMaterial
     window._materialLimit = limits.materials;

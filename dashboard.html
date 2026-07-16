@@ -878,12 +878,7 @@
 
 <script>
 // ── STATE ──────────────────────────────
-const PLAN_FEATURES = {
-  trial:    { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true, settings:true  },
-  starter:  { dashboard:false, calculator:true, materials:true, printers:true, orders:false, financial:false, backoffice:false, settings:false },
-  pro:      { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:false, backoffice:true,  settings:false },
-  business: { dashboard:true,  calculator:true, materials:true, printers:true, orders:true,  financial:true,  backoffice:true,  settings:true  },
-};
+
 
 const PLAN_LABELS = { trial:'Trial', starter:'Starter', pro:'Pro', business:'Business' };
 const PLAN_PRICES = { 
@@ -1778,7 +1773,7 @@ function updateDashboardLayout() {
 // ── FEATURE GATING ─────────────────────
 function canAccess(feature) {
   const basePlan = (state.company.plan || 'trial').replace('_ano', '');
-  return PLAN_FEATURES[basePlan]?.[feature] ?? false;
+  return Sidebar.PLAN_FEATURES[basePlan]?.[feature] ?? false;
 }
 
 function applyFeatureGating() {
@@ -1811,7 +1806,6 @@ function applyFeatureGating() {
 
   Object.entries(locks).forEach(([feature, meta]) => {
     if (!meta.can) {
-      if (meta.navId)    { const el = document.getElementById(meta.navId);    if (el) el.style.display = ''; }
       if (meta.actionId) { const el = document.getElementById(meta.actionId); if (el) el.style.display = ''; }
       if (meta.cardId)   { const el = document.getElementById(meta.cardId);   if (el) el.classList.add('locked-card'); }
     }
