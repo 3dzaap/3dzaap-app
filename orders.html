@@ -1653,7 +1653,7 @@
         const session = await Auth.getSession();
         const plan = session?.plan || 'trial';
         // Use the central constant from supabase.js if available, or fallback
-        const ORDERS_PLANS = (typeof PLANS_PRO_PLUS !== 'undefined') ? PLANS_PRO_PLUS : ['trial', 'pro', 'pro_ano', 'business', 'business_ano'];
+        const ORDERS_PLANS = (typeof PLANS_PRO_PLUS !== 'undefined') ? PLANS_PRO_PLUS : ['trial', 'starter', 'starter_ano', 'pro', 'pro_ano', 'business', 'business_ano'];
 
         if (!ORDERS_PLANS.includes(plan)) {
           UI.showFeatureGate('orders');
