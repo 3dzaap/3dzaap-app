@@ -282,6 +282,422 @@
   padding: 28px;
   text-align: center;
 }
+
+/* ── FONT BROWSER ─────────────────────────── */
+.font-browser-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .font-browser-layout { grid-template-columns: 1fr; }
+}
+.font-sidebar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 20px;
+  box-shadow: var(--sh);
+  position: sticky;
+  top: 80px;
+}
+.font-sidebar-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.font-search {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  transition: border-color 0.18s;
+  margin-bottom: 16px;
+}
+.font-search:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59,143,212,0.1);
+}
+.font-search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.font-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+.font-preview-input-wrap {
+  margin-bottom: 16px;
+}
+.font-preview-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.font-preview-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  resize: none;
+  height: 64px;
+  transition: border-color 0.18s;
+}
+.font-preview-input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59,143,212,0.1);
+}
+.font-preview-size-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.font-preview-size-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.font-preview-size {
+  flex: 1;
+  accent-color: var(--blue);
+}
+.font-preview-size-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--blue);
+  min-width: 36px;
+  text-align: right;
+  font-family: var(--mono);
+}
+.font-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.font-cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: left;
+  width: 100%;
+}
+.font-cat-btn:hover { background: var(--bg-lite); color: var(--text-main); }
+.font-cat-btn.active {
+  background: linear-gradient(135deg, rgba(59,143,212,0.14), rgba(139,92,246,0.14));
+  color: var(--blue);
+}
+.font-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.font-main-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.font-main-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.font-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.font-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  padding: 18px 18px 14px;
+  box-shadow: var(--sh);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.font-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(59,143,212,0.14);
+}
+.font-card.selected {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.18), 0 8px 28px rgba(139,92,246,0.12);
+}
+.font-card-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.font-card-cat {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-lite);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.font-card-preview {
+  font-size: 26px;
+  line-height: 1.25;
+  color: var(--text-main);
+  min-height: 52px;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.font-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.font-btn-dl {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--r);
+  border: none;
+  background: linear-gradient(135deg, #3b8fd4, #8b5cf6);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.font-btn-dl:hover { opacity: 0.88; transform: scale(1.02); }
+.font-btn-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  background: var(--bg-lite);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.font-btn-preview:hover { border-color: var(--blue); color: var(--blue); }
+.font-loader {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px;
+  color: var(--text-muted);
+}
+.font-loader-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: fontSpin 0.8s linear infinite;
+}
+@keyframes fontSpin { to { transform: rotate(360deg); } }
+.font-load-more {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}
+
+/* Font Detail Modal */
+.font-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInPane 0.2s ease;
+}
+.font-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+  max-width: 640px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 32px;
+  position: relative;
+}
+.font-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-lite);
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+.font-modal-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+.font-modal-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+.font-modal-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+.font-modal-preview-box {
+  background: var(--bg-lite);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 32px;
+  line-height: 1.35;
+  color: var(--text-main);
+  min-height: 80px;
+  word-break: break-all;
+}
+.font-modal-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.font-variant-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-lite);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.font-install-box {
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.font-install-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.font-install-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: var(--bg-lite);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.font-install-tab.active {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-bottom: 2px solid var(--blue);
+}
+.font-install-content {
+  padding: 16px;
+  background: var(--bg-card);
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+.font-install-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.font-install-step:last-child { margin-bottom: 0; }
+.font-install-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b8fd4, #8b5cf6);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.font-install-step code {
+  background: var(--bg-lite);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--blue);
+}
 </style>
 </head>
 <body class="loading">
@@ -347,6 +763,10 @@
         <button type="button" class="tools-nav-tab" data-tab="zip" onclick="switchToolTab('zip')">
           <i class="ph-bold ph-file-zip"></i>
           <span data-i18n="tools.zip.title">ZIP para 3MF</span>
+        </button>
+        <button type="button" class="tools-nav-tab" data-tab="fonts" onclick="switchToolTab('fonts')">
+          <i class="ph-bold ph-text-aa"></i>
+          <span>Fontes para Slicer</span>
         </button>
       </div>
 
@@ -442,6 +862,67 @@
               </div>
               <div class="result-box" style="font-size: 1rem; flex-direction: column; gap: 8px;" id="zipResult">
                 <div style="color:var(--text-muted);font-weight:500;font-size:0.9rem" data-i18n="tools.zip.wait">Aguardando ficheiro...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 6: FONT BROWSER -->
+        <div class="tool-pane" id="pane-fonts">
+          <div class="font-browser-layout">
+            <!-- Sidebar de filtros -->
+            <aside class="font-sidebar">
+              <div class="font-sidebar-title"><i class="ph-bold ph-text-aa" style="margin-right:4px"></i> Fontes para Slicer</div>
+              <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">Descubra, visualize e instale fontes no seu sistema para usar no slicer de impressão 3D.</p>
+              
+              <div class="font-sidebar-title" style="margin-top:12px">Texto de Pré-visualização</div>
+              <div class="font-preview-input-wrap">
+                <textarea class="font-preview-input" id="fontPreviewText">AaBbCc 0123 Camada 0.2mm</textarea>
+              </div>
+              
+              <div class="font-preview-size-wrap">
+                <span class="font-preview-size-label">Tamanho</span>
+                <input type="range" class="font-preview-size" id="fontPreviewSize" min="14" max="52" value="26" oninput="updateFontPreviews()">
+                <span class="font-preview-size-val" id="fontSizeVal">26px</span>
+              </div>
+              
+              <div class="font-sidebar-title" style="margin-top:4px">Categorias</div>
+              <div class="font-cat-list" id="fontCatList">
+                <button class="font-cat-btn active" data-cat="" onclick="selectFontCat(this,'')">
+                  <i class="ph-bold ph-squares-four"></i> Todas
+                </button>
+                <button class="font-cat-btn" data-cat="sans-serif" onclick="selectFontCat(this,'sans-serif')">
+                  <i class="ph-bold ph-text-aa"></i> Sans Serif
+                </button>
+                <button class="font-cat-btn" data-cat="serif" onclick="selectFontCat(this,'serif')">
+                  <i class="ph-bold ph-text-italic"></i> Serif
+                </button>
+                <button class="font-cat-btn" data-cat="display" onclick="selectFontCat(this,'display')">
+                  <i class="ph-bold ph-star"></i> Display
+                </button>
+                <button class="font-cat-btn" data-cat="monospace" onclick="selectFontCat(this,'monospace')">
+                  <i class="ph-bold ph-terminal"></i> Monospace
+                </button>
+                <button class="font-cat-btn" data-cat="handwriting" onclick="selectFontCat(this,'handwriting')">
+                  <i class="ph-bold ph-pencil-line"></i> Manuscrita
+                </button>
+              </div>
+            </aside>
+
+            <!-- Grid principal -->
+            <div class="font-main">
+              <div class="font-main-bar">
+                <div class="font-search-wrap" style="flex:1;max-width:360px">
+                  <i class="ph-bold ph-magnifying-glass font-search-icon"></i>
+                  <input type="search" class="font-search" id="fontSearch" placeholder="Pesquisar fontes..." oninput="filterFonts()">
+                </div>
+                <span class="font-main-count" id="fontCount">A carregar...</span>
+              </div>
+              <div class="font-grid" id="fontGrid">
+                <div class="font-loader">
+                  <div class="font-loader-spinner"></div>
+                  <span>A carregar catálogo de fontes...</span>
+                </div>
               </div>
             </div>
           </div>
@@ -681,7 +1162,7 @@ function switchToolTab(tabId) {
 
 function initToolTabs() {
   const hash = window.location.hash.replace('#', '');
-  const validTabs = ['convertio', 'svg3d', 'scale', 'conv', 'zip'];
+  const validTabs = ['convertio', 'svg3d', 'scale', 'conv', 'zip', 'fonts'];
   let initialTab = 'convertio';
   if (validTabs.includes(hash)) {
     initialTab = hash;
@@ -934,6 +1415,452 @@ function resetConvertioUI() {
   if (label) label.textContent = 'Clique para selecionar ou arraste o arquivo aqui';
   if (subLabel) subLabel.textContent = 'Suporta arquivos 3D (STL, OBJ, STEP, 3MF), Vetores (SVG, DXF) e Imagens';
   if (statusArea) statusArea.style.display = 'none';
+}
+
+// ==========================================
+// FONT BROWSER (Google Fonts API)
+// ==========================================
+const GFONTS_API_KEY = 'AIzaSyDummyKeyReplace'; // substitua pela chave da Google Fonts API se necessário
+const GFONTS_API_URL = 'https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyD-dummy&sort=popularity';
+
+let allFonts = [];
+let filteredFonts = [];
+let visibleCount = 24;
+let currentCat = '';
+let loadedFontFamilies = new Set();
+let fontModalOpen = false;
+
+// Popular curated font list (fallback + initial load — sem precisar de API key)
+const CURATED_FONTS = [
+  { family:'Inter', category:'sans-serif', variants:['regular','700','italic'] },
+  { family:'Roboto', category:'sans-serif', variants:['100','300','regular','500','700','900'] },
+  { family:'Open Sans', category:'sans-serif', variants:['300','regular','600','700','800'] },
+  { family:'Montserrat', category:'sans-serif', variants:['100','200','300','regular','500','600','700','800','900'] },
+  { family:'Lato', category:'sans-serif', variants:['100','300','regular','700','900'] },
+  { family:'Poppins', category:'sans-serif', variants:['300','regular','500','600','700','800','900'] },
+  { family:'Raleway', category:'sans-serif', variants:['100','200','300','regular','500','600','700','800','900'] },
+  { family:'Nunito', category:'sans-serif', variants:['300','regular','600','700','800','900'] },
+  { family:'Oswald', category:'sans-serif', variants:['200','300','regular','500','600','700'] },
+  { family:'Ubuntu', category:'sans-serif', variants:['300','regular','500','700'] },
+  { family:'Source Sans 3', category:'sans-serif', variants:['200','300','regular','600','700','900'] },
+  { family:'Noto Sans', category:'sans-serif', variants:['100','200','300','regular','500','600','700','800','900'] },
+  { family:'Figtree', category:'sans-serif', variants:['300','regular','500','600','700','800','900'] },
+  { family:'DM Sans', category:'sans-serif', variants:['300','regular','500','600','700'] },
+  { family:'Plus Jakarta Sans', category:'sans-serif', variants:['200','300','regular','500','600','700','800'] },
+  { family:'Playfair Display', category:'serif', variants:['regular','500','600','700','800','900'] },
+  { family:'Merriweather', category:'serif', variants:['300','regular','700','900'] },
+  { family:'Lora', category:'serif', variants:['regular','500','600','700'] },
+  { family:'PT Serif', category:'serif', variants:['regular','700'] },
+  { family:'EB Garamond', category:'serif', variants:['regular','500','600','700','800'] },
+  { family:'Libre Baskerville', category:'serif', variants:['regular','700'] },
+  { family:'Crimson Text', category:'serif', variants:['regular','600','700'] },
+  { family:'Bebas Neue', category:'display', variants:['regular'] },
+  { family:'Anton', category:'display', variants:['regular'] },
+  { family:'Righteous', category:'display', variants:['regular'] },
+  { family:'Boogaloo', category:'display', variants:['regular'] },
+  { family:'Russo One', category:'display', variants:['regular'] },
+  { family:'Bangers', category:'display', variants:['regular'] },
+  { family:'Lobster', category:'display', variants:['regular'] },
+  { family:'Fredoka One', category:'display', variants:['regular'] },
+  { family:'Titan One', category:'display', variants:['regular'] },
+  { family:'Black Han Sans', category:'display', variants:['regular'] },
+  { family:'JetBrains Mono', category:'monospace', variants:['100','200','300','regular','500','600','700','800'] },
+  { family:'Fira Code', category:'monospace', variants:['300','regular','500','600','700'] },
+  { family:'Source Code Pro', category:'monospace', variants:['200','300','regular','500','600','700','900'] },
+  { family:'Roboto Mono', category:'monospace', variants:['100','200','300','regular','500','600','700'] },
+  { family:'Space Mono', category:'monospace', variants:['regular','700'] },
+  { family:'IBM Plex Mono', category:'monospace', variants:['100','200','300','regular','500','600','700'] },
+  { family:'Courier Prime', category:'monospace', variants:['regular','700'] },
+  { family:'Pacifico', category:'handwriting', variants:['regular'] },
+  { family:'Dancing Script', category:'handwriting', variants:['regular','500','600','700'] },
+  { family:'Caveat', category:'handwriting', variants:['regular','500','600','700'] },
+  { family:'Satisfy', category:'handwriting', variants:['regular'] },
+  { family:'Indie Flower', category:'handwriting', variants:['regular'] },
+  { family:'Shadows Into Light', category:'handwriting', variants:['regular'] },
+  { family:'Patrick Hand', category:'handwriting', variants:['regular'] },
+  { family:'Permanent Marker', category:'handwriting', variants:['regular'] },
+  { family:'Kalam', category:'handwriting', variants:['300','regular','700'] },
+  { family:'Architects Daughter', category:'handwriting', variants:['regular'] },
+];
+
+function initFontBrowser() {
+  allFonts = CURATED_FONTS;
+  filteredFonts = [...allFonts];
+  const textarea = document.getElementById('fontPreviewText');
+  if (textarea) textarea.addEventListener('input', updateFontPreviews);
+  fetchGoogleFontsCatalog();
+  renderFontGrid();
+}
+
+async function fetchGoogleFontsCatalog() {
+  try {
+    // Tenta carregar da API pública sem chave (até 1000 chamadas/dia)
+    const url = `https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity`;
+    const res = await fetch(url);
+    if (!res.ok) return; // usa lista curada se falhar
+    const json = await res.json();
+    if (json.items && json.items.length > 0) {
+      allFonts = json.items.map(f => ({
+        family: f.family,
+        category: f.category,
+        variants: f.variants,
+        subsets: f.subsets,
+      }));
+      applyFontFilter();
+    }
+  } catch (e) {
+    // Mantém lista curada silenciosamente
+  }
+}
+
+function selectFontCat(btn, cat) {
+  document.querySelectorAll('.font-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = cat;
+  visibleCount = 24;
+  applyFontFilter();
+}
+
+function filterFonts() {
+  visibleCount = 24;
+  applyFontFilter();
+}
+
+function applyFontFilter() {
+  const q = (document.getElementById('fontSearch')?.value || '').trim().toLowerCase();
+  filteredFonts = allFonts.filter(f => {
+    const matchCat = !currentCat || f.category === currentCat;
+    const matchQ = !q || f.family.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  renderFontGrid();
+}
+
+function renderFontGrid() {
+  const grid = document.getElementById('fontGrid');
+  const countEl = document.getElementById('fontCount');
+  if (!grid) return;
+
+  const slice = filteredFonts.slice(0, visibleCount);
+  const previewText = document.getElementById('fontPreviewText')?.value || 'AaBbCc 0123';
+  const size = document.getElementById('fontPreviewSize')?.value || 26;
+
+  // Pre-load fonts
+  slice.forEach(f => loadGoogleFont(f.family));
+
+  if (countEl) countEl.textContent = `${filteredFonts.length} fontes`;
+
+  const catLabels = { 'sans-serif':'Sans Serif', serif:'Serif', display:'Display', monospace:'Monospace', handwriting:'Manuscrita' };
+
+  grid.innerHTML = slice.map(f => `
+    <div class="font-card" id="fc-${f.family.replace(/\s/g,'_')}" onclick="openFontModal('${f.family.replace(/'/g,'\\\'')}')">
+      <div class="font-card-name">
+        ${f.family}
+        <span class="font-card-cat">${catLabels[f.category] || f.category}</span>
+      </div>
+      <div class="font-card-preview" style="font-family:'${f.family}',sans-serif;font-size:${size}px">${escHtml(previewText)}</div>
+      <div class="font-card-actions">
+        <button class="font-btn-dl" onclick="event.stopPropagation();downloadFontFile('${f.family.replace(/'/g,'\\\'')}')">
+          <i class="ph-bold ph-download-simple"></i> Instalar
+        </button>
+        <a class="font-btn-preview" href="https://fonts.google.com/specimen/${encodeURIComponent(f.family)}" target="_blank" onclick="event.stopPropagation()" title="Ver no Google Fonts">
+          <i class="ph-bold ph-arrow-square-out"></i>
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  // Load more button
+  if (filteredFonts.length > visibleCount) {
+    grid.insertAdjacentHTML('beforeend', `
+      <div class="font-load-more">
+        <button class="btn btn-outline" onclick="loadMoreFonts()">
+          <i class="ph-bold ph-caret-down"></i> Carregar mais fontes (${filteredFonts.length - visibleCount} restantes)
+        </button>
+      </div>
+    `);
+  }
+}
+
+function loadMoreFonts() {
+  visibleCount += 24;
+  renderFontGrid();
+}
+
+function updateFontPreviews() {
+  const text = document.getElementById('fontPreviewText')?.value || 'AaBbCc 0123';
+  const size = document.getElementById('fontPreviewSize')?.value || 26;
+  const sizeVal = document.getElementById('fontSizeVal');
+  if (sizeVal) sizeVal.textContent = size + 'px';
+  document.querySelectorAll('.font-card-preview').forEach(el => {
+    el.style.fontSize = size + 'px';
+    el.textContent = text;
+  });
+  if (fontModalOpen) {
+    const mb = document.getElementById('fontModalPreviewBox');
+    if (mb) { mb.style.fontSize = size + 'px'; mb.textContent = text; }
+  }
+}
+
+function loadGoogleFont(family) {
+  if (loadedFontFamilies.has(family)) return;
+  loadedFontFamilies.add(family);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400;700&display=swap`;
+  document.head.appendChild(link);
+}
+
+async function downloadFontFile(family) {
+  // Download direto via Google Fonts API de CSS → extrai URL do .ttf
+  try {
+    const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@400&display=swap`;
+    const res = await fetch(cssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const css = await res.text();
+    // Extrai URL da fonte
+    const match = css.match(/src: url\(([^)]+\.ttf)\)/);
+    if (match) {
+      triggerFontDownload(match[1], family);
+      return;
+    }
+    // Fallback: abre link para baixar diretamente
+    triggerFontDownload(`https://fonts.gstatic.com/s/${family.toLowerCase().replace(/\s/g, '')}/v1/regular.ttf`, family);
+  } catch (e) {
+    // Fallback: direciona para Google Fonts
+    window.open(`https://fonts.google.com/specimen/${encodeURIComponent(family)}`, '_blank');
+  }
+}
+
+function triggerFontDownload(url, family) {
+  // Usa fetch + blob para forçar o download local
+  fetch(url)
+    .then(r => r.blob())
+    .then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${family.replace(/\s/g,'-')}.ttf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      showFontInstallToast(family);
+    })
+    .catch(() => {
+      window.open(`https://fonts.google.com/specimen/${encodeURIComponent(family)}`, '_blank');
+    });
+}
+
+function showFontInstallToast(family) {
+  const existing = document.getElementById('fontInstallToast');
+  if (existing) existing.remove();
+
+  const os = detectOS();
+  const instructions = {
+    mac: '🍎 Abre o ficheiro .ttf → Font Book abre automaticamente → clica em "Instalar"',
+    windows: '🪟 Clica com botão direito no ficheiro .ttf → "Instalar para todos os utilizadores"',
+    linux: '🐧 Copia para ~/.local/share/fonts/ e corre fc-cache -fv no terminal',
+    unknown: 'Abre o ficheiro .ttf e siga as instruções do seu sistema operativo'
+  };
+
+  const toast = document.createElement('div');
+  toast.id = 'fontInstallToast';
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--bg-card); border: 1.5px solid #10b981;
+    border-radius: 14px; padding: 18px 20px; max-width: 380px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    animation: fadeInPane 0.3s ease;
+    display: flex; flex-direction: column; gap: 8px;
+  `;
+  toast.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--text-main)">
+      <i class="ph-bold ph-check-circle" style="color:#10b981;font-size:1.25rem"></i>
+      <span>"${family}" baixada com sucesso!</span>
+    </div>
+    <div style="font-size:0.83rem;color:var(--text-muted);line-height:1.5">${instructions[os]}</div>
+    <div style="font-size:0.78rem;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px;margin-top:2px">
+      ✅ Após instalar, a fonte aparece em todos os slicers (Bambu Studio, PrusaSlicer, OrcaSlicer, Cura).
+    </div>
+    <button onclick="this.parentElement.remove()" style="position:absolute;top:10px;right:10px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:1rem">
+      <i class="ph-bold ph-x"></i>
+    </button>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 10000);
+}
+
+function detectOS() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('mac os') || ua.includes('macintosh')) return 'mac';
+  if (ua.includes('win')) return 'windows';
+  if (ua.includes('linux')) return 'linux';
+  return 'unknown';
+}
+
+function openFontModal(family) {
+  const font = allFonts.find(f => f.family === family);
+  if (!font) return;
+  fontModalOpen = true;
+  loadGoogleFont(family);
+
+  const previewText = document.getElementById('fontPreviewText')?.value || 'AaBbCc 0123';
+  const size = document.getElementById('fontPreviewSize')?.value || 26;
+  const os = detectOS();
+  const osLabel = { mac:'macOS', windows:'Windows', linux:'Linux', unknown:'Outro SO' };
+
+  const variantLabels = v => {
+    if (v === 'regular') return '400 Regular';
+    if (v === 'italic') return 'Italic';
+    if (v.endsWith('italic')) return v.replace('italic','') + ' Italic';
+    return v + ' Weight';
+  };
+
+  const installSteps = {
+    mac: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Abra o ficheiro descarregado. O <strong>Font Book</strong> abre automaticamente.',
+      'Clique em <strong>"Instalar Fonte"</strong> no Font Book.',
+      'Abra o slicer (Bambu Studio, PrusaSlicer, OrcaSlicer) — a fonte estará disponível! 🎉'
+    ],
+    windows: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Vá à pasta de Downloads e clique com <strong>botão direito</strong> no ficheiro <code>.ttf</code>.',
+      'Selecione <strong>"Instalar"</strong> ou <strong>"Instalar para todos os utilizadores"</strong>.',
+      'Abra o slicer — a fonte estará disponível! 🎉'
+    ],
+    linux: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Copie o ficheiro para <code>~/.local/share/fonts/</code> (apenas o seu utilizador) ou <code>/usr/share/fonts/</code> (sistema).',
+      'Abra o terminal e corra <code>fc-cache -fv</code> para actualizar o cache de fontes.',
+      'Reinicie o slicer — a fonte estará disponível! 🎉'
+    ],
+    unknown: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Siga as instruções de instalação de fontes do seu sistema operativo.',
+      'Reinicie o slicer para que a fonte apareça.'
+    ]
+  };
+
+  const steps = installSteps[os] || installSteps.unknown;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'font-modal-overlay';
+  overlay.id = 'fontModalOverlay';
+  overlay.onclick = e => { if (e.target === overlay) closeFontModal(); };
+  overlay.innerHTML = `
+    <div class="font-modal">
+      <button class="font-modal-close" onclick="closeFontModal()"><i class="ph-bold ph-x"></i></button>
+      <div class="font-modal-title" style="font-family:'${family}',sans-serif">${family}</div>
+      <div class="font-modal-meta">${{ 'sans-serif':'Sans Serif', serif:'Serif', display:'Display', monospace:'Monospace', handwriting:'Manuscrita' }[font.category] || font.category} &middot; ${font.variants.length} variantes</div>
+
+      <div class="font-modal-preview-box" id="fontModalPreviewBox" style="font-family:'${family}',sans-serif;font-size:${size}px">${escHtml(previewText)}</div>
+
+      <div class="font-sidebar-title" style="margin-bottom:8px">Variantes disponíveis</div>
+      <div class="font-modal-variants">${font.variants.map(v => `<span class="font-variant-pill">${variantLabels(v)}</span>`).join('')}</div>
+
+      <div class="font-sidebar-title" style="margin-bottom:10px">Como instalar no seu computador</div>
+      <div class="font-install-box">
+        <div class="font-install-tabs">
+          <button class="font-install-tab ${os==='mac'?'active':''}" onclick="switchInstallTab(this,'mac')">🍎 macOS</button>
+          <button class="font-install-tab ${os==='windows'?'active':''}" onclick="switchInstallTab(this,'windows')">🪟 Windows</button>
+          <button class="font-install-tab ${os==='linux'?'active':''}" onclick="switchInstallTab(this,'linux')">🐧 Linux</button>
+        </div>
+        <div class="font-install-content" id="installContent">
+          ${steps.map((s,i) => `
+            <div class="font-install-step">
+              <span class="font-install-num">${i+1}</span>
+              <div>${s}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div style="background:rgba(59,143,212,0.07);border:1px solid rgba(59,143,212,0.2);border-radius:var(--r);padding:12px;font-size:0.82rem;color:var(--text-main);margin-bottom:20px">
+        <i class="ph-bold ph-info" style="color:var(--blue)"></i>
+        Após instalar e reiniciar o slicer, a fonte <strong>${family}</strong> aparecerá automaticamente em <strong>Bambu Studio, PrusaSlicer, OrcaSlicer e Cura</strong>.
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="font-btn-dl" style="flex:none;padding:11px 22px;font-size:0.9rem" onclick="downloadFontFile('${family.replace(/'/g,'\\\'')}');closeFontModal()">
+          <i class="ph-bold ph-download-simple"></i> Instalar Fonte — ${family}
+        </button>
+        <a class="font-btn-preview" href="https://fonts.google.com/specimen/${encodeURIComponent(family)}" target="_blank" style="padding:11px 16px;font-size:0.9rem">
+          <i class="ph-bold ph-arrow-square-out"></i> Google Fonts
+        </a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closeFontModal() {
+  fontModalOpen = false;
+  const overlay = document.getElementById('fontModalOverlay');
+  if (overlay) overlay.remove();
+}
+
+function switchInstallTab(btn, os) {
+  document.querySelectorAll('.font-install-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const steps = {
+    mac: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Abra o ficheiro descarregado. O <strong>Font Book</strong> abre automaticamente.',
+      'Clique em <strong>"Instalar Fonte"</strong> no Font Book.',
+      'Abra o slicer (Bambu Studio, PrusaSlicer, OrcaSlicer) — a fonte estará disponível! 🎉'
+    ],
+    windows: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Vá à pasta de Downloads e clique com <strong>botão direito</strong> no ficheiro <code>.ttf</code>.',
+      'Selecione <strong>"Instalar"</strong> ou <strong>"Instalar para todos os utilizadores"</strong>.',
+      'Abra o slicer — a fonte estará disponível! 🎉'
+    ],
+    linux: [
+      'Clique em <strong>"Instalar Fonte"</strong> abaixo — o ficheiro <code>.ttf</code> será descarregado.',
+      'Copie o ficheiro para <code>~/.local/share/fonts/</code> (apenas o seu utilizador) ou <code>/usr/share/fonts/</code> (sistema).',
+      'Abra o terminal e corra <code>fc-cache -fv</code> para actualizar o cache de fontes.',
+      'Reinicie o slicer — a fonte estará disponível! 🎉'
+    ]
+  };
+
+  const content = document.getElementById('installContent');
+  if (content && steps[os]) {
+    content.innerHTML = steps[os].map((s,i) => `
+      <div class="font-install-step">
+        <span class="font-install-num">${i+1}</span>
+        <div>${s}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Inicializa o browser de fontes quando o pane ficar visível
+document.addEventListener('DOMContentLoaded', () => {
+  // Observer para inicializar apenas quando o pane de fontes for activado
+  const pane = document.getElementById('pane-fonts');
+  if (pane) {
+    const observer = new MutationObserver(() => {
+      if (pane.classList.contains('active') && allFonts.length === 0) {
+        initFontBrowser();
+      }
+    });
+    observer.observe(pane, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Tecla ESC fecha o modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && fontModalOpen) closeFontModal();
+  });
+});
+
+// Se a aba fonts já estiver activa ao carregar, inicializa
+if (document.getElementById('pane-fonts')?.classList.contains('active')) {
+  initFontBrowser();
 }
 </script>
 </body>
