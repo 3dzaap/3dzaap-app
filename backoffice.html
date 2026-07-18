@@ -1092,7 +1092,7 @@ function confirmClear(type) {
   document.getElementById('confirmTitle').textContent = `Limpar ${labels[type]}?`;
   document.getElementById('confirmMsg').textContent =
     `Vais eliminar permanentemente ${counts[type]} ${labels[type]}. Esta acção é irreversível.\n\nFaz um backup primeiro se quiseres guardar os dados.`;
-  document.getElementById('confirmOkBtn').textContent = `<i class="ph-bold ph-trash"></i> Limpar ${labels[type]}`;
+  document.getElementById('confirmOkBtn').innerHTML = `<i class="ph-bold ph-trash"></i> Limpar ${labels[type]}`;
   document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); clearData(type); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
