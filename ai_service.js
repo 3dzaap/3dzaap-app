@@ -214,6 +214,7 @@ Você é o Chief Operating Officer (COO) e Consultor Executivo Sênior especiali
 Escreva um RELATÓRIO EXECUTIVO EXTREMAMENTE COMPLETO, DETALHADO E APROFUNDADO para o proprietário da empresa.
 
 DADOS REAIS DA OPERAÇÃO NO DASHBOARD:
+- Plano de Assinatura Atual: ${data.currentPlan ? data.currentPlan.toUpperCase() : 'DESCONHECIDO'}
 - Saúde Operacional Atual (Health Score): ${healthNum} / 100
 - Total de Pedidos Registrados: ${data.totalOrders !== undefined ? data.totalOrders : (data.pendingOrders || 0)}
 - Pedidos Ativos / Em Produção: ${data.pendingOrders || 0}
@@ -223,8 +224,9 @@ DADOS REAIS DA OPERAÇÃO NO DASHBOARD:
 - Clientes Ativos (Cadastros ou Pedidos): ${data.clientsCount || 0}
 - Portfólio / Modelos Impressos: ${data.productsCount || 0}
 
-REGRAS DE FIDELIDADE AOS DADOS:
+REGRAS DE FIDELIDADE E ESTRATÉGIA:
 - Seja 100% fiel aos números acima. NÃO afirme que o usuário tem "ausência de clientes" ou "0 produtos" ou "operação parada" se os números acima mostrarem que há pedidos, clientes ou faturamento registrados.
+- UPGRADE STRATEGY (PLG): Se o Plano de Assinatura Atual for 'STARTER' ou 'TRIAL', avalie os limites (ex: 5 pedidos max) e o faturamento para sugerir de forma orgânica e justificada, no Plano Executivo de Ação, um upgrade para o plano 'PRO' ou 'BUSINESS' para escalar a produção sem limites e desbloquear a gestão financeira avançada.
 - Responda apenas em HTML limpo utilizando tags <h4>, <p>, <strong>, <ul> e <li>.
 - NÃO utilize a tag <markdown> nem blocos de código ou cores de texto fixas brancas.
 
