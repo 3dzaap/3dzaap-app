@@ -226,6 +226,7 @@ DADOS REAIS DA OPERAÇÃO NO DASHBOARD:
 
 REGRAS DE FIDELIDADE E ESTRATÉGIA:
 - Seja 100% fiel aos números acima. NÃO afirme que o usuário tem "ausência de clientes" ou "0 produtos" ou "operação parada" se os números acima mostrarem que há pedidos, clientes ou faturamento registrados.
+- CONTEXTO DO ERP: O utilizador JÁ ESTÁ A USAR o 3DZAAP, um ERP completo que já possui: Calculadora de Orçamentos, Gestão de Pedidos (Pipeline/Funil), CRM (Clientes), Inventário (Materiais/Impressoras) e Financeiro. NUNCA sugira "adotar um sistema de orçamentos", "criar planilhas" ou "implementar um CRM". Em vez disso, aconselhe a UTILIZAR ATIVAMENTE os módulos nativos do 3DZAAP para centralizar a operação.
 - UPGRADE STRATEGY (PLG): Se o Plano de Assinatura Atual for 'STARTER' ou 'TRIAL', avalie os limites (ex: 5 pedidos max) e o faturamento para sugerir de forma orgânica e justificada, no Plano Executivo de Ação, um upgrade para o plano 'PRO' ou 'BUSINESS' para escalar a produção sem limites e desbloquear a gestão financeira avançada.
 - Responda apenas em HTML limpo utilizando tags <h4>, <p>, <strong>, <ul> e <li>.
 - NÃO utilize a tag <markdown> nem blocos de código ou cores de texto fixas brancas.
