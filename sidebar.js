@@ -254,19 +254,13 @@ const Sidebar = (() => {
 
   async function _checkUnreadNotifications(session) {
     try {
+      let totalBadgeVal = 0;
+
       if (typeof DB !== 'undefined' && DB.getUnreadOrdersCount) {
         const unreadCount = await DB.getUnreadOrdersCount();
+        totalBadgeVal += (unreadCount || 0);
         const badge = document.getElementById('sidebarUnreadOrdersBadge');
         if (badge) badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
-
-        // Atualizar App Icon Badge (Notificação vermelha no ícone da app no telemóvel/desktop)
-        if ('setAppBadge' in navigator) {
-          if (unreadCount > 0) {
-            navigator.setAppBadge(unreadCount).catch(e => console.warn('[PWA] setAppBadge error:', e));
-          } else if ('clearAppBadge' in navigator) {
-            navigator.clearAppBadge().catch(e => console.warn('[PWA] clearAppBadge error:', e));
-          }
-        }
       }
 
       if (session && session.isSuperAdmin) {
@@ -285,12 +279,47 @@ const Sidebar = (() => {
             if (!error && count > 0) {
               adminBadge.textContent = count;
               adminBadge.style.display = 'inline-block';
+              totalBadgeVal += count;
+
+              // Disparar notificação OS se for um novo número (evitar spam no reload)
+              const lastNotified = parseInt(localStorage.getItem('3dzaap_notified_admin_count') || '0', 10);
+              if (count > lastNotified) {
+                localStorage.setItem('3dzaap_notified_admin_count', count);
+                if ('Notification' in window && Notification.permission === 'granted') {
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(reg => {
+                      reg.showNotification('Novo Registo no 3DZAAP', {
+                        body: `Existem ${count} novos cadastros de empresas pendentes.`,
+                        icon: '/assets/icon-192.png',
+                        badge: '/assets/icon-192.png',
+                        tag: 'admin-new-company'
+                      });
+                    });
+                  } else {
+                    new Notification('Novo Registo no 3DZAAP', {
+                      body: `Existem ${count} novos cadastros de empresas pendentes.`,
+                      icon: '/assets/icon-192.png'
+                    });
+                  }
+                }
+              }
             } else {
               adminBadge.style.display = 'none';
+              localStorage.setItem('3dzaap_notified_admin_count', '0');
             }
           }
         }
       }
+
+      // Atualizar App Icon Badge (Notificação no ícone da app no telemóvel/desktop)
+      if ('setAppBadge' in navigator) {
+        if (totalBadgeVal > 0) {
+          navigator.setAppBadge(totalBadgeVal).catch(e => console.warn('[PWA] setAppBadge error:', e));
+        } else if ('clearAppBadge' in navigator) {
+          navigator.clearAppBadge().catch(e => console.warn('[PWA] clearAppBadge error:', e));
+        }
+      }
+
     } catch (e) {
       console.warn('[3DZAAP] Erro ao verificar notificações de admin:', e);
     }
