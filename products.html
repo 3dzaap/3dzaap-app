@@ -1056,7 +1056,7 @@ async function saveProduct() {
     const config = {
       ...baseConfig,
       mode: tech,
-      est_print_hours: parseFloat(document.getElementById('prTime').value) || 0,
+      est_print_hours: Number((parseTime(document.getElementById('prTime').value) || 0).toFixed(2)),
       material_id: document.getElementById('prMaterialId').value
     };
     
