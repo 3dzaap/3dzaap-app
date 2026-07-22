@@ -350,6 +350,7 @@
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="wikiModalTitle"><i class="ph-bold ph-file-text"></i> <span data-i18n="wiki.modal.title_add">Publicar Dica no Wiki</span></div>
+      <div id="wikiModalActions" style="display:flex; align-items:center; gap:16px; margin-left:auto; margin-right:16px;"></div>
       <button class="modal-close" onclick="closeWikiModal()"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body">
@@ -667,6 +668,9 @@ async function toggleFavorite(entryId, e) {
       showToast('Adicionado aos favoritos', 'success');
     }
     filterWiki(); // re-render
+    if (document.getElementById('wikiModalOverlay').classList.contains('open') && document.getElementById('wId').value === entryId) {
+      updateWikiModalActions(entryId);
+    }
   } catch(err) {
     console.error(err);
     showToast('Erro ao atualizar favorito', 'err');
@@ -674,7 +678,7 @@ async function toggleFavorite(entryId, e) {
 }
 
 async function rateEntry(entryId, rating, e) {
-  e.stopPropagation();
+  if(e) e.stopPropagation();
   try {
     const existing = allRatings.find(r => r.entry_id === entryId && r.user_id === currentUser.id);
     if(existing) {
@@ -686,10 +690,45 @@ async function rateEntry(entryId, rating, e) {
     }
     showToast(`Avaliado com ${rating} estrelas!`, 'success');
     filterWiki();
+    if (document.getElementById('wikiModalOverlay').classList.contains('open') && document.getElementById('wId').value === entryId) {
+      updateWikiModalActions(entryId);
+    }
   } catch(err) {
     console.error(err);
     showToast('Erro ao avaliar', 'err');
   }
+}
+
+function updateWikiModalActions(id) {
+  const container = document.getElementById('wikiModalActions');
+  if(!id) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  const entryRatings = allRatings.filter(r => r.entry_id === id);
+  const myRatingObj = entryRatings.find(r => r.user_id === currentUser.id);
+  const myRating = myRatingObj ? myRatingObj.rating : 0;
+  
+  let avg = 0;
+  if(entryRatings.length > 0) {
+    const sum = entryRatings.reduce((acc, r) => acc + r.rating, 0);
+    avg = Math.round((sum / entryRatings.length) * 10) / 10;
+  }
+  
+  const isFav = allFavorites.includes(id);
+  
+  let starsHtml = '';
+  for(let i=1; i<=5; i++){
+    const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph';
+    starsHtml += `<i class="${activeClass} ph-star" style="cursor:pointer" onclick="rateEntry('${id}', ${i})"></i>`;
+  }
+  
+  container.innerHTML = `
+    <div class="stars" style="font-size:1.4rem" title="Classificação Média: ${avg > 0 ? avg : 'N/A'}">${starsHtml}</div>
+    <div style="height:24px;width:1px;background:var(--border);"></div>
+    <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" style="font-size:1.6rem" onclick="toggleFavorite('${id}', event)"></i>
+  `;
 }
 
 // ==========================================
@@ -743,12 +782,15 @@ function openWikiModal(id = null, isOwner = true) {
         document.getElementById('btnDeleteWiki').style.display = 'none';
         toggleFormState(true); // Read-only
       }
+      
+      updateWikiModalActions(id);
     }
   } else {
     document.getElementById('wikiModalTitle').innerHTML = '<i class="ph-bold ph-file-text"></i> Publicar Dica no Wiki';
     document.getElementById('btnDeleteWiki').style.display = 'none';
     toggleFormState(false);
     renderSlicerForm();
+    updateWikiModalActions(null);
   }
 }
 
