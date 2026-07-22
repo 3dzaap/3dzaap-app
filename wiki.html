@@ -120,12 +120,16 @@
 .badge-slicer { color: var(--orange); background: rgba(245,148,58,0.1); }
 
 .wcard-fav {
-  color: var(--subtle);
-  font-size: 1.5rem;
+  color: #94a3b8;
+  font-size: 1.6rem;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  padding: 2px;
 }
-.wcard-fav:hover { color: #f43f5e; }
+.wcard-fav:hover { color: #f43f5e; transform: scale(1.15); }
 .wcard-fav.active { color: #f43f5e; }
 
 .wcard-title {
@@ -159,11 +163,13 @@
 .stars {
   display: flex;
   gap: 4px;
-  color: var(--amber);
+  color: #f59e0b;
   font-size: 1.1rem;
+  position: relative;
+  z-index: 2;
 }
 .stars i { cursor: pointer; transition: transform 0.1s; }
-.stars i:hover { transform: scale(1.2); }
+.stars i:hover { transform: scale(1.2); color: #fbbf24; }
 .rating-text {
   font-size: 0.85rem;
   font-weight: 700;
@@ -665,7 +671,7 @@ function renderWiki(entries) {
     
     let starsHtml = '';
     for(let i=1; i<=5; i++){
-      const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph';
+      const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph-bold';
       starsHtml += `<i class="${activeClass} ph-star" onclick="rateEntry('${item.id}', ${i}, event)"></i>`;
     }
 
@@ -693,7 +699,7 @@ function renderWiki(entries) {
             <span class="wcard-badge badge-cat">${item.category}</span>
             <span class="wcard-badge badge-slicer">${item.slicer_name}</span>
           </div>
-          <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" onclick="toggleFavorite('${item.id}', event)"></i>
+          <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" title="${isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}" onclick="toggleFavorite('${item.id}', event)"></i>
         </div>
         
         <h3 class="wcard-title">${item.title}</h3>
@@ -702,7 +708,7 @@ function renderWiki(entries) {
         <div class="wcard-printers"><i class="ph-bold ph-printer"></i> ${prtText}</div>
         
         <div class="wcard-stats">
-          <div class="stars">${starsHtml}</div>
+          <div class="stars" title="${myRating ? 'A minha avaliação: ' + myRating : 'Clique para avaliar'}">${starsHtml}</div>
           <span class="rating-text">${avg > 0 ? avg : 'S/ Classific.'} (${entryRatings.length})</span>
           ${extLinkBtn}
           ${isOwner ? '<button class="view-btn">Editar</button>' : '<button class="view-btn">Ver Dica</button>'}
@@ -781,7 +787,7 @@ function updateWikiModalActions(id) {
   
   let starsHtml = '';
   for(let i=1; i<=5; i++){
-    const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph';
+    const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph-bold';
     starsHtml += `<i class="${activeClass} ph-star" style="cursor:pointer" onclick="rateEntry('${id}', ${i})"></i>`;
   }
   
