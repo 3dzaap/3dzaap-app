@@ -452,7 +452,7 @@ async function initPage() {
     ? sess.fname + ' ' + sess.lname
     : sess.fname || sess.lname
     || sess.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-  currentProfile = { full_name: fullName, company_id: sess.companyId };
+  currentProfile = { full_name: fullName, company_id: sess.companyId, company_name: sess.companyName };
   
   Sidebar.setSession(sess);
   
@@ -501,7 +501,7 @@ async function loadPrinters() {
   const { data, error } = await _sb.from('printers').select('id, brand, model, custom_name').order('brand');
   if(!error && data) {
     userPrinters = data.map(p => {
-      const pName = p.custom_name || (p.brand + ' ' + p.model);
+      const pName = (p.brand && p.model) ? (p.brand + ' ' + p.model) : (p.custom_name || 'Impressora Genérica');
       return { id: p.id, name: pName };
     });
     const grid = document.getElementById('printersList');
@@ -929,7 +929,7 @@ async function saveWiki() {
     } else {
       payload.user_id = currentUser.id;
       payload.company_id = currentProfile ? currentProfile.company_id : null;
-      payload.author_name = currentProfile ? currentProfile.full_name : (currentUser.fname || 'Maker Anónimo');
+      payload.author_name = currentProfile ? (currentProfile.company_name || currentProfile.full_name) : (currentUser.fname || 'Maker Anónimo');
       const { error } = await _sb.from('wiki_entries').insert([payload]);
       if(error) throw error;
       showToast(t('wiki.msg.succ_save', 'Dica guardada com sucesso!'));
