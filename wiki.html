@@ -120,16 +120,18 @@
 .badge-slicer { color: var(--orange); background: rgba(245,148,58,0.1); }
 
 .wcard-fav {
+  position: absolute;
+  top: 14px;
+  right: 14px;
   color: #94a3b8;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   cursor: pointer;
   transition: color 0.2s, transform 0.15s;
-  flex-shrink: 0;
-  position: relative;
   z-index: 2;
-  padding: 2px;
+  padding: 4px;
+  line-height: 1;
 }
-.wcard-fav:hover { color: #f43f5e; transform: scale(1.15); }
+.wcard-fav:hover { color: #f43f5e; transform: scale(1.2); }
 .wcard-fav.active { color: #f43f5e; }
 
 .wcard-title {
@@ -669,9 +671,10 @@ function renderWiki(entries) {
     const myRating = myRatingObj ? myRatingObj.rating : 0;
     const isFav = allFavorites.includes(item.id);
     
+    const displayRating = Math.round(avg);
     let starsHtml = '';
     for(let i=1; i<=5; i++){
-      const activeClass = i <= (myRating || avg) ? 'ph-fill' : 'ph-bold';
+      const activeClass = i <= displayRating ? 'ph-fill' : 'ph-bold';
       starsHtml += `<i class="${activeClass} ph-star" onclick="rateEntry('${item.id}', ${i}, event)"></i>`;
     }
 
@@ -692,14 +695,14 @@ function renderWiki(entries) {
       : '';
 
     grid.innerHTML += `
-      <div class="wiki-card" onclick="openWikiModal('${item.id}', ${isOwner})">
-        <div class="wcard-top">
+      <div class="wiki-card" onclick="openWikiModal('${item.id}', ${isOwner})" style="position:relative;">
+        <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" title="${isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}" onclick="toggleFavorite('${item.id}', event)"></i>
+        <div class="wcard-top" style="padding-right:32px;">
           <div class="wcard-badges">
             ${visibilityBadge}
             <span class="wcard-badge badge-cat">${item.category}</span>
             <span class="wcard-badge badge-slicer">${item.slicer_name}</span>
           </div>
-          <i class="${isFav ? 'ph-fill' : 'ph-bold'} ph-heart wcard-fav ${isFav?'active':''}" title="${isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}" onclick="toggleFavorite('${item.id}', event)"></i>
         </div>
         
         <h3 class="wcard-title">${item.title}</h3>
@@ -708,8 +711,8 @@ function renderWiki(entries) {
         <div class="wcard-printers"><i class="ph-bold ph-printer"></i> ${prtText}</div>
         
         <div class="wcard-stats">
-          <div class="stars" title="${myRating ? 'A minha avaliação: ' + myRating : 'Clique para avaliar'}">${starsHtml}</div>
-          <span class="rating-text">${avg > 0 ? avg : 'S/ Classific.'} (${entryRatings.length})</span>
+          <div class="stars" title="Média: ${avg > 0 ? avg : 'N/A'}${myRating ? ' | A minha: ' + myRating + '★' : ' | Clique para avaliar'}">${starsHtml}</div>
+          <span class="rating-text">${avg > 0 ? avg : '—'} (${entryRatings.length})</span>
           ${extLinkBtn}
           ${isOwner ? '<button class="view-btn">Editar</button>' : '<button class="view-btn">Ver Dica</button>'}
         </div>
@@ -894,8 +897,18 @@ function renderSlicerForm(savedData = {}) {
   const sectionsDiv = document.createElement('div');
   sectionsDiv.className = 'slicer-sections';
 
+  const TAB_ORDER = ['Quality', 'Strength', 'Speed', 'Support', 'Others (Brim, etc)', 'Filament (Overrides)'];
+  const sectionEntries = Object.entries(schema).sort(([a], [b]) => {
+    const ai = TAB_ORDER.indexOf(a);
+    const bi = TAB_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+
   let first = true;
-  for (const [sectionName, fields] of Object.entries(schema)) {
+  for (const [sectionName, fields] of sectionEntries) {
     // Aba
     const tabBtn = document.createElement('div');
     tabBtn.className = `slicer-tab ${first ? 'active' : ''}`;
