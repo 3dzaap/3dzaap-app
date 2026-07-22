@@ -389,10 +389,27 @@
 
       <div class="form-group" style="margin-bottom:16px">
         <label class="form-label" data-i18n="wiki.modal.printers">Impressoras Compatíveis (Opcional)</label>
-        <div class="form-hint" style="margin-bottom:8px">Quais impressoras da sua frota são compatíveis com esta configuração?</div>
-        <div class="printers-grid" id="printersList">
-          <!-- Carregado via JS -->
+        <div class="form-hint" style="margin-bottom:8px">Quais impressoras são compatíveis com esta configuração?</div>
+        
+        <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:150px;">
+            <label class="form-label" style="font-size:0.8rem">Marca</label>
+            <select id="wPrinterBrand" class="form-select" onchange="wikiOnBrandChange()">
+              <option value="">A carregar...</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:150px;">
+            <label class="form-label" style="font-size:0.8rem">Modelo</label>
+            <select id="wPrinterModel" class="form-select">
+              <option value="">Selecione uma marca primeiro</option>
+            </select>
+          </div>
+          <div>
+            <button class="btn btn-secondary" type="button" onclick="wikiAddPrinter()">Adicionar</button>
+          </div>
         </div>
+        
+        <div id="wSelectedPrinters" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
       </div>
 
       <div class="form-group" style="margin-bottom:16px">
@@ -439,6 +456,8 @@ let allEntries = [];
 let allFavorites = [];
 let allRatings = [];
 let userPrinters = [];
+let wikiPrinterModels = [];
+let wikiSelectedPrinters = [];
 let currentFilterTab = 'all';
 
 // JSON SCHEMA ENGINE para os SLICERS
@@ -499,22 +518,64 @@ async function loadSlicerSchemas() {
 }
 
 async function loadPrinters() {
-  const { data, error } = await _sb.from('printers').select('id, brand, model, custom_name').order('brand');
-  if(!error && data) {
-    userPrinters = data.map(p => {
-      const pName = (p.brand && p.model) ? (p.brand + ' ' + p.model) : (p.custom_name || 'Impressora Genérica');
-      return { id: p.id, name: pName };
+  try {
+    wikiPrinterModels = await DB.getPrinterModels();
+    const brandsMap = {};
+    wikiPrinterModels.forEach(m => {
+      if(m.brand) brandsMap[m.brand.toLowerCase()] = m.brand;
     });
-    const grid = document.getElementById('printersList');
-    grid.innerHTML = userPrinters.map(p => `
-      <label class="printer-chk">
-        <input type="checkbox" value="${p.name}" class="chk-printer">
-        ${p.name}
-      </label>
-    `).join('');
-  } else if (error) {
-    console.warn('Erro ao carregar printers:', error);
+    const brands = Object.values(brandsMap).sort((a,b) => a.localeCompare(b));
+    
+    const brandSel = document.getElementById('wPrinterBrand');
+    if (brandSel) {
+      brandSel.innerHTML = '<option value="">— Selecionar Marca —</option>' + 
+        brands.map(b => `<option value="${b}">${b}</option>`).join('');
+    }
+    renderSelectedPrinters();
+  } catch (error) {
+    console.warn('Erro ao carregar printers_catalog:', error);
   }
+}
+
+function wikiOnBrandChange() {
+  const brand = document.getElementById('wPrinterBrand').value;
+  const modelSel = document.getElementById('wPrinterModel');
+  if(!brand) {
+    modelSel.innerHTML = '<option value="">Selecione uma marca primeiro</option>';
+    return;
+  }
+  
+  const models = wikiPrinterModels.filter(m => m.brand === brand).sort((a,b) => a.name.localeCompare(b.name));
+  modelSel.innerHTML = '<option value="">— Selecionar Modelo —</option>' + 
+    models.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+}
+
+function wikiAddPrinter() {
+  const brand = document.getElementById('wPrinterBrand').value;
+  const model = document.getElementById('wPrinterModel').value;
+  if(!brand || !model) return;
+  
+  const pName = brand + ' ' + model;
+  if(!wikiSelectedPrinters.includes(pName)) {
+    wikiSelectedPrinters.push(pName);
+    renderSelectedPrinters();
+  }
+}
+
+function wikiRemovePrinter(pName) {
+  wikiSelectedPrinters = wikiSelectedPrinters.filter(p => p !== pName);
+  renderSelectedPrinters();
+}
+
+function renderSelectedPrinters() {
+  const container = document.getElementById('wSelectedPrinters');
+  if (!container) return;
+  container.innerHTML = wikiSelectedPrinters.map(p => `
+    <div style="background:var(--bg-card-s); border:1px solid var(--border); border-radius:4px; padding:4px 8px; display:flex; align-items:center; gap:8px; font-size:0.85rem;">
+      ${p}
+      <i class="ph-bold ph-x" style="cursor:pointer; color:var(--danger)" onclick="wikiRemovePrinter('${p}')"></i>
+    </div>
+  `).join('');
 }
 
 async function loadWikiData() {
@@ -746,7 +807,10 @@ function openWikiModal(id = null, isOwner = true) {
   document.getElementById('wSlicer').value = 'Bambu Studio';
   document.getElementById('wContent').value = '';
   document.getElementById('wMediaContainer').innerHTML = '';
-  document.querySelectorAll('.chk-printer').forEach(chk => chk.checked = false);
+  document.getElementById('wPrinterBrand').value = '';
+  document.getElementById('wPrinterModel').innerHTML = '<option value="">Selecione uma marca primeiro</option>';
+  wikiSelectedPrinters = [];
+  renderSelectedPrinters();
   
   if(id) {
     const entry = allEntries.find(e => e.id === id);
@@ -765,12 +829,8 @@ function openWikiModal(id = null, isOwner = true) {
       
       document.getElementById('wContent').value = entry.content || '';
       
-      if(entry.printers_compat) {
-        entry.printers_compat.forEach(p => {
-          const chk = document.querySelector(`.chk-printer[value="${p}"]`);
-          if(chk) chk.checked = true;
-        });
-      }
+      wikiSelectedPrinters = entry.printers_compat ? [...entry.printers_compat] : [];
+      renderSelectedPrinters();
       
       renderSlicerForm(entry.content_json);
       previewMedia();
@@ -940,7 +1000,7 @@ async function saveWiki() {
   const slicer = document.getElementById('wSlicer').value;
   const content = document.getElementById('wContent').value.trim();
   
-  const selPrinters = Array.from(document.querySelectorAll('.chk-printer:checked')).map(c => c.value);
+  const selPrinters = wikiSelectedPrinters;
   const contentJson = getSlicerJson();
 
   if(!title || !cat) {
