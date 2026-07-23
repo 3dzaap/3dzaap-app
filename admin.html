@@ -568,26 +568,34 @@
         <!-- ── KPI CARDS ──────────────────────────────── -->
         <div class="kpi-grid">
           <div class="kpi-card" style="animation-delay:.05s">
-            <div class="kpi-icon"><i class="ph-bold ph-buildings"></i></div>
-            <div class="kpi-val" id="kpiCompanies">—</div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+              <div class="kpi-icon" style="margin-bottom:0;"><i class="ph-bold ph-buildings"></i></div>
+              <div class="kpi-val" id="kpiCompanies">—</div>
+            </div>
             <div class="kpi-lbl">Empresas ativas</div>
             <div class="kpi-delta" id="kpiCompaniesD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.1s">
-            <div class="kpi-icon"><i class="ph-bold ph-currency-eur"></i></div>
-            <div class="kpi-val" id="kpiMrr">—</div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+              <div class="kpi-icon" style="margin-bottom:0;"><i class="ph-bold ph-currency-eur"></i></div>
+              <div class="kpi-val" id="kpiMrr">—</div>
+            </div>
             <div class="kpi-lbl">MRR estimado</div>
             <div class="kpi-delta" id="kpiMrrD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.15s">
-            <div class="kpi-icon"><i class="ph-bold ph-hourglass"></i></div>
-            <div class="kpi-val" id="kpiTrials">—</div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+              <div class="kpi-icon" style="margin-bottom:0;"><i class="ph-bold ph-hourglass"></i></div>
+              <div class="kpi-val" id="kpiTrials">—</div>
+            </div>
             <div class="kpi-lbl">Em trial</div>
             <div class="kpi-delta" id="kpiTrialsD"></div>
           </div>
           <div class="kpi-card" style="animation-delay:.2s">
-            <div class="kpi-icon"><i class="ph-bold ph-warning-octagon"></i></div>
-            <div class="kpi-val" id="kpiPastDue">—</div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+              <div class="kpi-icon" style="margin-bottom:0;"><i class="ph-bold ph-warning-octagon"></i></div>
+              <div class="kpi-val" id="kpiPastDue">—</div>
+            </div>
             <div class="kpi-lbl">Pagamentos em atraso</div>
             <div class="kpi-delta" id="kpiPastDueD"></div>
           </div>
@@ -1718,9 +1726,10 @@ function renderCustomersTable(data) {
     const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
 
     // ── Bandeira do País (via múltiplas fontes) ───────────
-    const curr     = (c.config?.currency || '').toUpperCase();
-    const cfgLang  = (c.config?.lang || '').toLowerCase();
-    const ownerMeta = _authMap[c.owner_id] || {};
+    const curr       = (c.config?.currency || '').toUpperCase();
+    const cfgLang    = (c.config?.lang || '').toLowerCase();
+    const cfgCountry = (c.config?.country || '').toLowerCase();
+    const ownerMeta  = _authMap[c.owner_id] || {};
     const ownerEmail = (ownerMeta.email || '').toLowerCase();
     const metaLang   = (ownerMeta.raw_user_meta_data?.lang || ownerMeta.raw_user_meta_data?.language || '').toLowerCase();
     const metaPhone  = (ownerMeta.raw_user_meta_data?.phone || ownerMeta.phone || '');
@@ -1728,7 +1737,12 @@ function renderCustomersTable(data) {
     // Consolidate all language signals (prefer most specific)
     const langSignal = cfgLang || metaLang || '';
 
-    function detectFlag(lang, currency, email, phone) {
+    function detectFlag(lang, currency, email, phone, countryCode) {
+      if (countryCode === 'br') return '🇧🇷';
+      if (countryCode === 'us') return '🇺🇸';
+      if (countryCode === 'uk') return '🇬🇧';
+      if (countryCode === 'es') return '🇪🇸';
+      if (countryCode === 'pt') return '🇵🇹';
       // Brazil
       if (currency === 'BRL') return '🇧🇷';
       if (lang === 'pt-br') return '🇧🇷';
@@ -1764,7 +1778,7 @@ function renderCustomersTable(data) {
       return '🇵🇹';
     }
 
-    let flag = detectFlag(langSignal, curr, ownerEmail, metaPhone);
+    let flag = detectFlag(langSignal, curr, ownerEmail, metaPhone, cfgCountry);
 
     const displayCurr = curr || 'EUR';
 

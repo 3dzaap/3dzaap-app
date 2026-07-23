@@ -79,7 +79,7 @@ const Auth = {
   /**
    * Cria a empresa para um utilizador já autenticado (Email confirmado ou Social)
    */
-  async completeOnboarding({ userId, companyName, slug, plan, config, signature, logo, initFilament, initPrinter, affiliateRef }) {
+  async completeOnboarding({ userId, companyName, slug, country, plan, config, signature, logo, initFilament, initPrinter, affiliateRef }) {
     if (!userId) {
       const { data: { user } } = await _sb.auth.getUser();
       userId = user?.id;
@@ -104,10 +104,9 @@ const Auth = {
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      if (affiliateRef) {
-        config = config || {};
-        config.affiliateRef = affiliateRef;
-      }
+      config = config || {};
+      if (country) config.country = country;
+      if (affiliateRef) config.affiliateRef = affiliateRef;
 
       const { data: rpcData, error: rpcErr } = await _sb
         .rpc('create_company_for_user', {
