@@ -1717,19 +1717,54 @@ function renderCustomersTable(data) {
 
     const displayStatus = subStatus === 'active_man' ? 'MANUAL' : subStatus.toUpperCase();
 
-    // ── Bandeira do País (via config.currency ou lang) ───────────
-    let flag = '🇵🇹'; // Default
-    const curr = (c.config && c.config.currency) ? c.config.currency.toUpperCase() : '';
-    const lang = (c.config && c.config.lang) ? c.config.lang.toLowerCase() : '';
-    
-    if (curr === 'BRL' || lang === 'pt-br') flag = '🇧🇷';
-    else if (curr === 'USD' || lang === 'en-us') flag = '🇺🇸';
-    else if (curr === 'GBP' || lang === 'en-gb') flag = '🇬🇧';
-    else if (lang.startsWith('es')) flag = '🇪🇸';
-    else if (curr === 'EUR' && lang && lang !== 'pt-pt') flag = '🇪🇺';
-    
-    const ownerEmail = (_authMap[c.owner_id]?.email || '').toLowerCase();
-    if (ownerEmail.endsWith('.br') || ownerEmail.includes('.com.br')) flag = '🇧🇷';
+    // ── Bandeira do País (via múltiplas fontes) ───────────
+    const curr     = (c.config?.currency || '').toUpperCase();
+    const cfgLang  = (c.config?.lang || '').toLowerCase();
+    const ownerMeta = _authMap[c.owner_id] || {};
+    const ownerEmail = (ownerMeta.email || '').toLowerCase();
+    const metaLang   = (ownerMeta.raw_user_meta_data?.lang || ownerMeta.raw_user_meta_data?.language || '').toLowerCase();
+    const metaPhone  = (ownerMeta.raw_user_meta_data?.phone || ownerMeta.phone || '');
+
+    // Consolidate all language signals (prefer most specific)
+    const langSignal = cfgLang || metaLang || '';
+
+    function detectFlag(lang, currency, email, phone) {
+      // Brazil
+      if (currency === 'BRL') return '🇧🇷';
+      if (lang === 'pt-br') return '🇧🇷';
+      if (email.endsWith('.br') || email.includes('.com.br')) return '🇧🇷';
+      if (phone.startsWith('+55')) return '🇧🇷';
+      // USA
+      if (currency === 'USD' || lang === 'en-us') return '🇺🇸';
+      if (phone.startsWith('+1')) return '🇺🇸';
+      // UK
+      if (currency === 'GBP' || lang === 'en-gb' || lang === 'en-uk') return '🇬🇧';
+      if (phone.startsWith('+44')) return '🇬🇧';
+      // Spain
+      if (lang.startsWith('es') && !lang.includes('mx') && !lang.includes('ar')) return '🇪🇸';
+      if (phone.startsWith('+34')) return '🇪🇸';
+      // Mexico
+      if (lang === 'es-mx') return '🇲🇽';
+      if (phone.startsWith('+52')) return '🇲🇽';
+      // Argentina
+      if (lang === 'es-ar') return '🇦🇷';
+      if (phone.startsWith('+54')) return '🇦🇷';
+      // Germany
+      if (lang === 'de' || lang.startsWith('de-')) return '🇩🇪';
+      if (phone.startsWith('+49')) return '🇩🇪';
+      // France
+      if (lang === 'fr' || lang.startsWith('fr-')) return '🇫🇷';
+      if (phone.startsWith('+33')) return '🇫🇷';
+      // Italy
+      if (lang === 'it' || lang.startsWith('it-')) return '🇮🇹';
+      if (phone.startsWith('+39')) return '🇮🇹';
+      // EU (EUR but not PT)
+      if (currency === 'EUR' && lang && lang !== 'pt-pt') return '🇪🇺';
+      // Portugal (default fallback)
+      return '🇵🇹';
+    }
+
+    let flag = detectFlag(langSignal, curr, ownerEmail, metaPhone);
 
     const displayCurr = curr || 'EUR';
 
