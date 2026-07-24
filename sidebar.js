@@ -289,7 +289,7 @@ const Sidebar = (() => {
                   if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.ready.then(reg => {
                       reg.showNotification('Novo Registo no 3DZAAP', {
-                        body: `Existem ${count} novos cadastros de empresas pendentes.`,
+                        body: `Existem ${count} novos cadastros de empresas.`,
                         icon: '/assets/icon-192.png',
                         badge: '/assets/icon-192.png',
                         tag: 'admin-new-company'
@@ -297,7 +297,7 @@ const Sidebar = (() => {
                     });
                   } else {
                     new Notification('Novo Registo no 3DZAAP', {
-                      body: `Existem ${count} novos cadastros de empresas pendentes.`,
+                      body: `Existem ${count} novos cadastros de empresas.`,
                       icon: '/assets/icon-192.png'
                     });
                   }
