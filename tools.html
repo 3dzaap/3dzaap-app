@@ -97,6 +97,27 @@
   border-radius: var(--rl);
   overflow-x: auto;
   box-shadow: var(--sh);
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+.tools-nav-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+.tools-nav-tabs::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 4px;
+}
+@media (max-width: 768px) {
+  .tools-nav-tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .tools-nav-tab {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
 }
 .tools-nav-tab {
   display: inline-flex;
