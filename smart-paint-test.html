@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3DZAAP Paint — Estúdio de Pintura 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0f0f13;
+            --bg-card: #1a1a24;
+            --bg-panel: #16161e;
+            --border: rgba(255,255,255,0.08);
+            --text: #f0f0f5;
+            --text-muted: #8888aa;
+            --blue: #3b8fd4;
+            --purple: #8b5cf6;
+            --panel-w: 280px;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ───────────── TOPBAR ───────────── */
+        #topbar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 52px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            z-index: 100;
+        }
+        #topbar .logo {
+            font-weight: 700;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #3b8fd4, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+        #topbar .sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+        .topbar-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 6px;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent; color: var(--text-muted);
+            transition: all 0.15s;
+        }
+        .topbar-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .topbar-btn.primary {
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            border-color: transparent; color: #fff;
+        }
+        .topbar-btn.primary:hover { opacity: 0.85; }
+        .topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+        /* ───────────── CANVAS ───────────── */
+        #canvas-container {
+            position: absolute;
+            top: 52px; left: 0; right: var(--panel-w); bottom: 0;
+        }
+        #canvas-container canvas { display: block; }
+
+        /* ───────────── DROP OVERLAY ───────────── */
+        #drop-overlay {
+            position: absolute;
+            top: 52px; left: 0; right: var(--panel-w); bottom: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 16px;
+            z-index: 10;
+        }
+        #drop-overlay i { font-size: 3rem; color: var(--text-muted); }
+        #drop-overlay h2 { font-size: 1.3rem; color: var(--text-muted); }
+        #drop-overlay p { font-size: 0.9rem; color: rgba(136,136,170,0.7); }
+        #drop-overlay.drag-active { background: rgba(59,143,212,0.06); border: 2px dashed var(--blue); }
+
+        /* ───────────── SIDE PANEL ───────────── */
+        #side-panel {
+            position: absolute;
+            top: 52px; right: 0; bottom: 0;
+            width: var(--panel-w);
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .panel-section h4 {
+            font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.08em;
+            color: var(--text-muted); margin-bottom: 10px;
+        }
+
+        /* Color palette */
+        .color-swatches {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+        }
+        .swatch {
+            width: 100%; aspect-ratio: 1;
+            border-radius: 6px; cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.12s, border-color 0.12s;
+        }
+        .swatch:hover { transform: scale(1.12); }
+        .swatch.active { border-color: white; transform: scale(1.08); }
+
+        /* Custom color */
+        .color-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+        .color-row input[type="color"] {
+            width: 36px; height: 36px; padding: 2px;
+            border-radius: 6px; border: 1px solid var(--border);
+            background: var(--bg-card); cursor: pointer;
+        }
+        .color-row label { font-size: 0.82rem; color: var(--text-muted); }
+
+        /* Angle slider */
+        .slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+        .slider-wrap .slider-header { display: flex; justify-content: space-between; font-size: 0.82rem; }
+        .slider-wrap .slider-header span { color: var(--text-muted); }
+        .slider-wrap .slider-header strong { color: var(--text); }
+        input[type="range"] {
+            width: 100%; -webkit-appearance: none;
+            height: 4px; border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            background: var(--blue); border-radius: 50%;
+        }
+
+        /* Layers */
+        #layers-list { display: flex; flex-direction: column; gap: 6px; }
+        .layer-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 10px; border-radius: 6px;
+            background: var(--bg-card); font-size: 0.82rem;
+            cursor: pointer; border: 1px solid transparent;
+            transition: border-color 0.15s;
+        }
+        .layer-item.active { border-color: var(--blue); }
+        .layer-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .layer-name { flex: 1; }
+        .layer-count { color: var(--text-muted); font-size: 0.75rem; }
+        .layer-export {
+            padding: 3px 8px; border-radius: 4px;
+            background: rgba(59,143,212,0.15); color: var(--blue);
+            font-size: 0.72rem; font-weight: 700; cursor: pointer;
+            border: none; white-space: nowrap;
+        }
+        .layer-export:hover { background: rgba(59,143,212,0.3); }
+
+        /* Action buttons */
+        .panel-btn {
+            width: 100%; padding: 9px 12px; border-radius: 6px;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--text); display: flex; align-items: center;
+            gap: 8px; transition: all 0.15s;
+        }
+        .panel-btn:hover { background: rgba(255,255,255,0.05); }
+        .panel-btn.danger:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #ef4444; }
+
+        /* ───────────── LOADING SPINNER ───────────── */
+        #loading {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px 28px; border-radius: 12px;
+            font-size: 0.95rem; z-index: 200;
+            flex-direction: column; align-items: center; gap: 10px;
+        }
+        #loading.show { display: flex; }
+        .spinner {
+            width: 28px; height: 28px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ───────────── STATUS BAR ───────────── */
+        #status-bar {
+            position: absolute; bottom: 10px; left: 10px;
+            background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 0.75rem; color: var(--text-muted);
+        }
+
+        /* mode toggle */
+        .mode-tabs { display: flex; gap: 4px; background: var(--bg-card); border-radius: 8px; padding: 3px; }
+        .mode-tab {
+            flex: 1; padding: 6px; border-radius: 6px; text-align: center;
+            font-size: 0.78rem; font-weight: 600; cursor: pointer;
+            color: var(--text-muted); border: none; background: transparent;
+            transition: all 0.15s;
+        }
+        .mode-tab.active { background: var(--blue); color: #fff; }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <span class="logo"><i class="ph-bold ph-paint-brush"></i> 3DZAAP Paint</span>
+    <div class="sep"></div>
+    <button class="topbar-btn" onclick="document.getElementById('fileInput').click()">
+        <i class="ph-bold ph-upload-simple"></i> Carregar STL
+    </button>
+    <input type="file" id="fileInput" accept=".stl,.obj" style="display:none">
+    <div class="topbar-right">
+        <button class="topbar-btn" onclick="undoLastPaint()" title="Desfazer (Ctrl+Z)">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i> Desfazer
+        </button>
+        <button class="topbar-btn" onclick="resetColors()" title="Limpar pintura">
+            <i class="ph-bold ph-eraser"></i> Limpar
+        </button>
+        <button class="topbar-btn primary" onclick="exportAllLayers()">
+            <i class="ph-bold ph-download-simple"></i> Exportar STLs
+        </button>
+    </div>
+</div>
+
+<!-- CANVAS / DROP ZONE -->
+<div id="drop-overlay" id="dropZone">
+    <i class="ph-bold ph-file-3d"></i>
+    <h2>Arrasta um ficheiro STL aqui</h2>
+    <p>Ou clica no botão "Carregar STL" no topo</p>
+</div>
+<div id="canvas-container"></div>
+
+<!-- LOADING -->
+<div id="loading">
+    <div class="spinner"></div>
+    <span>A processar malha...</span>
+</div>
+
+<!-- STATUS BAR -->
+<div id="status-bar">Sem modelo carregado</div>
+
+<!-- SIDE PANEL -->
+<div id="side-panel">
+
+    <!-- MODE -->
+    <div class="panel-section">
+        <h4>Modo</h4>
+        <div class="mode-tabs">
+            <button class="mode-tab active" id="mode-paint" onclick="setMode('paint')">
+                <i class="ph-bold ph-paint-brush"></i> Pintura
+            </button>
+            <button class="mode-tab" id="mode-view" onclick="setMode('view')">
+                <i class="ph-bold ph-eye"></i> Visualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- ANGLE TOLERANCE -->
+    <div class="panel-section">
+        <h4>Sensibilidade</h4>
+        <div class="slider-wrap">
+            <div class="slider-header">
+                <span>Ângulo de Tolerância</span>
+                <strong id="angleDisplay">30°</strong>
+            </div>
+            <input type="range" id="angleSlider" min="1" max="89" value="30">
+            <p style="font-size:0.73rem; color: var(--text-muted); line-height:1.4;">
+                Menor = mais preciso na seleção.<br>Maior = seleciona mais área com um clique.
+            </p>
+        </div>
+    </div>
+
+    <!-- COLOR PALETTE -->
+    <div class="panel-section">
+        <h4>Cor do Pincel</h4>
+        <div class="color-swatches" id="colorSwatches"></div>
+        <div class="color-row">
+            <input type="color" id="customColor" value="#8b5cf6">
+            <label>Cor personalizada</label>
+        </div>
+    </div>
+
+    <!-- LAYERS / EXPORTS -->
+    <div class="panel-section">
+        <h4>Partes Pintadas <span id="layerCount" style="color:var(--text-muted); font-weight:400;">(0)</span></h4>
+        <div id="layers-list">
+            <p style="font-size:0.8rem; color: var(--text-muted);">
+                Clica no modelo para criar partes.
+            </p>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="panel-section">
+        <h4>Ações</h4>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="panel-btn" onclick="resetColors()">
+                <i class="ph-bold ph-eraser"></i> Limpar toda a pintura
+            </button>
+            <button class="panel-btn danger" onclick="clearModel()">
+                <i class="ph-bold ph-trash"></i> Remover modelo
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Three.js Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// 3DZAAP PAINT — Smart Flood Fill Engine
+// ═══════════════════════════════════════════════════════
+
+const PALETTE = [
+    '#ef4444','#f97316','#f59e0b','#22c55e',
+    '#10b981','#3b82f6','#6366f1','#8b5cf6',
+    '#ec4899','#f43f5e','#ffffff','#94a3b8'
+];
+
+let scene, camera, renderer, controls, raycaster, mouse;
+let mesh, geometry;
+let faceToFaces = [], faceNormals = [];
+let toleranceAngle = 30 * Math.PI / 180;
+let currentColor = new THREE.Color(PALETTE[5]);
+let activeMode = 'paint';
+let undoStack = [];
+let paintedLayers = {}; // { '#hex': { faceIndices: Set, name: 'Parte 1' } }
+let modelName = 'modelo';
+
+// ─── Setup Palette ─────────────────────────────────────
+const swatchContainer = document.getElementById('colorSwatches');
+PALETTE.forEach((hex, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (i === 5 ? ' active' : '');
+    sw.style.background = hex;
+    sw.dataset.hex = hex;
+    sw.title = hex;
+    sw.onclick = () => selectSwatch(sw, hex);
+    swatchContainer.appendChild(sw);
+});
+
+document.getElementById('customColor').addEventListener('input', e => {
+    const hex = e.target.value;
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    currentColor.set(hex);
+});
+
+document.getElementById('angleSlider').addEventListener('input', e => {
+    toleranceAngle = parseInt(e.target.value) * Math.PI / 180;
+    document.getElementById('angleDisplay').textContent = e.target.value + '°';
+});
+
+function selectSwatch(sw, hex) {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    currentColor.set(hex);
+    document.getElementById('customColor').value = hex;
+}
+
+// ─── Three.js Init ─────────────────────────────────────
+function init3D() {
+    const container = document.getElementById('canvas-container');
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111118);
+
+    // Grid
+    const grid = new THREE.GridHelper(200, 20, 0x222233, 0x1a1a28);
+    scene.add(grid);
+
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 5000);
+    camera.position.set(0, -150, 120);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const d1 = new THREE.DirectionalLight(0xffffff, 0.7);
+    d1.position.set(100, 200, 100);
+    scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0x8899ff, 0.3);
+    d2.position.set(-100, -50, -100);
+    scene.add(d2);
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+
+    window.addEventListener('resize', onResize);
+    renderer.domElement.addEventListener('click', onCanvasClick);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && e.key === 'z') undoLastPaint();
+    });
+
+    // Drag & Drop
+    const dropOverlay = document.getElementById('drop-overlay');
+    document.addEventListener('dragover', e => { e.preventDefault(); dropOverlay.classList.add('drag-active'); });
+    document.addEventListener('dragleave', () => dropOverlay.classList.remove('drag-active'));
+    document.addEventListener('drop', e => {
+        e.preventDefault();
+        dropOverlay.classList.remove('drag-active');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.stl')) loadFile(file);
+    });
+
+    document.getElementById('fileInput').addEventListener('change', e => {
+        if (e.target.files[0]) loadFile(e.target.files[0]);
+    });
+
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+function onResize() {
+    const c = document.getElementById('canvas-container');
+    camera.aspect = c.clientWidth / c.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(c.clientWidth, c.clientHeight);
+}
+
+// ─── File Loading ───────────────────────────────────────
+function loadFile(file) {
+    modelName = file.name.replace('.stl', '');
+    showLoading(true);
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const loader = new THREE.STLLoader();
+            const rawGeom = loader.parse(e.target.result);
+            processGeometry(rawGeom);
+        } catch (err) {
+            console.error(err);
+            setStatus('Erro ao carregar o ficheiro.');
+        } finally {
+            showLoading(false);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function processGeometry(rawGeom) {
+    if (mesh) { scene.remove(mesh); mesh = null; }
+    undoStack = [];
+    paintedLayers = {};
+    updateLayersPanel();
+
+    // Merge vertices to get indexed geometry (required for adjacency)
+    geometry = THREE.BufferGeometryUtils.mergeVertices(rawGeom, 1e-4);
+    geometry.computeVertexNormals();
+
+    const count = geometry.attributes.position.count;
+    const colors = new Float32Array(count * 3).fill(0.72);
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const mat = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.55,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+    });
+
+    mesh = new THREE.Mesh(geometry, mat);
+
+    // Center model
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    mesh.position.sub(center);
+    // Lift above grid
+    const h = (box.max.y - box.min.y) / 2;
+    mesh.position.y += h;
+
+    scene.add(mesh);
+    document.getElementById('drop-overlay').style.display = 'none';
+
+    buildAdjacencyGraph();
+
+    const faceCount = geometry.index.count / 3;
+    setStatus(`${modelName} — ${faceCount.toLocaleString()} faces`);
+}
+
+// ─── Adjacency Graph ────────────────────────────────────
+function buildAdjacencyGraph() {
+    const index = geometry.index.array;
+    const pos = geometry.attributes.position.array;
+    const numFaces = index.length / 3;
+
+    faceToFaces = new Array(numFaces).fill(null).map(() => []);
+    faceNormals = new Array(numFaces);
+
+    const edgeMap = new Map();
+    const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
+    const cb = new THREE.Vector3(), ab = new THREE.Vector3();
+
+    for (let f = 0; f < numFaces; f++) {
+        const i0 = index[f*3], i1 = index[f*3+1], i2 = index[f*3+2];
+
+        vA.fromArray(pos, i0*3);
+        vB.fromArray(pos, i1*3);
+        vC.fromArray(pos, i2*3);
+        cb.subVectors(vC, vB);
+        ab.subVectors(vA, vB);
+        faceNormals[f] = cb.cross(ab).normalize().clone();
+
+        const edges = [
+            [Math.min(i0,i1), Math.max(i0,i1)],
+            [Math.min(i1,i2), Math.max(i1,i2)],
+            [Math.min(i2,i0), Math.max(i2,i0)]
+        ];
+        for (const [a, b] of edges) {
+            const key = `${a}_${b}`;
+            if (!edgeMap.has(key)) edgeMap.set(key, []);
+            edgeMap.get(key).push(f);
+        }
+    }
+
+    for (const faces of edgeMap.values()) {
+        if (faces.length === 2) {
+            faceToFaces[faces[0]].push(faces[1]);
+            faceToFaces[faces[1]].push(faces[0]);
+        }
+    }
+}
+
+// ─── Click Handling ─────────────────────────────────────
+let isRotating = false;
+let mouseDownPos = { x: 0, y: 0 };
+
+function onMouseMove(e) {
+    const dx = Math.abs(e.clientX - mouseDownPos.x);
+    const dy = Math.abs(e.clientY - mouseDownPos.y);
+    if (dx > 3 || dy > 3) isRotating = true;
+}
+
+renderer && renderer.domElement.addEventListener('mousedown', e => {
+    mouseDownPos = { x: e.clientX, y: e.clientY };
+    isRotating = false;
+});
+
+function onCanvasClick(e) {
+    if (!mesh || activeMode !== 'paint' || isRotating) return;
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(mesh);
+    if (hits.length > 0) {
+        smartFloodFill(hits[0].faceIndex);
+    }
+}
+
+// ─── Smart Flood Fill ───────────────────────────────────
+function smartFloodFill(startFace) {
+    if (!geometry || !geometry.index) return;
+
+    const index = geometry.index.array;
+    const colors = geometry.attributes.color.array;
+    const painted = [];
+
+    const queue = [startFace];
+    const visited = new Set([startFace]);
+
+    while (queue.length > 0) {
+        const f = queue.shift();
+        const i0 = index[f*3], i1 = index[f*3+1], i2 = index[f*3+2];
+
+        for (const v of [i0, i1, i2]) {
+            painted.push({ v, r: colors[v*3], g: colors[v*3+1], b: colors[v*3+2] });
+            colors[v*3]   = currentColor.r;
+            colors[v*3+1] = currentColor.g;
+            colors[v*3+2] = currentColor.b;
+        }
+
+        const n1 = faceNormals[f];
+        for (const neighbor of faceToFaces[f]) {
+            if (!visited.has(neighbor)) {
+                const dot = Math.max(-1, Math.min(1, n1.dot(faceNormals[neighbor])));
+                if (Math.acos(dot) <= toleranceAngle) {
+                    visited.add(neighbor);
+                    queue.push(neighbor);
+                }
+            }
+        }
+    }
+
+    geometry.attributes.color.needsUpdate = true;
+
+    // Track undo
+    undoStack.push(painted);
+
+    // Track layer
+    const hex = '#' + currentColor.getHexString();
+    if (!paintedLayers[hex]) {
+        paintedLayers[hex] = { name: `Parte ${Object.keys(paintedLayers).length + 1}`, faceCount: 0, hex };
+    }
+    paintedLayers[hex].faceCount += visited.size;
+    updateLayersPanel();
+
+    setStatus(`Pintou ${visited.size.toLocaleString()} faces`);
+}
+
+// ─── Undo ───────────────────────────────────────────────
+function undoLastPaint() {
+    if (!undoStack.length || !geometry) return;
+    const last = undoStack.pop();
+    const colors = geometry.attributes.color.array;
+    last.forEach(({ v, r, g, b }) => {
+        colors[v*3] = r; colors[v*3+1] = g; colors[v*3+2] = b;
+    });
+    geometry.attributes.color.needsUpdate = true;
+    setStatus('Pintura desfeita');
+}
+
+// ─── Reset ──────────────────────────────────────────────
+function resetColors() {
+    if (!geometry) return;
+    const colors = geometry.attributes.color.array;
+    colors.fill(0.72);
+    geometry.attributes.color.needsUpdate = true;
+    undoStack = [];
+    paintedLayers = {};
+    updateLayersPanel();
+    setStatus('Pintura limpa');
+}
+
+function clearModel() {
+    if (mesh) { scene.remove(mesh); mesh = null; geometry = null; }
+    document.getElementById('drop-overlay').style.display = 'flex';
+    paintedLayers = {};
+    undoStack = [];
+    updateLayersPanel();
+    setStatus('Sem modelo carregado');
+}
+
+// ─── Mode ────────────────────────────────────────────────
+function setMode(mode) {
+    activeMode = mode;
+    controls.enabled = true;
+    document.getElementById('mode-paint').classList.toggle('active', mode === 'paint');
+    document.getElementById('mode-view').classList.toggle('active', mode === 'view');
+    renderer.domElement.style.cursor = mode === 'paint' ? 'crosshair' : 'grab';
+}
+
+// ─── Layers Panel ────────────────────────────────────────
+function updateLayersPanel() {
+    const list = document.getElementById('layers-list');
+    const keys = Object.keys(paintedLayers);
+    document.getElementById('layerCount').textContent = `(${keys.length})`;
+
+    if (keys.length === 0) {
+        list.innerHTML = '<p style="font-size:0.8rem; color: var(--text-muted);">Clica no modelo para criar partes.</p>';
+        return;
+    }
+
+    list.innerHTML = keys.map(hex => `
+        <div class="layer-item">
+            <div class="layer-dot" style="background:${hex}"></div>
+            <span class="layer-name">${paintedLayers[hex].name}</span>
+            <span class="layer-count">${paintedLayers[hex].faceCount.toLocaleString()}</span>
+            <button class="layer-export" onclick="exportLayerSTL('${hex}')">STL</button>
+        </div>
+    `).join('');
+}
+
+// ─── STL Export ─────────────────────────────────────────
+function exportLayerSTL(targetHex) {
+    if (!geometry) return;
+    const col = new THREE.Color(targetHex);
+    const eps = 0.01;
+
+    const index = geometry.index.array;
+    const pos = geometry.attributes.position.array;
+    const colors = geometry.attributes.color.array;
+
+    let stlContent = 'solid layer\n';
+    const norm = new THREE.Vector3();
+    const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
+    const cb = new THREE.Vector3(), ab = new THREE.Vector3();
+
+    for (let f = 0; f < index.length / 3; f++) {
+        const i0 = index[f*3], i1 = index[f*3+1], i2 = index[f*3+2];
+        const r = colors[i0*3], g = colors[i0*3+1], b = colors[i0*3+2];
+
+        if (Math.abs(r - col.r) > eps || Math.abs(g - col.g) > eps || Math.abs(b - col.b) > eps) continue;
+
+        vA.fromArray(pos, i0*3);
+        vB.fromArray(pos, i1*3);
+        vC.fromArray(pos, i2*3);
+        cb.subVectors(vC, vB); ab.subVectors(vA, vB);
+        norm.crossVectors(cb, ab).normalize();
+
+        stlContent += `  facet normal ${norm.x.toFixed(6)} ${norm.y.toFixed(6)} ${norm.z.toFixed(6)}\n`;
+        stlContent += `    outer loop\n`;
+        stlContent += `      vertex ${vA.x.toFixed(6)} ${vA.y.toFixed(6)} ${vA.z.toFixed(6)}\n`;
+        stlContent += `      vertex ${vB.x.toFixed(6)} ${vB.y.toFixed(6)} ${vB.z.toFixed(6)}\n`;
+        stlContent += `      vertex ${vC.x.toFixed(6)} ${vC.y.toFixed(6)} ${vC.z.toFixed(6)}\n`;
+        stlContent += `    endloop\n  endfacet\n`;
+    }
+    stlContent += 'endsolid layer\n';
+
+    const blob = new Blob([stlContent], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${modelName}_${targetHex.replace('#', '')}.stl`;
+    a.click();
+    setStatus(`Exportado: ${modelName}_${targetHex.replace('#', '')}.stl`);
+}
+
+function exportAllLayers() {
+    if (!paintedLayers || Object.keys(paintedLayers).length === 0) {
+        alert('Ainda não pintaste nenhuma parte! Clica no modelo com uma cor para começar.');
+        return;
+    }
+    Object.keys(paintedLayers).forEach(hex => exportLayerSTL(hex));
+}
+
+// ─── Utils ───────────────────────────────────────────────
+function setStatus(msg) {
+    document.getElementById('status-bar').textContent = msg;
+}
+function showLoading(show) {
+    document.getElementById('loading').classList.toggle('show', show);
+}
+
+// ─── Boot ────────────────────────────────────────────────
+window.addEventListener('load', () => {
+    init3D();
+
+    // Fix: mouse events must be after renderer is created
+    renderer.domElement.addEventListener('mousedown', e => {
+        mouseDownPos = { x: e.clientX, y: e.clientY };
+        isRotating = false;
+    });
+    renderer.domElement.addEventListener('mousemove', e => {
+        const dx = Math.abs(e.clientX - mouseDownPos.x);
+        const dy = Math.abs(e.clientY - mouseDownPos.y);
+        if (dx > 3 || dy > 3) isRotating = true;
+    });
+});
+</script>
+</body>
+</html>
