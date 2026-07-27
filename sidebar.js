@@ -31,6 +31,7 @@ const Sidebar = (() => {
         { id: 'dashboard',   i18nKey: 'nav.home',       href: 'dashboard.html',  icon: '<i class="ph-bold ph-house"></i>', label: 'Início' },
         { id: 'calculator',  i18nKey: 'nav.calculator', href: 'calculator.html', icon: '<i class="ph-bold ph-calculator"></i>', label: 'Calculadora' },
         { id: 'orders',      i18nKey: 'nav.orders',     href: 'orders.html',     icon: '<i class="ph-bold ph-package"></i>', label: 'Pedidos' },
+        { id: 'pdv',         i18nKey: 'nav.pdv',        href: 'pdv.html',        icon: '<i class="ph-bold ph-storefront"></i>', label: 'Consignados', lockId: 'navLockPdv' },
         { id: 'clients',     i18nKey: 'nav.clients',    href: 'clients.html',    icon: '<i class="ph-bold ph-users"></i>', label: 'Clientes' },
         { id: 'financial',   i18nKey: 'nav.financial',  href: 'financial.html',  icon: '<i class="ph-bold ph-currency-dollar"></i>', label: 'Financeiro',   lockId: 'navLockFinancial' },
       ]
@@ -327,26 +328,26 @@ const Sidebar = (() => {
 
   // ── FEATURE LOCKS ─────────────────────────────────────────
   const PLAN_FEATURES = {
-    trial:        { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
-    starter:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, settings:true },
-    starter_ano:  { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, settings:true },
-    pro:          { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  settings:true },
-    pro_ano:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  settings:true },
-    business:     { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
-    business_ano: { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  settings:true },
+    trial:        { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  pdv:true, settings:true },
+    starter:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, pdv:true, settings:true },
+    starter_ano:  { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:false, pdv:true, settings:true },
+    pro:          { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  pdv:true, settings:true },
+    pro_ano:      { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:false, backoffice:true,  pdv:true, settings:true },
+    business:     { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  pdv:true, settings:true },
+    business_ano: { dashboard:true, calculator:true, materials:true, printers:true, orders:true, clients:true, products:true, financial:true,  backoffice:true,  pdv:true, settings:true },
   };
 
   const PLAN_LIMITS = {
-    trial:        { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
-    starter:      { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
-    starter_ano:  { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5 },
-    pro:          { materials: null, printers: null, orders: null, clients: null, products: null },
-    pro_ano:      { materials: null, printers: null, orders: null, clients: null, products: null },
-    business:     { materials: null, printers: null, orders: null, clients: null, products: null },
-    business_ano: { materials: null, printers: null, orders: null, clients: null, products: null },
+    trial:        { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5, pdv: 1 },
+    starter:      { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5, pdv: 1 },
+    starter_ano:  { materials: 5,    printers: 1,    orders: 5, clients: 5, products: 5, pdv: 1 },
+    pro:          { materials: null, printers: null, orders: null, clients: null, products: null, pdv: null },
+    pro_ano:      { materials: null, printers: null, orders: null, clients: null, products: null, pdv: null },
+    business:     { materials: null, printers: null, orders: null, clients: null, products: null, pdv: null },
+    business_ano: { materials: null, printers: null, orders: null, clients: null, products: null, pdv: null },
   };
 
-  const LOCK_LABELS = { financial:'Business', backoffice:'Pro+' };
+  const LOCK_LABELS = { financial:'Business', backoffice:'Pro+', pdv:'Pro+' };
 
   function _applyLocks(plan) {
     const features = PLAN_FEATURES[plan] || PLAN_FEATURES.trial;
