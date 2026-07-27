@@ -1030,7 +1030,7 @@ function renderBanner() {
   const plan = (state.company.plan || 'trial').replace('_ano', '');
   const t = (k, v) => window.i18n ? (window.i18n.getNestedTranslation(k, v) || '') : '';
 
-  const isExpired = state.company.trial_ends_at && new Date(state.company.trial_ends_at) < new Date();
+  const isExpired = !state.company.trial_ends_at || new Date(state.company.trial_ends_at) < new Date();
 
   // Se plano não for trial e estiver expirado: Mostrar banner Blocked!
   if (plan !== 'trial' && isExpired) {
@@ -1073,8 +1073,18 @@ function renderBanner() {
     banner.style.display = 'block';
     inner.className = 'sub-banner-inner active-banner';
     icon.innerHTML = '<i class="ph-bold ph-check-circle"></i>';
-    title.textContent = t('dash.sub_banner.starter_active') || 'Plano Starter activo';
-    sub.textContent   = t('dash.sub_banner.starter_desc') || 'Upgrade para Pro ou Business para desbloquear Pedidos e Financeiro.';
+    
+    let daysLeft = 31;
+    if (state.company.trial_ends_at) {
+        daysLeft = Math.max(0, Math.ceil((new Date(state.company.trial_ends_at) - new Date()) / (1000 * 3600 * 24)));
+    }
+    
+    title.textContent = t('dash.sub_banner.starter_active') || 'Plano Starter ativo';
+    sub.innerHTML = (t('dash.sub_banner.starter_desc') || `O plano Starter (Grátis) necessita de renovação mensal. Expira em <strong>${daysLeft} dias</strong>.`) + 
+                    `<div style="margin-top: 12px; display: flex; gap: 8px;">
+                       <button class="btn btn-outline btn-sm" onclick="renewStarterPlan()" style="border-color: rgba(255,255,255,0.3); color: inherit;">Renovar Mensalidade</button>
+                       <button class="btn btn-primary btn-sm" onclick="openBillingModal()">Fazer Upgrade (Pro/Business)</button>
+                     </div>`;
   } else if (plan === 'pro') {
     banner.style.display = 'block';
     inner.className = 'sub-banner-inner active-banner';
@@ -1826,7 +1836,7 @@ function applyFeatureGating() {
 
   let limits = { orders:true, financial:true, backoffice:true, settings:true, dashboard:true };
   
-  const isExpired = state.company.trial_ends_at && new Date(state.company.trial_ends_at) < new Date();
+  const isExpired = !state.company.trial_ends_at || new Date(state.company.trial_ends_at) < new Date();
   
   if (plan !== 'trial' && isExpired) {
     // Lock EVERYTHING
