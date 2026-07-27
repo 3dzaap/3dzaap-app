@@ -599,6 +599,14 @@
             <div class="kpi-lbl">Pagamentos em atraso</div>
             <div class="kpi-delta" id="kpiPastDueD"></div>
           </div>
+          <div class="kpi-card" style="animation-delay:.25s; border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.03);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+              <div class="kpi-icon" style="margin-bottom:0; color: #ef4444; background: rgba(239, 68, 68, 0.15);"><i class="ph-bold ph-trash"></i></div>
+              <div class="kpi-val" id="kpiDeletion">—</div>
+            </div>
+            <div class="kpi-lbl" style="color: #ef4444;">Elegíveis p/ Exclusão</div>
+            <div class="kpi-delta" id="kpiDeletionD" style="color: rgba(239, 68, 68, 0.8);">Bloqueadas > 90 dias</div>
+          </div>
         </div>
 
         <!-- ── TABS ───────────────────────────────────── -->
@@ -1648,6 +1656,27 @@ function updateKPIs() {
   const pastDue   = _customers.filter(c => c.subscription?.status === 'past_due').length;
   const mrr       = _customers.filter(c => !c.is_suspended).reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
 
+  // Deletion eligibility: Blocked for > 90 days
+  const deletionEligible = _customers.filter(c => {
+    let subStatus = c.subscription?.status;
+    const plan = c.plan || 'trial';
+    if (!subStatus) {
+      if (plan === 'trial') {
+         subStatus = new Date(c.trial_ends_at) > now ? 'trialing' : 'canceled';
+      } else {
+         subStatus = new Date(c.trial_ends_at) > now ? 'active_man' : 'blocked';
+      }
+    }
+    const isSuspended = c.is_suspended || subStatus === 'blocked';
+    if (subStatus === 'blocked' || isSuspended) {
+      if (c.trial_ends_at) {
+        const daysSinceExp = Math.floor((now - new Date(c.trial_ends_at)) / (1000*3600*24));
+        return daysSinceExp > 90;
+      }
+    }
+    return false;
+  }).length;
+
   // MRR previous period: simulate based on companies that existed 30 days ago
   const mrrPrev   = _customers.filter(c => !c.is_suspended && new Date(c.created_at) < d30)
                               .reduce((sum, c) => sum + (PLAN_MRR[c.plan] || 0), 0);
@@ -1661,6 +1690,7 @@ function updateKPIs() {
   setText('kpiMrr', '€ ' + mrr.toFixed(0));
   setText('kpiTrials', trials);
   setText('kpiPastDue', pastDue);
+  setText('kpiDeletion', deletionEligible);
 
   // ── Delta: Empresas ativas
   _setDelta('kpiCompaniesD', newThisPeriod, newPrevPeriod, v => `+${v} este mês`, v => `+${v} mês anterior`, '→ Sem novas');
@@ -1782,6 +1812,16 @@ function renderCustomersTable(data) {
 
     const displayCurr = curr || 'EUR';
 
+    let deletionBadge = '';
+    if (subStatus === 'blocked' || isSuspended) {
+      if (c.trial_ends_at) {
+        const daysSinceExp = Math.floor((new Date() - new Date(c.trial_ends_at)) / (1000*3600*24));
+        if (daysSinceExp > 90) {
+          deletionBadge = '<span style="color:#ef4444; font-size:0.65rem; font-weight:800; padding:2px 6px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); border-radius:4px; margin-left:4px;">ELEGÍVEL P/ EXCLUSÃO</span>';
+        }
+      }
+    }
+
     // ── Último Acesso (via owner_id → _authMap) ──────────
     const lastAccess    = getCompanyLastAccess(c);
     const lastRelative  = lastAccess ? fmtRelativeTime(lastAccess) : null;
@@ -1804,6 +1844,7 @@ function renderCustomersTable(data) {
         <div style="font-weight:800;color:var(--dark);font-size:.9rem; display:flex; align-items:center; gap:6px;">
           <span title="Moeda: ${displayCurr}" style="cursor:help">${flag}</span> ${escH(c.name)}
           ${c.is_suspended ? '<span style="color:#ef4444; font-size:0.65rem; font-weight:800; padding:2px 6px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); border-radius:4px;">SUSPENSA</span>' : ''}
+          ${deletionBadge}
         </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
           Owner: <span class="mono">${_authMap[c.owner_id]?.email ? escH(_authMap[c.owner_id].email) : c.id.slice(0,8)+'...'}</span>

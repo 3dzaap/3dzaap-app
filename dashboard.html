@@ -1037,8 +1037,22 @@ function renderBanner() {
     banner.style.display = 'block';
     inner.className = 'sub-banner-inner warning-banner';
     icon.innerHTML = '<i class="ph-bold ph-prohibit"></i>';
-    title.textContent = t('dash.sub_banner.overdue_active') || 'Acesso Bloqueado / Assinatura Expirada';
-    sub.textContent   = t('dash.sub_banner.overdue_desc') || 'A validade desta conta expirou. Por favor, contacte a administração.';
+
+    if (plan === 'starter') {
+      const daysSinceExp = Math.floor((new Date() - new Date(state.company.trial_ends_at)) / (1000 * 3600 * 24));
+      const daysLeft = Math.max(0, 90 - daysSinceExp);
+      
+      title.textContent = t('dash.sub_banner.starter_expired_title') || 'Plano Starter Expirado';
+      sub.innerHTML = (t('dash.sub_banner.starter_expired_desc') || 'Para continuar a utilizar o 3DZAAP, confirme a renovação mensal gratuita ou faça upgrade.') + 
+                      `<br><span style="color:#ef4444; font-weight:700; margin-top:4px; display:inline-block;">Atenção: A sua conta será excluída em ${daysLeft} dias se não for renovada.</span>
+                       <div style="margin-top: 12px; display: flex; gap: 8px;">
+                         <button class="btn btn-primary btn-sm" onclick="renewStarterPlan()">Renovar Starter (Grátis)</button>
+                         <button class="btn btn-outline btn-sm" onclick="openBillingModal()" style="border-color: rgba(255,255,255,0.3); color: inherit;">Ver Planos Pagos</button>
+                       </div>`;
+    } else {
+      title.textContent = t('dash.sub_banner.overdue_active') || 'Acesso Bloqueado / Assinatura Expirada';
+      sub.textContent   = t('dash.sub_banner.overdue_desc') || 'A validade desta conta expirou. Por favor, contacte a administração.';
+    }
     return;
   }
 
@@ -1078,6 +1092,37 @@ function dismissBanner() {
   const banner = document.getElementById('subBanner');
   banner.style.opacity='0';banner.style.transform='translateY(-8px)';banner.style.transition='all .3s var(--ease)';
   setTimeout(()=>banner.style.display='none',300);
+}
+
+async function renewStarterPlan() {
+  if (!window.supabase) return;
+  const companyId = state.company.id;
+  try {
+    const future = new Date();
+    future.setDate(future.getDate() + 31);
+    
+    // Mostra indicador de carregamento no botão
+    const btn = document.querySelector('.warning-banner .btn-primary');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) btn.textContent = 'A renovar...';
+    
+    const { error } = await supabase
+      .from('companies')
+      .update({ trial_ends_at: future.toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', companyId);
+      
+    if (error) throw error;
+    
+    // Registo de auditoria (opcional mas recomendado)
+    if (window._audit) await _audit('plan_renewal', `Plano Starter renovado por mais 31 dias`);
+    
+    window.location.reload();
+  } catch (err) {
+    console.error('Erro ao renovar plano:', err);
+    alert('Erro ao renovar o plano: ' + err.message);
+    const btn = document.querySelector('.warning-banner .btn-primary');
+    if (btn) btn.textContent = 'Renovar Starter (Grátis)';
+  }
 }
 
 // ── HEALTH SCORE ───────────────────────
