@@ -414,8 +414,23 @@ function init3D() {
     mouse = new THREE.Vector2();
 
     window.addEventListener('resize', onResize);
+
+    // ── Click detection: only fire paint if mouse didn't drag ──
+    renderer.domElement.addEventListener('mousedown', e => {
+        mouseDownPos = { x: e.clientX, y: e.clientY };
+        isMouseDown = true;
+        isRotating = false;
+    });
+    renderer.domElement.addEventListener('mousemove', e => {
+        if (!isMouseDown) return; // only track drag when button held
+        const dx = Math.abs(e.clientX - mouseDownPos.x);
+        const dy = Math.abs(e.clientY - mouseDownPos.y);
+        if (dx > 4 || dy > 4) isRotating = true;
+    });
+    renderer.domElement.addEventListener('mouseup', () => {
+        isMouseDown = false;
+    });
     renderer.domElement.addEventListener('click', onCanvasClick);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
 
     document.addEventListener('keydown', e => {
         if (e.ctrlKey && e.key === 'z') undoLastPaint();
@@ -560,18 +575,8 @@ function buildAdjacencyGraph() {
 
 // ─── Click Handling ─────────────────────────────────────
 let isRotating = false;
-let mouseDownPos = { x: 0, y: 0 };
-
-function onMouseMove(e) {
-    const dx = Math.abs(e.clientX - mouseDownPos.x);
-    const dy = Math.abs(e.clientY - mouseDownPos.y);
-    if (dx > 3 || dy > 3) isRotating = true;
-}
-
-renderer && renderer.domElement.addEventListener('mousedown', e => {
-    mouseDownPos = { x: e.clientX, y: e.clientY };
-    isRotating = false;
-});
+let isMouseDown = false;
+let mouseDownPos = { x: -9999, y: -9999 }; // start far from (0,0) to avoid false triggers
 
 function onCanvasClick(e) {
     if (!mesh || activeMode !== 'paint' || isRotating) return;
@@ -762,18 +767,7 @@ function showLoading(show) {
 
 // ─── Boot ────────────────────────────────────────────────
 window.addEventListener('load', () => {
-    init3D();
-
-    // Fix: mouse events must be after renderer is created
-    renderer.domElement.addEventListener('mousedown', e => {
-        mouseDownPos = { x: e.clientX, y: e.clientY };
-        isRotating = false;
-    });
-    renderer.domElement.addEventListener('mousemove', e => {
-        const dx = Math.abs(e.clientX - mouseDownPos.x);
-        const dy = Math.abs(e.clientY - mouseDownPos.y);
-        if (dx > 3 || dy > 3) isRotating = true;
-    });
+    init3D(); // all event listeners are registered inside init3D
 });
 </script>
 </body>
