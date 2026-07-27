@@ -1032,8 +1032,9 @@ function renderBanner() {
 
   const isExpired = state.company.trial_ends_at && new Date(state.company.trial_ends_at) < new Date();
 
-  // Se plano não for trial e estiver expirado: Mostrar banner Blocked!
-  if (plan !== 'trial' && isExpired) {
+  // Se plano for STARTER (gratuito/manual) e estiver expirado: Mostrar banner Blocked!
+  // Planos pagos (Pro, Business) são geridos pelo Stripe e nunca devem ser bloqueados por trial_ends_at.
+  if (plan === 'starter' && isExpired) {
     banner.style.display = 'block';
     inner.className = 'sub-banner-inner warning-banner';
     icon.innerHTML = '<i class="ph-bold ph-prohibit"></i>';
