@@ -221,7 +221,10 @@
   <div class="modal large">
     <div class="modal-header">
       <h3 id="viewPdvTitle">Livraria Central</h3>
-      <button class="btn-close" onclick="closeModal('modalViewPdv')"><i class="ph-bold ph-x"></i></button>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); padding:6px 12px; font-size:0.8rem" onclick="deletePdv()"><i class="ph-bold ph-trash"></i> Excluir</button>
+        <button class="btn-close" onclick="closeModal('modalViewPdv')"><i class="ph-bold ph-x"></i></button>
+      </div>
     </div>
     <div class="modal-body">
       <div class="pdv-tabs">
@@ -257,6 +260,38 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Enviar Remessa -->
+<div id="modalRemessa" class="modal-overlay" style="display:none; z-index: 1000">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Adicionar Produtos (Remessa)</h3>
+      <button class="btn-close" onclick="closeModal('modalRemessa')"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do Produto *</label>
+          <input type="text" id="remProduto" class="form-input" placeholder="Ex: Vaso Geométrico Médio">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantidade a adicionar *</label>
+          <input type="number" id="remQtd" class="form-input" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label>P.V.P Unitário (€) *</label>
+          <input type="number" id="remPvp" class="form-input" value="0.00" min="0" step="0.01">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end; gap: 12px;">
+      <button class="btn btn-outline" onclick="closeModal('modalRemessa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRemessa()" id="btnSaveRemessa">Adicionar Stock</button>
     </div>
   </div>
 </div>
@@ -477,8 +512,76 @@
     document.getElementById('tabTrans').style.display = tab === 'Trans' ? 'block' : 'none';
   }
 
+  async function deletePdv() {
+    if(!state.currentPdv) return;
+    if(!confirm(`Tens a certeza que queres excluir o PDV "${state.currentPdv.name}"? Todo o inventário associado será apagado.`)) return;
+
+    try {
+      await _sb.from('pdvs').delete().eq('id', state.currentPdv.id);
+      closeModal('modalViewPdv');
+      if(window.showToast) showToast('PDV excluído com sucesso', 'ok');
+      await loadData();
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao excluir PDV');
+    }
+  }
+
   function openRemessaModal() {
-    alert("Funcionalidade Premium: Enviar Remessa (Gerar Guia em PDF) a ser implementada na fase seguinte!");
+    document.getElementById('remProduto').value = '';
+    document.getElementById('remQtd').value = '1';
+    document.getElementById('remPvp').value = '0.00';
+    document.getElementById('modalRemessa').style.display = 'flex';
+  }
+
+  async function saveRemessa() {
+    if(!state.currentPdv) return;
+    const nome = document.getElementById('remProduto').value.trim();
+    const qtd = parseInt(document.getElementById('remQtd').value);
+    const pvp = parseFloat(document.getElementById('remPvp').value);
+
+    if(!nome || qtd < 1 || isNaN(pvp)) return alert('Preenche os campos corretamente.');
+
+    const btn = document.getElementById('btnSaveRemessa');
+    btn.disabled = true;
+    btn.textContent = 'A processar...';
+
+    try {
+      const existing = state.inventory.find(i => i.pdv_id === state.currentPdv.id && i.product_name.toLowerCase() === nome.toLowerCase());
+      
+      if (existing) {
+        await _sb.from('pdv_inventory').update({ quantity: existing.quantity + qtd, price_unit: pvp, last_updated: new Date().toISOString() }).eq('id', existing.id);
+      } else {
+        await _sb.from('pdv_inventory').insert({
+          company_id: state.company.companyId,
+          pdv_id: state.currentPdv.id,
+          product_name: nome,
+          quantity: qtd,
+          price_unit: pvp
+        });
+      }
+
+      await _sb.from('pdv_transactions').insert({
+        company_id: state.company.companyId,
+        pdv_id: state.currentPdv.id,
+        type: 'transfer_in',
+        product_name: nome,
+        quantity: qtd,
+        price_unit: pvp,
+        total_value: qtd * pvp
+      });
+
+      closeModal('modalRemessa');
+      if(window.showToast) showToast('Remessa adicionada', 'ok');
+      await loadData();
+      openViewPdv(state.currentPdv.id);
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao adicionar remessa');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Adicionar Stock';
+    }
   }
 
   function openAcertoModal() {
