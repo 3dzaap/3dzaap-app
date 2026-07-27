@@ -1963,8 +1963,8 @@
         return true;
       });
 
-      // Ordenar pelos mais recentes (Data e depois ID)
-      filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0) || (b.orderNumeric || 0) - (a.orderNumeric || 0));
+      // Ordenar primariamente pelo número do pedido (orderNumeric)
+      filtered.sort((a, b) => (b.orderNumeric || 0) - (a.orderNumeric || 0) || new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
       const countKey = filtered.length === 1 ? 'orders.filters.count_1' : 'orders.filters.count_n';
       const filterCountEl = document.getElementById('filterCount');
