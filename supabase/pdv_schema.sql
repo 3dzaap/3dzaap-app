@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS public.pdvs (
 ALTER TABLE public.pdvs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own pdvs" 
     ON public.pdvs FOR ALL 
-    USING (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()))
-    WITH CHECK (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()));
+    USING ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) )
+    WITH CHECK ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) );
 
 -- 2. Tabela de Inventário por PDV
 CREATE TABLE IF NOT EXISTS public.pdv_inventory (
@@ -40,8 +40,8 @@ ALTER TABLE public.pdv_inventory ADD CONSTRAINT uq_pdv_product UNIQUE(pdv_id, pr
 ALTER TABLE public.pdv_inventory ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own pdv_inventory" 
     ON public.pdv_inventory FOR ALL 
-    USING (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()))
-    WITH CHECK (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()));
+    USING ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) )
+    WITH CHECK ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) );
 
 -- 3. Tabela de Transações (Histórico de Remessas e Acertos)
 CREATE TABLE IF NOT EXISTS public.pdv_transactions (
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS public.pdv_transactions (
 ALTER TABLE public.pdv_transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own pdv_transactions" 
     ON public.pdv_transactions FOR ALL 
-    USING (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()))
-    WITH CHECK (company_id = (SELECT company_id FROM public.users WHERE id = auth.uid()));
+    USING ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) )
+    WITH CHECK ( company_id IN (SELECT company_id FROM public.memberships WHERE user_id = auth.uid()) );
 
 -- Index para otimização
 CREATE INDEX idx_pdvs_company ON public.pdvs(company_id);

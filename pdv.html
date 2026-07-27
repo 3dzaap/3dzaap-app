@@ -20,6 +20,43 @@
 <script src="i18n.js"></script>
 <link rel="stylesheet" href="shared.css">
 <style>
+/* ── KPI Grid ───────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--rm);
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); }
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0; width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+.kpi-card:nth-child(1)::after { background: var(--blue); }
+.kpi-card:nth-child(2)::after { background: var(--orange); }
+.kpi-card:nth-child(3)::after { background: var(--green); }
+
+.kpi-icon { font-size: 1.4rem; margin-bottom: 10px; line-height: 1; }
+.kpi-val  {
+  font-family: var(--mono); font-size: 2rem; font-weight: 900;
+  color: var(--dark); line-height: 1; letter-spacing: -.03em;
+}
+.kpi-lbl  {
+  font-size: .7rem; color: var(--muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; margin-top: 6px;
+}
+
 /* ── Estilos específicos de Consignados ──────────────────────── */
 .pdv-grid {
   display: grid;
@@ -116,17 +153,17 @@
       <!-- KPIs Globais -->
       <div class="kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-icon"><i class="ph-bold ph-storefront"></i></div>
+          <div class="kpi-icon" style="color:var(--blue)"><i class="ph-bold ph-storefront"></i></div>
           <div class="kpi-val" id="kpiTotalPdvs">0</div>
           <div class="kpi-lbl">PDVs Ativos</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon" style="color:var(--orange); background:rgba(245,148,58,0.1)"><i class="ph-bold ph-package"></i></div>
+          <div class="kpi-icon" style="color:var(--orange)"><i class="ph-bold ph-package"></i></div>
           <div class="kpi-val" id="kpiTotalItems">0</div>
           <div class="kpi-lbl">Itens na Rua</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon" style="color:var(--green); background:rgba(52,199,89,0.1)"><i class="ph-bold ph-currency-dollar"></i></div>
+          <div class="kpi-icon" style="color:var(--green)"><i class="ph-bold ph-currency-dollar"></i></div>
           <div class="kpi-val" id="kpiTotalValue">€ 0.00</div>
           <div class="kpi-lbl">Capital Alocado</div>
         </div>
