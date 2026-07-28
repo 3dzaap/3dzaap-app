@@ -296,7 +296,33 @@
   </div>
 </div>
 
-<!-- Modal: Enviar Remessa -->
+<!-- Modal: Portal PDV Link -->
+<div id="modalPortalLink" class="modal-overlay" style="display:none; z-index:1100">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ph-bold ph-link"></i> Link do Portal PDV</div>
+      <button class="modal-close" onclick="closeModal('modalPortalLink')"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body" style="padding:24px 26px">
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:16px; line-height:1.5">
+        Partilha este link com o lojista. Ele abre o portal sem precisar de conta.
+      </p>
+      <div style="display:flex; gap:8px; align-items:center">
+        <input id="portalLinkInput" type="text" class="form-input" readonly
+          style="flex:1; font-size:0.8rem; font-family:var(--mono,monospace); cursor:pointer; background:var(--blue-g);"
+          onclick="this.select()">
+        <button class="btn btn-primary" id="btnCopyPortalLink" onclick="doCopyPortalLink()" style="flex-shrink:0; gap:6px">
+          <i class="ph-bold ph-copy"></i> Copiar
+        </button>
+      </div>
+      <p style="font-size:0.75rem; color:var(--subtle); margin-top:10px">
+        <i class="ph-bold ph-info"></i> Clica no campo para selecionar o link e copia manualmente se o botão não funcionar.
+      </p>
+    </div>
+  </div>
+</div>
+
+
 <div id="modalRemessa" class="modal-overlay" style="display:none; z-index:1000">
   <div class="modal large">
     <div class="modal-header">
@@ -746,13 +772,61 @@
   }
 
   function copyPortalLink() {
-    if (!state.currentPdv || !state.currentPdv.portal_token) {
-      return alert("Este PDV não tem token de portal gerado. Contacta o suporte.");
+    if (!state.currentPdv || !state.currentPdv.portal_token) return;
+
+    const base = window.location.origin + window.location.pathname.replace('pdv.html', 'pdv_portal.html');
+    const url  = base + '?token=' + state.currentPdv.portal_token;
+
+    // Mostra o modal com o link visível
+    document.getElementById('portalLinkInput').value = url;
+    document.getElementById('modalPortalLink').style.display = 'flex';
+    // Seleciona o texto automaticamente
+    setTimeout(() => {
+      const inp = document.getElementById('portalLinkInput');
+      if (inp) inp.select();
+    }, 150);
+  }
+
+  function doCopyPortalLink() {
+    const inp = document.getElementById('portalLinkInput');
+    const url = inp ? inp.value : '';
+    if (!url) return;
+
+    const btn = document.getElementById('btnCopyPortalLink');
+
+    // Tenta clipboard API (funciona em HTTPS/localhost)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          btn.innerHTML = '<i class="ph-bold ph-check"></i> Copiado!';
+          btn.style.background = 'var(--success)';
+          setTimeout(() => {
+            btn.innerHTML = '<i class="ph-bold ph-copy"></i> Copiar';
+            btn.style.background = '';
+          }, 2000);
+        })
+        .catch(() => fallbackCopy(inp, btn));
+    } else {
+      fallbackCopy(inp, btn);
     }
-    const url = window.location.origin + window.location.pathname.replace('pdv.html', 'pdv_portal.html') + '?token=' + state.currentPdv.portal_token;
-    navigator.clipboard.writeText(url).then(() => {
-      if(window.showToast) showToast('Link do portal copiado para a área de transferência!', 'ok');
-    });
+  }
+
+  function fallbackCopy(inp, btn) {
+    // Fallback: execCommand (HTTP)
+    inp.select();
+    inp.setSelectionRange(0, 99999);
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = '<i class="ph-bold ph-check"></i> Copiado!';
+      btn.style.background = 'var(--success)';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="ph-bold ph-copy"></i> Copiar';
+        btn.style.background = '';
+      }, 2000);
+    } catch(e) {
+      // Se tudo falhar, o utilizador pode selecionar e copiar manualmente
+      inp.select();
+    }
   }
 
   function openEditInvItem(id) {
