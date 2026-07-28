@@ -80,7 +80,9 @@ const Sidebar = (() => {
           ? `<span id="sidebarUnreadOrdersBadge" style="display:none;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-left:8px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)"></span>` 
           : item.id === 'admin'
             ? `<span id="sidebarUnreadAdminBadge" style="display:none;padding:2px 6px;font-size:0.65rem;font-weight:800;color:#ffffff;background:var(--success);border-radius:10px;margin-left:8px;box-shadow:0 0 0 2px rgba(34,197,94,0.2)"></span>`
-            : '';
+            : item.id === 'pdv'
+              ? `<span id="sidebarPdvBadge" style="display:none;width:8px;height:8px;background:var(--danger);border-radius:50%;margin-left:8px;box-shadow:0 0 0 2px rgba(239,68,68,0.2)"></span>`
+              : '';
         return `<a class="nav-item${isActive ? ' active' : ''}" href="${item.href}"${targetAttr}${onclickAttr}${muteStyle}${superAttr}><span class="nav-icon">${item.icon}</span> <span data-i18n="${item.i18nKey || `nav.${item.id}`}">${item.label}</span>${unreadBadge}${lockSpan}</a>`;
       }).join('\n        ');
 
@@ -307,6 +309,52 @@ const Sidebar = (() => {
             } else {
               adminBadge.style.display = 'none';
               localStorage.setItem('3dzaap_notified_admin_count', '0');
+            }
+          }
+        }
+      }
+
+      // ── PDV Portal pending requests ──
+      if (typeof _sb !== 'undefined' && session) {
+        // Defaults to true if not set
+        const pdvNotifEnabled = session.config?.notifPdvPortal !== false;
+        
+        if (pdvNotifEnabled) {
+          const { count, error } = await _sb.from('pdv_requests')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', session.companyId)
+            .eq('status', 'pending');
+            
+          const pdvBadge = document.getElementById('sidebarPdvBadge');
+          if (pdvBadge) {
+            if (!error && count > 0) {
+              pdvBadge.style.display = 'inline-block';
+              totalBadgeVal += count;
+              
+              const lastPdvCount = parseInt(localStorage.getItem('3dzaap_notified_pdv_count') || '0', 10);
+              if (count > lastPdvCount) {
+                localStorage.setItem('3dzaap_notified_pdv_count', count);
+                if ('Notification' in window && Notification.permission === 'granted') {
+                  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(reg => {
+                      reg.showNotification('Portal Consignados', {
+                        body: `Tens ${count} pedido(s) pendente(s) de lojistas.`,
+                        icon: '/assets/icon-192.png',
+                        badge: '/assets/icon-192.png',
+                        tag: 'pdv-request'
+                      });
+                    });
+                  } else {
+                    new Notification('Portal Consignados', {
+                      body: `Tens ${count} pedido(s) pendente(s) de lojistas.`,
+                      icon: '/assets/icon-192.png'
+                    });
+                  }
+                }
+              }
+            } else {
+              pdvBadge.style.display = 'none';
+              localStorage.setItem('3dzaap_notified_pdv_count', '0');
             }
           }
         }

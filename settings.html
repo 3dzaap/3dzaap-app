@@ -815,6 +815,13 @@
                 </div>
                 <label class="toggle-switch"><input type="checkbox" id="notifStockLow" checked><span class="slider"></span></label>
               </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Portal PDV - Pedidos Pendentes</div>
+                  <div class="toggle-desc">Avisa quando um lojista faz um registo de vendas ou pedido de stock</div>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" id="notifPdvPortal" checked><span class="slider"></span></label>
+              </div>
 
               <div class="settings-card-title" style="margin-top:24px"><i class="ph-bold ph-currency-dollar"></i> Financeiro e Vendas</div>
               <div class="toggle-row">
@@ -1238,6 +1245,7 @@ function loadData() {
   
   document.getElementById('notifOverdue').checked = cfg.notifOverdue !== false;
   document.getElementById('notifStockLow').checked = cfg.notifStockLow !== false;
+  document.getElementById('notifPdvPortal').checked = cfg.notifPdvPortal !== false;
   document.getElementById('notifFollowUp').checked = cfg.notifFollowUp !== false;
   document.getElementById('notifWeeklyRev').checked = cfg.notifWeeklyRev !== false;
   
@@ -1379,6 +1387,7 @@ async function saveAll() {
     weightUnit: document.getElementById('prefWeightUnit').value,
     notifOverdue: document.getElementById('notifOverdue').checked,
     notifStockLow: document.getElementById('notifStockLow').checked,
+    notifPdvPortal: document.getElementById('notifPdvPortal').checked,
     notifFollowUp: document.getElementById('notifFollowUp').checked,
     notifWeeklyRev: document.getElementById('notifWeeklyRev').checked,
     theme: document.querySelector('input[name="prefTheme"]:checked').value,

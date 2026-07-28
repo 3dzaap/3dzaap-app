@@ -33,7 +33,7 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
 _sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
     // Redireciona para o login apenas se não estiver já na página de login
-    if (!window.location.pathname.includes('auth.html') && !window.location.pathname.includes('index.html')) {
+    if (!window.location.pathname.includes('auth.html') && !window.location.pathname.includes('index.html') && !window.location.pathname.includes('pdv_portal.html')) {
       alert("A tua sessão expirou por motivos de segurança. Por favor, faz login novamente.");
       window.location.href = 'auth.html';
     }
