@@ -585,12 +585,12 @@
     box.innerHTML = filtered.map(p => {
       const isSel = !!_remItems[p.id];
       const pvp = p.salePrice || 0;
-      return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; border:1.5px solid ${isSel ? 'var(--blue)' : 'var(--border)'}; background:${isSel ? 'var(--bg-nav-active)' : 'transparent'}; margin-bottom:6px; cursor:pointer" onclick="toggleRemessaProduct('${p.id}', ${JSON.stringify(_esc(p.name)).replace(/'/g,"&apos;")}, ${pvp})">
+      return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; border:1.5px solid ${isSel ? 'var(--blue)' : 'var(--border)'}; background:${isSel ? 'var(--bg-nav-active)' : 'transparent'}; margin-bottom:6px; cursor:pointer" onclick='toggleRemessaProduct("${p.id}", ${JSON.stringify(p.name).replace(/'/g, "&#39;")}, ${pvp})'>
         <div>
           <div style="font-weight:700; font-size:0.88rem; color:${isSel ? 'var(--blue)' : 'var(--dark)'}">${_esc(p.name)}</div>
           <div style="font-size:0.72rem; color:var(--muted)">P.V.P: € ${pvp.toFixed(2)}</div>
         </div>
-        <button class="btn btn-sm" style="padding:4px 10px; font-size:0.85rem; ${isSel ? 'background:var(--blue); color:white; border-color:var(--blue)' : ''}" onclick="event.stopPropagation(); toggleRemessaProduct('${p.id}', ${JSON.stringify(_esc(p.name)).replace(/'/g,"&apos;")}, ${pvp})">
+        <button class="btn btn-sm" style="padding:4px 10px; font-size:0.85rem; ${isSel ? 'background:var(--blue); color:white; border-color:var(--blue)' : ''}" onclick='event.stopPropagation(); toggleRemessaProduct("${p.id}", ${JSON.stringify(p.name).replace(/'/g, "&#39;")}, ${pvp})'>
           <i class="ph-bold ${isSel ? 'ph-check' : 'ph-plus'}"></i>
         </button>
       </div>`;
