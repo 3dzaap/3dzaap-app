@@ -221,7 +221,8 @@
   <div class="modal large">
     <div class="modal-header">
       <h3 id="viewPdvTitle">Livraria Central</h3>
-      <div style="display:flex; gap:12px; align-items:center;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn btn-outline" style="padding:6px 12px; font-size:0.8rem" onclick="openEditPdv()"><i class="ph-bold ph-pencil-simple"></i> Editar</button>
         <button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger); padding:6px 12px; font-size:0.8rem" onclick="deletePdv()"><i class="ph-bold ph-trash"></i> Excluir</button>
         <button class="btn-close" onclick="closeModal('modalViewPdv')"><i class="ph-bold ph-x"></i></button>
       </div>
@@ -529,6 +530,19 @@
       console.error(e);
       alert('Erro ao excluir PDV');
     }
+  }
+
+  function openEditPdv() {
+    if (!state.currentPdv) return;
+    const p = state.currentPdv;
+    document.getElementById('pdvId').value = p.id;
+    document.getElementById('pdvName').value = p.name || '';
+    document.getElementById('pdvContact').value = p.contact || '';
+    document.getElementById('pdvAddress').value = p.address || '';
+    document.getElementById('pdvCommission').value = p.commission_rate ?? 30;
+    document.getElementById('modalPdvTitle').textContent = 'Editar Ponto de Venda';
+    closeModal('modalViewPdv');
+    document.getElementById('modalNewPdv').style.display = 'flex';
   }
 
   // ── REMESSA: library-based multi-product picker ──────────────
