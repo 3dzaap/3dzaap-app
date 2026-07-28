@@ -246,7 +246,7 @@
         </div>
         <div class="table-card">
           <table class="table inventory-table" style="width:100%">
-            <thead><tr><th>Produto</th><th>Qtd. Atual</th><th>P.V.P Unit.</th><th>Total (PVP)</th><th>Teu Ganho Estim.</th></tr></thead>
+            <thead><tr><th>Produto</th><th>Qtd. Atual</th><th>P.V.P Unit.</th><th>Total (PVP)</th><th>Teu Ganho Estim.</th><th style="width:70px; text-align:right"></th></tr></thead>
             <tbody id="inventoryTableBody"></tbody>
           </table>
         </div>
@@ -320,6 +320,33 @@
         <button class="btn btn-outline" onclick="closeModal('modalAcerto')">Cancelar</button>
         <button class="btn btn-orange" onclick="saveAcerto()" id="btnSaveAcerto"><i class="ph-bold ph-check-circle"></i> Confirmar Acerto</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Editar Item de Inventário -->
+<div id="modalEditInvItem" class="modal-overlay" style="display:none; z-index: 1000">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="editInvTitle">Editar Item</h3>
+      <button class="btn-close" onclick="closeModal('modalEditInvItem')"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editInvId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantidade Atual</label>
+          <input type="number" id="editInvQty" class="form-input" min="0">
+        </div>
+        <div class="form-group">
+          <label>P.V.P Unitário (€)</label>
+          <input type="number" id="editInvPvp" class="form-input" min="0" step="0.01">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end; gap:12px">
+      <button class="btn btn-outline" onclick="closeModal('modalEditInvItem')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEditInvItem()" id="btnSaveEditInv"><i class="ph-bold ph-check"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -508,6 +535,12 @@
         <td class="val-mono">€ ${i.price_unit.toFixed(2)}</td>
         <td class="val-mono">€ ${totalPvp.toFixed(2)}</td>
         <td class="val-mono" style="color:var(--green)">€ ${makerNet.toFixed(2)}</td>
+        <td style="text-align:right">
+          <div style="display:flex; justify-content:flex-end; gap:4px">
+            <button class="btn btn-ghost btn-sm" style="padding:4px 8px; color:var(--blue)" onclick="openEditInvItem('${i.id}')" title="Editar"><i class="ph-bold ph-pencil-simple"></i></button>
+            <button class="btn btn-ghost btn-sm" style="padding:4px 8px; color:var(--danger)" onclick="deleteInvItem('${i.id}')" title="Excluir"><i class="ph-bold ph-trash"></i></button>
+          </div>
+        </td>
       </tr>`;
     }).join('');
   }
@@ -538,6 +571,58 @@
     document.getElementById('tabTransBtn').classList.toggle('active', tab === 'Trans');
     document.getElementById('tabInv').style.display = tab === 'Inv' ? 'block' : 'none';
     document.getElementById('tabTrans').style.display = tab === 'Trans' ? 'block' : 'none';
+  }
+
+  function openEditInvItem(id) {
+    const item = state.inventory.find(i => i.id === id);
+    if (!item) return;
+    document.getElementById('editInvId').value = id;
+    document.getElementById('editInvTitle').textContent = `Editar: ${_esc(item.product_name)}`;
+    document.getElementById('editInvQty').value = item.quantity;
+    document.getElementById('editInvPvp').value = item.price_unit;
+    document.getElementById('modalEditInvItem').style.display = 'flex';
+  }
+
+  async function saveEditInvItem() {
+    const id = document.getElementById('editInvId').value;
+    const qty = parseInt(document.getElementById('editInvQty').value);
+    const pvp = parseFloat(document.getElementById('editInvPvp').value);
+    
+    if (qty < 0 || isNaN(pvp)) return alert("Preenche corretamente.");
+
+    const btn = document.getElementById('btnSaveEditInv');
+    btn.disabled = true;
+    btn.innerHTML = 'A guardar...';
+
+    try {
+      await _sb.from('pdv_inventory').update({ quantity: qty, price_unit: pvp, last_updated: new Date().toISOString() }).eq('id', id);
+      closeModal('modalEditInvItem');
+      if(window.showToast) showToast('Item atualizado', 'ok');
+      await loadData();
+      openViewPdv(state.currentPdv.id);
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao atualizar item');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ph-bold ph-check"></i> Guardar';
+    }
+  }
+
+  async function deleteInvItem(id) {
+    const item = state.inventory.find(i => i.id === id);
+    if (!item) return;
+    if(!confirm(`Tens a certeza que queres remover "${item.product_name}" do inventário deste PDV?`)) return;
+
+    try {
+      await _sb.from('pdv_inventory').delete().eq('id', id);
+      if(window.showToast) showToast('Item removido', 'ok');
+      await loadData();
+      openViewPdv(state.currentPdv.id);
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao remover item');
+    }
   }
 
   async function deletePdv() {
