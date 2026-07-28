@@ -35,6 +35,17 @@
       --f: 'Outfit', sans-serif;
     }
 
+    [data-theme="dark"] {
+      --dark:     #f8fafc;
+      --muted:    #94a3b8;
+      --subtle:   #64748b;
+      --border:   rgba(255,255,255,0.08);
+      --bg:       #0f172a;
+      --bg-card:  rgba(30,41,59,0.85);
+      --bg-gradient: linear-gradient(145deg, #020617 0%, #0f172a 40%, #1e293b 100%);
+      --sh:       0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+    }
+
     html, body {
       height: 100%;
       font-family: var(--f);
@@ -98,13 +109,24 @@
     .brand-bar .brand-name { font-weight: 800; font-size: 1rem; }
     .brand-bar .brand-name span { color: var(--blue); }
     .brand-bar .partner-badge {
-      margin-left: auto;
       background: rgba(34,197,94,0.12);
       color: var(--success);
       border: 1px solid rgba(34,197,94,0.3);
       padding: 4px 10px; border-radius: 20px;
       font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
     }
+    .theme-toggle {
+      margin-left: auto;
+      background: rgba(59,143,212,0.1);
+      border: none;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--blue);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .theme-toggle:active { transform: scale(0.9); background: var(--blue-g); }
 
     /* Hero Card */
     .hero-card {
@@ -438,9 +460,12 @@
   <!-- Header -->
   <div class="page-header">
     <div class="brand-bar">
-      <div class="logo-box"><i class="ph-bold ph-cube"></i></div>
-      <div class="brand-name"><span>3D</span>ZAAP</div>
-      <div class="partner-badge">Lojista Parceiro</div>
+      <div class="logo-box"><i class="ph-bold ph-storefront"></i></div>
+      <div class="brand-name">3DZ<span>AAP</span></div>
+      <div class="partner-badge">Parceiro</div>
+      <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">
+        <i class="ph-bold ph-moon"></i>
+      </button>
     </div>
 
     <!-- Hero Card -->
@@ -553,6 +578,34 @@
   const SUPABASE_URL  = 'https://yjggsndxatezgqljlhxb.supabase.co';
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqZ2dzbmR4YXRlemdxbGpsaHhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MjE0MTgsImV4cCI6MjA4OTA5NzQxOH0.zVzA2siKsix8tOK44H5U-cZK1Wdd_4u_sY1g2JgGYUA';
   const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ── Theme Logic ─────────────────────────────────────────
+  function applyInitialTheme() {
+    const savedTheme = localStorage.getItem('pdv_theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }
+  applyInitialTheme();
+
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('pdv_theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('pdv_theme', 'dark');
+    }
+    updateThemeIcon();
+  }
+
+  function updateThemeIcon() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) btn.innerHTML = isDark ? '<i class="ph-bold ph-sun"></i>' : '<i class="ph-bold ph-moon"></i>';
+  }
+  document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
   // ── State ───────────────────────────────────────────────
   const token = new URLSearchParams(window.location.search).get('token');
