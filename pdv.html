@@ -301,6 +301,29 @@
   </div>
 </div>
 
+<!-- Modal: Acerto de Contas -->
+<div id="modalAcerto" class="modal-overlay" style="display:none; z-index: 1000">
+  <div class="modal large">
+    <div class="modal-header">
+      <h3><i class="ph-bold ph-hand-coins"></i> Acerto de Contas</h3>
+      <button class="btn-close" onclick="closeModal('modalAcerto')"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px; line-height:1.4">
+        Atualiza as quantidades que sobraram na loja física. Se o número for menor que o inventário atual, a diferença será registada como <strong>Vendida</strong> e entrará para as tuas receitas.
+      </div>
+      <div id="acertoItemsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+    <div class="modal-footer" style="justify-content: space-between; gap:12px; align-items:center;">
+      <div style="font-weight:700; color:var(--green); font-size:1.1rem" id="acertoTotalGanho">Ganhos Estimados: € 0.00</div>
+      <div style="display:flex; gap:10px">
+        <button class="btn btn-outline" onclick="closeModal('modalAcerto')">Cancelar</button>
+        <button class="btn btn-orange" onclick="saveAcerto()" id="btnSaveAcerto"><i class="ph-bold ph-check-circle"></i> Confirmar Acerto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="sidebar.js"></script>
 <script>
   let state = { company: null, isPro: false, pdvs: [], inventory: [], transactions: [], currentPdv: null };
@@ -674,8 +697,105 @@
     }
   }
 
+  let _acertoItems = []; // { id, name, oldQty, newQty, pvp }
+
   function openAcertoModal() {
-    alert("Funcionalidade Premium: Acerto de Contas Rápido a ser implementado na fase seguinte!");
+    if (!state.currentPdv) return;
+    const inv = state.inventory.filter(i => i.pdv_id === state.currentPdv.id && i.quantity > 0);
+    
+    if (!inv.length) {
+      return alert("Não há inventário para fazer acerto neste PDV.");
+    }
+
+    _acertoItems = inv.map(i => ({
+      id: i.id,
+      name: i.product_name,
+      oldQty: i.quantity,
+      newQty: i.quantity,
+      pvp: i.price_unit
+    }));
+
+    renderAcertoItems();
+    document.getElementById('modalAcerto').style.display = 'flex';
+  }
+
+  function renderAcertoItems() {
+    const list = document.getElementById('acertoItemsList');
+    const totalEl = document.getElementById('acertoTotalGanho');
+    let totalGanho = 0;
+    const rate = state.currentPdv.commission_rate / 100;
+
+    list.innerHTML = _acertoItems.map((it, idx) => {
+      const sold = it.oldQty - it.newQty;
+      const val = sold * it.pvp;
+      const gain = val * (1 - rate);
+      if (sold > 0) totalGanho += gain;
+
+      return `<div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-body); border:1.5px solid ${sold > 0 ? 'var(--orange)' : 'var(--border)'}; border-radius:8px; padding:10px">
+        <div>
+          <div style="font-weight:700; font-size:0.85rem">${_esc(it.name)}</div>
+          <div style="font-size:0.7rem; color:var(--muted)">Em loja: ${it.oldQty} | P.V.P: € ${it.pvp.toFixed(2)}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px">
+          ${sold > 0 ? `<div style="font-size:0.75rem; color:var(--orange); font-weight:700">${sold} vendidos (+€ ${gain.toFixed(2)})</div>` : ''}
+          <div style="display:flex; flex-direction:column; align-items:flex-end;">
+            <label style="font-size:0.65rem; font-weight:700; color:var(--muted); margin-bottom:4px">Sobras (Atuais)</label>
+            <input type="number" class="form-input" style="width:70px; text-align:center" value="${it.newQty}" min="0" max="${it.oldQty}" oninput="updateAcertoQty(${idx}, this.value)">
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    totalEl.textContent = `Ganhos Estimados: € ${totalGanho.toFixed(2)}`;
+  }
+
+  function updateAcertoQty(idx, val) {
+    let num = parseInt(val) || 0;
+    if (num < 0) num = 0;
+    if (num > _acertoItems[idx].oldQty) num = _acertoItems[idx].oldQty;
+    _acertoItems[idx].newQty = num;
+    renderAcertoItems();
+  }
+
+  async function saveAcerto() {
+    if (!state.currentPdv) return;
+    
+    const soldItems = _acertoItems.filter(i => i.newQty < i.oldQty);
+    if (!soldItems.length) {
+      return alert("Nenhuma alteração registada. Se não houve vendas, basta cancelar.");
+    }
+
+    const btn = document.getElementById('btnSaveAcerto');
+    btn.disabled = true;
+    btn.textContent = 'A processar...';
+
+    try {
+      const now = new Date().toISOString();
+      for (const item of soldItems) {
+        const soldQty = item.oldQty - item.newQty;
+        await _sb.from('pdv_inventory').update({ quantity: item.newQty, last_updated: now }).eq('id', item.id);
+        await _sb.from('pdv_transactions').insert({ 
+          company_id: state.company.companyId, 
+          pdv_id: state.currentPdv.id, 
+          type: 'sale', 
+          product_name: item.name, 
+          quantity: soldQty, 
+          price_unit: item.pvp, 
+          total_value: soldQty * item.pvp 
+        });
+      }
+
+      closeModal('modalAcerto');
+      if (window.showToast) showToast('Acerto de contas registado com sucesso.', 'ok');
+      await loadData();
+      openViewPdv(state.currentPdv.id);
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao gravar acerto');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ph-bold ph-check-circle"></i> Confirmar Acerto';
+    }
   }
 
   function _esc(s) {
