@@ -1,18 +1,23 @@
 -- ==============================================================================
--- 3DZAAP - Migração: Portal do Lojista (PDV)
+-- 3DZAAP - Migração: Portal do Lojista (PDV) com PIN
 -- Corre este script no Supabase SQL Editor
 -- Podes correr com segurança mesmo se as tabelas já existirem (IF NOT EXISTS / IF NOT EXIST)
 -- ==============================================================================
 
--- 1. Adicionar portal_token à tabela pdvs existente
---    (gera automaticamente UUIDs únicos para todos os PDVs existentes)
+-- 1. Adicionar portal_token e portal_pin à tabela pdvs existente
+--    (gera automaticamente UUIDs únicos para o token e PINs de 4 dígitos)
 ALTER TABLE public.pdvs 
-  ADD COLUMN IF NOT EXISTS portal_token UUID UNIQUE DEFAULT uuid_generate_v4();
+  ADD COLUMN IF NOT EXISTS portal_token UUID UNIQUE DEFAULT uuid_generate_v4(),
+  ADD COLUMN IF NOT EXISTS portal_pin TEXT;
 
--- Garante que PDVs existentes sem token recebem um agora
+-- Garante que PDVs existentes recebem token e PIN
 UPDATE public.pdvs 
 SET portal_token = uuid_generate_v4() 
 WHERE portal_token IS NULL;
+
+UPDATE public.pdvs
+SET portal_pin = lpad(floor(random() * 10000)::text, 4, '0')
+WHERE portal_pin IS NULL;
 
 -- ==============================================================================
 -- 2. Criar tabela de pedidos do portal (baixas e reposições submetidas pelos lojistas)
@@ -42,13 +47,11 @@ CREATE INDEX IF NOT EXISTS idx_pdv_requests_pdv     ON public.pdv_requests(pdv_i
 CREATE INDEX IF NOT EXISTS idx_pdv_requests_status  ON public.pdv_requests(status);
 
 -- ==============================================================================
--- 3. Funções RPC com SECURITY DEFINER
---    Permitem ao lojista aceder ao portal SEM precisar de conta Supabase.
---    O acesso é validado pelo portal_token (UUID único, dificil de adivinhar).
+-- 3. Funções RPC com SECURITY DEFINER (Acesso Lojista)
 -- ==============================================================================
 
--- 3a. Ler dados do PDV + inventário (GET)
-CREATE OR REPLACE FUNCTION get_pdv_portal_data(p_token UUID)
+-- 3a. Ler dados do PDV + inventário (GET) - Requer Token e PIN
+CREATE OR REPLACE FUNCTION get_pdv_portal_data(p_token UUID, p_pin TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -58,14 +61,18 @@ DECLARE
     v_pdv       RECORD;
     v_inventory JSONB;
 BEGIN
-    SELECT id, company_id, name, commission_rate
+    SELECT id, company_id, name, commission_rate, portal_pin
     INTO   v_pdv
     FROM   public.pdvs
     WHERE  portal_token = p_token
       AND  status = 'active';
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'PDV não encontrado ou inativo';
+        RAISE EXCEPTION 'invalid_token';
+    END IF;
+
+    IF v_pdv.portal_pin != p_pin THEN
+        RAISE EXCEPTION 'invalid_pin';
     END IF;
 
     SELECT COALESCE(jsonb_agg(jsonb_build_object(
@@ -88,11 +95,11 @@ BEGIN
 END;
 $$;
 
--- Permitir acesso anónimo (lojista sem sessão)
-GRANT EXECUTE ON FUNCTION get_pdv_portal_data(UUID) TO anon;
+-- Permitir acesso anónimo
+GRANT EXECUTE ON FUNCTION get_pdv_portal_data(UUID, TEXT) TO anon;
 
--- 3b. Submeter um pedido do lojista (POST)
-CREATE OR REPLACE FUNCTION submit_pdv_request(p_token UUID, p_type TEXT, p_items JSONB)
+-- 3b. Submeter um pedido do lojista (POST) - Requer Token e PIN
+CREATE OR REPLACE FUNCTION submit_pdv_request(p_token UUID, p_pin TEXT, p_type TEXT, p_items JSONB)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -102,14 +109,18 @@ DECLARE
     v_pdv   RECORD;
     v_id    UUID;
 BEGIN
-    SELECT id, company_id
+    SELECT id, company_id, portal_pin
     INTO   v_pdv
     FROM   public.pdvs
     WHERE  portal_token = p_token
       AND  status = 'active';
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'PDV não encontrado ou inativo';
+        RAISE EXCEPTION 'invalid_token';
+    END IF;
+
+    IF v_pdv.portal_pin != p_pin THEN
+        RAISE EXCEPTION 'invalid_pin';
     END IF;
 
     INSERT INTO public.pdv_requests (company_id, pdv_id, type, status, items)
@@ -120,14 +131,42 @@ BEGIN
 END;
 $$;
 
--- Permitir acesso anónimo (lojista sem sessão)
-GRANT EXECUTE ON FUNCTION submit_pdv_request(UUID, TEXT, JSONB) TO anon;
+-- Permitir acesso anónimo
+GRANT EXECUTE ON FUNCTION submit_pdv_request(UUID, TEXT, TEXT, JSONB) TO anon;
 
 -- ==============================================================================
--- Verificação final — deves ver as colunas e tabelas criadas
+-- 4. Função auxiliar para ler apenas o nome da loja (para o ecrã de PIN)
+-- ==============================================================================
+CREATE OR REPLACE FUNCTION get_pdv_portal_name(p_token UUID)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_pdv RECORD;
+BEGIN
+    SELECT name
+    INTO   v_pdv
+    FROM   public.pdvs
+    WHERE  portal_token = p_token
+      AND  status = 'active';
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'invalid_token';
+    END IF;
+
+    RETURN jsonb_build_object('name', v_pdv.name);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION get_pdv_portal_name(UUID) TO anon;
+
+-- ==============================================================================
+-- Verificação final
 -- ==============================================================================
 SELECT 
-    'pdvs.portal_token' as check,
     count(*) as total_pdvs,
-    count(portal_token) as pdvs_com_token
+    count(portal_token) as pdvs_com_token,
+    count(portal_pin) as pdvs_com_pin
 FROM public.pdvs;

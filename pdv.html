@@ -300,14 +300,27 @@
 <div id="modalPortalLink" class="modal-overlay" style="display:none; z-index:1100">
   <div class="modal" style="max-width:480px">
     <div class="modal-header">
-      <div class="modal-title"><i class="ph-bold ph-link"></i> Link do Portal PDV</div>
+      <div class="modal-title"><i class="ph-bold ph-link"></i> Acesso Lojista (Portal)</div>
       <button class="modal-close" onclick="closeModal('modalPortalLink')"><i class="ph-bold ph-x"></i></button>
     </div>
     <div class="modal-body" style="padding:24px 26px">
-      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:16px; line-height:1.5">
-        Partilha este link com o lojista. Ele abre o portal sem precisar de conta.
+      
+      <!-- PIN Display Section -->
+      <div style="background:var(--bg-hover); border-radius:12px; padding:16px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border)">
+        <div>
+          <div style="font-size:0.75rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px">PIN de Acesso</div>
+          <div id="portalPinDisplay" style="font-size:1.8rem; font-weight:900; color:var(--dark); font-family:var(--mono,monospace); letter-spacing:4px">----</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="generateNewPin()" title="Gerar novo PIN" style="gap:6px">
+          <i class="ph-bold ph-arrows-clockwise"></i> Novo PIN
+        </button>
+      </div>
+
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px; line-height:1.5">
+        Partilha este link e o PIN com o lojista. O lojista não precisa de conta, apenas do link e do PIN.
       </p>
-      <div style="display:flex; gap:8px; align-items:center">
+
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:16px">
         <input id="portalLinkInput" type="text" class="form-input" readonly
           style="flex:1; font-size:0.8rem; font-family:var(--mono,monospace); cursor:pointer; background:var(--blue-g);"
           onclick="this.select()">
@@ -315,9 +328,12 @@
           <i class="ph-bold ph-copy"></i> Copiar
         </button>
       </div>
-      <p style="font-size:0.75rem; color:var(--subtle); margin-top:10px">
-        <i class="ph-bold ph-info"></i> Clica no campo para selecionar o link e copia manualmente se o botão não funcionar.
-      </p>
+
+      <!-- WhatsApp Button -->
+      <button class="btn" style="width:100%; background:#25D366; color:white; border:none; gap:8px; font-size:1rem; padding:12px" onclick="shareWhatsApp()">
+        <i class="ph-bold ph-whatsapp-logo" style="font-size:1.2rem"></i> Enviar por WhatsApp
+      </button>
+      
     </div>
   </div>
 </div>
@@ -776,15 +792,45 @@
 
     const base = window.location.origin + window.location.pathname.replace('pdv.html', 'pdv_portal.html');
     const url  = base + '?token=' + state.currentPdv.portal_token;
+    const pin = state.currentPdv.portal_pin || '----';
 
-    // Mostra o modal com o link visível
+    document.getElementById('portalPinDisplay').textContent = pin;
     document.getElementById('portalLinkInput').value = url;
     document.getElementById('modalPortalLink').style.display = 'flex';
-    // Seleciona o texto automaticamente
+    
     setTimeout(() => {
       const inp = document.getElementById('portalLinkInput');
       if (inp) inp.select();
     }, 150);
+  }
+
+  async function generateNewPin() {
+    if (!state.currentPdv) return;
+    if (!confirm('Tens a certeza que queres gerar um novo PIN? O lojista perderá acesso com o PIN antigo.')) return;
+    
+    // Generate 4 digit PIN
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    try {
+      await _sb.from('pdvs').update({ portal_pin: newPin }).eq('id', state.currentPdv.id);
+      state.currentPdv.portal_pin = newPin;
+      document.getElementById('portalPinDisplay').textContent = newPin;
+      if (window.showToast) showToast('Novo PIN gerado com sucesso!', 'ok');
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao gerar novo PIN.');
+    }
+  }
+
+  function shareWhatsApp() {
+    if (!state.currentPdv) return;
+    const base = window.location.origin + window.location.pathname.replace('pdv.html', 'pdv_portal.html');
+    const url  = base + '?token=' + state.currentPdv.portal_token;
+    const pin = state.currentPdv.portal_pin || '----';
+
+    const text = `Olá!\n\nAqui está o acesso ao teu *Portal de Lojista (3DZAAP)*.\nPodes registar vendas e pedir mais produtos diretamente por aqui.\n\n🔗 *Link:* ${url}\n🔒 *PIN:* ${pin}\n\nGuarda esta mensagem para uso futuro!`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
   }
 
   function doCopyPortalLink() {

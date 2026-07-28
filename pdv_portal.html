@@ -248,6 +248,46 @@
     }
     .btn-ghost:active { box-shadow: none; }
 
+    /* ── PIN Screen ──────────────────────────── */
+    .pin-screen {
+      position: fixed; inset: 0; z-index: 2000;
+      background: var(--bg); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .pin-title { font-size: 1.4rem; font-weight: 900; color: var(--dark); margin-bottom: 8px; text-align: center; }
+    .pin-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 30px; text-align: center; max-width: 280px; }
+    
+    .pin-display {
+      display: flex; gap: 12px; margin-bottom: 40px;
+    }
+    .pin-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--border); transition: all 0.2s;
+    }
+    .pin-dot.active { background: var(--blue); box-shadow: 0 0 12px rgba(59,143,212,0.4); transform: scale(1.1); }
+    .pin-dot.error { background: var(--danger); box-shadow: 0 0 12px rgba(239,68,68,0.4); }
+
+    .pin-pad {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 280px; width: 100%;
+    }
+    .pin-key {
+      background: var(--bg-card); border: 1.5px solid var(--border);
+      border-radius: 50%; width: 70px; height: 70px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; font-weight: 800; color: var(--dark);
+      box-shadow: var(--sh); cursor: pointer; transition: all 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pin-key:active { transform: scale(0.9); background: var(--blue-g); color: var(--blue); border-color: var(--blue); }
+    .pin-key.ghost { background: transparent; border: none; box-shadow: none; }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
     /* ── Floating action bar ─────────────────── */
     .fab-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
@@ -477,6 +517,34 @@
   </div>
 </div>
 
+<!-- PIN Screen -->
+<div class="pin-screen" id="pinScreen" style="display:none">
+  <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 8px 20px rgba(59,143,212,0.3)">
+    <i class="ph-bold ph-storefront" style="color:white;font-size:1.6rem"></i>
+  </div>
+  <div class="pin-title" id="pinStoreName">A carregar...</div>
+  <div class="pin-sub">Insere o PIN de segurança para aceder ao portal.</div>
+  
+  <div class="pin-display" id="pinDisplay">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pressPin(1)">1</button>
+    <button class="pin-key" onclick="pressPin(2)">2</button>
+    <button class="pin-key" onclick="pressPin(3)">3</button>
+    <button class="pin-key" onclick="pressPin(4)">4</button>
+    <button class="pin-key" onclick="pressPin(5)">5</button>
+    <button class="pin-key" onclick="pressPin(6)">6</button>
+    <button class="pin-key" onclick="pressPin(7)">7</button>
+    <button class="pin-key" onclick="pressPin(8)">8</button>
+    <button class="pin-key" onclick="pressPin(9)">9</button>
+    <div class="pin-key ghost"></div>
+    <button class="pin-key" onclick="pressPin(0)">0</button>
+    <button class="pin-key ghost" style="color:var(--muted);font-size:1.2rem" onclick="backspacePin()"><i class="ph-bold ph-backspace"></i></button>
+  </div>
+</div>
+
 <div id="toastZone"></div>
 
 <!-- Scripts -->
@@ -488,23 +556,74 @@
 
   // ── State ───────────────────────────────────────────────
   const token = new URLSearchParams(window.location.search).get('token');
+  let _currentPin = sessionStorage.getItem('pdv_portal_pin_' + token) || '';
   let _pdv = null;
   let _inventory = [];
   let _flow = null;         // 'sales' | 'restock'
   let _selections = {};     // { productId: qty }
   let _editingId = null;    // currently editing product id
+  
+  // PIN Pad state
+  let _pinInput = '';
 
   // ── Init ────────────────────────────────────────────────
   async function init() {
     if (!token) return showError('Link inválido.', 'Verifica o link que recebeste do teu parceiro.');
 
-    try {
-      const { data, error } = await _sb.rpc('get_pdv_portal_data', { p_token: token });
-      if (error) throw error;
-      if (!data) throw new Error('PDV não encontrado.');
+    // Se já tem PIN guardado na sessão, tenta usar logo
+    if (_currentPin) {
+      return attemptLogin(_currentPin);
+    }
 
+    // Se não, vamos só carregar o nome da loja e mostrar o ecrã de PIN
+    try {
+      const { data, error } = await _sb.rpc('get_pdv_portal_name', { p_token: token });
+      if (error || !data) throw error;
+      document.getElementById('pinStoreName').textContent = data.name;
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('pinScreen').style.display = 'flex';
+    } catch(err) {
+      showError('Portal indisponível', 'Não foi possível aceder ao portal. O link pode ser inválido.');
+    }
+  }
+
+  // ── PIN Logic ───────────────────────────────────────────
+  function pressPin(n) {
+    if (_pinInput.length >= 4) return;
+    _pinInput += n;
+    updatePinDisplay();
+    if (_pinInput.length === 4) {
+      setTimeout(() => attemptLogin(_pinInput), 100);
+    }
+  }
+  function backspacePin() {
+    if (_pinInput.length > 0) {
+      _pinInput = _pinInput.slice(0, -1);
+      updatePinDisplay();
+    }
+  }
+  function updatePinDisplay(isError = false) {
+    const dots = document.getElementById('pinDisplay').children;
+    for (let i = 0; i < 4; i++) {
+      dots[i].className = 'pin-dot' + (i < _pinInput.length ? ' active' : '');
+      if (isError) dots[i].classList.add('error');
+    }
+  }
+
+  async function attemptLogin(pinToTest) {
+    document.getElementById('loadingScreen').style.display = 'flex';
+    document.getElementById('pinScreen').style.display = 'none';
+    
+    try {
+      const { data, error } = await _sb.rpc('get_pdv_portal_data', { p_token: token, p_pin: pinToTest });
+      if (error) throw error;
+      if (!data) throw new Error('Not found');
+
+      // Success
       _pdv = data;
       _inventory = data.inventory || [];
+      _currentPin = pinToTest;
+      sessionStorage.setItem('pdv_portal_pin_' + token, _currentPin);
 
       // Hero
       document.getElementById('storeName').textContent = data.name;
@@ -525,7 +644,23 @@
 
     } catch (err) {
       console.error(err);
-      showError('Portal indisponível', 'Não foi possível carregar os teus dados. O link pode ter expirado ou a loja estar inativa.');
+      document.getElementById('loadingScreen').style.display = 'none';
+      
+      if (err.message && err.message.includes('invalid_pin')) {
+        // PIN errado
+        _pinInput = '';
+        _currentPin = '';
+        sessionStorage.removeItem('pdv_portal_pin_' + token);
+        updatePinDisplay(true); // show red dots
+        document.getElementById('pinScreen').style.display = 'flex';
+        const display = document.getElementById('pinDisplay');
+        display.classList.remove('shake');
+        void display.offsetWidth; // trigger reflow
+        display.classList.add('shake');
+        setTimeout(() => updatePinDisplay(), 500); // clear red
+      } else {
+        showError('Portal indisponível', 'O link pode ter expirado ou a loja estar inativa.');
+      }
     }
   }
 
@@ -571,6 +706,11 @@
     _flow = null;
     _selections = {};
     document.getElementById('flowOverlay').style.display = 'none';
+    
+    // Auto refresh portal data on close
+    if (token && _currentPin) {
+      init(); 
+    }
   }
 
   function handleOverlayClick(e) {
@@ -647,6 +787,7 @@
       const typeStr = _flow === 'sales' ? 'sale_report' : 'restock_request';
       const { error } = await _sb.rpc('submit_pdv_request', {
         p_token: token,
+        p_pin: _currentPin,
         p_type: typeStr,
         p_items: items
       });
