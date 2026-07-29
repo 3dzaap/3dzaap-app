@@ -1048,6 +1048,10 @@
         try {
           await DB.saveOrder(order);
           showToast('<i class="ph-bold ph-check-circle"></i> Estado atualizado.', 'ok');
+          
+          if ((newStatus === 'done' || newStatus === 'enviado') && order.pdvRequestId) {
+            await DB.processPdvRestock(order);
+          }
         } catch(err) {
           order.status = oldStatus;
           renderKanban();

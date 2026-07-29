@@ -1169,6 +1169,7 @@ function _mapOrderFromDB(row) {
     shippingService: row.shipping_service || '',
     trackingCode:  row.tracking_code || '',
     updatedAt:     row.updated_at,
+    pdvRequestId:  row.pdv_request_id || null,
     config:        row.config        || {},
   };
 }
@@ -1206,6 +1207,7 @@ function _mapOrderToDB(o) {
   if (o.passphrase)   row.passphrase    = o.passphrase;
   if (o.createdAt)    row.created_at    = o.createdAt;
   if (o.hasUnreadClientUpdate !== undefined) row.has_unread_client_update = o.hasUnreadClientUpdate;
+  if (o.pdvRequestId) row.pdv_request_id = o.pdvRequestId;
   
   return row;
 }

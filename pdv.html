@@ -208,6 +208,18 @@
           <input type="number" id="pdvCommission" class="form-input" value="30" min="0" max="100">
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Frequência de Acertos</label>
+          <select id="pdvSettlementFreq" class="form-input">
+            <option value="mensal">Mensal</option>
+            <option value="trimestral">Trimestral</option>
+            <option value="semestral">Semestral</option>
+            <option value="anual">Anual</option>
+            <option value="sob_pedido">Sob Pedido</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="modal-footer" style="justify-content: flex-end; gap: 12px;">
       <button class="btn btn-outline" onclick="closeModal('modalNewPdv')">Cancelar</button>
@@ -247,6 +259,7 @@
       <div class="pdv-tabs">
         <div class="pdv-tab active" id="tabInvBtn" onclick="switchTab('Inv')">Inventário Atual</div>
         <div class="pdv-tab" id="tabTransBtn" onclick="switchTab('Trans')">Histórico</div>
+        <div class="pdv-tab" id="tabAcertosBtn" onclick="switchTab('Acertos')">Acertos</div>
         <div class="pdv-tab" id="tabReqBtn" onclick="switchTab('Req')">Pedidos Pendentes <span id="reqCountBadge" style="background:var(--danger);color:white;padding:2px 6px;border-radius:10px;font-size:0.7rem;margin-left:4px;display:none">0</span></div>
       </div>
 
@@ -257,8 +270,8 @@
             <span class="stat-lbl">Comissão Acordada:</span> <strong id="viewPdvCommission">30%</strong>
           </div>
           <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline" style="color:var(--orange); border-color:var(--orange);" onclick="openAcertoModal()"><i class="ph-bold ph-coins"></i> Realizar Acerto</button>
             <button class="btn btn-primary" onclick="openRemessaModal()"><i class="ph-bold ph-package"></i> Enviar Remessa</button>
-            <button class="btn btn-orange" onclick="openAcertoModal()"><i class="ph-bold ph-hand-coins"></i> Acerto de Contas</button>
           </div>
         </div>
         <div class="table-card">
@@ -275,6 +288,16 @@
           <table class="table inventory-table" style="width:100%">
             <thead><tr><th>Data</th><th>Tipo</th><th>Produto</th><th>Quantidade</th><th>Teu Ganho</th></tr></thead>
             <tbody id="transTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Acertos -->
+      <div id="tabAcertos" style="display:none">
+        <div class="table-card">
+          <table class="table inventory-table" style="width:100%">
+            <thead><tr><th>Data do Acerto</th><th>Comissão (3DZAAP)</th><th>Total Acertado (A Receber)</th></tr></thead>
+            <tbody id="acertosTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -538,6 +561,7 @@
     document.getElementById('pdvContact').value = '';
     document.getElementById('pdvAddress').value = '';
     document.getElementById('pdvCommission').value = '30';
+    document.getElementById('pdvSettlementFreq').value = 'mensal';
     document.getElementById('modalPdvTitle').textContent = 'Novo Ponto de Venda';
     document.getElementById('modalNewPdv').style.display = 'flex';
   }
@@ -556,7 +580,8 @@
       name,
       contact: document.getElementById('pdvContact').value,
       address: document.getElementById('pdvAddress').value,
-      commission_rate: parseFloat(document.getElementById('pdvCommission').value) || 0
+      commission_rate: parseFloat(document.getElementById('pdvCommission').value) || 0,
+      settlement_frequency: document.getElementById('pdvSettlementFreq').value
     };
 
     const btn = document.getElementById('btnSavePdv');
@@ -594,6 +619,12 @@
     const { data } = await _sb.from('pdv_transactions').select('*').eq('pdv_id', id).order('created_at', {ascending: false}).limit(20);
     state.transactions = data || [];
     renderTransactions();
+    
+    // Load settlements
+    const { data: sData } = await _sb.from('pdv_settlements').select('*').eq('pdv_id', id).order('created_at', {ascending: false}).limit(20);
+    state.settlements = sData || [];
+    renderAcertos();
+    
     renderRequests();
 
     switchTab('Inv');
@@ -654,10 +685,29 @@
   function switchTab(tab) {
     document.getElementById('tabInvBtn').classList.toggle('active', tab === 'Inv');
     document.getElementById('tabTransBtn').classList.toggle('active', tab === 'Trans');
+    document.getElementById('tabAcertosBtn').classList.toggle('active', tab === 'Acertos');
     document.getElementById('tabReqBtn').classList.toggle('active', tab === 'Req');
     document.getElementById('tabInv').style.display = tab === 'Inv' ? 'block' : 'none';
     document.getElementById('tabTrans').style.display = tab === 'Trans' ? 'block' : 'none';
+    document.getElementById('tabAcertos').style.display = tab === 'Acertos' ? 'block' : 'none';
     document.getElementById('tabReq').style.display = tab === 'Req' ? 'block' : 'none';
+  }
+
+  function renderAcertos() {
+    const tbody = document.getElementById('acertosTableBody');
+    if (!state.settlements || state.settlements.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted)">Sem acertos registados.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = state.settlements.map(s => {
+      const date = new Date(s.created_at).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
+      return `<tr>
+        <td class="val-mono">${date}</td>
+        <td class="val-mono" style="color:var(--orange)">€ ${Number(s.commission_amount).toFixed(2)}</td>
+        <td class="val-mono" style="color:var(--green)">€ ${Number(s.amount).toFixed(2)}</td>
+      </tr>`;
+    }).join('');
   }
 
   function renderRequests() {
@@ -762,10 +812,43 @@
             const qty = _reqQtyEdits[key] ?? it.quantity;
             return { ...it, quantity: qty, quantity_original: it.quantity };
           });
-          // Atualiza os items no pedido com as quantidades aprovadas
+          
+          let orderId = null;
+          if (confirm('Desejas criar um Pedido no Kanban de Produção para esta reposição?')) {
+            const pdvName = state.pdvs.find(p => p.id === req.pdv_id)?.name || 'Desconhecido';
+            const orderPayload = {
+              clientName: `PDV - ${pdvName}`,
+              items: editedItems.map(it => ({
+                id: it.id || 'pdv-item-' + Date.now(),
+                name: it.product_name,
+                qtd: it.quantity,
+                price: it.price_unit || 0,
+                total: it.quantity * (it.price_unit || 0)
+              })),
+              total: editedItems.reduce((acc, it) => acc + (it.quantity * (it.price_unit || 0)), 0),
+              status: 'producao',
+              paymentStatus: 'pago',
+              notes: `Reposição PDV (${pdvName})`,
+              pdvRequestId: reqId
+            };
+            try {
+              if (window.DB && window.DB.saveOrder) {
+                const newOrder = await window.DB.saveOrder(orderPayload);
+                orderId = newOrder.id;
+              } else {
+                console.warn('DB.saveOrder não disponível');
+              }
+            } catch(e) {
+              console.error('Erro ao gerar pedido:', e);
+              alert('Ocorreu um erro ao gerar o pedido, mas a reposição será aprovada na mesma.');
+            }
+          }
+
+          // Atualiza os items no pedido com as quantidades aprovadas e liga ao order_id se gerado
           await _sb.from('pdv_requests').update({
             status: action,
             items: editedItems,
+            order_id: orderId,
             updated_at: now
           }).eq('id', reqId);
           // Limpa edits
@@ -950,6 +1033,7 @@
     document.getElementById('pdvContact').value = p.contact || '';
     document.getElementById('pdvAddress').value = p.address || '';
     document.getElementById('pdvCommission').value = p.commission_rate ?? 30;
+    document.getElementById('pdvSettlementFreq').value = p.settlement_frequency || 'mensal';
     document.getElementById('modalPdvTitle').textContent = 'Editar Ponto de Venda';
     closeModal('modalViewPdv');
     document.getElementById('modalNewPdv').style.display = 'flex';
@@ -1158,8 +1242,18 @@
 
     try {
       const now = new Date().toISOString();
+      let totalSales = 0;
+      let totalAmount = 0;
+      const rate = state.currentPdv.commission_rate / 100;
+
       for (const item of soldItems) {
         const soldQty = item.oldQty - item.newQty;
+        const pvpTotal = soldQty * item.pvp;
+        const gain = pvpTotal * (1 - rate);
+
+        totalSales += pvpTotal;
+        totalAmount += gain;
+
         await _sb.from('pdv_inventory').update({ quantity: item.newQty, last_updated: now }).eq('id', item.id);
         await _sb.from('pdv_transactions').insert({ 
           company_id: state.company.companyId, 
@@ -1168,9 +1262,26 @@
           product_name: item.name, 
           quantity: soldQty, 
           price_unit: item.pvp, 
-          total_value: soldQty * item.pvp 
+          total_value: pvpTotal 
         });
       }
+
+      await _sb.from('pdv_settlements').insert({
+        company_id: state.company.companyId,
+        pdv_id: state.currentPdv.id,
+        amount: totalAmount,
+        commission_amount: totalSales - totalAmount,
+        total_sales: totalSales
+      });
+
+      // Insert income record in the financial module
+      await _sb.from('expenses').insert({
+        company_id: state.company.companyId,
+        date: now.split('T')[0],
+        value: totalAmount, // Positive value means Income
+        category: 'Vendas PDV',
+        description: `Acerto de Contas - ${state.currentPdv.name} (Total Vendas: €${totalSales.toFixed(2)}, Comissão: €${(totalSales - totalAmount).toFixed(2)})`
+      });
 
       closeModal('modalAcerto');
       if (window.showToast) showToast('Acerto de contas registado com sucesso.', 'ok');

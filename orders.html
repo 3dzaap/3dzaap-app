@@ -2393,6 +2393,10 @@
         renderOrders(id);
         const statusName = typeof STATUS_LABELS[orderObj.status] === 'function' ? STATUS_LABELS[orderObj.status]() : (STATUS_LABELS[orderObj.status] || orderObj.status);
         showToast(i18n.getNestedTranslation('orders.toasts.status_updated', { s: statusName }), 'ok');
+        
+        if ((orderObj.status === 'done' || orderObj.status === 'enviado') && orderObj.pdvRequestId) {
+          await DB.processPdvRestock(orderObj);
+        }
       }
 
       // Intercept transition to/within 'printing' — show session modal
