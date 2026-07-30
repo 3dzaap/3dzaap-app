@@ -25,25 +25,6 @@
       max-width: 520px; margin: 0 auto; padding: 0 0 88px; 
     }
 
-    /* ── Desktop: contenção do portal numa coluna centrada ── */
-    @media (min-width: 600px) {
-      .portal-app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
-      
-      /* Botões flutuantes em vez de barra colada ao fundo */
-      .fab-bar { 
-        width: 520px; left: 50%; right: auto; margin-left: -260px; transform: none;
-        background: transparent; border: none; box-shadow: none; backdrop-filter: none;
-        justify-content: center; padding-bottom: 24px;
-        pointer-events: none; /* O clique passa pelo fundo transparente */
-      }
-      .fab-bar .btn { 
-        flex: 0 0 auto; padding: 12px 28px; border-radius: 40px; 
-        box-shadow: var(--sh-float); pointer-events: auto; font-size: 0.9rem;
-      }
-      
-      /* Bottom sheet também fica centrada */
-      .flow-sheet { width: 100%; max-width: 520px; margin: 0 auto; border-radius: 20px 20px 0 0; }
-    }
 
     /* ── Loading ─────────────────────────────── */
     #loadingScreen {
@@ -225,7 +206,7 @@
     }
     .shake { animation: shake 0.4s ease; }
 
-    /* ── Floating action bar ─────────────────── */
+    /* ── Floating action bar ────────────────── */
     /* Uses shared.css .btn + .btn-primary / .btn-orange */
     .fab-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
@@ -237,6 +218,26 @@
       display: flex; gap: 10px;
     }
     .fab-bar .btn { flex: 1; justify-content: center; }
+
+    /* ── Desktop: contenção do portal numa coluna centrada ── */
+    @media (min-width: 600px) {
+      .portal-app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+
+      /* Barra fixa centrada com largura máxima do portal */
+      .fab-bar {
+        left: 50%; right: auto;
+        width: 520px;
+        transform: translateX(-50%);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      .fab-bar .btn {
+        flex: 1;
+      }
+
+      /* Bottom sheet também fica centrada */
+      .flow-sheet { width: 100%; max-width: 520px; margin: 0 auto; border-radius: 20px 20px 0 0; }
+    }
 
     /* ── Flow overlay ────────────────────────── */
     .flow-overlay {
