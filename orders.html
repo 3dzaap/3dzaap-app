@@ -1502,14 +1502,41 @@
         const p = _dbProducts.find(x => x.id === id);
         if (!p) return;
         const cfg = p.config || {};
+        
+        let time = cfg.est_print_hours || 0;
+        let mats = [];
+        const isAdvanced = cfg.calc_mode === 'advanced';
+
+        if (isAdvanced && cfg._orig_inputs && cfg._orig_inputs.mesas) {
+          time = cfg._orig_inputs.totalTime || 0;
+          const matMap = {}; // materialId -> weight
+          
+          cfg._orig_inputs.mesas.forEach(m => {
+            (m.parts || []).forEach(part => {
+              const w = (parseFloat(part.weight) || 0) * (parseInt(part.qty) || 1);
+              const key = part.materialId || '';
+              if (!matMap[key]) matMap[key] = 0;
+              matMap[key] += w;
+            });
+          });
+          
+          Object.keys(matMap).forEach(k => {
+            mats.push({ filamentId: k, weightG: matMap[k] });
+          });
+        } else {
+          mats.push({
+            filamentId: cfg.material_id || '',
+            weightG: cfg.filament_weight || cfg.resin_volume || ''
+          });
+        }
+
         addOrderItem({
           description: p.name,
           quantity: 1,
           unitPrice: p.salePrice || 0,
-          filamentId: cfg.material_id || '',
-          weightG: cfg.filament_weight || cfg.resin_volume || '',
-          printTime: cfg.est_print_hours || 0,
-          tech: cfg.mode || 'fdm'
+          printTime: time,
+          tech: cfg.mode || 'fdm',
+          materials: mats
         });
       });
       
