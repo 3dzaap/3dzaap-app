@@ -1193,6 +1193,9 @@
     }
 
     function renderPortal() {
+      // Overrides currency formatting based on client country
+      window._clientCountry = _order.config ? _order.config.clientCountry : null;
+
       const container = document.getElementById('portalContent');
       const actions = document.getElementById('actionsBar');
 

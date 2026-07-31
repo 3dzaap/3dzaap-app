@@ -57,10 +57,6 @@ function loadCfg(session) {
 
 // ── FORMATTERS ────────────────────────────────────────────────
 function getCurrencyConfig() {
-  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
-  
-  // Regras de Símbolo solicitadas:
-  // En: $ | PT e ES: € | BR: R$ | UK: £
   const map = {
     'en-US': { symbol: '$',  code: 'USD', locale: 'en-US' },
     'en':    { symbol: '$',  code: 'USD', locale: 'en-US' },
@@ -70,6 +66,21 @@ function getCurrencyConfig() {
     'en-GB': { symbol: '£',  code: 'GBP', locale: 'en-GB' },
     'en-EU': { symbol: '€',  code: 'EUR', locale: 'en-EU' }
   };
+
+  // Override via global if we want to format for a specific client country (e.g. in the Portal)
+  if (window._clientCountry) {
+    const countryMap = {
+      'BR': 'pt-BR',
+      'PT': 'pt-PT',
+      'ES': 'es',
+      'UK': 'en-GB',
+      'US': 'en-US'
+    };
+    const cCode = countryMap[window._clientCountry];
+    if (cCode && map[cCode]) return map[cCode];
+  }
+
+  const lang = localStorage.getItem('3dzaap_lang') || 'pt-PT';
   
   if (map[lang]) return map[lang];
   if (lang.startsWith('en')) return map['en-US'];

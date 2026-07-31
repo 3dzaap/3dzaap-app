@@ -1297,6 +1297,7 @@ function _mapClientFromDB(row) {
     phone:     row.phone,
     address:   row.address,
     notes:     row.notes,
+    metadata:  row.metadata || {},
     createdAt: row.created_at,
   };
 }
@@ -1309,6 +1310,7 @@ function _mapClientToDB(c) {
     phone:   c.phone   || null,
     address: c.address || null,
     notes:   c.notes   || null,
+    metadata: c.metadata || null,
   };
 }
 

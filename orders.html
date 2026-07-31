@@ -1810,6 +1810,8 @@
       document.addEventListener('mousedown', hideSugs);
     }
 
+    let _selectedClientCountry = null;
+
     function selectClient(c) {
       document.getElementById('oClientName').value = c.name;
       document.getElementById('oClientEmail').value = c.email || '';
@@ -1817,6 +1819,7 @@
       document.getElementById('oClientNif').value = c.nif || '';
       document.getElementById('oClientAddress').value = c.address || '';
       document.getElementById('clientSugs').style.display = 'none';
+      _selectedClientCountry = c.metadata && c.metadata.country ? c.metadata.country : null;
     }
 
     function openClientModal_fromOrder(initialName = '') {
@@ -1911,6 +1914,7 @@
         const saved = await DB.saveClient(payload);
         _dbClients.unshift(saved);
         selectClient(saved);
+        _selectedClientCountry = payload.metadata.country;
         closeClientModal();
         showToast('Cliente registado e selecionado!', 'ok');
       } catch (e) {
@@ -2821,6 +2825,7 @@
         // Normalize items: support old calculator format (qty/weight/total → quantity/weightG/unitPrice)
         its.forEach(it => addOrderItem(_normalizeItem(it)));
         renderShipmentsList(o);
+        _selectedClientCountry = (o.config && o.config.clientCountry) ? o.config.clientCountry : null;
       } else {
         currentOrder = null;
         document.getElementById('oClientName').value = '';
@@ -2828,6 +2833,7 @@
         document.getElementById('oClientPhone').value = '';
         document.getElementById('oClientNif').value = '';
         document.getElementById('oClientAddress').value = '';
+        _selectedClientCountry = null;
         document.getElementById('oStatus').value = 'orcamento';
         document.getElementById('oPaymentStatus').value = 'pendente';
         document.getElementById('oCreatedAt').value = new Date().toISOString().split('T')[0];
@@ -3297,6 +3303,7 @@
         notes: document.getElementById('oNotes').value.trim(),
         expiresAt: document.getElementById('oExpiresAt').value ? new Date(document.getElementById('oExpiresAt').value).toISOString() : null,
         updatedAt: new Date().toISOString(),
+        config: { ...((window.currentOrder && window.currentOrder.config) || {}), clientCountry: _selectedClientCountry }
       };
       console.log('[3DZAAP] Objecto de pedido capturado no modal:', base);
 
