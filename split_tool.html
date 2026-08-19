@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3MF Splitter Tool</title>
+    <link rel="stylesheet" href="split_tool.css">
+    <!-- Load Three.js and CSG libraries -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.0/build/index.module.js",
+                "three-bvh-csg": "https://unpkg.com/three-bvh-csg@0.0.16/build/index.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+    <main class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <div class="brand">
+                <h1>Split3MF Clone</h1>
+            </div>
+            
+            <div class="upload-section">
+                <div id="dropZone" class="drop-zone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Upload 3D Model (.stl)</span>
+                </div>
+            </div>
+
+            <div class="settings-panel">
+                <h2>Split Settings</h2>
+                <div class="setting-group">
+                    <label>Cut Mode</label>
+                    <div class="button-group">
+                        <button class="active">Plane</button>
+                        <button>Sketch</button>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Axis</label>
+                    <div class="button-group axis-group">
+                        <button>X</button>
+                        <button>Y</button>
+                        <button class="active">Z</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>Position</label>
+                    <input type="range" min="-50" max="50" value="0">
+                </div>
+                
+                <button class="action-btn split-btn">Split Model</button>
+            </div>
+        </aside>
+
+        <!-- 3D Canvas Area -->
+        <section class="viewport">
+            <div id="canvas-container"></div>
+            <div id="loading" class="hidden">Loading Model...</div>
+        </section>
+    </main>
+
+    <script type="module" src="split_tool.js"></script>
+</body>
+</html>

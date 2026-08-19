@@ -1,0 +1,171 @@
+:root {
+    --bg-color: #121212;
+    --sidebar-bg: #1e1e1e;
+    --primary: #4CAF50;
+    --primary-hover: #45a049;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border: #333333;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 320px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 24px;
+    z-index: 10;
+}
+
+.brand h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.upload-section {
+    width: 100%;
+}
+
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 32px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+}
+
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.drop-zone svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* Settings Panel */
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-panel h2 {
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-group label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.button-group {
+    display: flex;
+    background: #2a2a2a;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.button-group button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    padding: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.button-group button.active {
+    background: var(--primary);
+    color: white;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+}
+
+.action-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--primary-hover);
+}
+
+/* Viewport */
+.viewport {
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-color);
+}
+
+#canvas-container {
+    width: 100%;
+    height: 100%;
+}
+
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
