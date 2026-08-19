@@ -88,14 +88,19 @@ let originalMesh = null; // The loaded mesh
 let resultMeshes = []; // The split meshes
 
 // Click to upload
-dropZone.addEventListener('click', () => {
-    fileInput.click();
+dropZone.addEventListener('click', (e) => {
+    // Only trigger if we aren't clicking the input itself (just in case)
+    if (e.target !== fileInput) {
+        fileInput.click();
+    }
 });
 
 fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
         handleFile(e.target.files[0]);
     }
+    // Clear the value so the same file can be selected again
+    e.target.value = '';
 });
 
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
