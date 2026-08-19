@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { SUBTRACTION, INTERSECTION, Brush, Evaluator } from 'three-bvh-csg';
 
@@ -114,8 +115,11 @@ function handleDrop(e) {
 }
 
 function handleFile(file) {
-    if (!file.name.toLowerCase().endsWith('.stl')) {
-        alert("Only .stl files are supported.");
+    const isStl = file.name.toLowerCase().endsWith('.stl');
+    const is3mf = file.name.toLowerCase().endsWith('.3mf');
+
+    if (!isStl && !is3mf) {
+        alert("Only .stl and .3mf files are supported.");
         return;
     }
 
@@ -124,7 +128,11 @@ function handleFile(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const contents = e.target.result;
-        loadSTL(contents);
+        if (isStl) {
+            loadSTL(contents);
+        } else if (is3mf) {
+            load3MF(contents);
+        }
     };
     reader.readAsArrayBuffer(file);
 }
@@ -142,7 +150,46 @@ function loadSTL(arrayBuffer) {
     const loader = new STLLoader();
     try {
         const geometry = loader.parse(arrayBuffer);
+        setupModelGeometry(geometry);
+    } catch (error) {
+        console.error("Error parsing STL:", error);
+        alert("Error loading STL file.");
+    } finally {
+        loadingIndicator.classList.add('hidden');
+    }
+}
+
+function load3MF(arrayBuffer) {
+    const loader = new ThreeMFLoader();
+    try {
+        const group = loader.parse(arrayBuffer);
         
+        let targetGeometry = null;
+        
+        group.traverse((child) => {
+            if (child.isMesh && !targetGeometry) {
+                targetGeometry = child.geometry.clone();
+                // Apply transformations from the 3MF hierarchy
+                child.updateMatrixWorld(true);
+                targetGeometry.applyMatrix4(child.matrixWorld);
+            }
+        });
+
+        if (targetGeometry) {
+            setupModelGeometry(targetGeometry);
+        } else {
+             throw new Error("No meshes found in 3MF");
+        }
+
+    } catch (error) {
+        console.error("Error parsing 3MF:", error);
+        alert("Error loading 3MF file.");
+    } finally {
+        loadingIndicator.classList.add('hidden');
+    }
+}
+
+function setupModelGeometry(geometry) {
         // Remove previous meshes
         if (originalMesh) {
             scene.remove(originalMesh);
@@ -185,13 +232,6 @@ function loadSTL(arrayBuffer) {
         camera.position.set(maxDim, maxDim, maxDim);
         controls.target.set(0, 0, 0);
         controls.update();
-
-    } catch (error) {
-        console.error("Error parsing STL:", error);
-        alert("Error loading STL file.");
-    } finally {
-        loadingIndicator.classList.add('hidden');
-    }
 }
 
 // Basic UI Interactivity
