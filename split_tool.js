@@ -82,9 +82,21 @@ animate();
 
 // --- Drag and Drop File Handling ---
 const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
 const loadingIndicator = document.getElementById('loading');
 let originalMesh = null; // The loaded mesh
 let resultMeshes = []; // The split meshes
+
+// Click to upload
+dropZone.addEventListener('click', () => {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+    }
+});
 
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, preventDefaults, false);
@@ -236,6 +248,23 @@ function setupModelGeometry(geometry) {
 
 // Basic UI Interactivity
 const positionSlider = document.querySelector('input[type="range"]');
+
+document.querySelectorAll('.button-group button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const group = e.target.closest('.button-group');
+        
+        // Handle Cut Mode (Plane vs Sketch)
+        if (group.previousElementSibling && group.previousElementSibling.textContent === 'Cut Mode') {
+            if (e.target.textContent === 'Sketch') {
+                alert("O modo 'Sketch' (desenho livre) é bastante avançado e não está implementado neste MVP. Retornando ao modo 'Plane'.");
+                return; // don't make it active
+            }
+        }
+        
+        group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+    });
+});
 
 function updateCuttingPlane() {
     if (!originalMesh) return;
