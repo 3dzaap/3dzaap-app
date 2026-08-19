@@ -2085,8 +2085,8 @@ function pkRenderRows() {
       </div>
       <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
         <span class="pk-override-toggle" onclick="pkToggleOverride(${i})">
-          <i class="ph-bold ${showOverride ? 'ph-lock' : 'ph-globe'}"></i> ${showOverride ? i18n.getNestedTranslation('materials.modal_pack.override_on') : i18n.getNestedTranslation('materials.modal_pack.override_off')}
-          <span style="font-size:.65rem;opacity:.6">(${i18n.getNestedTranslation('materials.modal_pack.override_hint')})</span>
+          <i class="ph-bold ${showOverride ? 'ph-lock' : 'ph-globe'}"></i> ${showOverride ? (i18n.getNestedTranslation('materials.modal_pack.override_on') || 'Por cor') : (i18n.getNestedTranslation('materials.modal_pack.override_off') || 'Herdar do pack')}
+          <span style="font-size:.65rem;opacity:.6">(${i18n.getNestedTranslation('materials.modal_pack.override_hint') || 'personalizar'})</span>
         </span>
       </div>
       ${showOverride ? `
