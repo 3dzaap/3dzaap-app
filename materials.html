@@ -962,13 +962,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── FETCH CATALOG FROM DB ──────────────────────────────
   try {
     const catalog = await DB.getMaterialCatalog();
+    // Merge DB catalog with fallback — DB wins on types/variations,
+    // but brands are merged so local additions always appear.
+    const mergeSorted = (a, b) => [...new Set([...a, ...b])].sort((x, y) =>
+      x === 'Outros' ? 1 : y === 'Outros' ? -1 : x.localeCompare(y, 'pt', { sensitivity: 'base' })
+    );
+
     if (catalog.fdm.types.length)      FDM_TYPES      = catalog.fdm.types;
     if (catalog.fdm.variations.length) FDM_VARIATIONS = catalog.fdm.variations;
-    if (catalog.fdm.brands.length)     FDM_BRANDS     = catalog.fdm.brands;
-    
+    if (catalog.fdm.brands.length)     FDM_BRANDS     = mergeSorted(catalog.fdm.brands, FALLBACK_CATALOG.fdm.brands);
+
     if (catalog.resin.types.length)      RESIN_TYPES      = catalog.resin.types;
     if (catalog.resin.variations.length) RESIN_VARIATIONS = catalog.resin.variations;
-    if (catalog.resin.brands.length)     RESIN_BRANDS     = catalog.resin.brands;
+    if (catalog.resin.brands.length)     RESIN_BRANDS     = mergeSorted(catalog.resin.brands, FALLBACK_CATALOG.resin.brands);
   } catch(e) { console.warn('[3DZAAP] Erro ao carregar catálogo dinâmico, usando fallback.', e); }
 
   populateSelects();
